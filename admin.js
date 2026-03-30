@@ -402,8 +402,58 @@ downloadExcelBtn.addEventListener('click', () => {
 // ==========================================
 async function fetchInquiries() {
     const tBody = document.getElementById('inquiryTableBody');
-    const { data, error } = await supabase.from('inquiries').select('*').limit(10);
-    if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'inquiries' 테이블을 먼저 생성해주세요.</td></tr>`; }
+    tBody.innerHTML = '<tr><td colspan="7" class="empty-state">고객 문의 데이터를 불러오는 중입니다...</td></tr>';
+    
+    const { data: inquiries, error } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
+
+    if(error) {
+        tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i> 테이블 구조 불일치 또는 미생성 에러입니다.<br>${error.message}</td></tr>`;
+        return;
+    }
+
+    if(inquiries.length === 0) {
+        tBody.innerHTML = `<tr><td colspan="7" class="empty-state">접수된 견적/상담 문의 내역이 없습니다. (고객의 연락을 기다리는 중)</td></tr>`;
+        return;
+    }
+
+    tBody.innerHTML = '';
+    inquiries.forEach(inq => {
+        const tr = document.createElement('tr');
+        const dateStr = new Date(inq.created_at).toLocaleString('ko-KR');
+        
+        let statusBadge = '';
+        if(inq.status === 'open') statusBadge = '<span style="background:#e74c3c;color:#fff;padding:4px 8px;border-radius:12px;font-size:0.8rem;"><i class="fa-solid fa-circle-exclamation"></i> 신규접수</span>';
+        else if(inq.status === 'processing') statusBadge = '<span style="background:#f39c12;color:#fff;padding:4px 8px;border-radius:12px;font-size:0.8rem;"><i class="fa-solid fa-spinner"></i> 확인중</span>';
+        else statusBadge = '<span style="background:#2ecc71;color:#fff;padding:4px 8px;border-radius:12px;font-size:0.8rem;"><i class="fa-solid fa-check"></i> 답변완료</span>';
+
+        tr.innerHTML = `
+            <td>#${inq.id}</td>
+            <td style="font-weight:600;">${inq.author}</td>
+            <td>${inq.phone}</td>
+            <td style="text-align:left; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${inq.title}">${inq.title}</td>
+            <td style="font-size:0.9rem; color:#666;">${dateStr}</td>
+            <td>${statusBadge}</td>
+            <td>
+                <select onchange="updateInquiryStatus(${inq.id}, this.value)" style="padding:5px; border-radius:4px; border:1px solid #ccc; font-size:0.9rem;">
+                    <option value="open" ${inq.status === 'open' ? 'selected' : ''}>대기중</option>
+                    <option value="processing" ${inq.status === 'processing' ? 'selected' : ''}>확인(처리)중</option>
+                    <option value="closed" ${inq.status === 'closed' ? 'selected' : ''}>답변완료</option>
+                </select>
+                <button class="action-btn" style="margin-left:10px; color:#3498db" onclick="alert('👤 고객명/기관: ${inq.author}\\n📞 연락처: ${inq.phone}\\n🕒 접수일시: ${dateStr}\\n\\n📋 [문의 및 요청내용]\\n${inq.title.replace(/'/g, "\\'")}')" title="내용 전체보기"><i class="fa-solid fa-envelope-open-text"></i></button>
+            </td>
+        `;
+        tBody.appendChild(tr);
+    });
+}
+
+// 문의 상태 (답변완료 등) 변경 저장 함수 (전역)
+window.updateInquiryStatus = async function(id, newStatus) {
+    const { error } = await supabase.from('inquiries').update({ status: newStatus }).eq('id', id);
+    if (error) {
+        alert('상태 변경 중 오류: ' + error.message);
+    } else {
+        fetchInquiries(); // 화면 자동 재로딩
+    }
 }
 async function fetchBanners() {
     const tBody = document.getElementById('bannerTableBody');
