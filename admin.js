@@ -4,8 +4,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // ==========================================
 // 🚨 사용자(관리자)님, 여기에 Supabase 설정값을 넣어주세요! 🚨
 // ==========================================
-const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
 if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE') {
     alert("⚠️ admin.js 파일에서 SUPABASE_URL과 SUPABASE_ANON_KEY를 설정해주세요!");
