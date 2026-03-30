@@ -114,10 +114,12 @@
                 </div>
             </div>
 
-            <!-- 차트 영역 -->
-            <div class="chart-container" style="background:#fff; border-radius:10px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:30px;">
+            <!-- 차트 영역 (깜빡임/스크롤 방지를 위해 높이 고정) -->
+            <div class="chart-container" style="background:#fff; border-radius:10px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:30px; position:relative; height:350px;">
                 <h3 style="margin-bottom:20px; font-size:1.1rem; color:#333;">최근 7일 주문 추이</h3>
-                <canvas id="orderChart" height="80"></canvas>
+                <div style="position:relative; height:calc(100% - 45px); width:100%;">
+                    <canvas id="orderChart"></canvas>
+                </div>
             </div>
 
             <!-- 통계 테이블 상세 목록 -->
