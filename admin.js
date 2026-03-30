@@ -7,23 +7,29 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
-if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE') {
-    alert("⚠️ admin.js 파일에서 SUPABASE_URL과 SUPABASE_ANON_KEY를 설정해주세요!");
-}
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// DOM Elements
+// DOM Elements - Login & Global
 const loginOverlay = document.getElementById('loginOverlay');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const emailInput = document.getElementById('adminEmail');
 const passInput = document.getElementById('adminPassword');
 const loginMessage = document.getElementById('loginMessage');
+
+// DOM Elements - Navigation Tabs
+const navItems = document.querySelectorAll('.nav-item');
+const tabPanes = document.querySelectorAll('.tab-pane');
+
+// DOM Elements - Product Management (Tab 1)
 const productTableBody = document.getElementById('productTableBody');
 const addProductBtn = document.getElementById('addProductBtn');
 
-// Modal Elements
+// DOM Elements - Order Stats (Tab 2)
+const downloadExcelBtn = document.getElementById('downloadExcelBtn');
+let globalOrders = []; // 엑셀 다운로드를 위해 데이터를 캐싱하는 변수
+
+// Product Modal Elements
 const modalOverlay = document.getElementById('productModal');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
@@ -31,7 +37,6 @@ const saveProductBtn = document.getElementById('saveProductBtn');
 const saveMsg = document.getElementById('saveMsg');
 const modalTitle = document.getElementById('modalTitle');
 
-// Form Elements
 const productIdInput = document.getElementById('productId');
 const productNameInput = document.getElementById('productName');
 const productCategoryInput = document.getElementById('productCategory');
@@ -43,16 +48,14 @@ const productImageUrl = document.getElementById('productImageUrl');
 const imagePreview = document.getElementById('imagePreview');
 
 // ==========================================
-// 1. 로그인 / 세션 관리 (Authentication)
+// 1. 로그인 / 세션 관리
 // ==========================================
 async function checkSession() {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (session) {
-        // Logged in
         loginOverlay.style.display = 'none';
-        fetchProducts(); // Load data after login
+        initDashboard(); // 로그인 성공 시 대시보드 강제 초기화
     } else {
-        // Not logged in
         loginOverlay.style.display = 'flex';
     }
 }
@@ -82,30 +85,59 @@ loginBtn.addEventListener('click', async () => {
         loginOverlay.style.display = 'none';
         emailInput.value = '';
         passInput.value = '';
-        fetchProducts();
+        initDashboard();
     }
 });
 
 logoutBtn.addEventListener('click', async () => {
     await supabase.auth.signOut();
-    productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">로그아웃 되었습니다.</td></tr>';
-    loginOverlay.style.display = 'flex';
+    location.reload(); // 깔끔하게 화면 전체 새로고침
 });
 
 // ==========================================
-// 2. 제품 목록 불러오기 (Read)
+// 2. 탭(메뉴) 전환 제어
+// ==========================================
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        // 활성화 상태 토글
+        navItems.forEach(nav => nav.classList.remove('active'));
+        tabPanes.forEach(tab => tab.classList.remove('active'));
+
+        item.classList.add('active');
+        const targetId = item.getAttribute('data-target');
+        document.getElementById(targetId).classList.add('active');
+
+        // 해당 탭 접속 시 데이터 로드
+        if(targetId === 'tab-products') {
+            fetchProducts();
+        } else if(targetId === 'tab-orders') {
+            fetchOrders();
+        } else if(targetId === 'tab-inquiries') {
+            fetchInquiries();
+        } else if(targetId === 'tab-banners') {
+            fetchBanners();
+        } else if(targetId === 'tab-users') {
+            fetchUsers();
+        }
+    });
+});
+
+function initDashboard() {
+    // 최초 접속 시 제품 관리 탭 로드
+    document.querySelector('.nav-item[data-target="tab-products"]').click();
+}
+
+// ==========================================
+// 3. (기존) 제품 목록 로드 / CRUD 
 // ==========================================
 async function fetchProducts() {
     productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
     
-    const { data: products, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const { data: products, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
 
     if (error) {
         console.error('Error fetching products:', error);
-        productTableBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:red">오류: ${error.message}</td></tr>`;
+        productTableBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:red"><i class="fa-solid fa-triangle-exclamation"></i> 오류: ${error.message}</td></tr>`;
         return;
     }
 
@@ -117,11 +149,7 @@ async function fetchProducts() {
     productTableBody.innerHTML = '';
     products.forEach(p => {
         const tr = document.createElement('tr');
-        const imgHtml = p.image_url 
-            ? `<img src="${p.image_url}" class="td-img" alt="${p.name}">` 
-            : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
-        
-        // 날짜 포맷
+        const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${p.name}">` : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
         const dateStr = new Date(p.created_at).toLocaleDateString('ko-KR');
 
         tr.innerHTML = `
@@ -140,162 +168,254 @@ async function fetchProducts() {
     });
 }
 
-// ==========================================
-// 3. 모달 제어 및 이미지 미리보기
-// ==========================================
+// 모달 및 제품 CRUD 로직은 그대로 복원
 function openModal(isEdit = false) {
     if (!isEdit) {
         modalTitle.textContent = '새 제품 등록';
-        productIdInput.value = '';
-        productNameInput.value = '';
-        productPriceInput.value = '전화문의';
-        productStockInput.value = '999';
-        productDescInput.value = '';
-        productImageUrl.value = '';
-        productImageFile.value = '';
+        productIdInput.value = ''; productNameInput.value = ''; productPriceInput.value = '전화문의';
+        productStockInput.value = '999'; productDescInput.value = ''; productImageUrl.value = ''; productImageFile.value = '';
         imagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
     } else {
         modalTitle.textContent = '제품 정보 수정';
     }
-    saveMsg.textContent = '';
-    saveProductBtn.disabled = false;
-    saveProductBtn.textContent = '저장하기';
+    saveMsg.textContent = ''; saveProductBtn.disabled = false; saveProductBtn.textContent = '저장하기';
     modalOverlay.style.display = 'flex';
 }
-
-function closeModal() {
-    modalOverlay.style.display = 'none';
-}
-
+function closeModal() { modalOverlay.style.display = 'none'; }
 addProductBtn.addEventListener('click', () => openModal(false));
 closeModalBtn.addEventListener('click', closeModal);
 cancelModalBtn.addEventListener('click', closeModal);
 
-// 이미지 미리보기 로직
 productImageFile.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-        };
+        reader.onload = (e) => { imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`; };
         reader.readAsDataURL(file);
     }
 });
 
-// ==========================================
-// 4. 제품 저장 (Insert / Update) & 스토리지 업로드
-// ==========================================
 saveProductBtn.addEventListener('click', async () => {
-    const name = productNameInput.value.trim();
-    const category = productCategoryInput.value;
-    const price = productPriceInput.value.trim();
-    const stock = parseInt(productStockInput.value) || 0;
-    const desc = productDescInput.value.trim();
-    const id = productIdInput.value;
-    
-    if (!name) {
-        saveMsg.textContent = '제품명은 필수입니다!';
-        return;
-    }
+    const payload = {
+        name: productNameInput.value.trim(), category: productCategoryInput.value,
+        price: productPriceInput.value.trim(), stock: parseInt(productStockInput.value) || 0,
+        description: productDescInput.value.trim(), image_url: productImageUrl.value
+    };
+    if (!payload.name) { saveMsg.textContent = '제품명은 필수입니다!'; return; }
 
-    saveProductBtn.disabled = true;
-    saveProductBtn.textContent = '저장 중... (사진 업로드 포함)';
-    
-    let finalImageUrl = productImageUrl.value; // 기존 이미지 URL
+    saveProductBtn.disabled = true; saveProductBtn.textContent = '저장 중...';
     const file = productImageFile.files[0];
 
-    // 새 사진이 등록된 경우 Storage에 업로드
+    // 스토리지 업로드
     if (file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `products/${fileName}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('product-images')
-            .upload(filePath, file);
-
-        if (uploadError) {
-            saveMsg.textContent = '이미지 업로드 실패: ' + uploadError.message;
-            saveProductBtn.disabled = false;
-            saveProductBtn.textContent = '저장하기';
-            return;
-        }
-
-        // 업로드 성공 후 Public URL 가져오기
-        const { data: { publicUrl } } = supabase.storage
-            .from('product-images')
-            .getPublicUrl(filePath);
-        
-        finalImageUrl = publicUrl;
+        const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, file);
+        if (uploadError) { saveMsg.textContent = '업로드 오류: ' + uploadError.message; saveProductBtn.disabled=false; saveProductBtn.textContent='저장하기'; return; }
+        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(filePath);
+        payload.image_url = publicUrl;
     }
 
-    const payload = {
-        name,
-        category,
-        price,
-        stock,
-        description: desc,
-        image_url: finalImageUrl
-    };
-
+    const id = productIdInput.value;
     if (id) {
-        // Update (수정)
         const { error } = await supabase.from('products').update(payload).eq('id', id);
-        if (error) { saveMsg.textContent = '수정 오류: ' + error.message; }
+        if(error) saveMsg.textContent = '수정 실패: ' + error.message;
     } else {
-        // Insert (등록)
         const { error } = await supabase.from('products').insert([payload]);
-        if (error) { saveMsg.textContent = '등록 오류: ' + error.message; }
+        if(error) saveMsg.textContent = '등록 실패: ' + error.message;
     }
 
-    if (!saveMsg.textContent.includes('오류')) {
-        closeModal();
-        fetchProducts(); // 새로고침
+    if (!saveMsg.textContent.includes('실패')) {
+        closeModal(); fetchProducts();
     } else {
-        saveProductBtn.disabled = false;
-        saveProductBtn.textContent = '저장하기';
+        saveProductBtn.disabled = false; saveProductBtn.textContent = '저장하기';
     }
 });
 
-// ==========================================
-// 5. 제품 수정 모달 띄우기 (Update 불러오기)
-// ==========================================
 window.editProduct = async (id) => {
     const { data: p, error } = await supabase.from('products').select('*').eq('id', id).single();
-    if (error) {
-        alert("수정할 데이터를 불러오는 데 실패했습니다."); return;
-    }
-    
+    if (error) { alert("데이터 불러오기 실패"); return; }
     openModal(true);
-    productIdInput.value = p.id;
-    productNameInput.value = p.name;
-    productCategoryInput.value = p.category;
-    productPriceInput.value = p.price;
-    productStockInput.value = p.stock;
-    productDescInput.value = p.description;
-    productImageUrl.value = p.image_url;
-
-    if (p.image_url) {
-        imagePreview.innerHTML = `<img src="${p.image_url}" alt="${p.name}">`;
-    } else {
-        imagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
-    }
+    productIdInput.value = p.id; productNameInput.value = p.name; productCategoryInput.value = p.category;
+    productPriceInput.value = p.price; productStockInput.value = p.stock; productDescInput.value = p.description;
+    productImageUrl.value = p.image_url || '';
+    imagePreview.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
 };
 
-// ==========================================
-// 6. 제품 삭제 (Delete)
-// ==========================================
 window.deleteProduct = async (id, name) => {
-    if(confirm(`정말 "${name}" 제품을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없으며 라이브 사이트에서도 즉시 사라집니다.`)) {
+    if(confirm(`"${name}" 제품을 영구 삭제하시겠습니까?`)) {
         const { error } = await supabase.from('products').delete().eq('id', id);
-        if (error) {
-            alert('삭제 실패: ' + error.message);
-        } else {
-            fetchProducts();
-        }
+        if (error) alert('삭제 실패: ' + error.message); else fetchProducts();
     }
 };
 
-// 초기화
+// ==========================================
+// 4. [신규] 주문 통계 데이터 로드 및 차트/엑셀
+// ==========================================
+let orderChartInstance = null;
+
+async function fetchOrders() {
+    const tableBody = document.getElementById('orderTableBody');
+    tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">분석 데이터를 불러오는 중입니다...</td></tr>';
+    
+    // orders 테이블에서 가져오기 (만약 테이블이 없으면 에러로 Catch됨)
+    const { data: orders, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+
+    if (error) {
+        console.warn('Orders Table 미생성 상태:', error.message);
+        tableBody.innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;margin-bottom:10px;"></i><br>
+            아직 <b>'orders'</b> 테이블이 존재하지 않거나 권한이 없습니다.<br>Supabase 대시보드에서 테이블을 생성해 주세요.
+        </td></tr>`;
+        return;
+    }
+
+    if (!orders || orders.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">결제/접수된 주문 내역이 없습니다.</td></tr>';
+        renderOrderChart([]); // 빈 차트
+        return;
+    }
+
+    globalOrders = orders; // 엑셀 다운로드용 전역변수에 삽입
+    tableBody.innerHTML = '';
+    
+    let totalRevenue = 0;
+    let pendingCount = 0;
+
+    orders.forEach(o => {
+        const tr = document.createElement('tr');
+        const dateStr = new Date(o.created_at).toLocaleString('ko-KR');
+        // 상태 뱃지 UI
+        const statusStr = o.status === 'pending' ? '<span style="color:var(--danger);font-weight:bold;">배송준비</span>' : 
+                          o.status === 'shipped' ? '<span style="color:#3498db;font-weight:bold;">배송진행</span>' : 
+                          '<span style="color:var(--success);font-weight:bold;">완료됨</span>';
+
+        tr.innerHTML = `
+            <td>#${o.id.toString().substring(0,8).toUpperCase()}</td>
+            <td style="font-weight:600;">${o.customer_name}</td>
+            <td>${o.product_name}</td>
+            <td>${o.quantity}개</td>
+            <td style="font-weight:600;">${o.total_price.toLocaleString()}원</td>
+            <td>${statusStr}</td>
+            <td style="font-size:0.9rem; color:#666;">${dateStr}</td>
+            <td><button class="action-btn" title="주문 관리(준비중)"><i class="fa-solid fa-pen"></i></button></td>
+        `;
+        tableBody.appendChild(tr);
+
+        totalRevenue += Number(o.total_price) || 0;
+        if(o.status === 'pending') pendingCount++;
+    });
+
+    // 상단 Dashboard 요약창 정보 업데이트
+    document.getElementById('totalOrderCount').textContent = orders.length + "건";
+    document.getElementById('totalOrderRevenue').textContent = totalRevenue.toLocaleString() + "원";
+    document.getElementById('pendingOrderCount').textContent = pendingCount + "건";
+
+    // 차트 그려주기
+    renderOrderChart(orders);
+}
+
+// Chart.js를 사용한 일별 통계 렌더링
+function renderOrderChart(orders) {
+    const ctx = document.getElementById('orderChart').getContext('2d');
+    
+    // 최근 7일 라벨 만들기
+    const today = new Date();
+    const labels = [];
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+
+    for(let i=6; i>=0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        labels.push((d.getMonth()+1) + '/' + d.getDate());
+    }
+
+    // 데이터 매핑: 각 주문의 날짜를 확인해 카운트 증가
+    orders.forEach(o => {
+        const orderDate = new Date(o.created_at);
+        const diffTime = Math.abs(today - orderDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; // 0~6 사이의 일수 차이
+        
+        if(diffDays >= 0 && diffDays < 7) {
+            counts[6 - diffDays]++; // 6이 최신(오늘), 0이 7일전
+        }
+    });
+
+    // 기존 차트가 있으면 초기화
+    if(orderChartInstance) {
+        orderChartInstance.destroy();
+    }
+
+    orderChartInstance = new Chart(ctx, {
+        type: 'bar', // 막대그래프
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '일별 주문 접수 건수',
+                data: counts,
+                backgroundColor: 'rgba(142, 195, 66, 0.8)', // 기본 초록색(var(--admin-primary) 유사)
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+}
+
+// SheetJS를 활용한 엑셀 다운로드 트리거
+downloadExcelBtn.addEventListener('click', () => {
+    if(globalOrders.length === 0) {
+        alert("엑셀로 다운로드할 배송 기록/통계 데이터가 하나도 존재하지 않습니다.");
+        return;
+    }
+
+    // 엑셀 표로 만들 데이터 가공 (한글 컬럼 적용)
+    const excelData = globalOrders.map(o => ({
+        "접수번호": o.id,
+        "고객명/소속": o.customer_name,
+        "연락처": o.customer_phone || "미입력",
+        "주문 상품명": o.product_name,
+        "구매 수량": o.quantity,
+        "총 결제/청구액": o.total_price,
+        "처리 상태": o.status === 'pending' ? '배송준비중' : o.status === 'shipped' ? '배송중' : '처리완료',
+        "접수 일자 (KST 기준)": new Date(o.created_at).toLocaleString('ko-KR')
+    }));
+
+    // 가상 워크북 및 시트 생성
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "통계 집계결과(Orders)");
+    
+    // 파일 다운로드
+    const todayStr = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `SG_LIMU_총주문통계_${todayStr}.xlsx`);
+});
+
+// ==========================================
+// 5. 기타 제안 기능(견적, 배너, 회원) 더미 로드 함수
+// ==========================================
+async function fetchInquiries() {
+    const tBody = document.getElementById('inquiryTableBody');
+    const { data, error } = await supabase.from('inquiries').select('*').limit(10);
+    if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'inquiries' 테이블을 먼저 생성해주세요.</td></tr>`; }
+}
+async function fetchBanners() {
+    const tBody = document.getElementById('bannerTableBody');
+    const { data, error } = await supabase.from('banners').select('*').limit(10);
+    if(error) { tBody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:#e74c3c;">데이터베이스에 'banners' 테이블을 먼저 생성해주세요.</td></tr>`; }
+}
+async function fetchUsers() {
+    const tBody = document.getElementById('userTableBody');
+    const { data, error } = await supabase.from('users').select('*').limit(10);
+    if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'users' 테이블을 먼저 생성해주세요.</td></tr>`; }
+}
+
+// ------------------------------------------
+// 시스템 초기화
 checkSession();
