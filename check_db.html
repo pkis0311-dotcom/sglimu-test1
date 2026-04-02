@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Supabase Check</title>
+</head>
+<body>
+    <h1>Supabase Connection Check</h1>
+    <div id="log" style="white-space: pre-wrap; font-family: monospace; background: #eee; padding: 20px;"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const logEl = document.getElementById('log');
+        function print(msg) {
+            logEl.textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        async function check() {
+            print("1. Testing 'banners' table fetch...");
+            const { data: fetchResult, error: fetchError } = await supabase.from('banners').select('*').limit(1);
+            if (fetchError) {
+                print('   ❌ Fetch Error: ' + JSON.stringify(fetchError));
+            } else {
+                print('   ✅ Fetch Success. Table exists. Data length = ' + fetchResult.length);
+            }
+
+            print("\n2. Testing 'banner-images' bucket fetch...");
+            const { data: buckets, error: bucketError } = await supabase.storage.getBucket('banner-images');
+            if (bucketError) {
+                print('   ❌ Bucket Error: ' + JSON.stringify(bucketError));
+            } else {
+                print('   ✅. Bucket exists, public=' + buckets.public);
+            }
+
+            print("\n3. Testing 'banners' table INSERT (RLS check)...");
+            const { data: insertResult, error: insertError } = await supabase.from('banners').insert([
+                { type: 'slide', is_active: false, link_url: 'test', image_url: 'test' }
+            ]).select();
+            
+            if (insertError) {
+                print('   ❌ Insert Error: ' + JSON.stringify(insertError));
+            } else {
+                print('   ✅ Insert Success! Result ID = ' + insertResult[0].id);
+                // Clean up dummy
+                await supabase.from('banners').delete().eq('id', insertResult[0].id);
+                print('   ✅ Dummy record deleted.');
+            }
+            
+            document.title = "CHECK_COMPLETE";
+        }
+
+        check();
+    </script>
+</body>
+</html>

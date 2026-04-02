@@ -177,7 +177,7 @@
         <div id="tab-banners" class="tab-pane">
             <div class="page-header">
                 <h1 class="page-title">메인화면 배너 / 팝업 관리</h1>
-                <button class="btn-primary" onclick="alert('배너 등록 기능은 활성화 후 사용 가능합니다.')"><i class="fa-solid fa-plus"></i> 새 배너 등록</button>
+                <button id="addBannerBtn" class="btn-primary"><i class="fa-solid fa-plus"></i> 새 배너 등록</button>
             </div>
             <div class="table-card">
                 <table>
@@ -284,6 +284,50 @@
                 <button type="button" class="btn-secondary" id="cancelModalBtn">취소</button>
                 <button type="button" class="btn-primary" id="saveProductBtn">저장하기</button>
                 <div id="saveMsg" style="color:var(--danger); margin-top:10px; text-align:right; font-size:0.9rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 배너 등록/수정 팝업(모달) -->
+    <div id="bannerModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="bannerModalTitle">새 배너 등록</h3>
+                <button class="close-modal" id="closeBannerModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="bannerId">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>배너/팝업 이미지 업로드 (최적화 비율 - 슬라이드: 1920x600, 팝업: 500x500)</label>
+                        <input type="file" id="bannerImageFile" class="form-control" accept="image/*">
+                        <input type="hidden" id="bannerImageUrl">
+                        <div class="image-preview" id="bannerImagePreview"><i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i></div>
+                    </div>
+                    <div class="form-group">
+                        <label>종류 구분 *</label>
+                        <select id="bannerType" class="form-control">
+                            <option value="slide">메인 슬라이드 배너</option>
+                            <option value="popup">팝업창 배너</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>노출 상태</label>
+                        <select id="bannerIsActive" class="form-control">
+                            <option value="true">노출함 (활성)</option>
+                            <option value="false">숨김 (비활성)</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>클릭 시 이동할 링크 URL (선택사항)</label>
+                        <input type="text" id="bannerLinkUrl" class="form-control" placeholder="클릭 시 이동할 주소 (ex: https://...)">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelBannerModalBtn">취소</button>
+                <button type="button" class="btn-primary" id="saveBannerBtn">저장하기</button>
+                <div id="saveBannerMsg" style="color:var(--danger); margin-top:10px; text-align:right; font-size:0.9rem;"></div>
             </div>
         </div>
     </div>

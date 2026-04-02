@@ -47,6 +47,26 @@ const productImageFile = document.getElementById('productImageFile');
 const productImageUrl = document.getElementById('productImageUrl');
 const imagePreview = document.getElementById('imagePreview');
 
+// DOM Elements - Banner Management (Tab 4)
+const bannerTableBody = document.getElementById('bannerTableBody');
+const addBannerBtn = document.getElementById('addBannerBtn');
+
+// Banner Modal Elements
+const bannerModalOverlay = document.getElementById('bannerModal');
+const closeBannerModalBtn = document.getElementById('closeBannerModalBtn');
+const cancelBannerModalBtn = document.getElementById('cancelBannerModalBtn');
+const saveBannerBtn = document.getElementById('saveBannerBtn');
+const saveBannerMsg = document.getElementById('saveBannerMsg');
+const bannerModalTitle = document.getElementById('bannerModalTitle');
+
+const bannerIdInput = document.getElementById('bannerId');
+const bannerTypeInput = document.getElementById('bannerType');
+const bannerIsActiveInput = document.getElementById('bannerIsActive');
+const bannerLinkUrlInput = document.getElementById('bannerLinkUrl');
+const bannerImageFile = document.getElementById('bannerImageFile');
+const bannerImageUrl = document.getElementById('bannerImageUrl');
+const bannerImagePreview = document.getElementById('bannerImagePreview');
+
 // ==========================================
 // 1. 로그인 / 세션 관리
 // ==========================================
@@ -456,10 +476,155 @@ window.updateInquiryStatus = async function(id, newStatus) {
     }
 }
 async function fetchBanners() {
-    const tBody = document.getElementById('bannerTableBody');
-    const { data, error } = await supabase.from('banners').select('*').limit(10);
-    if(error) { tBody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:#e74c3c;">데이터베이스에 'banners' 테이블을 먼저 생성해주세요.</td></tr>`; }
+    bannerTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">배너 데이터를 불러오는 중입니다...</td></tr>';
+    
+    // banners 테이블에서 데이터 가져오기
+    const { data: banners, error } = await supabase.from('banners').select('*').order('created_at', { ascending: false });
+
+    if (error) {
+        bannerTableBody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:#e74c3c;">데이터베이스에 'banners' 테이블을 먼저 생성해주세요.<br>${error.message}</td></tr>`;
+        return;
+    }
+
+    if (banners.length === 0) {
+        bannerTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">현재 등록된 배너/팝업이 없습니다.</td></tr>';
+        return;
+    }
+
+    bannerTableBody.innerHTML = '';
+    banners.forEach(b => {
+        const tr = document.createElement('tr');
+        const imgHtml = b.image_url ? `<img src="${b.image_url}" class="td-img" style="width:100px; height:auto; object-fit:contain;" alt="배너 이미지">` : `<div style="color:#999; font-size:0.8rem;">이미지 없음</div>`;
+        const typeBadge = b.type === 'slide' ? '<span style="background:#3498db; color:#fff; padding:3px 8px; border-radius:3px; font-size:0.8rem;">메인 슬라이드</span>' : '<span style="background:#9b59b6; color:#fff; padding:3px 8px; border-radius:3px; font-size:0.8rem;">팝업창</span>';
+        
+        // 상태 토글 스위치 (활성/비활성)
+        const statusHtml = `
+            <select onchange="updateBannerStatus('${b.id}', this.value)" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
+                <option value="true" ${b.is_active ? 'selected' : ''}>노출 중</option>
+                <option value="false" ${!b.is_active ? 'selected' : ''}>숨김</option>
+            </select>
+        `;
+        
+        const dateStr = new Date(b.created_at).toLocaleDateString('ko-KR');
+
+        tr.innerHTML = `
+            <td>${imgHtml}</td>
+            <td>${typeBadge}</td>
+            <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><a href="${b.link_url || '#'}" target="_blank" style="color:var(--primary); text-decoration:none;">${b.link_url || '없음'}</a></td>
+            <td>${dateStr}</td>
+            <td>${statusHtml}</td>
+            <td>
+                <button class="action-btn delete" onclick="deleteBanner('${b.id}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        bannerTableBody.appendChild(tr);
+    });
 }
+
+// 상태 즉시 업데이트 함수 (전역)
+window.updateBannerStatus = async function(id, isActiveStr) {
+    const isActive = isActiveStr === 'true';
+    const { error } = await supabase.from('banners').update({ is_active: isActive }).eq('id', id);
+    if(error) alert('상태 변경 오류: ' + error.message);
+};
+
+window.deleteBanner = async function(id) {
+    if(confirm('이 배너를 영구적으로 삭제하시겠습니까?')) {
+        const { error } = await supabase.from('banners').delete().eq('id', id);
+        if(error) alert('삭제 실패: ' + error.message);
+        else fetchBanners();
+    }
+};
+
+// ==========================================
+// 6. 배너 모달 제어 및 수정 로직
+// ==========================================
+function openBannerModal() {
+    bannerModalTitle.textContent = '새 배너/팝업 등록';
+    bannerIdInput.value = '';
+    bannerTypeInput.value = 'slide';
+    bannerIsActiveInput.value = 'true';
+    bannerLinkUrlInput.value = '';
+    bannerImageUrl.value = '';
+    bannerImageFile.value = '';
+    bannerImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+    
+    saveBannerMsg.textContent = '';
+    saveBannerBtn.disabled = false;
+    saveBannerBtn.textContent = '저장하기';
+    
+    bannerModalOverlay.style.display = 'flex';
+}
+
+function closeBannerModal() { bannerModalOverlay.style.display = 'none'; }
+
+if (addBannerBtn) addBannerBtn.addEventListener('click', openBannerModal);
+if (closeBannerModalBtn) closeBannerModalBtn.addEventListener('click', closeBannerModal);
+if (cancelBannerModalBtn) cancelBannerModalBtn.addEventListener('click', closeBannerModal);
+
+bannerImageFile.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => { bannerImagePreview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:contain;" alt="Preview">`; };
+        reader.readAsDataURL(file);
+    }
+});
+
+saveBannerBtn.addEventListener('click', async () => {
+    const file = bannerImageFile.files[0];
+    const bType = bannerTypeInput.value;
+    const isActive = bannerIsActiveInput.value === 'true';
+    const linkUrl = bannerLinkUrlInput.value.trim();
+    
+    // 새 배너 등록 시 이미지는 필수
+    if(!file && !bannerImageUrl.value) {
+        saveBannerMsg.textContent = '배너 이미지를 첨부해주세요.';
+        return;
+    }
+
+    saveBannerBtn.disabled = true;
+    saveBannerBtn.textContent = '저장 중...';
+
+    const payload = {
+        type: bType,
+        is_active: isActive,
+        link_url: linkUrl || null
+    };
+
+    // 이미지 파일 업로드 로직 (bucket명: banner-images)
+    if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `banners/${fileName}`; // 폴더 지정 선택적
+        
+        const { error: uploadError } = await supabase.storage.from('banner-images').upload(filePath, file);
+        
+        if (uploadError) { 
+            saveBannerMsg.textContent = '이미지 업로드 오류: ' + uploadError.message; 
+            saveBannerBtn.disabled = false; 
+            saveBannerBtn.textContent = '저장하기'; 
+            return; 
+        }
+        
+        const { data: { publicUrl } } = supabase.storage.from('banner-images').getPublicUrl(filePath);
+        payload.image_url = publicUrl;
+    } else {
+        payload.image_url = bannerImageUrl.value;
+    }
+
+    // Insert
+    const { error } = await supabase.from('banners').insert([payload]);
+    
+    if (error) {
+        saveBannerMsg.textContent = '등록 실패: ' + error.message;
+        saveBannerBtn.disabled = false; 
+        saveBannerBtn.textContent = '저장하기';
+    } else {
+        closeBannerModal();
+        fetchBanners();
+    }
+});
 async function fetchUsers() {
     const tBody = document.getElementById('userTableBody');
     const { data, error } = await supabase.from('users').select('*').limit(10);

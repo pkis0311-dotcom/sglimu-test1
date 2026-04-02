@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Supabase Check 2</title>
+</head>
+<body>
+    <div id="log" style="white-space: pre-wrap; font-family: monospace; background: #eee; padding: 20px;"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const logEl = document.getElementById('log');
+        function print(msg) {
+            logEl.textContent += msg + '\n';
+        }
+
+        async function check() {
+            print("--- LIST OF ALL BUCKETS ---");
+            const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+            if (bucketError) {
+                print('Error: ' + JSON.stringify(bucketError));
+            } else {
+                buckets.forEach(b => print(`- ${b.name} (Public: ${b.public})`));
+            }
+            if (!buckets || buckets.length === 0) print('No buckets found.');
+
+            print("\n--- SCHEMA OF 'banners' TABLE ---");
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/?apikey=${SUPABASE_ANON_KEY}`);
+                const openapi = await res.json();
+                const bannersDef = openapi.definitions.banners;
+                if (bannersDef) {
+                    print(`Columns in banners: ` + Object.keys(bannersDef.properties).join(', '));
+                } else {
+                    print(`Table 'banners' not found in schema cache.`);
+                }
+            } catch(e) {
+                print("Error checking schema: " + e.message);
+            }
+            
+            document.title = "CHECK_COMPLETE";
+        }
+
+        check();
+    </script>
+</body>
+</html>
