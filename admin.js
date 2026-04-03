@@ -725,8 +725,96 @@ if(addFeatureBtn) {
         featureContainer.appendChild(row);
     });
     
-    // 초기 특징 샘플 1개 추가
-    addFeatureBtn.click();
+    // 초기 특징 샘플 1개 추가 (저장된 데이터 없을 때만)
+    if(!localStorage.getItem('koasCamPageData')) {
+        addFeatureBtn.click();
+    }
+}
+
+const savePageBtn = document.getElementById('savePageBtn');
+if(savePageBtn) {
+    savePageBtn.addEventListener('click', () => {
+        const data = {
+            mainImages: Array.from(pageMainImagePreview.querySelectorAll('img')).map(img => img.src),
+            detailImage: pageDetailImagePreview.querySelector('img') ? pageDetailImagePreview.querySelector('img').src : '',
+            description: document.getElementById('pageDescription').value,
+            specs: [],
+            features: []
+        };
+        
+        specContainer.querySelectorAll('div').forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            if(inputs.length === 2 && inputs[0].value) {
+                data.specs.push({ key: inputs[0].value, val: inputs[1].value });
+            }
+        });
+        
+        featureContainer.querySelectorAll('div[style*="background"]').forEach(row => {
+            const titleInput = row.querySelector('input');
+            const descArea = row.querySelector('textarea');
+            if(titleInput && titleInput.value) {
+                data.features.push({ title: titleInput.value, desc: descArea.value });
+            }
+        });
+        
+        localStorage.setItem('koasCamPageData', JSON.stringify(data));
+        alert('상세페이지 내용이 로컬 브라우저에 임시저장되었습니다. 제품 판매 페이지에서 새로고침하여 확인할 수 있습니다.');
+    });
+}
+
+// 초기 로딩 시 localStorage에서 데이터 불러와 폼 채우기
+try {
+    const savedDataRaw = localStorage.getItem('koasCamPageData');
+    if(savedDataRaw) {
+        const savedData = JSON.parse(savedDataRaw);
+        if(savedData.description) document.getElementById('pageDescription').value = savedData.description;
+        
+        if(savedData.mainImages && savedData.mainImages.length > 0) {
+            pageMainImagePreview.innerHTML = '';
+            savedData.mainImages.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src; img.style.width = '100px'; img.style.height = '100px'; img.style.objectFit = 'cover'; img.style.borderRadius = '5px'; img.style.border = '1px solid #ccc';
+                pageMainImagePreview.appendChild(img);
+            });
+        }
+        
+        if(savedData.detailImage) {
+            pageDetailImagePreview.innerHTML = `<img src="${savedData.detailImage}" style="max-width:100%; max-height:400px; object-fit:contain; border-radius:5px;">`;
+        }
+        
+        if(savedData.specs && savedData.specs.length > 0) {
+            specContainer.innerHTML = '';
+            savedData.specs.forEach(spec => {
+                const row = document.createElement('div');
+                row.style.display = 'flex'; row.style.gap = '10px'; row.style.alignItems = 'center';
+                row.innerHTML = `
+                    <input type="text" class="form-control" value="${spec.key}" style="flex:1;">
+                    <input type="text" class="form-control" value="${spec.val}" style="flex:2;">
+                    <button type="button" class="action-btn delete" style="margin:0; font-size:1.2rem; color:var(--danger);" onclick="this.parentElement.remove()" title="삭제"><i class="fa-solid fa-circle-minus"></i></button>
+                `;
+                specContainer.appendChild(row);
+            });
+        }
+        
+        if(savedData.features && savedData.features.length > 0) {
+            featureContainer.innerHTML = '';
+            savedData.features.forEach(feat => {
+                const row = document.createElement('div');
+                row.style.display = 'flex'; row.style.flexDirection = 'column'; row.style.gap = '10px';
+                row.style.background = '#f8f9fa'; row.style.padding = '15px'; row.style.borderRadius = '5px'; row.style.border = '1px solid #eee';
+                row.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <input type="text" class="form-control" value="${feat.title}" style="font-weight:bold; width:80%;">
+                        <button type="button" class="btn-secondary delete-feature" style="padding:5px 10px; color:var(--danger); border-color:var(--danger);" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i> 삭제</button>
+                    </div>
+                    <textarea class="form-control" rows="2">${feat.desc}</textarea>
+                `;
+                featureContainer.appendChild(row);
+            });
+        }
+    }
+} catch (e) {
+    console.error("Failed to load koasCamPageData:", e);
 }
 
 // ------------------------------------------

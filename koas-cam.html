@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -121,7 +121,7 @@
                     <span class="badge badge-new" style="background:#8ec342;">KOAS</span>
                 </div>
                 <h2 class="product-title">코아스 CAM 다목적 메쉬 의자</h2>
-                <p class="product-desc">부드러운 폴딩과 뛰어난 착석감을 제공하는 코아스 베스트셀러 모델입니다. 메쉬 등받이와 백틸팅 기능으로 편안함을 유지합니다.</p>
+                <p class="product-desc" id="dynamicDesc">부드러운 폴딩과 뛰어난 착석감을 제공하는 코아스 베스트셀러 모델입니다. 메쉬 등받이와 백틸팅 기능으로 편안함을 유지합니다.</p>
                 
                 <div class="product-price">
                     전화문의
@@ -166,12 +166,12 @@
             <div class="detail-tab-content active" id="tab0">
                 
                 <div class="spec-image-container" style="text-align: center; margin-bottom: 50px;">
-                    <img src="cam-detail.jpg" alt="CAM 상세설명 오리지널 이미지" style="max-width: 100%; height: auto; display: inline-block;">
+                    <img src="cam-detail.jpg" id="dynamicDetailImg" alt="CAM 상세설명 오리지널 이미지" style="max-width: 100%; height: auto; display: inline-block;">
                 </div>
 
                 <div class="info-text-box">
                     <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 30px;">DETAIL VIEW</h4>
-                    <div class="detail-features">
+                    <div class="detail-features" id="dynamicFeatures">
                         <div class="feature-item">
                             <h5><span>01</span> 메쉬 소재</h5>
                             <p>메쉬 형 개방이 사용자 체형에 맞춰 허리의 곡선을 감싸주어 시원하고 편안한 느낌을 줍니다.</p>
@@ -188,7 +188,7 @@
 
                     <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 60px;">DIMENSION (제품 사양)</h4>
                     <table class="spec-table">
-                        <tbody>
+                        <tbody id="dynamicSpecTable">
                             <tr>
                                 <th>크기</th>
                                 <td>595 x 525 x 820 mm</td>
