@@ -631,6 +631,104 @@ async function fetchUsers() {
     if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'users' 테이블을 먼저 생성해주세요.</td></tr>`; }
 }
 
+// ==========================================
+// 7. [신규] 상세페이지 관리 로직 (koas-cam.html 용)
+// ==========================================
+const pageMainImage = document.getElementById('pageMainImage');
+const pageMainImagePreview = document.getElementById('pageMainImagePreview');
+const pageDetailImage = document.getElementById('pageDetailImage');
+const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
+
+const addSpecBtn = document.getElementById('addSpecBtn');
+const specContainer = document.getElementById('specContainer');
+const addFeatureBtn = document.getElementById('addFeatureBtn');
+const featureContainer = document.getElementById('featureContainer');
+
+// 다중 대표사진 미리보기
+if(pageMainImage) {
+    pageMainImage.addEventListener('change', (e) => {
+        pageMainImagePreview.innerHTML = '';
+        const files = Array.from(e.target.files);
+        if(files.length === 0) {
+            pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
+            return;
+        }
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.style.width = '100px';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '5px';
+                img.style.border = '1px solid #ccc';
+                pageMainImagePreview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+}
+
+// 상세페이지 통이미지 미리보기
+if(pageDetailImage) {
+    pageDetailImage.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                pageDetailImagePreview.innerHTML = `<img src="${ev.target.result}" style="max-width:100%; max-height:400px; object-fit:contain; border-radius:5px;">`;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+        }
+    });
+}
+
+// 규격(Dimension) 추가 관리
+if(addSpecBtn) {
+    addSpecBtn.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.gap = '10px';
+        row.style.alignItems = 'center';
+        
+        row.innerHTML = `
+            <input type="text" class="form-control" placeholder="구분 (예: 크기, 소재)" style="flex:1;">
+            <input type="text" class="form-control" placeholder="내용 (예: 595 x 525 x 820 mm)" style="flex:2;">
+            <button type="button" class="action-btn delete" style="margin:0; font-size:1.2rem; color:var(--danger);" onclick="this.parentElement.remove()" title="삭제"><i class="fa-solid fa-circle-minus"></i></button>
+        `;
+        specContainer.appendChild(row);
+    });
+}
+
+// 특징(Features) 추가 관리
+if(addFeatureBtn) {
+    addFeatureBtn.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.flexDirection = 'column';
+        row.style.gap = '10px';
+        row.style.background = '#f8f9fa';
+        row.style.padding = '15px';
+        row.style.borderRadius = '5px';
+        row.style.border = '1px solid #eee';
+        
+        row.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <input type="text" class="form-control" placeholder="특징 제목 (예: 01 메쉬 소재)" style="font-weight:bold; width:80%;">
+                <button type="button" class="btn-secondary delete-feature" style="padding:5px 10px; color:var(--danger); border-color:var(--danger);" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i> 삭제</button>
+            </div>
+            <textarea class="form-control" rows="2" placeholder="특징 설명 내용을 입력하세요."></textarea>
+        `;
+        featureContainer.appendChild(row);
+    });
+    
+    // 초기 특징 샘플 1개 추가
+    addFeatureBtn.click();
+}
+
 // ------------------------------------------
 // 시스템 초기화
 checkSession();
