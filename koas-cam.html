@@ -384,6 +384,77 @@
     <!-- SG LIMU Global Scripts -->
     <script src="cart.js"></script>
     <script type="module" src="inquiry.js"></script>
+    <script>
+        // 관리자 페이지 임시저장 내용(koasCamPageData) 반영 스크립트
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                const savedDataRaw = localStorage.getItem('koasCamPageData');
+                if(savedDataRaw) {
+                    const data = JSON.parse(savedDataRaw);
+                    
+                    // 설명칸
+                    if(data.description) {
+                        const descElem = document.getElementById('dynamicDesc');
+                        if(descElem) descElem.innerHTML = data.description.replace(/\n/g, '<br>');
+                    }
+
+                    // 대표이미지들 (메인 1번 이미지 교체)
+                    if(data.mainImages && data.mainImages.length > 0) {
+                        const mainImgElem = document.getElementById('mainImage');
+                        if(mainImgElem) mainImgElem.src = data.mainImages[0];
+                        // 썸네일 이미지 배열 교체
+                        const thumbImages = document.querySelectorAll('.thumb-item img');
+                        for(let i = 0; i < data.mainImages.length && i < thumbImages.length; i++) {
+                            thumbImages[i].src = data.mainImages[i];
+                        }
+                        // Update global images array for the slider functionality
+                        if (window.images) {
+                            for(let i = 0; i < data.mainImages.length && i < window.images.length; i++) {
+                                window.images[i] = data.mainImages[i];
+                            }
+                        }
+                    }
+                    
+                    // 상세설명 긴 이미지
+                    if(data.detailImage) {
+                        const detailImgElem = document.getElementById('dynamicDetailImg');
+                        if(detailImgElem) detailImgElem.src = data.detailImage;
+                    }
+                    
+                    // 제품 사양 (DIMENSION) - 표 본문 덮어쓰기
+                    if(data.specs && data.specs.length > 0) {
+                        const specBody = document.getElementById('dynamicSpecTable');
+                        if(specBody) {
+                            specBody.innerHTML = '';
+                            data.specs.forEach(s => {
+                                specBody.innerHTML += `<tr><th>${s.key}</th><td>${s.val}</td></tr>`;
+                            });
+                        }
+                    }
+                    
+                    // 제품 특징 (DETAIL VIEW) - 목록 재생성
+                    if(data.features && data.features.length > 0) {
+                        const featureContainer = document.getElementById('dynamicFeatures');
+                        if(featureContainer) {
+                            featureContainer.innerHTML = '';
+                            data.features.forEach((feat, i) => {
+                                const isLast = (i === data.features.length - 1) ? 'style="border-bottom: none;"' : '';
+                                const num = (i + 1).toString().padStart(2, '0');
+                                featureContainer.innerHTML += `
+                                    <div class="feature-item" ${isLast}>
+                                        <h5><span>${num}</span> ${feat.title}</h5>
+                                        <p>${feat.desc.replace(/\n/g, '<br>')}</p>
+                                    </div>
+                                `;
+                            });
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Local storage load error", e);
+            }
+        });
+    </script>
 </body>
 </html>
 
