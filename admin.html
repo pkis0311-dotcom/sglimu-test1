@@ -226,23 +226,36 @@
                 </table>
             </div>
         </div>
+
         <!-- ======================= -->
         <!-- 6. 상세페이지 관리 탭 (신규) -->
         <!-- ======================= -->
         <div id="tab-page-manage" class="tab-pane">
             <div class="page-header">
-                <h1 class="page-title">상세페이지 관리 (코아스 CAM 의자)</h1>
+                <h1 class="page-title">상세페이지 컨텐츠 관리</h1>
                 <button class="btn-primary" id="savePageBtn"><i class="fa-solid fa-save"></i> 변경사항 저장</button>
             </div>
             
             <div class="table-card" style="padding: 20px;">
+                <!-- 0. 대상 제품 선택 -->
+                <div class="form-group full-width" style="margin-bottom: 30px; background: #f0f7ff; padding: 20px; border-radius: 8px; border: 1px solid #d0e3f7;">
+                    <label style="font-weight: 700; color: #2980b9; font-size: 1.1rem;"><i class="fa-solid fa-hand-pointer"></i> 수정할 대상 상세페이지(제품)를 먼저 선택하세요</label>
+                    <select id="targetPageId" class="form-control" style="font-size: 1.1rem; border-color: #2980b9; height: 50px; margin-top: 10px;">
+                        <option value="koas-cam">코아스 - CAM 다목적 메쉬 의자 (koas-cam.html)</option>
+                        <option value="fomus-chair">포머스 - 프리미엄 원목 의자 (product-detail.html)</option>
+                        <option value="rfid-system">RFID 시스템 (rfid.html)</option>
+                        <option value="em-system">EM 시스템 (em.html)</option>
+                    </select>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 8px;">* 제품을 변경하면 이전에 저장된 해당 제품의 상세 정보가 자동으로 로드됩니다.</p>
+                </div>
+
                 <div class="form-grid">
                     <!-- 1. 대표사진 -->
                     <div class="form-group full-width">
                         <label><i class="fa-solid fa-camera"></i> 1. 대표 사진 관리 (최적화 비율 - 정방형 1:1)</label>
                         <input type="file" id="pageMainImage" class="form-control" accept="image/*" multiple>
                         <p style="font-size:0.85rem; color:#666; margin-top:5px;">* 여러 장 선택 가능 (메인 갤러리/썸네일용)</p>
-                        <div class="image-preview" id="pageMainImagePreview" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start; padding:10px; min-height: 100px;">
+                        <div class="image-preview" id="pageMainImagePreview" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start; padding:10px; min-height: 100px; border: 1px dashed #ccc; border-radius: 4px;">
                             <i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>
                         </div>
                     </div>
@@ -252,14 +265,14 @@
                         <label><i class="fa-solid fa-image"></i> 2. 제품 상세페이지 이미지 추가</label>
                         <input type="file" id="pageDetailImage" class="form-control" accept="image/*">
                         <p style="font-size:0.85rem; color:#666; margin-top:5px;">* 가로가 긴 세로형 통이미지 권장</p>
-                        <div class="image-preview" id="pageDetailImagePreview" style="height:auto; min-height:100px; padding:10px;">
+                        <div class="image-preview" id="pageDetailImagePreview" style="height:auto; min-height:100px; padding:10px; border: 1px dashed #ccc; border-radius: 4px;">
                             <i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>
                         </div>
                     </div>
 
                     <!-- 3. 설명칸 -->
                     <div class="form-group full-width" style="border-top:1px solid #eee; padding-top:20px;">
-                        <label><i class="fa-solid fa-align-left"></i> 3. 제품 설명칸</label>
+                        <label><i class="fa-solid fa-align-left"></i> 3. 제품 설명칸 (Summary)</label>
                         <textarea id="pageDescription" class="form-control" rows="4" placeholder="제품에 대한 전반적인 설명을 입력하세요."></textarea>
                     </div>
 

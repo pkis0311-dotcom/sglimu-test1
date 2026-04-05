@@ -138,6 +138,8 @@ navItems.forEach(item => {
             fetchBanners();
         } else if(targetId === 'tab-users') {
             fetchUsers();
+        } else if(targetId === 'tab-page-manage') {
+            initPageManageTab();
         }
     });
 });
@@ -625,196 +627,171 @@ saveBannerBtn.addEventListener('click', async () => {
         fetchBanners();
     }
 });
+// ------------------------------------------
+// 7. [신규] 상세페이지 관리 로직 (멀티 제품 대응)
+// ------------------------------------------
+let currentPageDataKey = 'pageData_koas-cam'; // 기본값
+
+function initPageManageTab() {
+    const targetSelect = document.getElementById('targetPageId');
+    const savePageBtn = document.getElementById('savePageBtn');
+    const addSpecBtn = document.getElementById('addSpecBtn');
+    const specContainer = document.getElementById('specContainer');
+    const addFeatureBtn = document.getElementById('addFeatureBtn');
+    const featureContainer = document.getElementById('featureContainer');
+    
+    const pageMainImage = document.getElementById('pageMainImage');
+    const pageMainImagePreview = document.getElementById('pageMainImagePreview');
+    const pageDetailImage = document.getElementById('pageDetailImage');
+    const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
+    const pageDescription = document.getElementById('pageDescription');
+
+    // 1. 제품 선택 변경 시 로드
+    targetSelect.addEventListener('change', (e) => {
+        currentPageDataKey = 'pageData_' + e.target.value;
+        loadPageData();
+    });
+
+    // 2. 항목 추가 버튼들
+    if(addSpecBtn && !addSpecBtn.dataset.init) {
+        addSpecBtn.addEventListener('click', () => createSpecRow('', ''));
+        addSpecBtn.dataset.init = "true";
+    }
+    if(addFeatureBtn && !addFeatureBtn.dataset.init) {
+        addFeatureBtn.addEventListener('click', () => createFeatureBlock('', ''));
+        addFeatureBtn.dataset.init = "true";
+    }
+
+    // 3. 이미지 미리보기 처리
+    if(pageMainImage && !pageMainImage.dataset.init) {
+        pageMainImage.addEventListener('change', (e) => {
+            pageMainImagePreview.innerHTML = '';
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
+                    pageMainImagePreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+        pageMainImage.dataset.init = "true";
+    }
+
+    if(pageDetailImage && !pageDetailImage.dataset.init) {
+        pageDetailImage.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    pageDetailImagePreview.innerHTML = `<img src="${ev.target.result}" style="max-width:100%; border-radius:4px;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        pageDetailImage.dataset.init = "true";
+    }
+
+    // 4. 저장 버튼
+    if(savePageBtn && !savePageBtn.dataset.init) {
+        savePageBtn.addEventListener('click', () => {
+            const data = {
+                mainImages: Array.from(pageMainImagePreview.querySelectorAll('img')).map(img => img.src),
+                detailImage: pageDetailImagePreview.querySelector('img') ? pageDetailImagePreview.querySelector('img').src : '',
+                description: pageDescription.value,
+                specs: [],
+                features: []
+            };
+            
+            specContainer.querySelectorAll('.spec-row').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if(inputs[0].value) data.specs.push({ key: inputs[0].value, val: inputs[1].value });
+            });
+            
+            featureContainer.querySelectorAll('.feature-block').forEach(block => {
+                const title = block.querySelector('input').value;
+                const desc = block.querySelector('textarea').value;
+                if(title) data.features.push({ title, desc });
+            });
+            
+            localStorage.setItem(currentPageDataKey, JSON.stringify(data));
+            alert(`[${targetSelect.options[targetSelect.selectedIndex].text}] 상세페이지 설정이 저장되었습니다.`);
+        });
+        savePageBtn.dataset.init = "true";
+    }
+
+    // 초기 데이터 로드
+    currentPageDataKey = 'pageData_' + targetSelect.value;
+    loadPageData();
+}
+
+function createSpecRow(key, val) {
+    const specContainer = document.getElementById('specContainer');
+    const row = document.createElement('div');
+    row.className = 'spec-row';
+    row.style.cssText = "display:flex; gap:10px; align-items:center;";
+    row.innerHTML = `
+        <input type="text" class="form-control" placeholder="항목명" value="${key}" style="flex:1;">
+        <input type="text" class="form-control" placeholder="내용" value="${val}" style="flex:2;">
+        <button class="action-btn delete" onclick="this.parentElement.remove()"><i class="fa-solid fa-circle-minus"></i></button>
+    `;
+    specContainer.appendChild(row);
+}
+
+function createFeatureBlock(title, desc) {
+    const featureContainer = document.getElementById('featureContainer');
+    const block = document.createElement('div');
+    block.className = 'feature-block';
+    block.style.cssText = "background:#f9f9f9; padding:15px; border-radius:6px; border:1px solid #eee; display:flex; flex-direction:column; gap:8px;";
+    block.innerHTML = `
+        <div style="display:flex; justify-content:space-between;">
+            <input type="text" class="form-control" placeholder="특징 제목" value="${title}" style="font-weight:bold; width:85%;">
+            <button class="action-btn delete" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+        </div>
+        <textarea class="form-control" rows="2" placeholder="특징 설명을 입력하세요">${desc}</textarea>
+    `;
+    featureContainer.appendChild(block);
+}
+
+function loadPageData() {
+    const raw = localStorage.getItem(currentPageDataKey);
+    const specContainer = document.getElementById('specContainer');
+    const featureContainer = document.getElementById('featureContainer');
+    const pageMainImagePreview = document.getElementById('pageMainImagePreview');
+    const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
+    const pageDescription = document.getElementById('pageDescription');
+
+    specContainer.innerHTML = '';
+    featureContainer.innerHTML = '';
+    pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
+    pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+    pageDescription.value = '';
+
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    
+    if(data.mainImages && data.mainImages.length > 0) {
+        pageMainImagePreview.innerHTML = '';
+        data.mainImages.forEach(src => {
+            const img = document.createElement('img');
+            img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
+            pageMainImagePreview.appendChild(img);
+        });
+    }
+    if(data.detailImage) {
+        pageDetailImagePreview.innerHTML = `<img src="${data.detailImage}" style="max-width:100%; border-radius:4px;">`;
+    }
+    pageDescription.value = data.description || '';
+    if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
+    if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
+}
+
 async function fetchUsers() {
     const tBody = document.getElementById('userTableBody');
     const { data, error } = await supabase.from('users').select('*').limit(10);
     if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'users' 테이블을 먼저 생성해주세요.</td></tr>`; }
-}
-
-// ==========================================
-// 7. [신규] 상세페이지 관리 로직 (koas-cam.html 용)
-// ==========================================
-const pageMainImage = document.getElementById('pageMainImage');
-const pageMainImagePreview = document.getElementById('pageMainImagePreview');
-const pageDetailImage = document.getElementById('pageDetailImage');
-const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
-
-const addSpecBtn = document.getElementById('addSpecBtn');
-const specContainer = document.getElementById('specContainer');
-const addFeatureBtn = document.getElementById('addFeatureBtn');
-const featureContainer = document.getElementById('featureContainer');
-
-// 다중 대표사진 미리보기
-if(pageMainImage) {
-    pageMainImage.addEventListener('change', (e) => {
-        pageMainImagePreview.innerHTML = '';
-        const files = Array.from(e.target.files);
-        if(files.length === 0) {
-            pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
-            return;
-        }
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = document.createElement('img');
-                img.src = ev.target.result;
-                img.style.width = '100px';
-                img.style.height = '100px';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '5px';
-                img.style.border = '1px solid #ccc';
-                pageMainImagePreview.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        });
-    });
-}
-
-// 상세페이지 통이미지 미리보기
-if(pageDetailImage) {
-    pageDetailImage.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                pageDetailImagePreview.innerHTML = `<img src="${ev.target.result}" style="max-width:100%; max-height:400px; object-fit:contain; border-radius:5px;">`;
-            }
-            reader.readAsDataURL(file);
-        } else {
-            pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
-        }
-    });
-}
-
-// 규격(Dimension) 추가 관리
-if(addSpecBtn) {
-    addSpecBtn.addEventListener('click', () => {
-        const row = document.createElement('div');
-        row.style.display = 'flex';
-        row.style.gap = '10px';
-        row.style.alignItems = 'center';
-        
-        row.innerHTML = `
-            <input type="text" class="form-control" placeholder="구분 (예: 크기, 소재)" style="flex:1;">
-            <input type="text" class="form-control" placeholder="내용 (예: 595 x 525 x 820 mm)" style="flex:2;">
-            <button type="button" class="action-btn delete" style="margin:0; font-size:1.2rem; color:var(--danger);" onclick="this.parentElement.remove()" title="삭제"><i class="fa-solid fa-circle-minus"></i></button>
-        `;
-        specContainer.appendChild(row);
-    });
-}
-
-// 특징(Features) 추가 관리
-if(addFeatureBtn) {
-    addFeatureBtn.addEventListener('click', () => {
-        const row = document.createElement('div');
-        row.style.display = 'flex';
-        row.style.flexDirection = 'column';
-        row.style.gap = '10px';
-        row.style.background = '#f8f9fa';
-        row.style.padding = '15px';
-        row.style.borderRadius = '5px';
-        row.style.border = '1px solid #eee';
-        
-        row.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <input type="text" class="form-control" placeholder="특징 제목 (예: 01 메쉬 소재)" style="font-weight:bold; width:80%;">
-                <button type="button" class="btn-secondary delete-feature" style="padding:5px 10px; color:var(--danger); border-color:var(--danger);" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i> 삭제</button>
-            </div>
-            <textarea class="form-control" rows="2" placeholder="특징 설명 내용을 입력하세요."></textarea>
-        `;
-        featureContainer.appendChild(row);
-    });
-    
-    // 초기 특징 샘플 1개 추가 (저장된 데이터 없을 때만)
-    if(!localStorage.getItem('koasCamPageData')) {
-        addFeatureBtn.click();
-    }
-}
-
-const savePageBtn = document.getElementById('savePageBtn');
-if(savePageBtn) {
-    savePageBtn.addEventListener('click', () => {
-        const data = {
-            mainImages: Array.from(pageMainImagePreview.querySelectorAll('img')).map(img => img.src),
-            detailImage: pageDetailImagePreview.querySelector('img') ? pageDetailImagePreview.querySelector('img').src : '',
-            description: document.getElementById('pageDescription').value,
-            specs: [],
-            features: []
-        };
-        
-        specContainer.querySelectorAll('div').forEach(row => {
-            const inputs = row.querySelectorAll('input');
-            if(inputs.length === 2 && inputs[0].value) {
-                data.specs.push({ key: inputs[0].value, val: inputs[1].value });
-            }
-        });
-        
-        featureContainer.querySelectorAll('div[style*="background"]').forEach(row => {
-            const titleInput = row.querySelector('input');
-            const descArea = row.querySelector('textarea');
-            if(titleInput && titleInput.value) {
-                data.features.push({ title: titleInput.value, desc: descArea.value });
-            }
-        });
-        
-        localStorage.setItem('koasCamPageData', JSON.stringify(data));
-        alert('상세페이지 내용이 로컬 브라우저에 임시저장되었습니다. 제품 판매 페이지에서 새로고침하여 확인할 수 있습니다.');
-    });
-}
-
-// 초기 로딩 시 localStorage에서 데이터 불러와 폼 채우기
-try {
-    const savedDataRaw = localStorage.getItem('koasCamPageData');
-    if(savedDataRaw) {
-        const savedData = JSON.parse(savedDataRaw);
-        if(savedData.description) document.getElementById('pageDescription').value = savedData.description;
-        
-        if(savedData.mainImages && savedData.mainImages.length > 0) {
-            pageMainImagePreview.innerHTML = '';
-            savedData.mainImages.forEach(src => {
-                const img = document.createElement('img');
-                img.src = src; img.style.width = '100px'; img.style.height = '100px'; img.style.objectFit = 'cover'; img.style.borderRadius = '5px'; img.style.border = '1px solid #ccc';
-                pageMainImagePreview.appendChild(img);
-            });
-        }
-        
-        if(savedData.detailImage) {
-            pageDetailImagePreview.innerHTML = `<img src="${savedData.detailImage}" style="max-width:100%; max-height:400px; object-fit:contain; border-radius:5px;">`;
-        }
-        
-        if(savedData.specs && savedData.specs.length > 0) {
-            specContainer.innerHTML = '';
-            savedData.specs.forEach(spec => {
-                const row = document.createElement('div');
-                row.style.display = 'flex'; row.style.gap = '10px'; row.style.alignItems = 'center';
-                row.innerHTML = `
-                    <input type="text" class="form-control" value="${spec.key}" style="flex:1;">
-                    <input type="text" class="form-control" value="${spec.val}" style="flex:2;">
-                    <button type="button" class="action-btn delete" style="margin:0; font-size:1.2rem; color:var(--danger);" onclick="this.parentElement.remove()" title="삭제"><i class="fa-solid fa-circle-minus"></i></button>
-                `;
-                specContainer.appendChild(row);
-            });
-        }
-        
-        if(savedData.features && savedData.features.length > 0) {
-            featureContainer.innerHTML = '';
-            savedData.features.forEach(feat => {
-                const row = document.createElement('div');
-                row.style.display = 'flex'; row.style.flexDirection = 'column'; row.style.gap = '10px';
-                row.style.background = '#f8f9fa'; row.style.padding = '15px'; row.style.borderRadius = '5px'; row.style.border = '1px solid #eee';
-                row.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <input type="text" class="form-control" value="${feat.title}" style="font-weight:bold; width:80%;">
-                        <button type="button" class="btn-secondary delete-feature" style="padding:5px 10px; color:var(--danger); border-color:var(--danger);" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i> 삭제</button>
-                    </div>
-                    <textarea class="form-control" rows="2">${feat.desc}</textarea>
-                `;
-                featureContainer.appendChild(row);
-            });
-        }
-    }
-} catch (e) {
-    console.error("Failed to load koasCamPageData:", e);
 }
 
 // ------------------------------------------
