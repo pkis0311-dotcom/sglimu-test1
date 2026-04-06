@@ -188,6 +188,24 @@ async function fetchProducts() {
         `;
         productTableBody.appendChild(tr);
     });
+
+    // [신규] '상세페이지 관리' 탭의 Select 옵션을 동적으로 업데이트
+    const targetSelect = document.getElementById('targetPageId');
+    if (targetSelect) {
+        if (products.length > 0) {
+            targetSelect.innerHTML = products.map(p => 
+                `<option value="${p.id}">${p.name} (${p.category})</option>`
+            ).join('');
+            
+            // 만약 '상세페이지 관리' 탭이 활성화되어 있다면 즉시 이벤트 발생시켜 데이터 로드
+            if(document.getElementById('tab-page-manage').classList.contains('active')) {
+                const event = new Event('change');
+                targetSelect.dispatchEvent(event);
+            }
+        } else {
+            targetSelect.innerHTML = '<option value="">등록된 제품이 없습니다. 먼저 제품을 등록하세요.</option>';
+        }
+    }
 }
 
 // 모달 및 제품 CRUD 로직은 그대로 복원
@@ -630,7 +648,7 @@ saveBannerBtn.addEventListener('click', async () => {
 // ------------------------------------------
 // 7. [신규] 상세페이지 관리 로직 (멀티 제품 대응)
 // ------------------------------------------
-let currentPageDataKey = 'pageData_koas-cam'; // 기본값
+let currentPageDataKey = ''; // 기본값 비워둠 (targetPageId 값이 없을 수 있음)
 
 function initPageManageTab() {
     const targetSelect = document.getElementById('targetPageId');
@@ -723,8 +741,13 @@ function initPageManageTab() {
     }
 
     // 초기 데이터 로드
-    currentPageDataKey = 'pageData_' + targetSelect.value;
-    loadPageData();
+    if (targetSelect.value) {
+        currentPageDataKey = 'pageData_' + targetSelect.value;
+        loadPageData();
+    } else {
+        // 제품 목록이 아직 없는 경우
+        currentPageDataKey = '';
+    }
 }
 
 function createSpecRow(key, val) {
@@ -756,6 +779,7 @@ function createFeatureBlock(title, desc) {
 }
 
 function loadPageData() {
+    if(!currentPageDataKey) return;
     const raw = localStorage.getItem(currentPageDataKey);
     const specContainer = document.getElementById('specContainer');
     const featureContainer = document.getElementById('featureContainer');
