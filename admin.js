@@ -369,16 +369,22 @@ let orderChartInstance = null;
 
 async function fetchOrders() {
     const tableBody = document.getElementById('orderTableBody');
+    if(!tableBody) return;
+
     tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">분석 데이터를 불러오는 중입니다...</td></tr>';
     
-    // orders 테이블에서 가져오기 (만약 테이블이 없으면 에러로 Catch됨)
+    // orders 테이블에서 가져오기
     const { data: orders, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
 
     if (error) {
-        console.warn('Orders Table 미생성 상태:', error.message);
+        console.warn('Orders Table 에러:', error.message);
         tableBody.innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">
             <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;margin-bottom:10px;"></i><br>
-            아직 <b>'orders'</b> 테이블이 존재하지 않거나 권한이 없습니다.<br>Supabase 대시보드에서 테이블을 생성해 주세요.
+            <b>'orders'</b> 테이블을 불러올 수 없습니다. (${error.message})<br>
+            <div style="font-size:0.8rem; background:#f9f9f9; padding:10px; margin-top:10px; text-align:left; border-radius:4px;">
+                SQL Editor에서 다음을 실행하세요:<br>
+                <code>CREATE TABLE orders (id uuid PRIMARY KEY DEFAULT uuid_generate_v4(), customer_name text, product_name text, total_price int, status text, created_at timestamp with time zone DEFAULT now());</code>
+            </div>
         </td></tr>`;
         return;
     }
@@ -386,10 +392,13 @@ async function fetchOrders() {
     if (!orders || orders.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">결제/접수된 주문 내역이 없습니다.</td></tr>';
         renderOrderChart([]); // 빈 차트
+        document.getElementById('totalOrderCount').textContent = "0건";
+        document.getElementById('totalOrderRevenue').textContent = "0원";
+        document.getElementById('pendingOrderCount').textContent = "0건";
         return;
     }
 
-    globalOrders = orders; // 엑셀 다운로드용 전역변수에 삽입
+    globalOrders = orders; // 엑셀 다운로드용 전역변수
     tableBody.innerHTML = '';
     
     let totalRevenue = 0;
@@ -397,32 +406,38 @@ async function fetchOrders() {
 
     orders.forEach(o => {
         const tr = document.createElement('tr');
-        const dateStr = new Date(o.created_at).toLocaleString('ko-KR');
+        const createdAt = o.created_at ? new Date(o.created_at) : new Date();
+        const dateStr = createdAt.toLocaleString('ko-KR');
+        
         // 상태 뱃지 UI
-        const statusStr = o.status === 'pending' ? '<span style="color:var(--danger);font-weight:bold;">배송준비</span>' : 
-                          o.status === 'shipped' ? '<span style="color:#3498db;font-weight:bold;">배송진행</span>' : 
+        const status = o.status || 'pending';
+        const statusStr = status === 'pending' ? '<span style="color:var(--danger);font-weight:bold;">배송준비</span>' : 
+                          status === 'shipped' ? '<span style="color:#3498db;font-weight:bold;">배송진행</span>' : 
                           '<span style="color:var(--success);font-weight:bold;">완료됨</span>';
 
+        const rawPrice = Number(o.total_price) || 0;
+        const displayId = o.id ? o.id.toString().substring(0,8).toUpperCase() : 'N/A';
+
         tr.innerHTML = `
-            <td>#${o.id.toString().substring(0,8).toUpperCase()}</td>
-            <td style="font-weight:600;">${o.customer_name}</td>
-            <td>${o.product_name}</td>
-            <td>${o.quantity}개</td>
-            <td style="font-weight:600;">${o.total_price.toLocaleString()}원</td>
+            <td>#${displayId}</td>
+            <td style="font-weight:600;">${o.customer_name || '익명'}</td>
+            <td>${o.product_name || '정보없음'}</td>
+            <td>${o.quantity || 0}개</td>
+            <td style="font-weight:600;">${rawPrice.toLocaleString()}원</td>
             <td>${statusStr}</td>
             <td style="font-size:0.9rem; color:#666;">${dateStr}</td>
             <td><button class="action-btn" title="주문 관리(준비중)"><i class="fa-solid fa-pen"></i></button></td>
         `;
         tableBody.appendChild(tr);
 
-        totalRevenue += Number(o.total_price) || 0;
-        if(o.status === 'pending') pendingCount++;
+        totalRevenue += rawPrice;
+        if(status === 'pending') pendingCount++;
     });
 
     // 상단 Dashboard 요약창 정보 업데이트
-    document.getElementById('totalOrderCount').textContent = orders.length + "건";
-    document.getElementById('totalOrderRevenue').textContent = totalRevenue.toLocaleString() + "원";
-    document.getElementById('pendingOrderCount').textContent = pendingCount + "건";
+    if(document.getElementById('totalOrderCount')) document.getElementById('totalOrderCount').textContent = orders.length + "건";
+    if(document.getElementById('totalOrderRevenue')) document.getElementById('totalOrderRevenue').textContent = totalRevenue.toLocaleString() + "원";
+    if(document.getElementById('pendingOrderCount')) document.getElementById('pendingOrderCount').textContent = pendingCount + "건";
 
     // 차트 그려주기
     renderOrderChart(orders);
@@ -430,10 +445,14 @@ async function fetchOrders() {
 
 // Chart.js를 사용한 일별 통계 렌더링
 function renderOrderChart(orders) {
-    const ctx = document.getElementById('orderChart').getContext('2d');
+    const chartCanvas = document.getElementById('orderChart');
+    if(!chartCanvas) return;
+    const ctx = chartCanvas.getContext('2d');
     
-    // 최근 7일 라벨 만들기
+    // 최근 7일 라벨 만들기 (시간 제외하고 날짜만 비교)
     const today = new Date();
+    today.setHours(0,0,0,0);
+
     const labels = [];
     const counts = [0, 0, 0, 0, 0, 0, 0];
 
@@ -445,12 +464,16 @@ function renderOrderChart(orders) {
 
     // 데이터 매핑: 각 주문의 날짜를 확인해 카운트 증가
     orders.forEach(o => {
+        if(!o.created_at) return;
         const orderDate = new Date(o.created_at);
-        const diffTime = Math.abs(today - orderDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; // 0~6 사이의 일수 차이
+        orderDate.setHours(0,0,0,0);
+
+        // 밀리초 차이를 일(day) 수로 변환
+        const diffTime = today.getTime() - orderDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
         
         if(diffDays >= 0 && diffDays < 7) {
-            counts[6 - diffDays]++; // 6이 최신(오늘), 0이 7일전
+            counts[6 - diffDays]++; // 0일전(오늘)이 index 6
         }
     });
 
