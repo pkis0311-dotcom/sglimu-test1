@@ -58,9 +58,16 @@
         <!-- 1. 제품 관리 탭 (기존) -->
         <!-- ======================= -->
         <div id="tab-products" class="tab-pane active">
-            <div class="page-header">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1 class="page-title">제품 관리</h1>
-                <button id="addProductBtn" class="btn-primary"><i class="fa-solid fa-plus"></i> 새 제품 등록</button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="downloadProductExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71;">
+                        <i class="fa-solid fa-file-excel"></i> 재고관리 엑셀 다운로드
+                    </button>
+                    <button id="addProductBtn" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i> 새 제품 등록
+                    </button>
+                </div>
             </div>
             <div class="table-card">
                 <table>

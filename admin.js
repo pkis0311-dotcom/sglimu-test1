@@ -27,7 +27,9 @@ const addProductBtn = document.getElementById('addProductBtn');
 
 // DOM Elements - Order Stats (Tab 2)
 const downloadExcelBtn = document.getElementById('downloadExcelBtn');
+const downloadProductExcelBtn = document.getElementById('downloadProductExcelBtn');
 let globalOrders = []; // 엑셀 다운로드를 위해 데이터를 캐싱하는 변수
+let globalProducts = []; // 제품 엑셀 다운로드를 위한 캐시
 
 // Product Modal Elements
 const modalOverlay = document.getElementById('productModal');
@@ -158,6 +160,7 @@ async function fetchProducts() {
     productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
     
     const { data: products, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    globalProducts = products || [];
 
     if (error) {
         console.error('Error fetching products:', error);
@@ -232,6 +235,49 @@ async function fetchProducts() {
             displayCheckboxGrid.innerHTML = '<div style="color:#999;">등록된 제품이 없습니다.</div>';
         }
     }
+}
+
+// 제품 재고 엑셀 다운로드 함수
+function downloadProductExcel() {
+    if (globalProducts.length === 0) {
+        alert('다운로드할 제품 데이터가 없습니다.');
+        return;
+    }
+
+    // 엑셀에 들어갈 데이터 정리
+    const data = globalProducts.map(p => ({
+        '제품ID': p.id,
+        '제품명': p.name,
+        '카테고리': p.category,
+        '판매가격': p.price,
+        '현재고량': (p.stock || 0) + '개',
+        '등록일시': new Date(p.created_at).toLocaleString('ko-KR')
+    }));
+
+    // SheetJS를 사용하여 엑셀 생성
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "재고현황");
+
+    // 컬럼 너비 조정
+    const wscols = [
+        {wch: 20}, // ID
+        {wch: 35}, // 제품명
+        {wch: 20}, // 카테고리
+        {wch: 15}, // 가격
+        {wch: 10}, // 재고
+        {wch: 25}  // 등록일
+    ];
+    worksheet['!cols'] = wscols;
+
+    // 파일 내보내기
+    const dateStr = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `SG_LIMU_재고현황_${dateStr}.xlsx`);
+}
+
+// 이벤트 리스너 등록
+if(downloadProductExcelBtn) {
+    downloadProductExcelBtn.addEventListener('click', downloadProductExcel);
 }
 
 // 모달 및 제품 CRUD 로직은 그대로 복원
