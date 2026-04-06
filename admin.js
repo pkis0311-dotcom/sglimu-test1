@@ -140,6 +140,8 @@ navItems.forEach(item => {
             fetchUsers();
         } else if(targetId === 'tab-page-manage') {
             initPageManageTab();
+        } else if(targetId === 'tab-category-display') {
+            initCategoryDisplayTab();
         }
     });
 });
@@ -204,6 +206,30 @@ async function fetchProducts() {
             }
         } else {
             targetSelect.innerHTML = '<option value="">등록된 제품이 없습니다. 먼저 제품을 등록하세요.</option>';
+        }
+    }
+
+    // [신규] '카테고리 전시 관리' 탭의 체크박스 그리드 동적 업데이트
+    const displayCheckboxGrid = document.getElementById('productCheckboxGrid');
+    if (displayCheckboxGrid) {
+        if (products.length > 0) {
+            displayCheckboxGrid.innerHTML = products.map(p => `
+                <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
+                    <input type="checkbox" class="display-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
+                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
+                        <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${p.category}]</span><br>
+                        ${p.name}
+                    </div>
+                </label>
+            `).join('');
+            
+            // 카테고리 전시 관리 탭이 활성화된 상태라면 체크박스 상태 갱신
+            if(document.getElementById('tab-category-display').classList.contains('active')) {
+                const secSelect = document.getElementById('targetDisplaySection');
+                if(secSelect) secSelect.dispatchEvent(new Event('change'));
+            }
+        } else {
+            displayCheckboxGrid.innerHTML = '<div style="color:#999;">등록된 제품이 없습니다.</div>';
         }
     }
 }
@@ -816,6 +842,49 @@ async function fetchUsers() {
     const tBody = document.getElementById('userTableBody');
     const { data, error } = await supabase.from('users').select('*').limit(10);
     if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'users' 테이블을 먼저 생성해주세요.</td></tr>`; }
+}
+
+// ------------------------------------------
+// 8. [신규] 카테고리 전시 관리 배열 저장 및 불러오기
+// ------------------------------------------
+function initCategoryDisplayTab() {
+    const secSelect = document.getElementById('targetDisplaySection');
+    const saveBtn = document.getElementById('saveDisplayBtn');
+    
+    // 선택한 화면 변경 시 로드
+    if(!secSelect.dataset.init) {
+        secSelect.addEventListener('change', () => {
+            loadCategoryDisplay(secSelect.value);
+        });
+        secSelect.dataset.init = "true";
+    }
+
+    if(saveBtn && !saveBtn.dataset.init) {
+        saveBtn.addEventListener('click', () => {
+            const sectionKey = secSelect.value;
+            const checkboxes = document.querySelectorAll('.display-item-cb');
+            const selectedProducts = [];
+            checkboxes.forEach(cb => {
+                if(cb.checked) selectedProducts.push(cb.value);
+            });
+            localStorage.setItem('display_' + sectionKey, JSON.stringify(selectedProducts));
+            alert(`[${secSelect.options[secSelect.selectedIndex].text}] 화면 배치가 저장되었습니다.`);
+        });
+        saveBtn.dataset.init = "true";
+    }
+
+    // 초기 로드
+    loadCategoryDisplay(secSelect.value);
+}
+
+function loadCategoryDisplay(sectionKey) {
+    const raw = localStorage.getItem('display_' + sectionKey);
+    const selectedIds = raw ? JSON.parse(raw) : [];
+    
+    const checkboxes = document.querySelectorAll('.display-item-cb');
+    checkboxes.forEach(cb => {
+        cb.checked = selectedIds.includes(cb.value);
+    });
 }
 
 // ------------------------------------------
