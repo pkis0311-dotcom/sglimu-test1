@@ -845,36 +845,146 @@ async function fetchUsers() {
 }
 
 // ------------------------------------------
-// 8. [신규] 카테고리 전시 관리 배열 저장 및 불러오기
+// 8. [개선] 카테고리 전시 관리 (전체 카테고리 대응 및 UI 고도화)
 // ------------------------------------------
+const SITE_CATEGORIES = {
+    'system': {
+        icon: 'fa-server', label: '도서관리시스템',
+        subs: [
+            { id: 'rfid-cat-tag', name: 'RFID > 태그 (TAG)' },
+            { id: 'rfid-cat-anti', name: 'RFID > 분실 방지기' },
+            { id: 'rfid-cat-reader', name: 'RFID > 리더기' },
+            { id: 'rfid-cat-return', name: 'RFID > 대출 반납기' },
+            { id: 'em-cat-0', name: 'EM > 분실 방지기' },
+            { id: 'em-cat-1', name: 'EM > 감응제거재생기' },
+            { id: 'em-cat-2', name: 'EM > 감응 테이프' }
+        ]
+    },
+    'supplies': {
+        icon: 'fa-box-open', label: '도서관 용품',
+        subs: [
+            { id: 'supplies-arrange-cat-0', name: '정리 > 키퍼' },
+            { id: 'supplies-arrange-cat-1', name: '정리 > 색띠라벨' },
+            { id: 'supplies-arrange-cat-2', name: '정리 > 라벨용지' },
+            { id: 'supplies-arrange-cat-3', name: '정리 > 장갑' },
+            { id: 'supplies-arrange-cat-4', name: '정리 > 도장' },
+            { id: 'supplies-arrange-cat-5', name: '정리 > 북앤드' },
+            { id: 'supplies-arrange-cat-6', name: '정리 > 기타' },
+            { id: 'supplies-protect-cat-0', name: '보호 > 필모시리즈' },
+            { id: 'supplies-protect-cat-1', name: '보호 > 중성풀' },
+            { id: 'supplies-protect-cat-2', name: '보호 > 양면테이프' },
+            { id: 'supplies-protect-cat-3', name: '보호 > 북커버' },
+            { id: 'supplies-lend-cat-0', name: '대출 > 바코드' },
+            { id: 'supplies-lend-cat-1', name: '대출 > 카드프린터/기기' },
+            { id: 'supplies-lend-cat-2', name: '대출 > 회원증카드' },
+            { id: 'supplies-lend-cat-3', name: '대출 > 감열지' },
+            { id: 'sterilizer-cat-0', name: '책소독기 소모품' }
+        ]
+    },
+    'furniture': {
+        icon: 'fa-chair', label: '도서관 가구',
+        subs: [
+            { id: 'koas-cat-0', name: '코아스 > 서가' },
+            { id: 'koas-cat-1', name: '코아스 > 테이블' },
+            { id: 'koas-cat-2', name: '코아스 > 의자' },
+            { id: 'koas-cat-3', name: '코아스 > 기타' },
+            { id: 'fomus-cat-0', name: '포머스 > 서가' },
+            { id: 'fomus-cat-1', name: '포머스 > 테이블' },
+            { id: 'fomus-cat-2', name: '포머스 > 의자' },
+            { id: 'fomus-cat-3', name: '포머스 > 기타' },
+            { id: 'fursys-cat-0', name: '퍼시스 > 서가' },
+            { id: 'fursys-cat-1', name: '퍼시스 > 테이블' },
+            { id: 'fursys-cat-2', name: '퍼시스 > 의자' },
+            { id: 'fursys-cat-3', name: '퍼시스 > 기타' }
+        ]
+    },
+    'signage': {
+        icon: 'fa-scroll', label: '사인물',
+        subs: [
+            { id: 'sign-class-cat-0', name: '분류/대분류 표지판' },
+            { id: 'sign-board-cat-0', name: '게시판/이용안내' },
+            { id: 'sign-date-cat-0', name: '대출반납일력표' },
+            { id: 'sign-custom-cat-0', name: '제작 사인물' }
+        ]
+    },
+    'discount': {
+        icon: 'fa-tags', label: '할인상품',
+        subs: [
+            { id: 'discount-cat-0', name: '할인상품 전체' }
+        ]
+    }
+};
+
+let currentSelectedSection = ''; // 현재 선택된 소분류 ID
+
 function initCategoryDisplayTab() {
-    const secSelect = document.getElementById('targetDisplaySection');
+    const majorBtns = document.querySelectorAll('.major-btn');
+    const minorGrid = document.getElementById('minorCategoryGrid');
     const saveBtn = document.getElementById('saveDisplayBtn');
-    
-    // 선택한 화면 변경 시 로드
-    if(!secSelect.dataset.init) {
-        secSelect.addEventListener('change', () => {
-            loadCategoryDisplay(secSelect.value);
-        });
-        secSelect.dataset.init = "true";
+    const statusBox = document.getElementById('displaySectionStatus');
+    const selectionName = document.getElementById('currentSelectionName');
+
+    // 1. 대분류 클릭 이벤트
+    majorBtns.forEach(btn => {
+        btn.onclick = () => {
+            majorBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const majorKey = btn.dataset.major;
+            renderMinorCategories(majorKey);
+        };
+    });
+
+    // 2. 소분류 렌더링 함수
+    function renderMinorCategories(majorKey) {
+        const category = SITE_CATEGORIES[majorKey];
+        if (!category) return;
+
+        minorGrid.innerHTML = category.subs.map(sub => `
+            <button class="minor-btn ${currentSelectedSection === sub.id ? 'active' : ''}" 
+                    onclick="selectMinorCategory('${sub.id}', '${sub.name}')">
+                ${sub.name}
+            </button>
+        `).join('');
     }
 
+    // 3. 소분류 선택 함수 (전역 window 객체에 연결하여 onclick 대응)
+    window.selectMinorCategory = (id, name) => {
+        currentSelectedSection = id;
+        
+        // 버튼 스타일 업데이트
+        document.querySelectorAll('.minor-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.innerText.trim() === name);
+        });
+
+        // 상태창 업데이트
+        statusBox.style.display = 'block';
+        selectionName.innerText = name;
+
+        // 체크박스 데이터 로드
+        loadCategoryDisplay(id);
+    };
+
+    // 4. 저장 버튼
     if(saveBtn && !saveBtn.dataset.init) {
-        saveBtn.addEventListener('click', () => {
-            const sectionKey = secSelect.value;
+        saveBtn.onclick = () => {
+            if(!currentSelectedSection) {
+                alert('먼저 관리할 소분류(전시화면)를 선택해주세요.');
+                return;
+            }
             const checkboxes = document.querySelectorAll('.display-item-cb');
             const selectedProducts = [];
             checkboxes.forEach(cb => {
                 if(cb.checked) selectedProducts.push(cb.value);
             });
-            localStorage.setItem('display_' + sectionKey, JSON.stringify(selectedProducts));
-            alert(`[${secSelect.options[secSelect.selectedIndex].text}] 화면 배치가 저장되었습니다.`);
-        });
+            localStorage.setItem('display_' + currentSelectedSection, JSON.stringify(selectedProducts));
+            alert(`[${selectionName.innerText}] 화면 배치가 성공적으로 저장되었습니다.`);
+        };
         saveBtn.dataset.init = "true";
     }
 
-    // 초기 로드
-    loadCategoryDisplay(secSelect.value);
+    // 초기 상태: 첫 번째 대분류(도서관리시스템) 렌더링
+    const activeMajor = document.querySelector('.major-btn.active');
+    if(activeMajor) renderMinorCategories(activeMajor.dataset.major);
 }
 
 function loadCategoryDisplay(sectionKey) {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -243,9 +243,11 @@
     </div>
 
     <script src="script.js"></script>
-    <script>
-        // Subcategory Content Toggle Logic for RFID page
-        document.addEventListener('DOMContentLoaded', () => {
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const supabase = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const subNavItems = document.querySelectorAll('.subcategory-item');
             const subContents = document.querySelectorAll('.sub-content');
 
@@ -259,7 +261,6 @@
                     const targetContent = document.getElementById(targetId);
                     if(targetContent) {
                         targetContent.classList.add('active');
-                        // Optional: add some animation stagger to cards here if needed
                         const cards = targetContent.querySelectorAll('.product-card');
                         cards.forEach((card, i) => {
                             card.classList.remove('visible');
@@ -270,6 +271,47 @@
                     }
                 });
             });
+
+            async function loadDisplayProducts(containerId, displayKey) {
+                const container = document.querySelector(`#${containerId} .product-list`);
+                if(!container) return;
+
+                const raw = localStorage.getItem('display_' + displayKey);
+                const selectedIds = raw ? JSON.parse(raw) : [];
+
+                if (selectedIds.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">등록된 전시 상품이 없습니다. 관리자 사이트에서 배치해주세요.</div>';
+                    return;
+                }
+
+                const { data: products, error } = await supabase.from('products').select('*').in('id', selectedIds);
+                if (error) return;
+
+                container.innerHTML = '';
+                const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
+
+                sortedProducts.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card visible';
+                    card.style.cursor = 'pointer';
+                    card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
+                    
+                    const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+                    card.innerHTML = `
+                        <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                        <div class="product-info" style="text-align:center; padding:15px;">
+                            <h4 style="margin-bottom:5px;">${p.name}</h4>
+                            <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            await loadDisplayProducts('cat-0', 'supplies-protect-cat-0');
+            await loadDisplayProducts('cat-1', 'supplies-protect-cat-1');
+            await loadDisplayProducts('cat-2', 'supplies-protect-cat-2');
+            await loadDisplayProducts('cat-3', 'supplies-protect-cat-3');
         });
     </script>
     <!-- SG LIMU Global Scripts -->
