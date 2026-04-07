@@ -24,9 +24,11 @@ const signupMsg = document.getElementById('signupMsg');
 const userAuthWrap = document.getElementById('userAuthWrap');
 
 // Social Login Buttons
+// Social Login & Signup Buttons
 const kakaoLoginBtn = document.getElementById('kakaoLoginBtn');
 const naverLoginBtn = document.getElementById('naverLoginBtn');
 const googleLoginBtn = document.getElementById('googleLoginBtn');
+const socialSignupBtns = document.querySelectorAll('.social-signup-btn');
 
 // ==========================================
 // 1. Modal & Tab Logic
@@ -91,7 +93,6 @@ async function signInWithSocial(provider) {
         options: {
             redirectTo: window.location.origin,
             queryParams: {
-                // Some providers allows prompting for account
                 prompt: 'select_account'
             }
         }
@@ -103,8 +104,12 @@ if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => signInWithSocia
 if (naverLoginBtn) naverLoginBtn.addEventListener('click', () => signInWithSocial('naver'));
 if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => signInWithSocial('google'));
 
+socialSignupBtns.forEach(btn => {
+    btn.addEventListener('click', () => signInWithSocial(btn.dataset.provider));
+});
+
 // ==========================================
-// 3. Auth Logic - Email/PW
+// 3. Auth Logic - Email/PW & Profile
 // ==========================================
 
 // SIGN UP
@@ -122,7 +127,6 @@ if (signupForm) {
 
         signupMsg.className = 'auth-message';
         
-        // 1. Password Match Check
         if (password !== passwordConfirm) {
             signupMsg.textContent = '비밀번호가 일치하지 않습니다.';
             signupMsg.classList.add('error');
@@ -186,12 +190,73 @@ if (loginForm) {
     });
 }
 
+// PROFILE COMPLETION
+const completeProfileForm = document.getElementById('completeProfileForm');
+const completeMsg = document.getElementById('completeMsg');
+
+if (completeProfileForm) {
+    completeProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const phone = document.getElementById('completePhone').value;
+        const org = document.getElementById('completeOrg').value;
+        const address = document.getElementById('completeAddress').value;
+        const userType = localStorage.getItem('pending_user_type') || 'individual';
+
+        completeMsg.className = 'auth-message';
+        completeMsg.textContent = '저장 중...';
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { error } = await supabase.from('profiles').update({
+            phone: phone,
+            organization: org,
+            address: address,
+            user_type: userType
+        }).eq('id', user.id);
+
+        if (error) {
+            completeMsg.textContent = '저장 실패: ' + error.message;
+            completeMsg.classList.add('error');
+        } else {
+            completeMsg.textContent = '저장 완료! 환영합니다.';
+            completeMsg.classList.add('success');
+            setTimeout(() => {
+                closeAuthModal();
+                window.location.reload();
+            }, 1000);
+        }
+    });
+}
+
 // ==========================================
 // 4. UI State Management
 // ==========================================
+
+async function checkProfileCompletion(user) {
+    if (!user) return;
+    
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+    
+    if (error && error.code !== 'PGRST116') return; // PGRST116 is 'not found'
+
+    // If profile is missing phone or organization, show completion pane
+    if (!profile || !profile.phone || !profile.organization) {
+        // Clear pending type after we know we're using it
+        openAuthModal('completeProfilePane');
+        // Pre-fill name if available
+        if (profile && profile.full_name) {
+            // Optional: pre-fill fields
+        }
+    }
+}
+
 async function updateAuthUI(user) {
     if (user) {
-        // Logged In
         const userName = user.user_metadata.full_name || user.email.split('@')[0];
         userAuthWrap.innerHTML = `
             <div class="user-profile-nav">
@@ -203,19 +268,21 @@ async function updateAuthUI(user) {
             await supabase.auth.signOut();
             window.location.reload();
         });
+        
+        // After UI update, check for profile completion
+        checkProfileCompletion(user);
     } else {
-        // Logged Out
         userAuthWrap.innerHTML = `
             <button class="login-trigger-btn" id="loginTriggerBtn">
                 <i class="fa-regular fa-user"></i>
                 <span>로그인</span>
             </button>
         `;
-        document.getElementById('loginTriggerBtn').addEventListener('click', () => openAuthModal());
+        const btn = document.getElementById('loginTriggerBtn');
+        if (btn) btn.addEventListener('click', () => openAuthModal());
     }
 }
 
-// Check session on load
 async function initAuth() {
     const { data: { session } } = await supabase.auth.getSession();
     updateAuthUI(session ? session.user : null);
@@ -223,7 +290,10 @@ async function initAuth() {
 
 initAuth();
 
-// Listen for auth changes
 supabase.auth.onAuthStateChange((event, session) => {
-    updateAuthUI(session ? session.user : null);
+    if (event === 'SIGNED_IN') {
+        updateAuthUI(session.user);
+    } else if (event === 'SIGNED_OUT') {
+        updateAuthUI(null);
+    }
 });
