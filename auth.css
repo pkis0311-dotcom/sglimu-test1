@@ -6,8 +6,8 @@
 :root {
     --auth-primary: var(--color-primary, #2c3e50);
     --auth-accent: var(--color-accent, #8ec342);
-    --auth-bg-glass: rgba(255, 255, 255, 0.95);
-    --auth-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    --auth-bg-glass: rgba(255, 255, 255, 0.98);
+    --auth-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
     
     /* Social Brand Colors */
     --kakao-yellow: #FEE500;
@@ -213,6 +213,38 @@
 
 .auth-submit-btn:hover {
     background: var(--auth-accent);
+}
+
+/* User Type Selector */
+.auth-type-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    background: #f0f0f0;
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.auth-type-btn {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
+    color: #888;
+}
+
+.auth-type-btn.active {
+    background: #fff;
+    color: var(--auth-primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.auth-type-btn:hover:not(.active) {
+    color: #555;
 }
 
 .auth-footer-text {

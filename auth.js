@@ -29,7 +29,7 @@ const naverLoginBtn = document.getElementById('naverLoginBtn');
 const googleLoginBtn = document.getElementById('googleLoginBtn');
 
 // ==========================================
-// 1. Modal Logic
+// 1. Modal & Tab Logic
 // ==========================================
 function openAuthModal(tab = 'loginPane') {
     authOverlay.style.display = 'flex';
@@ -59,14 +59,41 @@ authTabs.forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.target));
 });
 
+// User Type Selection
+let selectedUserType = 'individual';
+const typeBtns = document.querySelectorAll('.auth-type-btn');
+const bizGroup = document.getElementById('bizGroup');
+
+typeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        typeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedUserType = btn.dataset.type;
+        
+        // Toggle business fields
+        if (selectedUserType === 'business') {
+            bizGroup.style.display = 'block';
+        } else {
+            bizGroup.style.display = 'none';
+        }
+    });
+});
+
 // ==========================================
 // 2. Auth Logic - Social
 // ==========================================
 async function signInWithSocial(provider) {
+    // Store user type in localStorage to use after redirect (for new users)
+    localStorage.setItem('pending_user_type', selectedUserType);
+    
     const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-            redirectTo: window.location.origin
+            redirectTo: window.location.origin,
+            queryParams: {
+                // Some providers allows prompting for account
+                prompt: 'select_account'
+            }
         }
     });
     if (error) alert(`${provider} 로그인 오류: ` + error.message);
@@ -88,10 +115,20 @@ if (signupForm) {
         const phone = document.getElementById('signupPhone').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
+        const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
         const organization = document.getElementById('signupOrg').value;
+        const bizNumber = document.getElementById('signupBizNumber').value;
         const address = document.getElementById('signupAddress').value;
 
         signupMsg.className = 'auth-message';
+        
+        // 1. Password Match Check
+        if (password !== passwordConfirm) {
+            signupMsg.textContent = '비밀번호가 일치하지 않습니다.';
+            signupMsg.classList.add('error');
+            return;
+        }
+
         signupMsg.textContent = '가입 처리 중...';
 
         const { data, error } = await supabase.auth.signUp({
@@ -102,7 +139,9 @@ if (signupForm) {
                     full_name: name,
                     phone: phone,
                     organization: organization,
-                    address: address
+                    address: address,
+                    user_type: selectedUserType,
+                    biz_number: bizNumber
                 }
             }
         });

@@ -42,14 +42,22 @@ $bodyReplace = @"
                 </div>
                 <div class="auth-pane" id="signupPane">
                     <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
+                    <div class="auth-type-selector" id="userTypeSelector">
+                        <div class="auth-type-btn active" data-type="individual">개인 회원</div>
+                        <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
+                    </div>
                     <form id="signupForm">
                         <div class="auth-row">
                             <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
                             <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
                         </div>
                         <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
-                        <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관"></div>
+                        <div class="auth-row">
+                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required></div>
+                            <div class="auth-form-group"><label>비밀번호 확인 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required></div>
+                        </div>
+                        <div class="auth-form-group" id="orgGroup"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관"></div>
+                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>사업자 등록번호</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
                         <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
                         <button type="submit" class="auth-submit-btn">가입하기</button>
                     </form>
