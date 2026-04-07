@@ -366,7 +366,7 @@ td {
 .image-preview {
     margin-top: 10px;
     max-width: 100%;
-    height: 150px;
+    height: 200px;
     border: 1px dashed var(--admin-border);
     border-radius: 5px;
     display: flex;
