@@ -2,7 +2,7 @@ $path = "c:\Users\park4\OneDrive\Desktop\test7"
 $files = Get-ChildItem -Path $path -Filter *.html | Where-Object { $_.Name -ne 'admin.html' -and $_.Name -ne 'index.html' }
 
 $headPattern = '(?i)</head>'
-$headReplace = "    <link rel=`"stylesheet`" href=`"auth.css`">`r`n</head>"
+$headReplace = "    <link rel=`"stylesheet`" href=`"auth.css`">`r`n    <script src=`"https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js`"></script>`r`n</head>"
 
 $userIconPattern = '(?i)<a href=`"#`"><i class=`"fa-regular fa-user`"></i></a>'
 $userIconReplace = @"
