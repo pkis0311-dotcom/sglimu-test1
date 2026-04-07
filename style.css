@@ -215,32 +215,32 @@ button {
 /* Slider Section */
 .hero-slider {
     position: relative;
-    width: 100%;
-    height: 85vh;
-    overflow: hidden; /* Only horizontal peek for center */
-    margin-top: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 86%; /* Reduced width per request */
+    max-width: 1600px;
+    height: 80vh;
+    overflow: hidden;
+    margin: 20px auto; /* Centered with vertical spacing */
+    border-radius: 24px; /* Premium rounded look */
+    box-shadow: 0 15px 45px rgba(0,0,0,0.15);
     background: #111;
 }
 
 .slider-container {
-    display: flex;
     width: 100%;
     height: 100%;
     position: relative;
-    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-    transform-style: preserve-3d;
+    background: #222;
 }
 
 .slide {
-    flex: 0 0 85%; /* Main slide width */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
-    position: relative;
-    opacity: 0.5; /* Inactive side slides slightly transparent */
-    transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-    transform: scale(0.85); /* Inactive side slides smaller */
+    opacity: 0;
+    transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1), transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    transform: scale(1.05);
     z-index: 1;
     display: flex;
     align-items: center;
@@ -249,29 +249,21 @@ button {
 
 .slide.active {
     opacity: 1;
-    z-index: 5;
-    transform: scale(1); /* Active center slide full size */
+    z-index: 2;
+    transform: scale(1);
 }
 
 .slide-img {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: calc(100% - 20px); /* Leave visible margin */
-    height: calc(100% - 20px);
-    transform: translate(-50%, -50%);
-    object-fit: cover;
-    z-index: -1;
-    filter: brightness(0.7);
-    border-radius: 20px; /* Modern rounded corners */
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    transition: transform 6s ease-out;
-}
-
-.slide.active .slide-img {
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    border-radius: 0; /* Active slide fills perfectly if requested, or keep it rounded for style */
+    object-fit: cover;
+    z-index: -1;
+    filter: brightness(0.65);
+    transition: transform 6s ease-out;
+    transform: scale(1);
 }
 
 .slide.active .slide-img {
@@ -291,22 +283,8 @@ button {
     opacity: 1;
 }
 
-/* Parallax Effect for content */
-.slide.active .slide-content h2 {
-    animation: parallaxTextUp 1s ease-out forwards;
-}
-
-.slide.active .slide-content p {
-    animation: parallaxTextUp 1.2s ease-out forwards;
-}
-
-@keyframes parallaxTextUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
 .slide-content h2 {
-    font-size: 4.5rem;
+    font-size: 4rem;
     font-weight: 700;
     margin-bottom: 20px;
     letter-spacing: -1px;
@@ -375,18 +353,6 @@ button {
     background: #fff;
     width: 40px;
     border-radius: 6px;
-}
-
-/* Slider Progress Bar */
-.slider-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 4px;
-    background: var(--color-accent);
-    z-index: 20;
-    transition: width linear; /* Controlled by JS transition-duration */
 }
 
 /* Scroll Indicator */
