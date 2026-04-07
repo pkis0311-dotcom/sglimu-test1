@@ -31,10 +31,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dotsContainer = document.getElementById('sliderDots');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const progressBar = document.getElementById('sliderProgress');
     
     let currentSlide = 0;
     let slideInterval;
     const intervalTime = 5000; // 5 seconds
+    const slideTransitionTime = 800; // matching CSS 0.8s
 
     // Supabase에서 배너/팝업 데이터 가져오기
     let slidesData = [];
@@ -57,15 +59,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initSlider() {
+        if (!sliderContainer || !dotsContainer) return;
+        
         sliderContainer.innerHTML = '';
         dotsContainer.innerHTML = '';
 
         slidesData.forEach((slide, index) => {
-            // Create slide
             const slideEl = document.createElement('div');
             slideEl.className = `slide ${index === 0 ? 'active' : ''}`;
             
-            // 링크가 '#'이 아니면 전체 슬라이드를 감싸는 a태그 적용, 아니면 단순 div 처리
             const hasLink = slide.link && slide.link !== '#';
             const imgEl = `<img src="${slide.imgUrl}" alt="Main Slide Banner" class="slide-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'1920\\' height=\\'1080\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%2334495e\\'/></svg>'">`;
             const contentEl = slide.title ? `
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h2>${slide.title}</h2>
                     <p>${slide.desc}</p>
                 </div>
-            ` : ''; // DB에서 오는 배너는 title, desc가 없을 수 있음 (이미지로 대체 통일)
+            ` : '';
 
             if(hasLink) {
                 slideEl.innerHTML = `<a href="${slide.link}" style="display:block; width:100%; height:100%;">${imgEl}${contentEl}</a>`;
@@ -82,56 +84,92 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             sliderContainer.appendChild(slideEl);
 
-            // Create dot
             const dotEl = document.createElement('div');
             dotEl.className = `dot ${index === 0 ? 'active' : ''}`;
-            dotEl.addEventListener('click', () => goToSlide(index));
+            dotEl.addEventListener('click', () => {
+                stopSlideShow();
+                goToSlide(index);
+                startSlideShow();
+            });
             dotsContainer.appendChild(dotEl);
         });
 
+        // Initial centering
+        setTimeout(updateSlider, 100);
         startSlideShow();
+    }
+
+    function updateSlider() {
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        if (slides.length === 0) return;
+        
+        // Center offset for 85% width slides: (100 - 85) / 2 = 7.5%
+        const translateValue = 7.5 - (currentSlide * 85);
+        sliderContainer.style.transform = `translateX(${translateValue}%)`;
+
+        slides.forEach((s, idx) => {
+            if(idx === currentSlide) s.classList.add('active');
+            else s.classList.remove('active');
+        });
+
+        dots.forEach((d, idx) => {
+            if(idx === currentSlide) d.classList.add('active');
+            else d.classList.remove('active');
+        });
+
+        resetProgressBar();
     }
 
     function goToSlide(index) {
         const slides = document.querySelectorAll('.slide');
-        const dots = document.querySelectorAll('.dot');
-        
-        slides[currentSlide].classList.remove('active');
-        dots[currentSlide].classList.remove('active');
-        
+        if (slides.length === 0) return;
         currentSlide = (index + slides.length) % slides.length;
+        updateSlider();
+    }
+
+    function resetProgressBar() {
+        if (!progressBar) return;
+        progressBar.style.transition = 'none';
+        progressBar.style.width = '0';
         
-        slides[currentSlide].classList.add('active');
-        dots[currentSlide].classList.add('active');
-    }
-
-    function nextSlide() {
-        goToSlide(currentSlide + 1);
-    }
-
-    function prevSlide() {
-        goToSlide(currentSlide - 1);
+        // Trigger reflow
+        void progressBar.offsetWidth;
+        
+        progressBar.style.transition = `width ${intervalTime}ms linear`;
+        progressBar.style.width = '100%';
     }
 
     function startSlideShow() {
-        slideInterval = setInterval(nextSlide, intervalTime);
+        if (slideInterval) clearInterval(slideInterval);
+        slideInterval = setInterval(() => {
+            goToSlide(currentSlide + 1);
+        }, intervalTime);
     }
 
     function stopSlideShow() {
         clearInterval(slideInterval);
+        if (progressBar) {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0';
+        }
     }
 
-    prevBtn.addEventListener('click', () => {
-        stopSlideShow();
-        prevSlide();
-        startSlideShow();
-    });
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            stopSlideShow();
+            goToSlide(currentSlide - 1);
+            startSlideShow();
+        });
+    }
 
-    nextBtn.addEventListener('click', () => {
-        stopSlideShow();
-        nextSlide();
-        startSlideShow();
-    });
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            stopSlideShow();
+            goToSlide(currentSlide + 1);
+            startSlideShow();
+        });
+    }
 
     sliderContainer.addEventListener('mouseenter', stopSlideShow);
     sliderContainer.addEventListener('mouseleave', startSlideShow);
