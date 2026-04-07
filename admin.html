@@ -192,16 +192,17 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>미리보기</th>
-                            <th>배너 종류 (슬라이드/팝업)</th>
-                            <th>연결 링크(URL)</th>
-                            <th>게시 시작일</th>
+                            <th>이미지</th>
+                            <th>유형</th>
+                            <th>링크</th>
+                            <th>순서</th>
+                            <th>등록일</th>
                             <th>상태</th>
-                            <th>삭제</th>
+                            <th>관리</th>
                         </tr>
                     </thead>
                     <tbody id="bannerTableBody">
-                        <tr><td colspan="6" class="empty-state">현재 노출 중인 배너가 없습니다.</td></tr>
+                        <tr><td colspan="7" class="empty-state">현재 노출 중인 배너가 없습니다.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -429,10 +430,14 @@
                 <input type="hidden" id="bannerId">
                 <div class="form-grid">
                     <div class="form-group full-width">
-                        <label>배너/팝업 이미지 업로드 (최적화 비율 - 슬라이드: 1920x800, 팝업: 500x500)</label>
+                        <label>배너/팝업 이미지 업로드 (최적화 비율 - 슬라이드: 1920x800 / **중앙 강조형 권장**)</label>
                         <input type="file" id="bannerImageFile" class="form-control" accept="image/*">
                         <input type="hidden" id="bannerImageUrl">
                         <div class="image-preview" id="bannerImagePreview"><i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i></div>
+                    </div>
+                    <div class="form-group">
+                        <label>노출 순서 (낮은 숫자 우선)</label>
+                        <input type="number" id="bannerDisplayOrder" class="form-control" placeholder="0" value="0">
                     </div>
                     <div class="form-group">
                         <label>종류 구분 *</label>

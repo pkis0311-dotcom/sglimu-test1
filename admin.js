@@ -68,6 +68,7 @@ const bannerLinkUrlInput = document.getElementById('bannerLinkUrl');
 const bannerImageFile = document.getElementById('bannerImageFile');
 const bannerImageUrl = document.getElementById('bannerImageUrl');
 const bannerImagePreview = document.getElementById('bannerImagePreview');
+const bannerDisplayOrderInput = document.getElementById('bannerDisplayOrder');
 
 // ==========================================
 // 1. 로그인 / 세션 관리
@@ -591,18 +592,16 @@ window.updateInquiryStatus = async function(id, newStatus) {
     }
 }
 async function fetchBanners() {
-    bannerTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">배너 데이터를 불러오는 중입니다...</td></tr>';
-    
-    // banners 테이블에서 데이터 가져오기
-    const { data: banners, error } = await supabase.from('banners').select('*').order('created_at', { ascending: false });
+    // banners 테이블에서 데이터 가져오기 (순서 필드 기준 오름차순)
+    const { data: banners, error } = await supabase.from('banners').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: false });
 
     if (error) {
-        bannerTableBody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:#e74c3c;">데이터베이스에 'banners' 테이블을 먼저 생성해주세요.<br>${error.message}</td></tr>`;
+        bannerTableBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'banners' 테이블을 먼저 생성해주세요.<br>${error.message}</td></tr>`;
         return;
     }
 
     if (banners.length === 0) {
-        bannerTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">현재 등록된 배너/팝업이 없습니다.</td></tr>';
+        bannerTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">현재 등록된 배너/팝업이 없습니다.</td></tr>';
         return;
     }
 
@@ -626,6 +625,7 @@ async function fetchBanners() {
             <td>${imgHtml}</td>
             <td>${typeBadge}</td>
             <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><a href="${b.link_url || '#'}" target="_blank" style="color:var(--primary); text-decoration:none;">${b.link_url || '없음'}</a></td>
+            <td style="font-weight:bold;">${b.display_order || 0}</td>
             <td>${dateStr}</td>
             <td>${statusHtml}</td>
             <td>
@@ -660,6 +660,7 @@ function openBannerModal() {
     bannerTypeInput.value = 'slide';
     bannerIsActiveInput.value = 'true';
     bannerLinkUrlInput.value = '';
+    bannerDisplayOrderInput.value = '0';
     bannerImageUrl.value = '';
     bannerImageFile.value = '';
     bannerImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
@@ -691,6 +692,7 @@ saveBannerBtn.addEventListener('click', async () => {
     const bType = bannerTypeInput.value;
     const isActive = bannerIsActiveInput.value === 'true';
     const linkUrl = bannerLinkUrlInput.value.trim();
+    const displayOrder = parseInt(bannerDisplayOrderInput.value) || 0;
     
     // 새 배너 등록 시 이미지는 필수
     if(!file && !bannerImageUrl.value) {
@@ -704,7 +706,8 @@ saveBannerBtn.addEventListener('click', async () => {
     const payload = {
         type: bType,
         is_active: isActive,
-        link_url: linkUrl || null
+        link_url: linkUrl || null,
+        display_order: displayOrder
     };
 
     // 이미지 파일 업로드 로직 (bucket명: banner-images)

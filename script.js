@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             link: "#"
         },
         {
-            title: "스마트 관리 시스템",
-            desc: "빠르고 정확한 도서 관리 시스템",
-            imgUrl: "assets/hero_slide_3.png",
+            title: "🎉 쇼핑몰 재오픈 기념! 🎉",
+            desc: "지금만 누릴 수 있는 특별 할인",
+            imgUrl: "assets/hero_slide_update_3.png",
             link: "#"
         }
     ];
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let slidesData = [];
     let popupsData = [];
     try {
-        const { data, error } = await supabase.from('banners').select('*').eq('is_active', true).order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('banners').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('created_at', { ascending: false });
         if (!error && data && data.length > 0) {
             slidesData = data.filter(b => b.type === 'slide').map(b => ({
                 imgUrl: b.image_url,
