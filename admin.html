@@ -389,20 +389,65 @@
                     <div class="form-group">
                         <label>카테고리 구분 *</label>
                         <select id="productCategory" class="form-control">
-                            <option value="best_product">메인화면 베스트 상품</option>
-                            <option value="rfid_tag">RFID 태그</option>
-                            <option value="rfid_anti">분실 방지기 / 리더기</option>
-                            <option value="em_system">EM 시스템 장비</option>
-                            <option value="supplies_arrange">도서정리용품</option>
-                            <option value="supplies_protect">도서보호용품</option>
-                            <option value="supplies_lend">대출용품</option>
-                            <option value="sterilizer">책소독기</option>
-                            <option value="discount">할인상품</option>
-                            <option value="furniture_koas_bookshelf">코아스 - 서가</option>
-                            <option value="furniture_koas_table">코아스 - 테이블</option>
-                            <option value="furniture_koas_chair">코아스 - 의자</option>
-                            <option value="furniture_fomus">포머스 가구</option>
-                            <option value="furniture_fursys">퍼시스 가구</option>
+                            <option value="best_product">★ 메인화면 베스트 상품</option>
+                            
+                            <optgroup label="도서관리시스템">
+                                <option value="rfid-cat-tag">RFID > 태그 (TAG)</option>
+                                <option value="rfid-cat-anti">RFID > 분실 방지기</option>
+                                <option value="rfid-cat-reader">RFID > 리더기</option>
+                                <option value="rfid-cat-return">RFID > 대출 반납기</option>
+                                <option value="em-cat-0">EM > 분실 방지기</option>
+                                <option value="em-cat-1">EM > 감응제거재생기</option>
+                                <option value="em-cat-2">EM > 감응 테이프</option>
+                            </optgroup>
+
+                            <optgroup label="도서관 용품 - 정리">
+                                <option value="supplies-arrange-cat-0">정리 > 키퍼</option>
+                                <option value="supplies-arrange-cat-1">정리 > 색띠라벨</option>
+                                <option value="supplies-arrange-cat-2">정리 > 라벨용지</option>
+                                <option value="supplies-arrange-cat-3">정리 > 장갑</option>
+                                <option value="supplies-arrange-cat-4">정리 > 도장</option>
+                                <option value="supplies-arrange-cat-5">정리 > 북앤드</option>
+                                <option value="supplies-arrange-cat-6">정리 > 기타</option>
+                            </optgroup>
+
+                            <optgroup label="도서관 용품 - 보호/대출/기타">
+                                <option value="supplies-protect-cat-0">보호 > 필모시리즈</option>
+                                <option value="supplies-protect-cat-1">보호 > 중성풀</option>
+                                <option value="supplies-protect-cat-2">보호 > 양면테이프</option>
+                                <option value="supplies-protect-cat-3">보호 > 북커버</option>
+                                <option value="supplies-lend-cat-0">대출 > 바코드</option>
+                                <option value="supplies-lend-cat-1">대출 > 카드프린터/기기</option>
+                                <option value="supplies-lend-cat-2">대출 > 회원증카드</option>
+                                <option value="supplies-lend-cat-3">대출 > 감열지</option>
+                                <option value="sterilizer-cat-0">책소독기 소모품</option>
+                            </optgroup>
+
+                            <optgroup label="도서관 가구 - 코아스">
+                                <option value="koas-cat-0">코아스 > 서가</option>
+                                <option value="koas-cat-1">코아스 > 테이블</option>
+                                <option value="koas-cat-2">코아스 > 의자</option>
+                                <option value="koas-cat-3">코아스 > 기타</option>
+                            </optgroup>
+
+                            <optgroup label="도서관 가구 - 포머스/퍼시스">
+                                <option value="fomus-cat-0">포머스 > 서가</option>
+                                <option value="fomus-cat-1">포머스 > 테이블</option>
+                                <option value="fomus-cat-2">포머스 > 의자</option>
+                                <option value="fomus-cat-3">포머스 > 기타</option>
+                                <option value="fursys-cat-0">퍼시스 > 서가</option>
+                                <option value="fursys-cat-1">퍼시스 > 테이블</option>
+                                <option value="fursys-cat-2">퍼시스 > 의자</option>
+                                <option value="fursys-cat-3">퍼시스 > 기타</option>
+                            </optgroup>
+
+                            <optgroup label="사인물/할인상품">
+                                <option value="sign-class-cat-0">사인물 > 분류/대분류 표지판</option>
+                                <option value="sign-board-cat-0">사인물 > 게시판/이용안내</option>
+                                <option value="sign-date-cat-0">사인물 > 대출반납일력표</option>
+                                <option value="sign-custom-cat-0">사인물 > 제작 사인물</option>
+                                <option value="discount-cat-0">할인상품 전체</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="form-group">

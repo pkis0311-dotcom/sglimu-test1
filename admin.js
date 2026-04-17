@@ -9,6 +9,77 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ==========================================
+// 사이트 통합 카테고리 정의 (전역 참조용)
+// ==========================================
+const SITE_CATEGORIES = {
+    'system': {
+        icon: 'fa-server', label: '도서관리시스템',
+        subs: [
+            { id: 'rfid-cat-tag', name: 'RFID > 태그 (TAG)' },
+            { id: 'rfid-cat-anti', name: 'RFID > 분실 방지기' },
+            { id: 'rfid-cat-reader', name: 'RFID > 리더기' },
+            { id: 'rfid-cat-return', name: 'RFID > 대출 반납기' },
+            { id: 'em-cat-0', name: 'EM > 분실 방지기' },
+            { id: 'em-cat-1', name: 'EM > 감응제거재생기' },
+            { id: 'em-cat-2', name: 'EM > 감응 테이프' }
+        ]
+    },
+    'supplies': {
+        icon: 'fa-box-open', label: '도서관 용품',
+        subs: [
+            { id: 'supplies-arrange-cat-0', name: '정리 > 키퍼' },
+            { id: 'supplies-arrange-cat-1', name: '정리 > 색띠라벨' },
+            { id: 'supplies-arrange-cat-2', name: '정리 > 라벨용지' },
+            { id: 'supplies-arrange-cat-3', name: '정리 > 장갑' },
+            { id: 'supplies-arrange-cat-4', name: '정리 > 도장' },
+            { id: 'supplies-arrange-cat-5', name: '정리 > 북앤드' },
+            { id: 'supplies-arrange-cat-6', name: '정리 > 기타' },
+            { id: 'supplies-protect-cat-0', name: '보호 > 필모시리즈' },
+            { id: 'supplies-protect-cat-1', name: '보호 > 중성풀' },
+            { id: 'supplies-protect-cat-2', name: '보호 > 양면테이프' },
+            { id: 'supplies-protect-cat-3', name: '보호 > 북커버' },
+            { id: 'supplies-lend-cat-0', name: '대출 > 바코드' },
+            { id: 'supplies-lend-cat-1', name: '대출 > 카드프린터/기기' },
+            { id: 'supplies-lend-cat-2', name: '대출 > 회원증카드' },
+            { id: 'supplies-lend-cat-3', name: '대출 > 감열지' },
+            { id: 'sterilizer-cat-0', name: '책소독기 소모품' }
+        ]
+    },
+    'furniture': {
+        icon: 'fa-chair', label: '도서관 가구',
+        subs: [
+            { id: 'koas-cat-0', name: '코아스 > 서가' },
+            { id: 'koas-cat-1', name: '코아스 > 테이블' },
+            { id: 'koas-cat-2', name: '코아스 > 의자' },
+            { id: 'koas-cat-3', name: '코아스 > 기타' },
+            { id: 'fomus-cat-0', name: '포머스 > 서가' },
+            { id: 'fomus-cat-1', name: '포머스 > 테이블' },
+            { id: 'fomus-cat-2', name: '포머스 > 의자' },
+            { id: 'fomus-cat-3', name: '포머스 > 기타' },
+            { id: 'fursys-cat-0', name: '퍼시스 > 서가' },
+            { id: 'fursys-cat-1', name: '퍼시스 > 테이블' },
+            { id: 'fursys-cat-2', name: '퍼시스 > 의자' },
+            { id: 'fursys-cat-3', name: '퍼시스 > 기타' }
+        ]
+    },
+    'signage': {
+        icon: 'fa-scroll', label: '사인물',
+        subs: [
+            { id: 'sign-class-cat-0', name: '분류/대분류 표지판' },
+            { id: 'sign-board-cat-0', name: '게시판/이용안내' },
+            { id: 'sign-date-cat-0', name: '대출반납일력표' },
+            { id: 'sign-custom-cat-0', name: '제작 사인물' }
+        ]
+    },
+    'discount': {
+        icon: 'fa-tags', label: '할인상품',
+        subs: [
+            { id: 'discount-cat-0', name: '할인상품 전체' }
+        ]
+    }
+};
+
 // DOM Elements - Login & Global
 const loginOverlay = document.getElementById('loginOverlay');
 const loginBtn = document.getElementById('loginBtn');
@@ -180,10 +251,21 @@ async function fetchProducts() {
         const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${p.name}">` : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
         const dateStr = new Date(p.created_at).toLocaleDateString('ko-KR');
 
+        // 카테고리 라벨 매핑
+        let displayCategory = p.category;
+        for (const key in SITE_CATEGORIES) {
+            const sub = SITE_CATEGORIES[key].subs.find(s => s.id === p.category);
+            if (sub) {
+                displayCategory = `${SITE_CATEGORIES[key].label} > ${sub.name.split('>').pop().trim()}`;
+                break;
+            }
+        }
+        if (p.category === 'best_product') displayCategory = '★ 베스트 상품';
+
         tr.innerHTML = `
             <td>${imgHtml}</td>
             <td style="font-weight:600;">${p.name}</td>
-            <td><span style="background:#eaf2f8; color:#2980b9; padding:3px 8px; border-radius:3px; font-size:0.8rem;">${p.category}</span></td>
+            <td><span style="background:#eaf2f8; color:#2980b9; padding:3px 8px; border-radius:3px; font-size:0.8rem;">${displayCategory}</span></td>
             <td>${p.price}</td>
             <td>${p.stock}개</td>
             <td style="color:#666; font-size:0.9rem;">${dateStr}</td>
@@ -950,76 +1032,9 @@ async function fetchUsers() {
     if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'users' 테이블을 먼저 생성해주세요.</td></tr>`; }
 }
 
-// ------------------------------------------
 // 8. [개선] 카테고리 전시 관리 (전체 카테고리 대응 및 UI 고도화)
 // ------------------------------------------
-const SITE_CATEGORIES = {
-    'system': {
-        icon: 'fa-server', label: '도서관리시스템',
-        subs: [
-            { id: 'rfid-cat-tag', name: 'RFID > 태그 (TAG)' },
-            { id: 'rfid-cat-anti', name: 'RFID > 분실 방지기' },
-            { id: 'rfid-cat-reader', name: 'RFID > 리더기' },
-            { id: 'rfid-cat-return', name: 'RFID > 대출 반납기' },
-            { id: 'em-cat-0', name: 'EM > 분실 방지기' },
-            { id: 'em-cat-1', name: 'EM > 감응제거재생기' },
-            { id: 'em-cat-2', name: 'EM > 감응 테이프' }
-        ]
-    },
-    'supplies': {
-        icon: 'fa-box-open', label: '도서관 용품',
-        subs: [
-            { id: 'supplies-arrange-cat-0', name: '정리 > 키퍼' },
-            { id: 'supplies-arrange-cat-1', name: '정리 > 색띠라벨' },
-            { id: 'supplies-arrange-cat-2', name: '정리 > 라벨용지' },
-            { id: 'supplies-arrange-cat-3', name: '정리 > 장갑' },
-            { id: 'supplies-arrange-cat-4', name: '정리 > 도장' },
-            { id: 'supplies-arrange-cat-5', name: '정리 > 북앤드' },
-            { id: 'supplies-arrange-cat-6', name: '정리 > 기타' },
-            { id: 'supplies-protect-cat-0', name: '보호 > 필모시리즈' },
-            { id: 'supplies-protect-cat-1', name: '보호 > 중성풀' },
-            { id: 'supplies-protect-cat-2', name: '보호 > 양면테이프' },
-            { id: 'supplies-protect-cat-3', name: '보호 > 북커버' },
-            { id: 'supplies-lend-cat-0', name: '대출 > 바코드' },
-            { id: 'supplies-lend-cat-1', name: '대출 > 카드프린터/기기' },
-            { id: 'supplies-lend-cat-2', name: '대출 > 회원증카드' },
-            { id: 'supplies-lend-cat-3', name: '대출 > 감열지' },
-            { id: 'sterilizer-cat-0', name: '책소독기 소모품' }
-        ]
-    },
-    'furniture': {
-        icon: 'fa-chair', label: '도서관 가구',
-        subs: [
-            { id: 'koas-cat-0', name: '코아스 > 서가' },
-            { id: 'koas-cat-1', name: '코아스 > 테이블' },
-            { id: 'koas-cat-2', name: '코아스 > 의자' },
-            { id: 'koas-cat-3', name: '코아스 > 기타' },
-            { id: 'fomus-cat-0', name: '포머스 > 서가' },
-            { id: 'fomus-cat-1', name: '포머스 > 테이블' },
-            { id: 'fomus-cat-2', name: '포머스 > 의자' },
-            { id: 'fomus-cat-3', name: '포머스 > 기타' },
-            { id: 'fursys-cat-0', name: '퍼시스 > 서가' },
-            { id: 'fursys-cat-1', name: '퍼시스 > 테이블' },
-            { id: 'fursys-cat-2', name: '퍼시스 > 의자' },
-            { id: 'fursys-cat-3', name: '퍼시스 > 기타' }
-        ]
-    },
-    'signage': {
-        icon: 'fa-scroll', label: '사인물',
-        subs: [
-            { id: 'sign-class-cat-0', name: '분류/대분류 표지판' },
-            { id: 'sign-board-cat-0', name: '게시판/이용안내' },
-            { id: 'sign-date-cat-0', name: '대출반납일력표' },
-            { id: 'sign-custom-cat-0', name: '제작 사인물' }
-        ]
-    },
-    'discount': {
-        icon: 'fa-tags', label: '할인상품',
-        subs: [
-            { id: 'discount-cat-0', name: '할인상품 전체' }
-        ]
-    }
-};
+// (SITE_CATEGORIES는 상단 전역으로 이동됨)
 
 let currentSelectedSection = ''; // 현재 선택된 소분류 ID
 
