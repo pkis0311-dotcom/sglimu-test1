@@ -364,9 +364,10 @@ window.deleteProduct = async (id, name) => {
 };
 
 // ==========================================
-// 4. [신규] 주문 통계 데이터 로드 및 차트/엑셀
+// 4. [신규] 주문 통계 데이터 로드 및 분석 차트
 // ==========================================
 let orderChartInstance = null;
+let revenueChartInstance = null;
 
 async function fetchOrders() {
     const tableBody = document.getElementById('orderTableBody');
@@ -440,22 +441,23 @@ async function fetchOrders() {
     if(document.getElementById('totalOrderRevenue')) document.getElementById('totalOrderRevenue').textContent = totalRevenue.toLocaleString() + "원";
     if(document.getElementById('pendingOrderCount')) document.getElementById('pendingOrderCount').textContent = pendingCount + "건";
 
-    // 차트 그려주기
-    renderOrderChart(orders);
+    // 분석 차트 렌더링 (건수 및 매출액)
+    renderAnalysisCharts(orders);
 }
 
-// Chart.js를 사용한 일별 통계 렌더링
-function renderOrderChart(orders) {
-    const chartCanvas = document.getElementById('orderChart');
-    if(!chartCanvas) return;
-    const ctx = chartCanvas.getContext('2d');
+// Chart.js를 사용한 일별 통계 렌더링 (주문 건수 + 매출액)
+function renderAnalysisCharts(orders) {
+    const orderCanvas = document.getElementById('orderChart');
+    const revenueCanvas = document.getElementById('revenueChart');
+    if(!orderCanvas || !revenueCanvas) return;
     
-    // 최근 7일 라벨 만들기 (시간 제외하고 날짜만 비교)
+    // 최근 7일 라벨 및 데이터 초기화
     const today = new Date();
     today.setHours(0,0,0,0);
 
     const labels = [];
-    const counts = [0, 0, 0, 0, 0, 0, 0];
+    const countData = [0, 0, 0, 0, 0, 0, 0];
+    const revenueData = [0, 0, 0, 0, 0, 0, 0];
 
     for(let i=6; i>=0; i--) {
         const d = new Date(today);
@@ -463,42 +465,74 @@ function renderOrderChart(orders) {
         labels.push((d.getMonth()+1) + '/' + d.getDate());
     }
 
-    // 데이터 매핑: 각 주문의 날짜를 확인해 카운트 증가
     orders.forEach(o => {
         if(!o.created_at) return;
         const orderDate = new Date(o.created_at);
         orderDate.setHours(0,0,0,0);
 
-        // 밀리초 차이를 일(day) 수로 변환
         const diffTime = today.getTime() - orderDate.getTime();
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
         
         if(diffDays >= 0 && diffDays < 7) {
-            counts[6 - diffDays]++; // 0일전(오늘)이 index 6
+            countData[6 - diffDays]++;
+            revenueData[6 - diffDays] += Number(o.total_price) || 0;
         }
     });
 
-    // 기존 차트가 있으면 초기화
-    if(orderChartInstance) {
-        orderChartInstance.destroy();
-    }
-
-    orderChartInstance = new Chart(ctx, {
-        type: 'bar', // 막대그래프
+    // 1. 주문 건수 차트 (막대)
+    if(orderChartInstance) orderChartInstance.destroy();
+    orderChartInstance = new Chart(orderCanvas.getContext('2d'), {
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: '일별 주문 접수 건수',
-                data: counts,
-                backgroundColor: 'rgba(142, 195, 66, 0.8)', // 기본 초록색(var(--admin-primary) 유사)
-                borderRadius: 4
+                label: '주문 건수',
+                data: countData,
+                backgroundColor: 'rgba(142, 195, 66, 0.8)',
+                borderRadius: 5
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 2. 매출액 추이 차트 (라인)
+    if(revenueChartInstance) revenueChartInstance.destroy();
+    revenueChartInstance = new Chart(revenueCanvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '매출액 (원)',
+                data: revenueData,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#3498db'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    ticks: { callback: (value) => value.toLocaleString() + '원' }
+                } 
+            },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => context.raw.toLocaleString() + '원'
+                    }
+                }
             }
         }
     });
