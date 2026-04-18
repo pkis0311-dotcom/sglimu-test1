@@ -227,18 +227,26 @@
             if (newVal < 1) newVal = 1;
             input.value = newVal;
             
-            // Calc Total Price based on options too
-            const select = document.getElementById('colorOption');
+            // [개선] 옵션 추가 금액 동적 계산
             let optPrice = 0;
-            if(select.value === '월넛') optPrice = 15000;
             
-            const total = (basePrice + optPrice) * newVal;
+            // 1. 색상 옵션 (기존 하드코딩 유지)
+            const colorSelect = document.getElementById('colorOption');
+            if(colorSelect && colorSelect.value === '월넛') optPrice += 15000;
+
+            // 2. 사이즈 옵션 (동적 추가 금액 합산)
+            const sizeSelect = document.getElementById('sizeOption');
+            if(sizeSelect && sizeSelect.value) {
+                const parts = sizeSelect.value.split('|');
+                optPrice += parseInt(parts[0]) || 0;
+            }
+            
+            const total = (window.basePrice + optPrice) * newVal;
             document.getElementById('totalPrice').innerText = total.toLocaleString();
         }
 
-        document.getElementById('colorOption')?.addEventListener('change', function() {
-            updateQty(0); // recalculate total
-        });
+        document.getElementById('colorOption')?.addEventListener('change', () => updateQty(0));
+        document.getElementById('sizeOption')?.addEventListener('change', () => updateQty(0));
 
         function switchTab(index, element) {
             document.querySelectorAll('.detail-tab-btn').forEach(el => el.classList.remove('active'));
@@ -341,10 +349,15 @@
                 }
 
                 if(sizeList.length > 0) {
-                    sizeOption.innerHTML = '<option value="">사이즈를 선택하세요</option>';
+                    sizeOption.innerHTML = '<option value="0|">사이즈를 선택하세요</option>';
                     sizeList.forEach(s => {
+                        const parts = s.split(':');
+                        const name = parts[0];
+                        const price = parseInt(parts[1]) || 0;
+                        
                         const opt = document.createElement('option');
-                        opt.value = s; opt.innerText = s;
+                        opt.value = `${price}|${name}`;
+                        opt.innerText = price > 0 ? `${name} (+${price.toLocaleString()}원)` : name;
                         sizeOption.appendChild(opt);
                     });
                     sizeOption.parentElement.style.display = 'block';

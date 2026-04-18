@@ -390,8 +390,16 @@ function createSizeRow(val = '') {
     const div = document.createElement('div');
     div.className = 'size-row';
     div.style.cssText = "display:flex; align-items:center; gap:5px; background:#fff; padding:5px 10px; border:1px solid #ddd; border-radius:20px;";
+    
+    // 명칭:금액 분리 파싱
+    const parts = val.split(':');
+    const name = parts[0] || '';
+    const price = parts[1] || '0';
+
     div.innerHTML = `
-        <input type="text" value="${val}" placeholder="사이즈" style="border:none; outline:none; font-size:0.9rem; width:80px;">
+        <input type="text" value="${name}" placeholder="사이즈명" style="border:none; outline:none; font-size:0.9rem; width:80px;">
+        <span style="color:#eee">|</span>
+        <input type="number" value="${price}" placeholder="추가금" style="border:none; outline:none; font-size:0.9rem; width:60px;">
         <i class="fa-solid fa-xmark" style="cursor:pointer; color:#999; font-size:0.8rem;" onclick="this.parentElement.remove()"></i>
     `;
     container.appendChild(div);
@@ -440,7 +448,12 @@ saveProductBtn.addEventListener('click', async () => {
         price: productPriceInput.value.trim(), stock: parseInt(productStockInput.value) || 0,
         description: productDescInput.value.trim(), image_url: productImageUrl.value,
         colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(','),
-        sizes: Array.from(document.querySelectorAll('#sizeContainer .size-row input')).map(inp => inp.value).filter(v => v).join(',')
+        sizes: Array.from(document.querySelectorAll('#sizeContainer .size-row')).map(row => {
+            const inps = row.querySelectorAll('input');
+            const name = inps[0].value.trim();
+            const price = inps[1].value.trim() || '0';
+            return name ? `${name}:${price}` : null;
+        }).filter(v => v).join(',')
     };
     if (!payload.name) { saveMsg.textContent = '제품명은 필수입니다!'; return; }
 
