@@ -844,7 +844,8 @@ button {
 .main-image-container img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background-color: #fff; /* 흰색 배경으로 더 깔끔하게 */
     transition: transform 0.5s ease;
 }
 
@@ -871,7 +872,8 @@ button {
 .thumb-item img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background-color: #fff;
 }
 
 .thumb-item.active {
