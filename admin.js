@@ -383,6 +383,26 @@ if (addColorBtn) {
     addColorBtn.addEventListener('click', () => createColorRow(''));
 }
 
+// 사이즈 입력 필드 동적 생성 함수
+function createSizeRow(val = '') {
+    const container = document.getElementById('sizeContainer');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'size-row';
+    div.style.cssText = "display:flex; align-items:center; gap:5px; background:#fff; padding:5px 10px; border:1px solid #ddd; border-radius:20px;";
+    div.innerHTML = `
+        <input type="text" value="${val}" placeholder="사이즈" style="border:none; outline:none; font-size:0.9rem; width:80px;">
+        <i class="fa-solid fa-xmark" style="cursor:pointer; color:#999; font-size:0.8rem;" onclick="this.parentElement.remove()"></i>
+    `;
+    container.appendChild(div);
+}
+
+// 사이즈 추가 버튼 이벤트 리스너
+const addSizeBtn = document.getElementById('addSizeBtn');
+if (addSizeBtn) {
+    addSizeBtn.addEventListener('click', () => createSizeRow(''));
+}
+
 // 모달 및 제품 CRUD 로직은 그대로 복원
 function openModal(isEdit = false) {
     if (!isEdit) {
@@ -392,6 +412,8 @@ function openModal(isEdit = false) {
         imagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
         const colorContainer = document.getElementById('colorContainer');
         if(colorContainer) colorContainer.innerHTML = ''; // 색상 초기화
+        const sizeContainer = document.getElementById('sizeContainer');
+        if(sizeContainer) sizeContainer.innerHTML = ''; // 사이즈 초기화
     } else {
         modalTitle.textContent = '제품 정보 수정';
     }
@@ -417,7 +439,8 @@ saveProductBtn.addEventListener('click', async () => {
         name: productNameInput.value.trim(), category: productCategoryInput.value,
         price: productPriceInput.value.trim(), stock: parseInt(productStockInput.value) || 0,
         description: productDescInput.value.trim(), image_url: productImageUrl.value,
-        colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(',')
+        colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(','),
+        sizes: Array.from(document.querySelectorAll('#sizeContainer .size-row input')).map(inp => inp.value).filter(v => v).join(',')
     };
     if (!payload.name) { saveMsg.textContent = '제품명은 필수입니다!'; return; }
 
@@ -437,19 +460,20 @@ saveProductBtn.addEventListener('click', async () => {
 
     const id = productIdInput.value;
     
-    // [폴백 로직] 컬럼이 없을 경우를 대비해 description에도 색상 정보 포함 (기존 마커 제거 후 새로 추가)
+    // [폴백 로직] 컬럼이 없을 경우를 대비해 description에도 색상/사이즈 정보 포함 (기존 마커 제거 후 새로 추가)
     const colorTag = `[[C:${payload.colors}]]`;
-    let cleanDesc = payload.description.replace(/\[\[C:.*?\]\]/g, '').trim();
-    const payloadWithDescFallback = { ...payload, description: (cleanDesc + "\n\n" + colorTag).trim() };
+    const sizeTag = `[[S:${payload.sizes}]]`;
+    let cleanDesc = payload.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
+    const payloadWithDescFallback = { ...payload, description: (cleanDesc + "\n\n" + colorTag + "\n" + sizeTag).trim() };
 
     let error = null;
     if (id) {
         const { error: updateError } = await supabase.from('products').update(payload).eq('id', id);
         error = updateError;
         // 컬럼이 없어서 실패한 경우 폴백 실행
-        if (error && error.message.includes("colors")) {
-            console.warn("Falling back to description for colors...");
-            const { colors, ...fallbackPayload } = payloadWithDescFallback;
+        if (error && (error.message.includes("colors") || error.message.includes("sizes"))) {
+            console.warn("Falling back to description for colors and sizes...");
+            const { colors, sizes, ...fallbackPayload } = payloadWithDescFallback;
             const { error: fallbackError } = await supabase.from('products').update(fallbackPayload).eq('id', id);
             error = fallbackError;
         }
@@ -457,9 +481,9 @@ saveProductBtn.addEventListener('click', async () => {
         const { error: insertError } = await supabase.from('products').insert([payload]);
         error = insertError;
         // 컬럼이 없어서 실패한 경우 폴백 실행
-        if (error && error.message.includes("colors")) {
-            console.warn("Falling back to description for colors...");
-            const { colors, ...fallbackPayload } = payloadWithDescFallback;
+        if (error && (error.message.includes("colors") || error.message.includes("sizes"))) {
+            console.warn("Falling back to description for colors and sizes...");
+            const { colors, sizes, ...fallbackPayload } = payloadWithDescFallback;
             const { error: fallbackError } = await supabase.from('products').insert([fallbackPayload]);
             error = fallbackError;
         }
@@ -482,14 +506,16 @@ window.editProduct = async (id) => {
     productIdInput.value = p.id; productNameInput.value = p.name; productCategoryInput.value = p.category;
     productPriceInput.value = p.price; productStockInput.value = p.stock; 
     
-    // 상세 설명 로드 시 색상 태그 제거 처리
-    productDescInput.value = (p.description || '').replace(/\[\[C:.*?\]\]/g, '').trim();
+    // 상세 설명 로드 시 색상/사이즈 태그 제거 처리
+    productDescInput.value = (p.description || '').replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
     
     productImageUrl.value = p.image_url || '';
     imagePreview.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
     
-    // 색상 데이터 로드 (컬럼 우선, 없으면 description에서 파싱)
+    // 색상/사이즈 데이터 로드 (컬럼 우선, 없으면 description에서 파싱)
     const colorContainer = document.getElementById('colorContainer');
+    const sizeContainer = document.getElementById('sizeContainer');
+
     if(colorContainer) {
         colorContainer.innerHTML = '';
         let colorData = p.colors;
@@ -497,9 +523,20 @@ window.editProduct = async (id) => {
             const match = p.description.match(/\[\[C:(.*?)\]\]/);
             if(match) colorData = match[1];
         }
-        
         if(colorData) {
             colorData.split(',').forEach(c => createColorRow(c.trim()));
+        }
+    }
+
+    if(sizeContainer) {
+        sizeContainer.innerHTML = '';
+        let sizeData = p.sizes;
+        if(!sizeData && p.description) {
+            const match = p.description.match(/\[\[S:(.*?)\]\]/);
+            if(match) sizeData = match[1];
+        }
+        if(sizeData) {
+            sizeData.split(',').forEach(s => createSizeRow(s.trim()));
         }
     }
 };

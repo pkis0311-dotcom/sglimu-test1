@@ -85,6 +85,14 @@
                             <option value="화이트">모던 화이트</option>
                         </select>
                     </div>
+
+                    <!-- [신규] 사이즈 선택 옵션 -->
+                    <div class="option-group" style="margin-top: 15px;">
+                        <label for="sizeOption">사이즈 선택</label>
+                        <select id="sizeOption" class="option-select">
+                            <option value="">사이즈를 선택하세요</option>
+                        </select>
+                    </div>
                     
                     <div class="option-group" style="margin-top: 20px;">
                         <label>수량</label>
@@ -303,11 +311,7 @@
             const colorOption = document.getElementById('colorOption');
             if(colorOption) {
                 let colorList = [];
-                // 1) Supabase colors 컬럼 확인
-                if(product.colors) {
-                    colorList = product.colors.split(',').map(c => c.trim());
-                } 
-                // 2) description 내 폴백 태그 확인
+                if(product.colors) colorList = product.colors.split(',').map(c => c.trim());
                 else if(product.description) {
                     const match = product.description.match(/\[\[C:(.*?)\]\]/);
                     if(match) colorList = match[1].split(',').map(c => c.trim());
@@ -317,17 +321,42 @@
                     colorOption.innerHTML = '<option value="">색상을 선택하세요</option>';
                     colorList.forEach(c => {
                         const opt = document.createElement('option');
-                        opt.value = c;
-                        opt.innerText = c;
+                        opt.value = c; opt.innerText = c;
                         colorOption.appendChild(opt);
                     });
+                    colorOption.parentElement.style.display = 'block';
+                } else {
+                    colorOption.parentElement.style.display = 'none';
+                }
+            }
+
+            // [신규] 사이즈(Option) 연동 로직
+            const sizeOption = document.getElementById('sizeOption');
+            if(sizeOption) {
+                let sizeList = [];
+                if(product.sizes) sizeList = product.sizes.split(',').map(s => s.trim());
+                else if(product.description) {
+                    const match = product.description.match(/\[\[S:(.*?)\]\]/);
+                    if(match) sizeList = match[1].split(',').map(s => s.trim());
+                }
+
+                if(sizeList.length > 0) {
+                    sizeOption.innerHTML = '<option value="">사이즈를 선택하세요</option>';
+                    sizeList.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s; opt.innerText = s;
+                        sizeOption.appendChild(opt);
+                    });
+                    sizeOption.parentElement.style.display = 'block';
+                } else {
+                    sizeOption.parentElement.style.display = 'none';
                 }
             }
 
             // [추가] 기본 상세 설명(Supabase) 출력 및 태그 제거
             const descElem = document.getElementById('dynamicDesc');
             if(descElem && product.description) {
-                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
+                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
             }
 
             // 4. 상세페이지 관리(localStorage) 연동
@@ -338,8 +367,8 @@
                 // 제품 설명 (Summary)
                 if(data.description) {
                     const descElem = document.getElementById('dynamicDesc');
-                    // localStorage 데이터 출력 시에도 색상 태그가 있다면 제거 (혹시 모를 중복 방지)
-                    if(descElem) descElem.innerHTML = data.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
+                    // localStorage 데이터 출력 시에도 색상/사이즈 태그 제거
+                    if(descElem) descElem.innerHTML = data.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
                 }
 
                 // 갤러리 추가 (관리자에서 추가한 이미지가 있다면 썸네리에 추가)
