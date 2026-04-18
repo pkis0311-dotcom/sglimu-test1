@@ -363,6 +363,26 @@ if(downloadProductExcelBtn) {
     downloadProductExcelBtn.addEventListener('click', downloadProductExcel);
 }
 
+// 색상 입력 필드 동적 생성 함수
+function createColorRow(val = '') {
+    const container = document.getElementById('colorContainer');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'color-row';
+    div.style.cssText = "display:flex; align-items:center; gap:5px; background:#fff; padding:5px 10px; border:1px solid #ddd; border-radius:20px;";
+    div.innerHTML = `
+        <input type="text" value="${val}" placeholder="색상명" style="border:none; outline:none; font-size:0.9rem; width:80px;">
+        <i class="fa-solid fa-xmark" style="cursor:pointer; color:#999; font-size:0.8rem;" onclick="this.parentElement.remove()"></i>
+    `;
+    container.appendChild(div);
+}
+
+// 색상 추가 버튼 이벤트 리스너
+const addColorBtn = document.getElementById('addColorBtn');
+if (addColorBtn) {
+    addColorBtn.addEventListener('click', () => createColorRow(''));
+}
+
 // 모달 및 제품 CRUD 로직은 그대로 복원
 function openModal(isEdit = false) {
     if (!isEdit) {
@@ -370,6 +390,8 @@ function openModal(isEdit = false) {
         productIdInput.value = ''; productNameInput.value = ''; productPriceInput.value = '전화문의';
         productStockInput.value = '999'; productDescInput.value = ''; productImageUrl.value = ''; productImageFile.value = '';
         imagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+        const colorContainer = document.getElementById('colorContainer');
+        if(colorContainer) colorContainer.innerHTML = ''; // 색상 초기화
     } else {
         modalTitle.textContent = '제품 정보 수정';
     }
@@ -394,7 +416,8 @@ saveProductBtn.addEventListener('click', async () => {
     const payload = {
         name: productNameInput.value.trim(), category: productCategoryInput.value,
         price: productPriceInput.value.trim(), stock: parseInt(productStockInput.value) || 0,
-        description: productDescInput.value.trim(), image_url: productImageUrl.value
+        description: productDescInput.value.trim(), image_url: productImageUrl.value,
+        colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(',')
     };
     if (!payload.name) { saveMsg.textContent = '제품명은 필수입니다!'; return; }
 
@@ -436,6 +459,15 @@ window.editProduct = async (id) => {
     productPriceInput.value = p.price; productStockInput.value = p.stock; productDescInput.value = p.description;
     productImageUrl.value = p.image_url || '';
     imagePreview.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+    
+    // 색상 데이터 로드
+    const colorContainer = document.getElementById('colorContainer');
+    if(colorContainer) {
+        colorContainer.innerHTML = '';
+        if(p.colors) {
+            p.colors.split(',').forEach(c => createColorRow(c.trim()));
+        }
+    }
 };
 
 window.deleteProduct = async (id, name) => {
