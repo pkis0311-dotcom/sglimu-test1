@@ -926,30 +926,96 @@ function initPageManageTab() {
         pageDetailImage.dataset.init = "true";
     }
 
+    // [개선] 데이터 URL을 Supabase Storage에 업로드하는 헬퍼 함수
+    async function uploadDataUrl(dataUrl, bucket, folder = 'details') {
+        try {
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            const fileExt = blob.type.split('/')[1] || 'png';
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${folder}/${fileName}`;
+            
+            const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, blob);
+            if (uploadError) throw uploadError;
+            
+            const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+            return publicUrl;
+        } catch (err) {
+            console.error('Upload Error:', err);
+            throw new Error('이미지 업로드 중 오류가 발생했습니다: ' + err.message);
+        }
+    }
+
     // 4. 저장 버튼
     if(savePageBtn && !savePageBtn.dataset.init) {
-        savePageBtn.addEventListener('click', () => {
-            const data = {
-                mainImages: Array.from(pageMainImagePreview.querySelectorAll('img')).map(img => img.src),
-                detailImage: pageDetailImagePreview.querySelector('img') ? pageDetailImagePreview.querySelector('img').src : '',
-                description: pageDescription.value,
-                specs: [],
-                features: []
-            };
-            
-            specContainer.querySelectorAll('.spec-row').forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                if(inputs[0].value) data.specs.push({ key: inputs[0].value, val: inputs[1].value });
-            });
-            
-            featureContainer.querySelectorAll('.feature-block').forEach(block => {
-                const title = block.querySelector('input').value;
-                const desc = block.querySelector('textarea').value;
-                if(title) data.features.push({ title, desc });
-            });
-            
-            localStorage.setItem(currentPageDataKey, JSON.stringify(data));
-            alert(`[${targetSelect.options[targetSelect.selectedIndex].text}] 상세페이지 설정이 저장되었습니다.`);
+        savePageBtn.addEventListener('click', async () => {
+            if (!targetSelect.value) {
+                alert('수정할 대상 제품을 먼저 선택하세요.');
+                return;
+            }
+
+            const originalBtnText = savePageBtn.innerHTML;
+            savePageBtn.disabled = true;
+            savePageBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+
+            try {
+                // 1. 대표 사진들 처리 (신규인 경우 업로드)
+                const mainImageElements = Array.from(pageMainImagePreview.querySelectorAll('img'));
+                const mainImages = [];
+                for (const img of mainImageElements) {
+                    if (img.src.startsWith('data:')) {
+                        const url = await uploadDataUrl(img.src, 'product-images');
+                        mainImages.push(url);
+                    } else if (img.src.startsWith('http')) {
+                        mainImages.push(img.src);
+                    }
+                }
+
+                // 2. 상세 이미지 처리
+                let detailImage = '';
+                const detailImgEl = pageDetailImagePreview.querySelector('img');
+                if (detailImgEl) {
+                    if (detailImgEl.src.startsWith('data:')) {
+                        detailImage = await uploadDataUrl(detailImgEl.src, 'product-images');
+                    } else if (detailImgEl.src.startsWith('http')) {
+                        detailImage = detailImgEl.src;
+                    }
+                }
+
+                const data = {
+                    mainImages: mainImages,
+                    detailImage: detailImage,
+                    description: pageDescription.value,
+                    specs: [],
+                    features: []
+                };
+                
+                specContainer.querySelectorAll('.spec-row').forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    if(inputs[0].value) data.specs.push({ key: inputs[0].value, val: inputs[1].value });
+                });
+                
+                featureContainer.querySelectorAll('.feature-block').forEach(block => {
+                    const title = block.querySelector('input').value;
+                    const desc = block.querySelector('textarea').value;
+                    if(title) data.features.push({ title, desc });
+                });
+                
+                localStorage.setItem(currentPageDataKey, JSON.stringify(data));
+                
+                const productName = targetSelect.options[targetSelect.selectedIndex].text;
+                alert(`[${productName}] 상세페이지 설정이 성공적으로 저장되었습니다.`);
+                
+                // 업로드 후 미리보기의 src를 새 URL로 교체 (다시 저장할 때 재업로드 방지)
+                loadPageData(); 
+
+            } catch (error) {
+                console.error('Save Error:', error);
+                alert('저장 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                savePageBtn.disabled = false;
+                savePageBtn.innerHTML = originalBtnText;
+            }
         });
         savePageBtn.dataset.init = "true";
     }
