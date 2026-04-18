@@ -436,19 +436,43 @@ saveProductBtn.addEventListener('click', async () => {
     }
 
     const id = productIdInput.value;
+    
+    // [폴백 로직] 컬럼이 없을 경우를 대비해 description에도 색상 정보 포함 (기존 마커 제거 후 새로 추가)
+    const colorTag = `[[C:${payload.colors}]]`;
+    let cleanDesc = payload.description.replace(/\[\[C:.*?\]\]/g, '').trim();
+    const payloadWithDescFallback = { ...payload, description: (cleanDesc + "\n\n" + colorTag).trim() };
+
+    let error = null;
     if (id) {
-        const { error } = await supabase.from('products').update(payload).eq('id', id);
-        if(error) saveMsg.textContent = '수정 실패: ' + error.message;
+        const { error: updateError } = await supabase.from('products').update(payload).eq('id', id);
+        error = updateError;
+        // 컬럼이 없어서 실패한 경우 폴백 실행
+        if (error && error.message.includes("colors")) {
+            console.warn("Falling back to description for colors...");
+            const { colors, ...fallbackPayload } = payloadWithDescFallback;
+            const { error: fallbackError } = await supabase.from('products').update(fallbackPayload).eq('id', id);
+            error = fallbackError;
+        }
     } else {
-        const { error } = await supabase.from('products').insert([payload]);
-        if(error) saveMsg.textContent = '등록 실패: ' + error.message;
+        const { error: insertError } = await supabase.from('products').insert([payload]);
+        error = insertError;
+        // 컬럼이 없어서 실패한 경우 폴백 실행
+        if (error && error.message.includes("colors")) {
+            console.warn("Falling back to description for colors...");
+            const { colors, ...fallbackPayload } = payloadWithDescFallback;
+            const { error: fallbackError } = await supabase.from('products').insert([fallbackPayload]);
+            error = fallbackError;
+        }
     }
 
-    if (!saveMsg.textContent.includes('실패')) {
-        closeModal(); fetchProducts();
+    if (error) {
+        saveMsg.textContent = '저장 실패: ' + error.message;
     } else {
-        saveProductBtn.disabled = false; saveProductBtn.textContent = '저장하기';
+        closeModal(); fetchProducts();
     }
+    
+    saveProductBtn.disabled = false;
+    saveProductBtn.textContent = '저장하기';
 });
 
 window.editProduct = async (id) => {
@@ -456,16 +480,26 @@ window.editProduct = async (id) => {
     if (error) { alert("데이터 불러오기 실패"); return; }
     openModal(true);
     productIdInput.value = p.id; productNameInput.value = p.name; productCategoryInput.value = p.category;
-    productPriceInput.value = p.price; productStockInput.value = p.stock; productDescInput.value = p.description;
+    productPriceInput.value = p.price; productStockInput.value = p.stock; 
+    
+    // 상세 설명 로드 시 색상 태그 제거 처리
+    productDescInput.value = (p.description || '').replace(/\[\[C:.*?\]\]/g, '').trim();
+    
     productImageUrl.value = p.image_url || '';
     imagePreview.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
     
-    // 색상 데이터 로드
+    // 색상 데이터 로드 (컬럼 우선, 없으면 description에서 파싱)
     const colorContainer = document.getElementById('colorContainer');
     if(colorContainer) {
         colorContainer.innerHTML = '';
-        if(p.colors) {
-            p.colors.split(',').forEach(c => createColorRow(c.trim()));
+        let colorData = p.colors;
+        if(!colorData && p.description) {
+            const match = p.description.match(/\[\[C:(.*?)\]\]/);
+            if(match) colorData = match[1];
+        }
+        
+        if(colorData) {
+            colorData.split(',').forEach(c => createColorRow(c.trim()));
         }
     }
 };
