@@ -400,10 +400,21 @@
                     }
                 }
                 
-                // 상세페이지 세로형 통이미지
-                if(data.detailImage) {
+                // 상세페이지 세로형 통이미지 (다중 이미지 대응)
+                if(data.detailImages || data.detailImage) {
                     const detailImgElem = document.getElementById('dynamicDetailImg');
-                    if(detailImgElem) detailImgElem.src = data.detailImage;
+                    if(detailImgElem) {
+                        const container = detailImgElem.parentElement;
+                        container.innerHTML = ''; // 기존 이미지 제거
+                        const imgs = data.detailImages || [data.detailImage];
+                        imgs.forEach(src => {
+                            if(!src) return;
+                            const img = document.createElement('img');
+                            img.src = src;
+                            img.style.cssText = "max-width:100%; display:block; margin: 0 auto 10px auto;";
+                            container.appendChild(img);
+                        });
+                    }
                 }
                 
                 // 제품 사양 (DIMENSION) 테이블

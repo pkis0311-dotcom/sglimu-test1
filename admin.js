@@ -1030,14 +1030,17 @@ function initPageManageTab() {
 
     if(pageDetailImage && !pageDetailImage.dataset.init) {
         pageDetailImage.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(file) {
+            pageDetailImagePreview.innerHTML = '';
+            Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    pageDetailImagePreview.innerHTML = `<img src="${ev.target.result}" style="max-width:100%; border-radius:4px;">`;
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    img.style.cssText = "max-width:100%; border-radius:4px; border:1px solid #eee;";
+                    pageDetailImagePreview.appendChild(img);
                 };
                 reader.readAsDataURL(file);
-            }
+            });
         });
         pageDetailImage.dataset.init = "true";
     }
@@ -1087,20 +1090,21 @@ function initPageManageTab() {
                     }
                 }
 
-                // 2. 상세 이미지 처리
-                let detailImage = '';
-                const detailImgEl = pageDetailImagePreview.querySelector('img');
-                if (detailImgEl) {
-                    if (detailImgEl.src.startsWith('data:')) {
-                        detailImage = await uploadDataUrl(detailImgEl.src, 'product-images');
-                    } else if (detailImgEl.src.startsWith('http')) {
-                        detailImage = detailImgEl.src;
+                // 2. 상세 이미지들 처리
+                const detailImageElements = Array.from(pageDetailImagePreview.querySelectorAll('img'));
+                const detailImages = [];
+                for (const img of detailImageElements) {
+                    if (img.src.startsWith('data:')) {
+                        const url = await uploadDataUrl(img.src, 'product-images');
+                        detailImages.push(url);
+                    } else if (img.src.startsWith('http')) {
+                        detailImages.push(img.src);
                     }
                 }
 
                 const data = {
                     mainImages: mainImages,
-                    detailImage: detailImage,
+                    detailImages: detailImages, // [변경] 다중 이미지 대응
                     description: pageDescription.value,
                     specs: [],
                     features: []
@@ -1200,8 +1204,16 @@ function loadPageData() {
             pageMainImagePreview.appendChild(img);
         });
     }
-    if(data.detailImage) {
-        pageDetailImagePreview.innerHTML = `<img src="${data.detailImage}" style="max-width:100%; border-radius:4px;">`;
+    if(data.detailImages || data.detailImage) {
+        pageDetailImagePreview.innerHTML = '';
+        const imgs = data.detailImages || [data.detailImage];
+        imgs.forEach(src => {
+            if(!src) return;
+            const img = document.createElement('img');
+            img.src = src;
+            img.style.cssText = "max-width:100%; border-radius:4px; border:1px solid #eee;";
+            pageDetailImagePreview.appendChild(img);
+        });
     }
     pageDescription.value = data.description || '';
     if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));

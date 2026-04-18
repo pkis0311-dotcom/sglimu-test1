@@ -276,11 +276,11 @@
 
                     <!-- 2. 상세페이지 이미지 -->
                     <div class="form-group full-width" style="border-top:1px solid #eee; padding-top:20px;">
-                        <label><i class="fa-solid fa-image"></i> 2. 제품 상세페이지 이미지 추가</label>
-                        <input type="file" id="pageDetailImage" class="form-control" accept="image/*">
-                        <p style="font-size:0.85rem; color:#666; margin-top:5px;">* 가로가 긴 세로형 통이미지 권장</p>
-                        <div class="image-preview" id="pageDetailImagePreview" style="height:auto; min-height:100px; padding:10px; border: 1px dashed #ccc; border-radius: 4px;">
-                            <i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>
+                        <label><i class="fa-solid fa-image"></i> 2. 제품 상세페이지 이미지 추가 (여러 장 가능)</label>
+                        <input type="file" id="pageDetailImage" class="form-control" accept="image/*" multiple>
+                        <p style="font-size:0.85rem; color:#666; margin-top:5px;">* 세로형 통이미지 또는 여러 개의 이미지를 순서대로 선택하세요.</p>
+                        <div class="image-preview" id="pageDetailImagePreview" style="display:flex; flex-direction:column; gap:10px; padding:10px; border: 1px dashed #ccc; border-radius: 4px; height:auto; min-height:100px;">
+                            <i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>
                         </div>
                     </div>
 
