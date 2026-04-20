@@ -243,10 +243,11 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const supabase = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
+    <script>
+        const { createClient } = supabase;
+        const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
 
         const CURRENT_PAGE_ID = 'supplies-lend'; 
 
@@ -280,7 +281,7 @@
                 if(!container) return;
 
                 // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
-                const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
+                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
                 const selectedIds = configData ? configData.value : [];
 
                 if (selectedIds.length === 0) {
@@ -288,7 +289,7 @@
                     return;
                 }
 
-                const { data: products, error } = await supabase.from('products').select('*').in('id', selectedIds);
+                const { data: products, error } = await db.from('products').select('*').in('id', selectedIds);
                 if (error) return;
 
                 container.innerHTML = '';
@@ -323,7 +324,7 @@
 
             // [추가] 페이지 데이터 로드 (description, images etc.)
             try {
-                const { data: pageConfig } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
+                const { data: pageConfig } = await db.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
                 const data = pageConfig ? pageConfig.value : null;
 
                 if(data) {

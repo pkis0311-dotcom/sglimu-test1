@@ -1,13 +1,28 @@
-// admin.js
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+// admin.js - Integrated Admin Script
+// [MIGRATION] Switched from ES Module to Global Script for local file support.
 
-// ==========================================
-// 🚨 사용자(관리자)님, 여기에 Supabase 설정값을 넣어주세요! 🚨
-// ==========================================
-const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
+let db;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof supabase === 'undefined') {
+        console.error("Supabase library is not loaded. Please check your internet connection and ensure the CDN script is included in admin.html.");
+        alert("Supabase 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.");
+        return;
+    }
+
+    const { createClient } = supabase;
+
+    // ==========================================
+    // 🚨 사용자(관리자)님, 여기에 Supabase 설정값을 넣어주세요! 🚨
+    // ==========================================
+    const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
+
+    db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 시스템 초기화
+    checkSession();
+});
 
 // ==========================================
 // 사이트 통합 카테고리 정의 (전역 참조용)
@@ -145,7 +160,7 @@ const bannerDisplayOrderInput = document.getElementById('bannerDisplayOrder');
 // 1. 로그인 / 세션 관리
 // ==========================================
 async function checkSession() {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const { data: { session }, error } = await db.auth.getSession();
     if (session) {
         loginOverlay.style.display = 'none';
         initDashboard(); // 로그인 성공 시 대시보드 강제 초기화
@@ -166,7 +181,7 @@ loginBtn.addEventListener('click', async () => {
     loginBtn.textContent = '로그인 중...';
     loginBtn.disabled = true;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await db.auth.signInWithPassword({
         email: email,
         password: password
     });
@@ -184,7 +199,7 @@ loginBtn.addEventListener('click', async () => {
 });
 
 logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await db.auth.signOut();
     location.reload(); // 깔끔하게 화면 전체 새로고침
 });
 
@@ -231,7 +246,7 @@ function initDashboard() {
 async function fetchProducts() {
     productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
     
-    const { data: products, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    const { data: products, error } = await db.from('products').select('*').order('created_at', { ascending: false });
     globalProducts = products || [];
 
     if (error) {
@@ -465,9 +480,9 @@ saveProductBtn.addEventListener('click', async () => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `products/${fileName}`;
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, file);
+        const { error: uploadError } = await db.storage.from('product-images').upload(filePath, file);
         if (uploadError) { saveMsg.textContent = '업로드 오류: ' + uploadError.message; saveProductBtn.disabled=false; saveProductBtn.textContent='저장하기'; return; }
-        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(filePath);
+        const { data: { publicUrl } } = db.storage.from('product-images').getPublicUrl(filePath);
         payload.image_url = publicUrl;
     }
 
@@ -481,23 +496,23 @@ saveProductBtn.addEventListener('click', async () => {
 
     let error = null;
     if (id) {
-        const { error: updateError } = await supabase.from('products').update(payload).eq('id', id);
+        const { error: updateError } = await db.from('products').update(payload).eq('id', id);
         error = updateError;
         // 컬럼이 없어서 실패한 경우 폴백 실행
         if (error && (error.message.includes("colors") || error.message.includes("sizes"))) {
             console.warn("Falling back to description for colors and sizes...");
             const { colors, sizes, ...fallbackPayload } = payloadWithDescFallback;
-            const { error: fallbackError } = await supabase.from('products').update(fallbackPayload).eq('id', id);
+            const { error: fallbackError } = await db.from('products').update(fallbackPayload).eq('id', id);
             error = fallbackError;
         }
     } else {
-        const { error: insertError } = await supabase.from('products').insert([payload]);
+        const { error: insertError } = await db.from('products').insert([payload]);
         error = insertError;
         // 컬럼이 없어서 실패한 경우 폴백 실행
         if (error && (error.message.includes("colors") || error.message.includes("sizes"))) {
             console.warn("Falling back to description for colors and sizes...");
             const { colors, sizes, ...fallbackPayload } = payloadWithDescFallback;
-            const { error: fallbackError } = await supabase.from('products').insert([fallbackPayload]);
+            const { error: fallbackError } = await db.from('products').insert([fallbackPayload]);
             error = fallbackError;
         }
     }
@@ -513,7 +528,7 @@ saveProductBtn.addEventListener('click', async () => {
 });
 
 window.editProduct = async (id) => {
-    const { data: p, error } = await supabase.from('products').select('*').eq('id', id).single();
+    const { data: p, error } = await db.from('products').select('*').eq('id', id).single();
     if (error) { alert("데이터 불러오기 실패"); return; }
     openModal(true);
     productIdInput.value = p.id; productNameInput.value = p.name; productCategoryInput.value = p.category;
@@ -556,7 +571,7 @@ window.editProduct = async (id) => {
 
 window.deleteProduct = async (id, name) => {
     if(confirm(`"${name}" 제품을 영구 삭제하시겠습니까?`)) {
-        const { error } = await supabase.from('products').delete().eq('id', id);
+        const { error } = await db.from('products').delete().eq('id', id);
         if (error) alert('삭제 실패: ' + error.message); else fetchProducts();
     }
 };
@@ -574,7 +589,7 @@ async function fetchOrders() {
     tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">분석 데이터를 불러오는 중입니다...</td></tr>';
     
     // orders 테이블에서 가져오기
-    const { data: orders, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    const { data: orders, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
 
     if (error) {
         console.warn('Orders Table 에러:', error.message);
@@ -772,7 +787,7 @@ async function fetchInquiries() {
     const tBody = document.getElementById('inquiryTableBody');
     tBody.innerHTML = '<tr><td colspan="7" class="empty-state">고객 문의 데이터를 불러오는 중입니다...</td></tr>';
     
-    const { data: inquiries, error } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
+    const { data: inquiries, error } = await db.from('inquiries').select('*').order('created_at', { ascending: false });
 
     if(error) {
         tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i> 테이블 구조 불일치 또는 미생성 에러입니다.<br>${error.message}</td></tr>`;
@@ -816,7 +831,7 @@ async function fetchInquiries() {
 
 // 문의 상태 (답변완료 등) 변경 저장 함수 (전역)
 window.updateInquiryStatus = async function(id, newStatus) {
-    const { error } = await supabase.from('inquiries').update({ status: newStatus }).eq('id', id);
+    const { error } = await db.from('inquiries').update({ status: newStatus }).eq('id', id);
     if (error) {
         alert('상태 변경 중 오류: ' + error.message);
     } else {
@@ -825,7 +840,7 @@ window.updateInquiryStatus = async function(id, newStatus) {
 }
 async function fetchBanners() {
     // banners 테이블에서 데이터 가져오기 (순서 필드 기준 오름차순)
-    const { data: banners, error } = await supabase.from('banners').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: false });
+    const { data: banners, error } = await db.from('banners').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: false });
 
     if (error) {
         bannerTableBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'banners' 테이블을 먼저 생성해주세요.<br>${error.message}</td></tr>`;
@@ -871,13 +886,13 @@ async function fetchBanners() {
 // 상태 즉시 업데이트 함수 (전역)
 window.updateBannerStatus = async function(id, isActiveStr) {
     const isActive = isActiveStr === 'true';
-    const { error } = await supabase.from('banners').update({ is_active: isActive }).eq('id', id);
+    const { error } = await db.from('banners').update({ is_active: isActive }).eq('id', id);
     if(error) alert('상태 변경 오류: ' + error.message);
 };
 
 window.deleteBanner = async function(id) {
     if(confirm('이 배너를 영구적으로 삭제하시겠습니까?')) {
-        const { error } = await supabase.from('banners').delete().eq('id', id);
+        const { error } = await db.from('banners').delete().eq('id', id);
         if(error) alert('삭제 실패: ' + error.message);
         else fetchBanners();
     }
@@ -948,7 +963,7 @@ saveBannerBtn.addEventListener('click', async () => {
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `banners/${fileName}`; // 폴더 지정 선택적
         
-        const { error: uploadError } = await supabase.storage.from('banner-images').upload(filePath, file);
+        const { error: uploadError } = await db.storage.from('banner-images').upload(filePath, file);
         
         if (uploadError) { 
             saveBannerMsg.textContent = '이미지 업로드 오류: ' + uploadError.message; 
@@ -957,14 +972,14 @@ saveBannerBtn.addEventListener('click', async () => {
             return; 
         }
         
-        const { data: { publicUrl } } = supabase.storage.from('banner-images').getPublicUrl(filePath);
+        const { data: { publicUrl } } = db.storage.from('banner-images').getPublicUrl(filePath);
         payload.image_url = publicUrl;
     } else {
         payload.image_url = bannerImageUrl.value;
     }
 
     // Insert
-    const { error } = await supabase.from('banners').insert([payload]);
+    const { error } = await db.from('banners').insert([payload]);
     
     if (error) {
         saveBannerMsg.textContent = '등록 실패: ' + error.message;
@@ -1054,10 +1069,10 @@ function initPageManageTab() {
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `${folder}/${fileName}`;
             
-            const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, blob);
+            const { error: uploadError } = await db.storage.from(bucket).upload(filePath, blob);
             if (uploadError) throw uploadError;
             
-            const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+            const { data: { publicUrl } } = db.storage.from(bucket).getPublicUrl(filePath);
             return publicUrl;
         } catch (err) {
             console.error('Upload Error:', err);
@@ -1122,7 +1137,7 @@ function initPageManageTab() {
                 });
                 
                 // [변경] localStorage 대신 Supabase site_configs 테이블에 저장
-                const { error: configError } = await supabase.from('site_configs').upsert({
+                const { error: configError } = await db.from('site_configs').upsert({
                     key: currentPageDataKey,
                     value: data
                 });
@@ -1188,7 +1203,7 @@ async function loadPageData() {
     if(!currentPageDataKey) return;
 
     // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
-    const { data: configData, error } = await supabase.from('site_configs').select('value').eq('key', currentPageDataKey).single();
+    const { data: configData, error } = await db.from('site_configs').select('value').eq('key', currentPageDataKey).single();
     const rawData = configData ? configData.value : null;
     const specContainer = document.getElementById('specContainer');
     const featureContainer = document.getElementById('featureContainer');
@@ -1231,7 +1246,7 @@ async function loadPageData() {
 
 async function fetchUsers() {
     const tBody = document.getElementById('userTableBody');
-    const { data, error } = await supabase.from('users').select('*').limit(10);
+    const { data, error } = await db.from('users').select('*').limit(10);
     if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'users' 테이블을 먼저 생성해주세요.</td></tr>`; }
 }
 
@@ -1290,7 +1305,7 @@ function initCategoryDisplayTab() {
 
     // 4. 저장 버튼
     if(saveBtn && !saveBtn.dataset.init) {
-        saveBtn.onclick = () => {
+        saveBtn.onclick = async () => {
             if(!currentSelectedSection) {
                 alert('먼저 관리할 소분류(전시화면)를 선택해주세요.');
                 return;
@@ -1301,7 +1316,7 @@ function initCategoryDisplayTab() {
                 if(cb.checked) selectedProducts.push(cb.value);
             });
             // [변경] localStorage 대신 Supabase site_configs 테이블에 저장
-            const { error: displayError } = await supabase.from('site_configs').upsert({
+            const { error: displayError } = await db.from('site_configs').upsert({
                 key: 'display_' + currentSelectedSection,
                 value: selectedProducts
             });
@@ -1322,7 +1337,7 @@ function initCategoryDisplayTab() {
 
 async function loadCategoryDisplay(sectionKey) {
     // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
-    const { data: configData, error } = await supabase.from('site_configs').select('value').eq('key', 'display_' + sectionKey).single();
+    const { data: configData, error } = await db.from('site_configs').select('value').eq('key', 'display_' + sectionKey).single();
     const selectedIds = configData ? configData.value : [];
     
     const checkboxes = document.querySelectorAll('.display-item-cb');
@@ -1332,5 +1347,4 @@ async function loadCategoryDisplay(sectionKey) {
 }
 
 // ------------------------------------------
-// 시스템 초기화
-checkSession();
+// 시스템 초기화는 상단의 DOMContentLoaded 리스너에서 수행됩니다.

@@ -11,6 +11,8 @@
     <!-- 통계 및 엑셀 다운로드용 외부 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase Global Library (to bypass CORS issues on local file:// protocol) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -544,8 +546,8 @@
         </div>
     </div>
 
-    <!-- 스크립트 모듈 연동 -->
-    <script type="module" src="admin.js"></script>
+    <!-- 스크립트 연동 (모듈 방식에서 일반 방식으로 변경하여 로컬 접근성 향상) -->
+    <script src="admin.js"></script>
 
 </body>
 </html>

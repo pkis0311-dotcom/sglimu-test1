@@ -302,7 +302,7 @@
                 if(!container) return;
 
                 // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
-                const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
+                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
                 const selectedIds = configData ? configData.value : [];
 
                 if (selectedIds.length === 0) {
@@ -310,7 +310,7 @@
                     return;
                 }
 
-                const { data: products, error } = await supabase.from('products').select('*').in('id', selectedIds);
+                const { data: products, error } = await db.from('products').select('*').in('id', selectedIds);
                 if (error) return;
 
                 container.innerHTML = '';
@@ -342,22 +342,10 @@
                 const displayKey = CURRENT_PAGE_ID + '-' + targetId;
                 await loadDisplayProducts(targetId, displayKey);
             }
-        });
-    </script>
-    <!-- SG LIMU Global Scripts -->
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const supabase = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
 
-        // [변경] 관리자 페이지 저장 내용 반영 스크립트 (ID: em)
-        const CURRENT_PAGE_ID = 'em'; 
-
-        window.addEventListener('DOMContentLoaded', async () => {
             try {
                 // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
-                const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
+                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
                 const data = configData ? configData.value : null;
 
                 if(data) {
