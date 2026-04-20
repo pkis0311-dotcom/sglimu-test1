@@ -1,119 +1,48 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>포머스 가구 - SG LIMU</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .category-page { padding: 80px 0 100px; min-height: 800px; }
-        .category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }
-        .category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); width: 100%; border-radius: 20px; }
-        .category-title { font-size: 2.5rem; color: var(--color-text); font-weight: 700; margin-bottom: 20px; }
-        .subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }
-        .subcategory-item { padding: 12px 30px; font-size: 1.1rem; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }
-        .subcategory-item:hover, .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
-        .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
-        .empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }
-    </style>
 </head>
 <body>
-    <header class="header">
-        <div class="header-container">
-            <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
-            <nav class="gnb">
-                <ul>
-                    <li class="has-submenu">
-                        <a href="#">도서관리 시스템</a>
-                        <ul class="submenu">
-                            <li><a href="rfid.html">RFID시스템</a></li>
-                            <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입관리시스템</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 용품</a>
-                        <ul class="submenu">
-                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
-                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
-                            <li><a href="supplies-lend.html">대출용품</a></li>
-                            <li><a href="sterilizer.html">책소독기</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 가구</a>
-                        <ul class="submenu">
-                            <li><a href="furniture-koas.html">코아스</a></li>
-                            <li><a href="furniture-fomus.html">포머스</a></li>
-                            <li><a href="furniture-fursys.html">퍼시스</a></li>
-                            <li><a href="furniture-custom.html">제작가구</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">사인물</a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
-                            <li><a href="sign-board.html">게시판/이용안내</a></li>
-                            <li><a href="sign-date.html">대출반납일력표</a></li>
-                            <li><a href="sign-custom.html">제작사인물</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="discount.html">할인상품</a></li>
-                </ul>
-            </nav>
-            <div class="header-utils">
-                <a href="#"><i class="fa-regular fa-user"></i></a>
-                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
-            </div>
-        </div>
-    </header>
-
+    <header class="header"><div class="header-container"><h1 class="logo"><a href="index.html">SG LIMU</a></h1></div></header>
     <main class="category-page">
-        <div class="category-header">
-            <h2 class="category-title">포머스 가구</h2>
-            <p>실용성과 디자인이 조화로운 도서관 가구, 포머스 시리즈입니다.</p>
-        </div>
+        <div class="category-header"><h2>포머스 가구</h2><p>포머스의 실용적이고 현대적인 도서관 가구입니다.</p></div>
         <div class="category-container">
-            <ul class="subcategory-nav" id="subCategoryNav">
-                <li class="subcategory-item active" data-target="fomus-cat-0">서가</li>
-                <li class="subcategory-item" data-target="fomus-cat-1">테이블</li>
-                <li class="subcategory-item" data-target="fomus-cat-2">의자</li>
-                <li class="subcategory-item" data-target="fomus-cat-3">기타</li>
-            </ul>
-            <div class="product-list" id="productList">
-                <div class="empty-state">로딩 중...</div>
-            </div>
+            <ul class="subcategory-nav"><li class="subcategory-item active" data-target="fomus_shelf">서가</li><li class="subcategory-item" data-target="fomus_chair">의자</li></ul>
+            <div class="product-list" id="productList"><div class="empty-state">로딩 중...</div></div>
         </div>
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const { createClient } = supabase;
         const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         async function loadProducts(catId) {
             const container = document.getElementById('productList');
             container.innerHTML = '<div class="empty-state">로딩 중...</div>';
-            try {
-                const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId).order('created_at', { ascending: false });
-                if (error || !data || data.length === 0) {
-                    container.innerHTML = '<div class="empty-state">해당 카테고리에 등록된 상품이 없습니다.</div>';
-                    return;
-                }
-                container.innerHTML = '';
-                data.forEach(p => {
-                    const card = document.createElement('div');
-                    card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                    const priceStr = p.price ? p.price.toLocaleString() + '원' : '가격문의';
-                    card.innerHTML = `<a href="product-detail.html?id=${p.id}"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9;"></div><div style="padding:20px;"><h4>${p.name}</h4><p style="font-weight:700; color:var(--color-primary);">${priceStr}</p></div></a>`;
-                    container.appendChild(card);
-                });
-            } catch (e) { container.innerHTML = '<div class="empty-state">로딩 실패</div>'; }
+            const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId);
+            if (error || !data || data.length === 0) {
+                container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
+                return;
+            }
+            container.innerHTML = '';
+            data.forEach(p => {
+                const card = document.createElement('div');
+                card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden; margin-bottom:20px;";
+                card.innerHTML = <a href="product-detail.html?id=\" style="text-decoration:none; color:inherit;">
+                    <div style="height:250px; background:url('\') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div>
+                    <div style="padding:20px;">
+                        <h4 style="margin-bottom:10px;">\</h4>
+                        <p style="font-weight:700; color:#3498db;">\</p>
+                    </div>
+                </a>;
+                container.appendChild(card);
+            });
         }
-
         document.querySelectorAll('.subcategory-item').forEach(item => {
             item.addEventListener('click', () => {
                 document.querySelectorAll('.subcategory-item').forEach(nav => nav.classList.remove('active'));
@@ -121,8 +50,7 @@
                 loadProducts(item.dataset.target);
             });
         });
-        const firstTab = document.querySelector('.subcategory-item');
-        if (firstTab) firstTab.click();
+        loadProducts('fomus_shelf');
     </script>
 </body>
 </html>

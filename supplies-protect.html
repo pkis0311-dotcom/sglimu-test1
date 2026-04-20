@@ -1,20 +1,18 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>도서보호, 보수용품 - SG LIMU</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .category-page { padding: 80px 0 100px; min-height: 800px; }
         .category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }
-        .category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); width: 100%; border-radius: 20px; }
-        .category-title { font-size: 2.5rem; color: var(--color-text); font-weight: 700; margin-bottom: 20px; }
+        .category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); border-radius: 20px; }
+        .category-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; }
         .subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }
-        .subcategory-item { padding: 12px 30px; font-size: 1.1rem; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }
-        .subcategory-item:hover, .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
+        .subcategory-item { padding: 12px 30px; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; }
+        .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
         .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
         .empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }
     </style>
@@ -25,82 +23,44 @@
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
-                    <li class="has-submenu">
-                        <a href="#">도서관리 시스템</a>
-                        <ul class="submenu">
-                            <li><a href="rfid.html">RFID시스템</a></li>
-                            <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입관리시스템</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 용품</a>
-                        <ul class="submenu">
-                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
-                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
-                            <li><a href="supplies-lend.html">대출용품</a></li>
-                            <li><a href="sterilizer.html">책소독기</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 가구</a>
-                        <ul class="submenu">
-                            <li><a href="furniture-koas.html">코아스</a></li>
-                            <li><a href="furniture-fomus.html">포머스</a></li>
-                            <li><a href="furniture-fursys.html">퍼시스</a></li>
-                            <li><a href="furniture-custom.html">제작가구</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">사인물</a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
-                            <li><a href="sign-board.html">게시판/이용안내</a></li>
-                            <li><a href="sign-date.html">대출반납일력표</a></li>
-                            <li><a href="sign-custom.html">제작사인물</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="discount.html">할인상품</a></li>
+                    <li><a href="rfid.html">RFID시스템</a></li>
+                    <li><a href="em.html">EM시스템</a></li>
+                    <li><a href="access.html">출입관리시스템</a></li>
+                    <li><a href="supplies-arrange.html">도서정리 용품</a></li>
+                    <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
+                    <li><a href="supplies-lend.html">대출용품</a></li>
                 </ul>
             </nav>
-            <div class="header-utils">
-                <a href="#"><i class="fa-regular fa-user"></i></a>
-                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
-            </div>
         </div>
     </header>
-
     <main class="category-page">
         <div class="category-header">
             <h2 class="category-title">도서보호, 보수용품</h2>
-            <p>소중한 도서를 오래도록 보존하기 위한 보호/보수 특화 제품입니다.</p>
+            <p>제품 정보를 불러오고 있습니다...</p>
         </div>
-
         <div class="category-container">
             <ul class="subcategory-nav" id="subCategoryNav">
-                <li class="subcategory-item active" data-target="supplies-protect-cat-0">보호 > 키모시리즈</li>
-                <li class="subcategory-item" data-target="supplies-protect-cat-1">보호 > 중성풀</li>
-                <li class="subcategory-item" data-target="supplies-protect-cat-2">보호 > 양면테이프</li>
-                <li class="subcategory-item" data-target="supplies-protect-cat-3">보호 > 북커버</li>
+                <li class="subcategory-item active" data-target="supplies_protect_filmo">필모시리즈</li>
+                <li class="subcategory-item" data-target="supplies_protect_glue">중성풀</li>
+                <li class="subcategory-item" data-target="supplies_protect_tape">양면테이프</li>
+                <li class="subcategory-item" data-target="supplies_protect_bookcover">북커버</li>
             </ul>
-
             <div class="product-list" id="productList">
                 <div class="empty-state">로딩 중...</div>
             </div>
         </div>
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    <script>
+        const { createClient } = supabase;
         const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loadProducts(catId) {
             const container = document.getElementById('productList');
             container.innerHTML = '<div class="empty-state">로딩 중...</div>';
-            const { data, error } = await supabase.from('products').select('*').eq('category', catId);
+            const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId);
             if (error || !data || data.length === 0) {
                 container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
                 return;
@@ -109,17 +69,16 @@
             data.forEach(p => {
                 const card = document.createElement('div');
                 card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                card.innerHTML = `<a href="product-detail.html?id=${p.id}">
-                    <div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9;"></div>
+                card.innerHTML = <a href="product-detail.html?id=\" style="text-decoration:none; color:inherit;">
+                    <div style="height:250px; background:url('\') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div>
                     <div style="padding:20px;">
-                        <h4 style="margin-bottom:10px;">${p.name}</h4>
-                        <p style="font-weight:700; color:var(--color-primary);">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p>
+                        <h4 style="margin-bottom:10px; font-weight:600;">\</h4>
+                        <p style="font-weight:700; color:#3498db;">\</p>
                     </div>
-                </a>`;
+                </a>;
                 container.appendChild(card);
             });
         }
-
         document.querySelectorAll('.subcategory-item').forEach(item => {
             item.addEventListener('click', () => {
                 document.querySelectorAll('.subcategory-item').forEach(nav => nav.classList.remove('active'));
@@ -127,8 +86,7 @@
                 loadProducts(item.dataset.target);
             });
         });
-        const firstTab = document.querySelector('.subcategory-item');
-        if (firstTab) firstTab.click();
+        loadProducts('supplies_protect_filmo');
     </script>
 </body>
 </html>

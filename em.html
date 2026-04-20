@@ -79,9 +79,9 @@
 
         <div class="category-container">
             <ul class="subcategory-nav" id="subCategoryNav">
-                <li class="subcategory-item active" data-target="em-cat-0">분실방지기</li>
-                <li class="subcategory-item" data-target="em-cat-1">감응제거재생기</li>
-                <li class="subcategory-item" data-target="em-cat-2">감응 테이프</li>
+                <li class="subcategory-item active" data-target="em_anti">분실방지기</li>
+                <li class="subcategory-item" data-target="em_gen">감응제거재생기</li>
+                <li class="subcategory-item" data-target="em_tape">감응 테이프</li>
             </ul>
 
             <div class="product-list" id="productList">
@@ -91,16 +91,16 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    <script>
+        const { createClient } = supabase;
         const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loadProducts(catId) {
             const container = document.getElementById('productList');
             container.innerHTML = '<div class="empty-state">로딩 중...</div>';
-            const { data, error } = await supabase.from('products').select('*').eq('category', catId);
+            const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId);
             if (error || !data || data.length === 0) {
                 container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
                 return;
@@ -109,10 +109,10 @@
             data.forEach(p => {
                 const card = document.createElement('div');
                 card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                card.innerHTML = `<a href="product-detail.html?id=${p.id}">
-                    <div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9;"></div>
+                card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;">
+                    <div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div>
                     <div style="padding:20px;">
-                        <h4 style="margin-bottom:10px;">${p.name}</h4>
+                        <h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4>
                         <p style="font-weight:700; color:var(--color-primary);">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p>
                     </div>
                 </a>`;
@@ -127,7 +127,7 @@
                 loadProducts(item.dataset.target);
             });
         });
-        loadProducts('em-cat-0');
+        loadProducts('em_anti');
     </script>
 </body>
 </html>

@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabContents = document.querySelectorAll('.tab-content');
 
     tabItems.forEach(tab => {
-        tab.addEventListener('click', () => {
+        tab.addEventListener('click', async () => {
             // Remove active class from all
             tabItems.forEach(t => t.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
@@ -262,6 +262,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (targetContent) {
                 targetContent.classList.add('active');
                 
+                // [동적 로딩] 탭 클릭 시 데이터가 없으면 로드
+                const grid = document.getElementById(`grid-${targetId.split('-')[1]}`);
+                if (grid && grid.children.length === 0) {
+                    await loadBestProducts(targetId);
+                }
+
                 // Trigger reveal for cards in newly active tab with stagger
                 targetContent.querySelectorAll('.product-card').forEach((card, index) => {
                     card.classList.remove('visible'); // Reset
@@ -272,6 +278,67 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     });
+
+    // 3.1 Best Products Dynamic Loading Logic
+    async function loadBestProducts(tabId) {
+        const gridId = `grid-${tabId.split('-')[1]}`;
+        const container = document.getElementById(gridId);
+        if(!container || !supabaseClient) return;
+
+        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#999;">데이터를 불러오는 중...</div>';
+        
+        let query;
+        if(tabId === 'tab-system') {
+            // 시스템 관련 카테고리 (rfid_%, em_%, access_%)
+            query = supabaseClient.from('products').select('*').or('category.ilike.rfid_%,category.ilike.em_%,category.ilike.access_%');
+        } else if(tabId === 'tab-tape') {
+            // 태그 및 테이프 (rfid_tag, em_tape)
+            query = supabaseClient.from('products').select('*').or('category.eq.rfid_tag,category.eq.em_tape');
+        } else if(tabId === 'tab-supplies') {
+            // 용품 관련 (supplies_%)
+            query = supabaseClient.from('products').select('*').ilike('category', 'supplies_%');
+        } else {
+            // 설치사례 또는 기본: best_product 태그 우선 노출
+            query = supabaseClient.from('products').select('*').eq('category', 'best_product');
+        }
+
+        try {
+            // 1. 우선적으로 'best_product' 카테고리가 있으면 먼저 가져오기 시도 (탭 무관 공통 베스트)
+            let { data, error } = await query.order('created_at', { ascending: false }).limit(4);
+            
+            // 만약 탭 전용 데이터가 없으면 일반 'best_product'에서 가져오기
+            if ((!data || data.length === 0) && tabId !== 'tab-cases') {
+                const fallback = await supabaseClient.from('products').select('*').eq('category', 'best_product').limit(4);
+                data = fallback.data;
+                error = fallback.error;
+            }
+            if (error || !data || data.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#999;">등록된 제품이 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <a href="product-detail.html?id=${p.id}" style="display:block; text-decoration:none; color:inherit;">
+                        <div class="product-img" style="background-image: url('${p.image_url}'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
+                        <div class="product-info">
+                            <span class="product-price" style="font-size:0.85rem; color:var(--color-primary); font-weight:700; display:block; margin-bottom:5px;">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</span>
+                            <h4 style="font-weight:600; margin:0; font-size:1rem;">${p.name}</h4>
+                        </div>
+                    </a>
+                `;
+                container.appendChild(card);
+            });
+        } catch (e) {
+            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#999;">로딩 실패</div>';
+        }
+    }
+
+    // 초기 활성 탭 데이터 로드
+    loadBestProducts('tab-system');
 
     // 4. Search Focus Logic
     const headerSearchBtn = document.getElementById('headerSearchBtn');

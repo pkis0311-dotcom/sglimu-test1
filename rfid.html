@@ -79,10 +79,10 @@
 
         <div class="category-container">
             <ul class="subcategory-nav" id="subCategoryNav">
-                <li class="subcategory-item active" data-target="rfid-cat-tag">태그 (TAG)</li>
-                <li class="subcategory-item" data-target="rfid-cat-anti">분실방지기</li>
-                <li class="subcategory-item" data-target="rfid-cat-reader">리더기</li>
-                <li class="subcategory-item" data-target="rfid-cat-return">대출반납기</li>
+                <li class="subcategory-item active" data-target="rfid_tag">태그 (TAG)</li>
+                <li class="subcategory-item" data-target="rfid_anti">분실방지기</li>
+                <li class="subcategory-item" data-target="rfid_reader">리더기</li>
+                <li class="subcategory-item" data-target="rfid_return">대출반납기</li>
             </ul>
 
             <div class="product-list" id="productList">
@@ -128,7 +128,7 @@
                 loadProducts(item.dataset.target);
             });
         });
-        loadProducts('rfid-cat-tag');
+        loadProducts('rfid_tag');
     </script>
 </body>
 </html>
