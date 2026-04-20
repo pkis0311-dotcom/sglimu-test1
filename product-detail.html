@@ -372,11 +372,12 @@
                 descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
             }
 
-            // 4. 상세페이지 관리(localStorage) 연동
-            const savedDataRaw = localStorage.getItem('pageData_' + productId);
-            if(savedDataRaw) {
-                const data = JSON.parse(savedDataRaw);
-                
+            // 4. 상세페이지 관리(Supabase) 연동
+            // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+            const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
+            const data = configData ? configData.value : null;
+
+            if(data) {
                 // 제품 설명 (Summary)
                 if(data.description) {
                     const descElem = document.getElementById('dynamicDesc');

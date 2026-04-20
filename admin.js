@@ -1121,7 +1121,13 @@ function initPageManageTab() {
                     if(title) data.features.push({ title, desc });
                 });
                 
-                localStorage.setItem(currentPageDataKey, JSON.stringify(data));
+                // [변경] localStorage 대신 Supabase site_configs 테이블에 저장
+                const { error: configError } = await supabase.from('site_configs').upsert({
+                    key: currentPageDataKey,
+                    value: data
+                });
+                
+                if (configError) throw configError;
                 
                 const productName = targetSelect.options[targetSelect.selectedIndex].text;
                 alert(`[${productName}] 상세페이지 설정이 성공적으로 저장되었습니다.`);
@@ -1178,9 +1184,12 @@ function createFeatureBlock(title, desc) {
     featureContainer.appendChild(block);
 }
 
-function loadPageData() {
+async function loadPageData() {
     if(!currentPageDataKey) return;
-    const raw = localStorage.getItem(currentPageDataKey);
+
+    // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+    const { data: configData, error } = await supabase.from('site_configs').select('value').eq('key', currentPageDataKey).single();
+    const rawData = configData ? configData.value : null;
     const specContainer = document.getElementById('specContainer');
     const featureContainer = document.getElementById('featureContainer');
     const pageMainImagePreview = document.getElementById('pageMainImagePreview');
@@ -1193,8 +1202,8 @@ function loadPageData() {
     pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
     pageDescription.value = '';
 
-    if(!raw) return;
-    const data = JSON.parse(raw);
+    if(!rawData) return;
+    const data = rawData;
     
     if(data.mainImages && data.mainImages.length > 0) {
         pageMainImagePreview.innerHTML = '';
@@ -1291,7 +1300,16 @@ function initCategoryDisplayTab() {
             checkboxes.forEach(cb => {
                 if(cb.checked) selectedProducts.push(cb.value);
             });
-            localStorage.setItem('display_' + currentSelectedSection, JSON.stringify(selectedProducts));
+            // [변경] localStorage 대신 Supabase site_configs 테이블에 저장
+            const { error: displayError } = await supabase.from('site_configs').upsert({
+                key: 'display_' + currentSelectedSection,
+                value: selectedProducts
+            });
+
+            if (displayError) {
+                alert('저장 실패: ' + displayError.message);
+                return;
+            }
             alert(`[${selectionName.innerText}] 화면 배치가 성공적으로 저장되었습니다.`);
         };
         saveBtn.dataset.init = "true";
@@ -1302,9 +1320,10 @@ function initCategoryDisplayTab() {
     if(activeMajor) renderMinorCategories(activeMajor.dataset.major);
 }
 
-function loadCategoryDisplay(sectionKey) {
-    const raw = localStorage.getItem('display_' + sectionKey);
-    const selectedIds = raw ? JSON.parse(raw) : [];
+async function loadCategoryDisplay(sectionKey) {
+    // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+    const { data: configData, error } = await supabase.from('site_configs').select('value').eq('key', 'display_' + sectionKey).single();
+    const selectedIds = configData ? configData.value : [];
     
     const checkboxes = document.querySelectorAll('.display-item-cb');
     checkboxes.forEach(cb => {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>퍼시스 가구 - 에스지라이뮤</title>
+    <title>게시판/이용안내 - 에스지라이뮤</title>
     <meta name="description" content="RFID시스템, 도서관용품, 도서관물품">
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
@@ -123,15 +123,12 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">퍼시스 가구</h2>
-            <p>인체공학적 설계가 돋보이는 퍼시스 가구입니다.</p>
+            <h2 class="category-title">게시판/이용안내</h2>
+            <p>다양한 게시물과 안내 정보를 전달하는 전문 사인물입니다.</p>
         </div>
 
         <ul class="subcategory-nav" id="subCategoryNav">
-            <li class="subcategory-item active" data-target="cat-0">서가</li>
-            <li class="subcategory-item" data-target="cat-1">테이블</li>
-            <li class="subcategory-item" data-target="cat-2">의자</li>
-            <li class="subcategory-item" data-target="cat-3">기타</li>
+            <li class="subcategory-item active" data-target="cat-0">안내판 전체</li>
         </ul>
 
         <div id="cat-0" class="sub-content active">
@@ -139,40 +136,7 @@
                 <div class="product-card visible">
                     <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
                     <div class="product-info">
-                        <h4>서가 샘플상품</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-1" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>테이블 샘플상품</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-2" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>의자 샘플상품</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-3" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>기타 샘플상품</h4>
+                        <h4>사인물 샘플상품</h4>
                     </div>
                 </div>
             </div>
@@ -249,7 +213,7 @@
         const supabase = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
 
         // [MIGRATION] CURRENT_PAGE_ID is the unique identifier for fetching data from Supabase site_configs
-        const CURRENT_PAGE_ID = 'fursys'; 
+        const CURRENT_PAGE_ID = 'sign-board'; 
 
         document.addEventListener('DOMContentLoaded', async () => {
             // --- UI Interaction Logic ---

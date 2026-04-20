@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -248,6 +248,8 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const supabase = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
 
+        const CURRENT_PAGE_ID = 'supplies-lend'; 
+
         document.addEventListener('DOMContentLoaded', async () => {
             const subNavItems = document.querySelectorAll('.subcategory-item');
             const subContents = document.querySelectorAll('.sub-content');
@@ -277,8 +279,9 @@
                 const container = document.querySelector(`#${containerId} .product-list`);
                 if(!container) return;
 
-                const raw = localStorage.getItem('display_' + displayKey);
-                const selectedIds = raw ? JSON.parse(raw) : [];
+                // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+                const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
+                const selectedIds = configData ? configData.value : [];
 
                 if (selectedIds.length === 0) {
                     container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">등록된 전시 상품이 없습니다. 관리자 사이트에서 배치해주세요.</div>';
@@ -290,7 +293,7 @@
 
                 container.innerHTML = '';
                 const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
-
+                
                 sortedProducts.forEach(p => {
                     const card = document.createElement('div');
                     card.className = 'product-card visible';
@@ -309,10 +312,64 @@
                 });
             }
 
-            await loadDisplayProducts('cat-0', 'supplies-lend-cat-0');
-            await loadDisplayProducts('cat-1', 'supplies-lend-cat-1');
-            await loadDisplayProducts('cat-2', 'supplies-lend-cat-2');
-            await loadDisplayProducts('cat-3', 'supplies-lend-cat-3');
+            // [변경] 하드코딩된 호출 대신 소분류 메뉴를 순회하며 자동으로 제품 로드
+            const subItems = document.querySelectorAll('.subcategory-item');
+            for (const item of subItems) {
+                const targetId = item.getAttribute('data-target');
+                // displayKey 형식: (페이지ID)-(소분류타겟ID) 예: supplies-lend-cat-0
+                const displayKey = CURRENT_PAGE_ID + '-' + targetId;
+                await loadDisplayProducts(targetId, displayKey);
+            }
+
+            // [추가] 페이지 데이터 로드 (description, images etc.)
+            try {
+                const { data: pageConfig } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
+                const data = pageConfig ? pageConfig.value : null;
+
+                if(data) {
+                    if(data.description) {
+                        const descElem = document.getElementById('dynamicDesc');
+                        if(descElem) descElem.innerHTML = data.description.replace(/\n/g, '<br>');
+                    }
+                    if(data.mainImages && data.mainImages.length > 0) {
+                        const mainImgElem = document.getElementById('mainImage');
+                        if(mainImgElem) mainImgElem.src = data.mainImages[0];
+                    }
+                    if(data.detailImage || (data.detailImages && data.detailImages[0])) {
+                        const detailImgElem = document.getElementById('dynamicDetailImg');
+                        if(detailImgElem) detailImgElem.src = data.detailImage || data.detailImages[0];
+                    }
+                    if(data.specs && data.specs.length > 0) {
+                        const specBody = document.getElementById('dynamicSpecTable');
+                        if(specBody) {
+                            specBody.innerHTML = '';
+                            data.specs.forEach(s => {
+                                specBody.innerHTML += `<tr><th style="background:#f9f9f9; width:25%; padding:12px; border:1px solid #ddd; text-align:left;">${s.key}</th><td style="padding:12px; border:1px solid #ddd;">${s.val}</td></tr>`;
+                            });
+                        }
+                    }
+                    if(data.features && data.features.length > 0) {
+                        const featureContainer = document.getElementById('dynamicFeatures');
+                        if(featureContainer) {
+                            featureContainer.innerHTML = '';
+                            data.features.forEach((feat, i) => {
+                                const num = (i + 1).toString().padStart(2, '0');
+                                featureContainer.innerHTML += `
+                                    <div class="feature-item" style="margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:15px;">
+                                        <h5 style="font-size:1.1rem; color:#222; margin-bottom:8px; display:flex; align-items:center;">
+                                            <span style="display:inline-block; background:var(--color-primary); color:#fff; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; margin-right:10px; font-size:0.75rem;">${num}</span>
+                                            ${feat.title}
+                                        </h5>
+                                        <p style="color:#666; line-height:1.6; padding-left:32px;">${feat.desc.replace(/\n/g, '<br>')}</p>
+                                    </div>
+                                `;
+                            });
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Supabase load error for " + CURRENT_PAGE_ID, e);
+            }
         });
     </script>
     <!-- SG LIMU Global Scripts -->
@@ -323,37 +380,37 @@
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>
             <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">濡쒓렇??/div>
-                <div class="auth-tab" data-target="signupPane">?뚯썝媛??/div>
+                <div class="auth-tab active" data-target="loginPane">로그인</div>
+                <div class="auth-tab" data-target="signupPane">회원가입</div>
             </div>
             <div class="auth-content">
                 <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>?섏쁺?⑸땲??</h2><p>媛꾪렪濡쒓렇?몄쑝濡?鍮좊Ⅴ寃??쒖옉?섏꽭??</p></div>
+                    <div class="auth-header"><h2>환영합니다!</h2><p>간편로그인으로 빠르게 시작하세요.</p></div>
                     <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 移댁뭅??濡쒓렇??/button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰?濡쒓렇??/button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 濡쒓렇??/button>
+                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
+                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
                     </div>
-                    <div class="auth-divider"><span>?먮뒗</span></div>
+                    <div class="auth-divider"><span>또는</span></div>
                     <form id="loginForm">
-                        <div class="auth-form-group"><label>?대찓??/label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>鍮꾨?踰덊샇</label><input type="password" id="loginPassword" class="auth-input" placeholder="鍮꾨?踰덊샇瑜??낅젰?섏꽭?? required></div>
-                        <button type="submit" class="auth-submit-btn">濡쒓렇??/button>
+                        <div class="auth-form-group"><label>이메일</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>비밀번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비밀번호를 입력하세요" required></div>
+                        <button type="submit" class="auth-submit-btn">로그인</button>
                     </form>
                     <div id="loginMsg" class="auth-message"></div>
                 </div>
                 <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>?뚯썝媛??/h2><p>媛꾨떒???뺣낫 ?낅젰?쇰줈 ??留롮? ?쒗깮???꾨━?몄슂.</p></div>
+                    <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
                     <form id="signupForm">
                         <div class="auth-row">
-                            <div class="auth-form-group"><label>?대쫫 *</label><input type="text" id="signupName" class="auth-input" placeholder="?띻만?? required></div>
-                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                            <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
+                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
                         </div>
-                        <div class="auth-form-group"><label>?대찓??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>鍮꾨?踰덊샇 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???댁긽 ?낅젰" minlength="6" required></div>
-                        <div class="auth-form-group"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿"></div>
-                        <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="signupAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
-                        <button type="submit" class="auth-submit-btn">媛?낇븯湲?/button>
+                        <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
+                        <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예) 한국대학교 도서관"></div>
+                        <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
+                        <button type="submit" class="auth-submit-btn">가입하기</button>
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
                 </div>
@@ -363,4 +420,3 @@
     <script type="module" src="auth.js"></script>
 </body>
 </html>
-

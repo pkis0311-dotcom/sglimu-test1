@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -301,8 +301,9 @@
                 const container = document.querySelector(`#${containerId} .product-list`);
                 if(!container) return;
 
-                const raw = localStorage.getItem('display_' + displayKey);
-                const selectedIds = raw ? JSON.parse(raw) : [];
+                // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+                const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
+                const selectedIds = configData ? configData.value : [];
 
                 if (selectedIds.length === 0) {
                     container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">등록된 전시 상품이 없습니다. 관리자 사이트에서 배치해주세요.</div>';
@@ -333,24 +334,33 @@
                 });
             }
 
-            await loadDisplayProducts('cat-0', 'em-cat-0');
-            await loadDisplayProducts('cat-1', 'em-cat-1');
-            await loadDisplayProducts('cat-2', 'em-cat-2');
+            // [변경] 하드코딩된 호출 대신 소분류 메뉴를 순회하며 자동으로 제품 로드
+            const subItems = document.querySelectorAll('.subcategory-item');
+            for (const item of subItems) {
+                const targetId = item.getAttribute('data-target');
+                // displayKey 형식: (페이지ID)-(소분류타겟ID) 예: em-cat-0
+                const displayKey = CURRENT_PAGE_ID + '-' + targetId;
+                await loadDisplayProducts(targetId, displayKey);
+            }
         });
     </script>
     <!-- SG LIMU Global Scripts -->
     <script src="cart.js"></script>
     <script type="module" src="inquiry.js"></script>
-    <script>
-        // [신규] 관리자 페이지 저장 내용 반영 스크립트 (ID: em-system)
-        const CURRENT_PAGE_ID = 'em-system'; 
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const supabase = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
 
-        window.addEventListener('DOMContentLoaded', () => {
+        // [변경] 관리자 페이지 저장 내용 반영 스크립트 (ID: em)
+        const CURRENT_PAGE_ID = 'em'; 
+
+        window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const savedDataRaw = localStorage.getItem('pageData_' + CURRENT_PAGE_ID);
-                if(savedDataRaw) {
-                    const data = JSON.parse(savedDataRaw);
-                    
+                // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+                const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
+                const data = configData ? configData.value : null;
+
+                if(data) {
                     if(data.description) {
                         const descElem = document.getElementById('dynamicDesc');
                         if(descElem) descElem.innerHTML = data.description.replace(/\n/g, '<br>');
@@ -361,9 +371,9 @@
                         if(mainImgElem) mainImgElem.src = data.mainImages[0];
                     }
                     
-                    if(data.detailImage) {
+                    if(data.detailImage || (data.detailImages && data.detailImages[0])) {
                         const detailImgElem = document.getElementById('dynamicDetailImg');
-                        if(detailImgElem) detailImgElem.src = data.detailImage;
+                        if(detailImgElem) detailImgElem.src = data.detailImage || data.detailImages[0];
                     }
                     
                     if(data.specs && data.specs.length > 0) {
@@ -396,7 +406,7 @@
                     }
                 }
             } catch(e) {
-                console.error("Local storage load error for " + CURRENT_PAGE_ID, e);
+                console.error("Supabase load error for " + CURRENT_PAGE_ID, e);
             }
         });
     </script>
