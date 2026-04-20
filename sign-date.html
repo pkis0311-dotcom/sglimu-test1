@@ -1,14 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대출반납일력표 - SG LIMU</title>
     <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="auth.css"><link rel="stylesheet" href="cart.css"><link rel="stylesheet" href="inquiry.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>.category-page { padding: 80px 0 100px; min-height: 800px; }.category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }.category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); border-radius: 20px; }.category-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; }.subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }.subcategory-item { padding: 12px 30px; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }.subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }.product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }.empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }</style>
 </head>
 <body>
-        <header class="header">
+    <header class="header">
         <div class="header-container">
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
@@ -28,7 +29,7 @@
         </div>
     </header>
     <main class="category-page"><div class="category-header"><h2 class="category-title">대출반납일력표</h2><p>직관적으로 대출 및 반납 기한을 알려주는 도서관 전용 일력표입니다.</p></div><div class="category-container"><ul class="subcategory-nav"><li class="subcategory-item active" data-target="sign_date">일력표</li></ul><div class="product-list" id="productList"></div></div></main>
-        <footer class="footer">
+    <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
                 <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
@@ -41,7 +42,6 @@
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
             <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i></a></li>
-            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i></a></li>
             <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i></a></li>
             <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i></a></li>
             <li class="scroll-btns"><button class="banner-btn scroll-top" id="scrollTopBtn"><i class="fa-solid fa-chevron-up"></i></button><button class="banner-btn scroll-bottom" id="scrollBottomBtn"><i class="fa-solid fa-chevron-down"></i></button></li>
@@ -49,7 +49,7 @@
     </aside>
     <div class="chat-widget"><button class="chat-fab" id="chatFab"><i class="fa-solid fa-comment-dots"></i></button><div class="chat-window" id="chatWindow"><div class="chat-header"><h5>실시간 상담</h5><button id="chatCloseBtn">&times;</button></div><div class="chat-body" id="chatBody"><div class="message system-msg">안녕하세요. 에스지라이뮤입니다. 무엇을 도와드릴까요?</div></div><div class="chat-input-area"><input type="text" id="chatInput" placeholder="메시지 입력..."><button id="chatSendBtn">전송</button></div></div></div>
     <div class="auth-overlay" id="authOverlay"><div class="auth-modal"><div class="auth-close" id="authClose">&times;</div><div class="auth-tabs"><div class="auth-tab active" data-target="loginPane">로그인</div><div class="auth-tab" data-target="signupPane">회원가입</div></div><div class="auth-content"><div class="auth-pane active" id="loginPane"><form id="loginForm"><input type="email" id="loginEmail" placeholder="이메일" required><input type="password" id="loginPassword" placeholder="비밀번호" required><button type="submit">로그인</button></form></div><div class="auth-pane" id="signupPane"><form id="signupForm"><input type="text" id="signupName" placeholder="이름" required><input type="email" id="signupEmail" placeholder="이메일" required><button type="submit">가입하기</button></form></div></div></div></div>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script><script src="cart.js"></script><script src="inquiry.js"></script><script src="auth.js"></script>
     <script>
         const { createClient } = supabase;
@@ -68,7 +68,7 @@
             data.forEach(p => {
                 const card = document.createElement('div');
                 card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${p.price ? p.price.toLocaleString() + "원" : "가격문의"}</p></div></a>`;
+                card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p></div></a>`;
                 container.appendChild(card);
             });
         }
@@ -79,9 +79,10 @@
                 loadProducts(item.dataset.target);
             });
         });
-        const firstTab = document.querySelector('.subcategory-item.active');
-        if(firstTab) loadProducts(firstTab.dataset.target);
+        window.addEventListener('DOMContentLoaded', () => {
+            const firstTab = document.querySelector('.subcategory-item.active');
+            if(firstTab) loadProducts(firstTab.dataset.target);
+        });
     </script>
 </body>
 </html>
-

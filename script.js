@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initSlider() {
+        if (!sliderContainer || !dotsContainer) return;
         sliderContainer.innerHTML = '';
         dotsContainer.innerHTML = '';
 
@@ -135,40 +136,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearInterval(slideInterval);
     }
 
-    prevBtn.addEventListener('click', () => {
-        stopSlideShow();
-        prevSlide();
-        startSlideShow();
-    });
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            stopSlideShow();
+            prevSlide();
+            startSlideShow();
+        });
+    }
 
-    nextBtn.addEventListener('click', () => {
-        stopSlideShow();
-        nextSlide();
-        startSlideShow();
-    });
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            stopSlideShow();
+            nextSlide();
+            startSlideShow();
+        });
+    }
 
-    sliderContainer.addEventListener('mouseenter', stopSlideShow);
-    sliderContainer.addEventListener('mouseleave', startSlideShow);
+    if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopSlideShow);
+        sliderContainer.addEventListener('mouseleave', startSlideShow);
+    }
 
     // 2. Scroll Logic for Right Banner
     const scrollTopBtn = document.getElementById('scrollTopBtn');
     const scrollBottomBtn = document.getElementById('scrollBottomBtn');
 
-    scrollTopBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
+    if (scrollTopBtn) {
+        scrollTopBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
-    });
+    }
 
-    scrollBottomBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
+    if (scrollBottomBtn) {
+        scrollBottomBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
         });
-    });
+    }
 
     // Handle header visual state on scroll
     window.addEventListener('scroll', () => {
@@ -181,7 +192,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Initialize Sliders
-    initSlider();
+    if (sliderContainer) {
+        initSlider();
+    }
 
     // 팝업 띄우기 로직 (오늘 하루 보지 않기 쿠키 확인)
     function getCookie(name) {

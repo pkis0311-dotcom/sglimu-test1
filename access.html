@@ -1,150 +1,61 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>異쒖엯愿由ъ떆?ㅽ뀥 - SG LIMU</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="auth.css">
-    <link rel="stylesheet" href="cart.css">
-    <link rel="stylesheet" href="inquiry.css">
-    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .category-page { padding: 80px 0 100px; min-height: 800px; }
-        .category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }
-        .category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); border-radius: 20px; }
-        .category-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; }
-        .subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }
-        .subcategory-item { padding: 12px 30px; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }
-        .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
-        .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
-        .empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }
-    </style>
+    <title>출입관리시스템 - SG LIMU</title>
+    <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="auth.css"><link rel="stylesheet" href="cart.css"><link rel="stylesheet" href="inquiry.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>.category-page { padding: 80px 0 100px; min-height: 800px; }.category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }.category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); border-radius: 20px; }.category-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; }.subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }.subcategory-item { padding: 12px 30px; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }.subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }.product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }.empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }</style>
 </head>
 <body>
-        <header class="header">
+    <header class="header">
         <div class="header-container">
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
-                    <li class="has-submenu">
-                        <a href="#">?꾩꽌愿由??쒖뒪??/a>
-                        <ul class="submenu">
-                            <li><a href="rfid.html">RFID?쒖뒪??/a></li>
-                            <li><a href="em.html">EM?쒖뒪??/a></li>
-                            <li><a href="access.html">異쒖엯愿由ъ떆?ㅽ뀥</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">?꾩꽌愿 ?⑺뭹</a>
-                        <ul class="submenu">
-                            <li><a href="supplies-arrange.html">?꾩꽌?뺣━ ?⑺뭹</a></li>
-                            <li><a href="supplies-protect.html">?꾩꽌蹂댄샇, 蹂댁닔?⑺뭹</a></li>
-                            <li><a href="supplies-lend.html">?異쒖슜??/a></li>
-                            <li><a href="sterilizer.html">梨낆냼?낃린</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">?꾩꽌愿 媛援?/a>
-                        <ul class="submenu">
-                            <li><a href="furniture-koas.html">肄붿븘??/a></li>
-                            <li><a href="furniture-fomus.html">?щ㉧??/a></li>
-                            <li><a href="furniture-fursys.html">?쇱떆??/a></li>
-                            <li><a href="furniture-custom.html">?쒖옉媛援?/a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">?ъ씤臾?/a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">?쒓뎅??쭊遺꾨쪟/?遺꾨쪟?쒖???/a></li>
-                            <li><a href="sign-board.html">寃뚯떆???댁슜?덈궡</a></li>
-                            <li><a href="sign-date.html">?異쒕컲?⑹씪?ν몴</a></li>
-                            <li><a href="sign-custom.html">?쒖옉?ъ씤臾?/a></li>
-                        </ul>
-                    </li>
-                    <li><a href="discount.html">?좎씤?곹뭹</a></li>
+                    <li class="has-submenu"><a href="#">도서관리 시스템</a><ul class="submenu"><li><a href="rfid.html">RFID시스템</a></li><li><a href="em.html">EM시스템</a></li><li><a href="access.html">출입관리시스템</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">도서관 용품</a><ul class="submenu"><li><a href="supplies-arrange.html">도서정리 용품</a></li><li><a href="supplies-protect.html">도서보호, 보수용품</a></li><li><a href="supplies-lend.html">대출용품</a></li><li><a href="sterilizer.html">책소독기</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">도서관 가구</a><ul class="submenu"><li><a href="furniture-koas.html">코아스</a></li><li><a href="furniture-fomus.html">포머스</a></li><li><a href="furniture-fursys.html">퍼시스</a></li><li><a href="furniture-custom.html">제작가구</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">사인물</a><ul class="submenu"><li><a href="sign-class.html">한국십진분류/대분류표지판</a></li><li><a href="sign-board.html">게시판/이용안내</a></li><li><a href="sign-date.html">대출반납일력표</a></li><li><a href="sign-custom.html">제작사인물</a></li></ul></li>
+                    <li><a href="discount.html">할인상품</a></li>
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="寃?됱뼱瑜??낅젰?섏꽭??>
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
-                </div>
-                <div class="user-auth-wrap" id="userAuthWrap">
-                    <button class="login-trigger-btn" id="loginTriggerBtn">
-                        <i class="fa-regular fa-user"></i>
-                        <span>濡쒓렇??/span>
-                    </button>
-                </div>
+                <div class="search-wrapper"><input type="text" class="search-input" placeholder="검색어를 입력하세요"><a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a></div>
+                <div class="user-auth-wrap" id="userAuthWrap"><button class="login-trigger-btn" id="loginTriggerBtn"><i class="fa-regular fa-user"></i><span>로그인</span></button></div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
         </div>
     </header>
-    <main class="category-page">
-        <div class="category-header">
-            <h2 class="category-title">異쒖엯愿由ъ떆?ㅽ뀥</h2>
-            <p>?ㅻ쭏?명븯怨?泥닿퀎?곸씤 ?꾩꽌愿 ?섍꼍??援ъ텞?섎뒗 異쒖엯愿由??붾（?섏엯?덈떎.</p>
-        </div>
-        <div class="category-container">
-            <ul class="subcategory-nav"><li class="subcategory-item active" data-target="access_7000">TNH-7000A</li><li class="subcategory-item" data-target="access_8000">TNH-8000A</li><li class="subcategory-item" data-target="access_2203">EZ-2203AWG</li><li class="subcategory-item" data-target="access_2204">EZ-2204AWG</li></ul><div class="product-list" id="productList"></div>
-        </div>
-    </main>
-        <footer class="footer">
+    <main class="category-page"><div class="category-header"><h2 class="category-title">출입관리시스템</h2><p>스마트하고 체계적인 도서관 환경을 구축하는 출입관리 솔루션입니다.</p></div><div class="category-container"><ul class="subcategory-nav"><li class="subcategory-item active" data-target="access_7000">TNH-7000A</li><li class="subcategory-item" data-target="access_8000">TNH-8000A</li><li class="subcategory-item" data-target="access_2203">EZ-2203AWG</li><li class="subcategory-item" data-target="access_2204">EZ-2204AWG</li></ul><div class="product-list" id="productList"></div></div></main>
+    <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(二??먯뒪吏?쇱씠裕?/strong> | Tel : 1544-5703 | ?⑹뒪 : 051-518-5985 | E-Mail : limu101@nate.com</p>
-                <p>Address : 遺?곌킅??떆 湲덉젙援???대쭏?밸줈 29-1 (泥?！??</p>
-                <p>??쒖옄紐?: 媛뺤씤??| ?ъ뾽?먮쾲??: 621-81-42086 | ?듭떊?먮ℓ?낆떊怨좊쾲??: ??2018-遺?곌툑??0045??/p>
+                <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
+                <p>Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
+                <p>대표자명 : 강인숙 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="寃??><i class="fa-solid fa-magnifying-glass"></i></a></li>
-            <li><a href="#" class="banner-btn" title="二쇰Ц諛곗넚"><i class="fa-solid fa-truck"></i></a></li>
-            <li><a href="#" class="banner-btn" title="?λ컮援щ땲"><i class="fa-solid fa-cart-shopping"></i></a></li>
-            <li><a href="#" class="banner-btn naver-talk" title="?ㅼ씠踰꾪넚??><i class="fa-solid fa-comment-dots"></i></a></li>
-            <li class="scroll-btns">
-                <button class="banner-btn scroll-top" id="scrollTopBtn"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="banner-btn scroll-bottom" id="scrollBottomBtn"><i class="fa-solid fa-chevron-down"></i></button>
-            </li>
+            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i></a></li>
+            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i></a></li>
+            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i></a></li>
+            <li class="scroll-btns"><button class="banner-btn scroll-top" id="scrollTopBtn"><i class="fa-solid fa-chevron-up"></i></button><button class="banner-btn scroll-bottom" id="scrollBottomBtn"><i class="fa-solid fa-chevron-down"></i></button></li>
         </ul>
     </aside>
-    <div class="chat-widget">
-        <button class="chat-fab" id="chatFab"><i class="fa-solid fa-comment-dots"></i></button>
-        <div class="chat-window" id="chatWindow">
-            <div class="chat-header"><h5>?ㅼ떆媛??곷떞</h5><button id="chatCloseBtn">&times;</button></div>
-            <div class="chat-body" id="chatBody"><div class="message system-msg">?덈뀞?섏꽭?? ?먯뒪吏?쇱씠裕ㅼ엯?덈떎. 臾댁뾿???꾩??쒕┫源뚯슂?</div></div>
-            <div class="chat-input-area"><input type="text" id="chatInput" placeholder="硫붿떆吏 ?낅젰..."><button id="chatSendBtn">?꾩넚</button></div>
-        </div>
-    </div>
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <div class="auth-close" id="authClose">&times;</div>
-            <div class="auth-tabs"><div class="auth-tab active" data-target="loginPane">濡쒓렇??/div><div class="auth-tab" data-target="signupPane">?뚯썝媛??/div></div>
-            <div class="auth-content">
-                <div class="auth-pane active" id="loginPane">
-                    <form id="loginForm"><input type="email" id="loginEmail" placeholder="?대찓?? required><input type="password" id="loginPassword" placeholder="鍮꾨?踰덊샇" required><button type="submit">濡쒓렇??/button></form>
-                </div>
-                <div class="auth-pane" id="signupPane">
-                    <form id="signupForm"><input type="text" id="signupName" placeholder="?대쫫" required><input type="email" id="signupEmail" placeholder="?대찓?? required><button type="submit">媛?낇븯湲?/button></form>
-                </div>
-            </div>
-        </div>
-    </div>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-    <script src="cart.js"></script>
-    <script src="inquiry.js"></script>
-    <script src="auth.js"></script>
+    <div class="chat-widget"><button class="chat-fab" id="chatFab"><i class="fa-solid fa-comment-dots"></i></button><div class="chat-window" id="chatWindow"><div class="chat-header"><h5>실시간 상담</h5><button id="chatCloseBtn">&times;</button></div><div class="chat-body" id="chatBody"><div class="message system-msg">안녕하세요. 에스지라이뮤입니다. 무엇을 도와드릴까요?</div></div><div class="chat-input-area"><input type="text" id="chatInput" placeholder="메시지 입력..."><button id="chatSendBtn">전송</button></div></div></div>
+    <div class="auth-overlay" id="authOverlay"><div class="auth-modal"><div class="auth-close" id="authClose">&times;</div><div class="auth-tabs"><div class="auth-tab active" data-target="loginPane">로그인</div><div class="auth-tab" data-target="signupPane">회원가입</div></div><div class="auth-content"><div class="auth-pane active" id="loginPane"><form id="loginForm"><input type="email" id="loginEmail" placeholder="이메일" required><input type="password" id="loginPassword" placeholder="비밀번호" required><button type="submit">로그인</button></form></div><div class="auth-pane" id="signupPane"><form id="signupForm"><input type="text" id="signupName" placeholder="이름" required><input type="email" id="signupEmail" placeholder="이메일" required><button type="submit">가입하기</button></form></div></div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script><script src="cart.js"></script><script src="inquiry.js"></script><script src="auth.js"></script>
     <script>
         const { createClient } = supabase;
         const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         async function loadProducts(catId) {
             const container = document.getElementById('productList'); if(!container) return;
             container.innerHTML = '<div class="empty-state">데이터를 불러오는 중...</div>';
@@ -157,7 +68,7 @@
             data.forEach(p => {
                 const card = document.createElement('div');
                 card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${p.price ? p.price.toLocaleString() + "원" : "가격문의"}</p></div></a>`;
+                card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p></div></a>`;
                 container.appendChild(card);
             });
         }
@@ -168,11 +79,10 @@
                 loadProducts(item.dataset.target);
             });
         });
-        
-        // Initial load
-        const activeTab = document.querySelector('.subcategory-item.active');
-        if(activeTab) loadProducts(activeTab.dataset.target);
+        window.addEventListener('DOMContentLoaded', () => {
+            const firstTab = document.querySelector('.subcategory-item.active');
+            if(firstTab) loadProducts(firstTab.dataset.target);
+        });
     </script>
 </body>
 </html>
-
