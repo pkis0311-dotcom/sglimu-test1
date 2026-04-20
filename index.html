@@ -24,7 +24,7 @@
                         <ul class="submenu">
                             <li><a href="rfid.html">RFID시스템</a></li>
                             <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입통제시스템</a></li>
+                            <li><a href="access.html">출입관리시스템</a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
@@ -97,7 +97,7 @@
             <h3 class="section-title">Best Products</h3>
             
             <ul class="product-tabs" id="productTabs">
-                <li class="tab-item active" data-tab="tab-system">도서관 시스템</li>
+                <li class="tab-item active" data-tab="tab-system">도서관리 시스템</li>
                 <li class="tab-item" data-tab="tab-tape">태그/감응테이프</li>
                 <li class="tab-item" data-tab="tab-supplies">도서관 용품</li>
                 <li class="tab-item" data-tab="tab-cases">설치사례</li>
@@ -232,11 +232,11 @@
             </div>
             <div class="chat-body" id="chatBody">
                 <div class="message system-msg">
-                    안녕하세요! 에스지라이뮤입니다.<br>무엇을 도와드릴까요?
+                    안녕하세요. 에스지라이뮤입니다.<br>무엇을 도와드릴까요?
                 </div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+                <input type="text" id="chatInput" placeholder="메시지를 입력하세요..">
                 <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -256,8 +256,8 @@
                 <!-- Login Pane -->
                 <div class="auth-pane active" id="loginPane">
                     <div class="auth-header">
-                        <h2>환영합니다!</h2>
-                        <p>간편로그인으로 빠르게 시작하세요.</p>
+                        <h2>환영합니다</h2>
+                        <p>간편로그인으로 빠르게 시작하세요</p>
                     </div>
 
                     <div class="social-login-grid">
@@ -295,28 +295,6 @@
                         <p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p>
                     </div>
 
-                    <div class="auth-social-signup">
-                        <div class="auth-social-signup-header"><span>간편 회원가입</span></div>
-                        <div class="social-login-grid">
-                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao">
-                                <i class="fa-solid fa-comment"></i> 카카오로 시작
-                            </button>
-                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver">
-                                <i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작
-                            </button>
-                            <button class="social-btn btn-google social-signup-btn" data-provider="google">
-                                <i class="fa-brands fa-google"></i> Google로 시작
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="auth-divider"><span>또는 이메일로 가입</span></div>
-
-                    <div class="auth-type-selector" id="userTypeSelector">
-                        <div class="auth-type-btn active" data-type="individual">개인 회원</div>
-                        <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
-                    </div>
-
                     <form id="signupForm">
                         <div class="auth-row">
                             <div class="auth-form-group">
@@ -332,23 +310,13 @@
                             <label>이메일 *</label>
                             <input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required>
                         </div>
-                        <div class="auth-row">
-                            <div class="auth-form-group">
-                                <label>비밀번호 *</label>
-                                <input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label>비밀번호 확인 *</label>
-                                <input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required>
-                            </div>
+                        <div class="auth-form-group">
+                            <label>비밀번호 *</label>
+                            <input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required>
                         </div>
-                        <div class="auth-form-group" id="orgGroup">
+                        <div class="auth-form-group">
                             <label>소속기관 / 학교 / 도서관명</label>
                             <input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관">
-                        </div>
-                        <div class="auth-form-group" id="bizGroup" style="display: none;">
-                            <label>사업자 등록번호</label>
-                            <input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000">
                         </div>
                         <div class="auth-form-group">
                             <label>배송/방문용 주소</label>
@@ -358,33 +326,6 @@
                         <button type="submit" class="auth-submit-btn">가입하기</button>
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
-                </div>
-
-                <!-- Profile Completion Pane -->
-                <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header">
-                        <h2>추가 정보 입력</h2>
-                        <p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p>
-                    </div>
-
-                    <form id="completeProfileForm">
-                        <div class="highlight-box">
-                            <div class="auth-form-group">
-                                <label>전화번호 *</label>
-                                <input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label>소속기관 / 학교 / 도서관명 *</label>
-                                <input type="text" id="completeOrg" class="auth-input" placeholder="예: 한국대학교 도서관" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label>배송/방문용 주소</label>
-                                <input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요">
-                            </div>
-                        </div>
-                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
-                    </form>
-                    <div id="completeMsg" class="auth-message"></div>
                 </div>
             </div>
         </div>

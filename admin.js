@@ -37,7 +37,11 @@ const SITE_CATEGORIES = {
             { id: 'rfid-cat-return', name: 'RFID > 대출 반납기' },
             { id: 'em-cat-0', name: 'EM > 분실 방지기' },
             { id: 'em-cat-1', name: 'EM > 감응제거재생기' },
-            { id: 'em-cat-2', name: 'EM > 감응 테이프' }
+            { id: 'em-cat-2', name: 'EM > 감응 테이프' },
+            { id: 'access-cat-0', name: '출입관리 > TNH-7000A' },
+            { id: 'access-cat-1', name: '출입관리 > TNH-8000A' },
+            { id: 'access-cat-2', name: '출입관리 > EZ-2203AWG' },
+            { id: 'access-cat-3', name: '출입관리 > EZ-2204AWG' }
         ]
     },
     'supplies': {
