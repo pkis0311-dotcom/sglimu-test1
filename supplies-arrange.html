@@ -3,67 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?꾩꽌?뺣━ ?⑺뭹 - ?먯뒪吏?쇱씠裕?/title>
-    <meta name="description" content="RFID?쒖뒪?? ?꾩꽌愿?⑺뭹, ?꾩꽌愿臾쇳뭹">
+    <title>도서정리 용품 - SG LIMU</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .category-page {
-            padding: 120px 5% 100px;
-            max-width: 1400px;
-            margin: 0 auto;
-            min-height: 800px;
-        }
-        .category-header {
-            text-align: center;
-            margin-bottom: 60px;
-        }
-        .category-title {
-            font-size: 2.5rem;
-            color: var(--color-text);
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        .subcategory-nav {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 50px;
-            flex-wrap: wrap;
-        }
-        .subcategory-item {
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--color-text-light);
-            background: #fff;
-            border: 1px solid var(--color-border);
-            border-radius: 30px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
-        .subcategory-item:hover, .subcategory-item.active {
-            color: #fff;
-            background: var(--color-primary);
-            border-color: var(--color-primary);
-        }
-        .product-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-        }
-        .sub-content {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-        .sub-content.active {
-            display: block;
-        }
+        .category-page { padding: 80px 0 100px; min-height: 800px; }
+        .category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }
+        .category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); width: 100%; border-radius: 20px; }
+        .category-title { font-size: 2.5rem; color: var(--color-text); font-weight: 700; margin-bottom: 20px; }
+        .subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }
+        .subcategory-item { padding: 12px 30px; font-size: 1.1rem; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }
+        .subcategory-item:hover, .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
+        .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }
     </style>
-    <link rel="stylesheet" href="cart.css">
-    <link rel="stylesheet" href="inquiry.css">
-    <link rel="stylesheet" href="auth.css">
 </head>
 <body>
     <header class="header">
@@ -106,15 +60,10 @@
                             <li><a href="sign-custom.html">제작사인물</a></li>
                         </ul>
                     </li>
-                
                     <li><a href="discount.html">할인상품</a></li>
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="寃?됱뼱瑜??낅젰?섏꽭??>
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
-                </div>
                 <a href="#"><i class="fa-regular fa-user"></i></a>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
@@ -123,337 +72,65 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">?꾩꽌?뺣━ ?⑺뭹</h2>
-            <p>?꾩꽌愿??泥닿퀎?곸씤 ?뺣━瑜??꾪븳 ?꾩닔 ?⑺뭹?낅땲??</p>
+            <h2 class="category-title">도서정리 용품</h2>
+            <p>도서를 빛나게 관리하고 체계적으로 정리하는 필수 용품입니다.</p>
         </div>
 
-        <ul class="subcategory-nav" id="subCategoryNav">
-            <li class="subcategory-item active" data-target="cat-0">?ㅽ띁</li>
-            <li class="subcategory-item" data-target="cat-1">?됰씈?쇰꺼</li>
-            <li class="subcategory-item" data-target="cat-2">?쇰꺼?⑹?</li>
-            <li class="subcategory-item" data-target="cat-3">?κ컩</li>
-            <li class="subcategory-item" data-target="cat-4">?꾩옣</li>
-            <li class="subcategory-item" data-target="cat-5">遺곸븻??/li>
-            <li class="subcategory-item" data-target="cat-6">湲고?</li>
-        </ul>
+        <div class="category-container">
+            <ul class="subcategory-nav" id="subCategoryNav">
+                <li class="subcategory-item active" data-target="supplies-arrange-cat-0">키퍼</li>
+                <li class="subcategory-item" data-target="supplies-arrange-cat-1">색띠라벨</li>
+                <li class="subcategory-item" data-target="supplies-arrange-cat-2">라벨용지</li>
+                <li class="subcategory-item" data-target="supplies-arrange-cat-3">장갑</li>
+                <li class="subcategory-item" data-target="supplies-arrange-cat-4">도장</li>
+                <li class="subcategory-item" data-target="supplies-arrange-cat-5">북앤드</li>
+                <li class="subcategory-item" data-target="supplies-arrange-cat-6">기타</li>
+            </ul>
 
-        <div id="cat-0" class="sub-content active">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>?ㅽ띁 ?섑뵆?곹뭹</h4>
-                    </div>
-                </div>
+            <div class="product-list" id="productList">
+                <div class="empty-state">로딩 중...</div>
             </div>
         </div>
-
-        <div id="cat-1" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>?됰씈?쇰꺼 ?섑뵆?곹뭹</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-2" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>?쇰꺼?⑹? ?섑뵆?곹뭹</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-3" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>?κ컩 ?섑뵆?곹뭹</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-4" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>?꾩옣 ?섑뵆?곹뭹</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-5" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>遺곸븻???섑뵆?곹뭹</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="cat-6" class="sub-content">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>湲고? ?섑뵆?곹뭹</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </main>
 
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-info">
-                <p>
-                    <strong>(二??먯뒪吏?쇱씠裕?/strong> &nbsp;|&nbsp; 
-                    Tel : 1544-5703 &nbsp;|&nbsp; 
-                    ?⑹뒪 : 051-518-5985 &nbsp;|&nbsp; 
-                    ?먯떖?쒓컙 (12:00~13:00) &nbsp;|&nbsp; 
-                    E-Mail : limu101@nate.com
-                </p>
-                <p>
-                    Address : 遺?곌킅??떆 湲덉젙援???대쭏?밸줈 29-1 (泥?！??
-                </p>
-                <p>
-                    ??쒖옄紐?: 媛뺤씤??&nbsp;|&nbsp; 
-                    媛쒖씤?뺣낫痍④툒?대떦??: 媛뺤씤??&nbsp;|&nbsp; 
-                    ?ъ뾽?먮쾲??: 621-81-42086 &nbsp;|&nbsp; 
-                    ?듭떊?먮ℓ?낆떊怨좊쾲??: ??2018-遺?곌툑??0045??                </p>
-                <p class="copyright">
-                    Copyright(c)2023 www.sgperzoom.com. All right Reserved.
-                </p>
-            </div>
-        </div>
-    </footer>
-
-    <aside class="right-fixed-banner">
-        <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="寃??><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">寃??/span></a></li>
-            <li><a href="#" class="banner-btn" title="二쇰Ц諛곗넚"><i class="fa-solid fa-truck"></i><span class="tooltip">二쇰Ц諛곗넚</span></a></li>
-            <li><a href="#" class="banner-btn" title="?λ컮援щ땲"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">?λ컮援щ땲</span></a></li>
-            <li><a href="#" class="banner-btn" title="愿?ъ긽??><i class="fa-regular fa-heart"></i><span class="tooltip">愿?ъ긽??/span></a></li>
-            <li><a href="#" class="banner-btn naver-talk" title="?ㅼ씠踰꾪넚??><i class="fa-solid fa-comment-dots"></i><span class="tooltip">?ㅼ씠踰꾪넚??/span></a></li>
-            <li class="scroll-btns">
-                <button class="banner-btn scroll-top" id="scrollTopBtn" title="?꾨줈"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="?꾨옒濡?><i class="fa-solid fa-chevron-down"></i></button>
-            </li>
-        </ul>
-    </aside>
-
-    <!-- Chat Widget -->
-    <div class="chat-widget">
-        <button class="chat-fab" id="chatFab">
-            <i class="fa-solid fa-comment-dots"></i>
-        </button>
-        
-        <div class="chat-window" id="chatWindow">
-            <div class="chat-header">
-                <h5>?ㅼ떆媛??곷떞</h5>
-                <button id="chatCloseBtn"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="chat-body" id="chatBody">
-                <div class="message system-msg">
-                    ?덈뀞?섏꽭?? ?먯뒪吏?쇱씠裕ㅼ엯?덈떎.<br>臾댁뾿???꾩??쒕┫源뚯슂?
-                </div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="硫붿떆吏瑜??낅젰?섏꽭??..">
-                <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-    <script>
-        const { createClient } = supabase;
-        const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // [MIGRATION] CURRENT_PAGE_ID
-        const CURRENT_PAGE_ID = 'supplies-arrange'; 
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const subNavItems = document.querySelectorAll('.subcategory-item');
-            const subContents = document.querySelectorAll('.sub-content');
-
-            subNavItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    subNavItems.forEach(n => n.classList.remove('active'));
-                    subContents.forEach(c => c.classList.remove('active'));
-
-                    item.classList.add('active');
-                    const targetId = item.getAttribute('data-target');
-                    const targetContent = document.getElementById(targetId);
-                    if(targetContent) {
-                        targetContent.classList.add('active');
-                        const cards = targetContent.querySelectorAll('.product-card');
-                        cards.forEach((card, i) => {
-                            card.classList.remove('visible');
-                            setTimeout(() => {
-                                card.classList.add('visible');
-                            }, 50 + (i * 100));
-                        });
-                    }
-                });
-            });
-
-            async function loadDisplayProducts(containerId, displayKey) {
-                const container = document.querySelector(`#${containerId} .product-list`);
-                if(!container) return;
-
-                // [蹂寃? localStorage ???Supabase site_configs ?뚯씠釉붿뿉??濡쒕뱶
-                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
-                const selectedIds = configData ? configData.value : [];
-
-                if (selectedIds.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">?깅줉???꾩떆 ?곹뭹???놁뒿?덈떎. 愿由ъ옄 ?ъ씠?몄뿉??諛곗튂?댁＜?몄슂.</div>';
-                    return;
-                }
-
-                const { data: products, error } = await db.from('products').select('*').in('id', selectedIds);
-                if (error) return;
-
-                container.innerHTML = '';
-                const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
-                
-                sortedProducts.forEach(p => {
-                    const card = document.createElement('div');
-                    card.className = 'product-card visible';
-                    card.style.cursor = 'pointer';
-                    card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
-                    
-                    const priceStr = (!p.price || p.price === '?꾪솕臾몄쓽') ? '?꾪솕臾몄쓽' : Number(p.price).toLocaleString() + '??;
-                    card.innerHTML = `
-                        <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
-                        <div class="product-info" style="text-align:center; padding:15px;">
-                            <h4 style="margin-bottom:5px;">${p.name}</h4>
-                            <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
+        async function loadProducts(catId) {
+            const container = document.getElementById('productList');
+            container.innerHTML = '<div class="empty-state">로딩 중...</div>';
+            const { data, error } = await supabase.from('products').select('*').eq('category', catId);
+            if (error || !data || data.length === 0) {
+                container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
+                return;
             }
-
-            // [蹂寃? ?섎뱶肄붾뵫???몄텧 ????뚮텇瑜?硫붾돱瑜??쒗쉶?섎ŉ ?먮룞?쇰줈 ?쒗뭹 濡쒕뱶
-            const subItems = document.querySelectorAll('.subcategory-item');
-            for (const item of subItems) {
-                const targetId = item.getAttribute('data-target');
-                // displayKey ?뺤떇: (?섏씠吏ID)-(?뚮텇瑜섑?寃욳D) ?? supplies-arrange-cat-0
-                const displayKey = CURRENT_PAGE_ID + '-' + targetId;
-                await loadDisplayProducts(targetId, displayKey);
-            }
-
-            // [異붽?] ?섏씠吏 ?곗씠??濡쒕뱶 (description, images etc.)
-            try {
-                const { data: pageConfig } = await db.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
-                const data = pageConfig ? pageConfig.value : null;
-
-                if(data) {
-                    if(data.description) {
-                        const descElem = document.getElementById('dynamicDesc');
-                        if(descElem) descElem.innerHTML = data.description.replace(/\n/g, '<br>');
-                    }
-                    if(data.mainImages && data.mainImages.length > 0) {
-                        const mainImgElem = document.getElementById('mainImage');
-                        if(mainImgElem) mainImgElem.src = data.mainImages[0];
-                    }
-                    if(data.detailImage || (data.detailImages && data.detailImages[0])) {
-                        const detailImgElem = document.getElementById('dynamicDetailImg');
-                        if(detailImgElem) detailImgElem.src = data.detailImage || data.detailImages[0];
-                    }
-                    if(data.specs && data.specs.length > 0) {
-                        const specBody = document.getElementById('dynamicSpecTable');
-                        if(specBody) {
-                            specBody.innerHTML = '';
-                            data.specs.forEach(s => {
-                                specBody.innerHTML += `<tr><th style="background:#f9f9f9; width:25%; padding:12px; border:1px solid #ddd; text-align:left;">${s.key}</th><td style="padding:12px; border:1px solid #ddd;">${s.val}</td></tr>`;
-                            });
-                        }
-                    }
-                    if(data.features && data.features.length > 0) {
-                        const featureContainer = document.getElementById('dynamicFeatures');
-                        if(featureContainer) {
-                            featureContainer.innerHTML = '';
-                            data.features.forEach((feat, i) => {
-                                const num = (i + 1).toString().padStart(2, '0');
-                                featureContainer.innerHTML += `
-                                    <div class="feature-item" style="margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:15px;">
-                                        <h5 style="font-size:1.1rem; color:#222; margin-bottom:8px; display:flex; align-items:center;">
-                                            <span style="display:inline-block; background:var(--color-primary); color:#fff; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; margin-right:10px; font-size:0.75rem;">${num}</span>
-                                            ${feat.title}
-                                        </h5>
-                                        <p style="color:#666; line-height:1.6; padding-left:32px;">${feat.desc.replace(/\n/g, '<br>')}</p>
-                                    </div>
-                                `;
-                            });
-                        }
-                    }
-                }
-            } catch(e) {
-                console.error("Supabase load error for " + CURRENT_PAGE_ID, e);
-            }
-        });
-    </script>
-    <!-- SG LIMU Global Scripts -->
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
-    <!-- Auth Modal Overlay -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <div class="auth-close" id="authClose">&times;</div>
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">濡쒓렇??/div>
-                <div class="auth-tab" data-target="signupPane">?뚯썝媛??/div>
-            </div>
-            <div class="auth-content">
-                <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>?섏쁺?⑸땲??</h2><p>媛꾪렪濡쒓렇?몄쑝濡?鍮좊Ⅴ寃??쒖옉?섏꽭??</p></div>
-                    <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 移댁뭅??濡쒓렇??/button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰?濡쒓렇??/button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 濡쒓렇??/button>
+            container.innerHTML = '';
+            data.forEach(p => {
+                const card = document.createElement('div');
+                card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
+                card.innerHTML = `<a href="product-detail.html?id=${p.id}">
+                    <div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9;"></div>
+                    <div style="padding:20px;">
+                        <h4 style="margin-bottom:10px;">${p.name}</h4>
+                        <p style="font-weight:700; color:var(--color-primary);">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p>
                     </div>
-                    <div class="auth-divider"><span>?먮뒗</span></div>
-                    <form id="loginForm">
-                        <div class="auth-form-group"><label>?대찓??/label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>鍮꾨?踰덊샇</label><input type="password" id="loginPassword" class="auth-input" placeholder="鍮꾨?踰덊샇瑜??낅젰?섏꽭?? required></div>
-                        <button type="submit" class="auth-submit-btn">濡쒓렇??/button>
-                    </form>
-                    <div id="loginMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>?뚯썝媛??/h2><p>媛꾨떒???뺣낫 ?낅젰?쇰줈 ??留롮? ?쒗깮???꾨━?몄슂.</p></div>
-                    <form id="signupForm">
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>?대쫫 *</label><input type="text" id="signupName" class="auth-input" placeholder="?띻만?? required></div>
-                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        </div>
-                        <div class="auth-form-group"><label>?대찓??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>鍮꾨?踰덊샇 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???댁긽 ?낅젰" minlength="6" required></div>
-                        <div class="auth-form-group"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿"></div>
-                        <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="signupAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
-                        <button type="submit" class="auth-submit-btn">媛?낇븯湲?/button>
-                    </form>
-                    <div id="signupMsg" class="auth-message"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script type="module" src="auth.js"></script>
+                </a>`;
+                container.appendChild(card);
+            });
+        }
+
+        document.querySelectorAll('.subcategory-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.subcategory-item').forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                loadProducts(item.dataset.target);
+            });
+        });
+        loadProducts('supplies-arrange-cat-0');
+    </script>
 </body>
 </html>

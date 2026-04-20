@@ -3,7 +3,13 @@
 
 let db;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // 0. DOM 요소가 제대로 잡혔는지 확인 (혹시 모를 에러 방지)
+    if (!loginOverlay) {
+        console.error("Critical: UI elements not found!");
+        return;
+    }
+
     if (typeof supabase === 'undefined') {
         console.error("Supabase library is not loaded. Please check your internet connection and ensure the CDN script is included in admin.html.");
         alert("Supabase 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.");
@@ -11,17 +17,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const { createClient } = supabase;
-
-    // ==========================================
-    // 🚨 사용자(관리자)님, 여기에 Supabase 설정값을 넣어주세요! 🚨
-    // ==========================================
     const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
     db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // 시스템 초기화
-    checkSession();
+    try {
+        await checkSession();
+    } catch (e) {
+        console.error("Session check failed", e);
+        // 세션 체크 실패시 로그인창 강제 노출
+        loginOverlay.style.display = 'flex';
+    }
 });
 
 // ==========================================

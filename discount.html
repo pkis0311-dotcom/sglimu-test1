@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대출용품 - SG LIMU</title>
+    <title>할인상품 - SG LIMU</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -72,18 +72,13 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">대출용품</h2>
-            <p>원활한 도서 대출 및 반납 관리를 위한 전문 용품입니다.</p>
+            <h2 class="category-title">할인상품</h2>
+            <p>특별한 혜택으로 만나는 실속 있는 상품들을 놓치지 마세요.</p>
         </div>
-
         <div class="category-container">
             <ul class="subcategory-nav" id="subCategoryNav">
-                <li class="subcategory-item active" data-target="supplies-lend-cat-0">대출 > 바코드</li>
-                <li class="subcategory-item" data-target="supplies-lend-cat-1">대출 > 카드프린터 기기</li>
-                <li class="subcategory-item" data-target="supplies-lend-cat-2">대출 > 회원증카드</li>
-                <li class="subcategory-item" data-target="supplies-lend-cat-3">대출 > 감열지</li>
+                <li class="subcategory-item active" data-target="discount-cat-0">할인상품 전체</li>
             </ul>
-
             <div class="product-list" id="productList">
                 <div class="empty-state">로딩 중...</div>
             </div>
@@ -91,33 +86,29 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    <script>
         const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loadProducts(catId) {
             const container = document.getElementById('productList');
             container.innerHTML = '<div class="empty-state">로딩 중...</div>';
-            const { data, error } = await supabase.from('products').select('*').eq('category', catId);
-            if (error || !data || data.length === 0) {
-                container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
-                return;
-            }
-            container.innerHTML = '';
-            data.forEach(p => {
-                const card = document.createElement('div');
-                card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                card.innerHTML = `<a href="product-detail.html?id=${p.id}">
-                    <div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9;"></div>
-                    <div style="padding:20px;">
-                        <h4 style="margin-bottom:10px;">${p.name}</h4>
-                        <p style="font-weight:700; color:var(--color-primary);">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p>
-                    </div>
-                </a>`;
-                container.appendChild(card);
-            });
+            try {
+                const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId).order('created_at', { ascending: false });
+                if (error || !data || data.length === 0) {
+                    container.innerHTML = '<div class="empty-state">해당 카테고리에 등록된 상품이 없습니다.</div>';
+                    return;
+                }
+                container.innerHTML = '';
+                data.forEach(p => {
+                    const card = document.createElement('div');
+                    card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
+                    const priceStr = p.price ? p.price.toLocaleString() + '원' : '가격문의';
+                    card.innerHTML = `<a href="product-detail.html?id=${p.id}"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9;"></div><div style="padding:20px;"><h4>${p.name}</h4><p style="font-weight:700; color:var(--color-primary);">${priceStr}</p></div></a>`;
+                    container.appendChild(card);
+                });
+            } catch (e) { container.innerHTML = '<div class="empty-state">로딩 실패</div>'; }
         }
 
         document.querySelectorAll('.subcategory-item').forEach(item => {

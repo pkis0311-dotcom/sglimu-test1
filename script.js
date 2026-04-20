@@ -1,8 +1,8 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
+// Supabase client initialization (requires global supabase object from CDN)
 const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const supabaseClient = db; // Mapping for legacy code
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 기본 슬라이드 데이터 (Supabase 연결 실패나 데이터 없을 때 폴백용)

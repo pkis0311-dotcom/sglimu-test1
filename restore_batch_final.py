@@ -1,22 +1,24 @@
-<!DOCTYPE html>
+import os
+
+template = '''<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대출용품 - SG LIMU</title>
+    <title>{title} - SG LIMU</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .category-page { padding: 80px 0 100px; min-height: 800px; }
-        .category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }
-        .category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); width: 100%; border-radius: 20px; }
-        .category-title { font-size: 2.5rem; color: var(--color-text); font-weight: 700; margin-bottom: 20px; }
-        .subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }
-        .subcategory-item { padding: 12px 30px; font-size: 1.1rem; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }
-        .subcategory-item:hover, .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
-        .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
-        .empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }
+        .category-page {{ padding: 80px 0 100px; min-height: 800px; }}
+        .category-container {{ max-width: 1400px; margin: 0 auto; padding: 0 5%; }}
+        .category-header {{ text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); width: 100%; border-radius: 20px; }}
+        .category-title {{ font-size: 2.5rem; color: var(--color-text); font-weight: 700; margin-bottom: 20px; }}
+        .subcategory-nav {{ display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }}
+        .subcategory-item {{ padding: 12px 30px; font-size: 1.1rem; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }}
+        .subcategory-item:hover, .subcategory-item.active {{ color: #fff; background: var(--color-primary); border-color: var(--color-primary); }}
+        .product-list {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }}
+        .empty-state {{ grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }}
     </style>
 </head>
 <body>
@@ -72,16 +74,13 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">대출용품</h2>
-            <p>원활한 도서 대출 및 반납 관리를 위한 전문 용품입니다.</p>
+            <h2 class="category-title">{title}</h2>
+            <p>{desc}</p>
         </div>
 
         <div class="category-container">
             <ul class="subcategory-nav" id="subCategoryNav">
-                <li class="subcategory-item active" data-target="supplies-lend-cat-0">대출 > 바코드</li>
-                <li class="subcategory-item" data-target="supplies-lend-cat-1">대출 > 카드프린터 기기</li>
-                <li class="subcategory-item" data-target="supplies-lend-cat-2">대출 > 회원증카드</li>
-                <li class="subcategory-item" data-target="supplies-lend-cat-3">대출 > 감열지</li>
+                {tabs}
             </ul>
 
             <div class="product-list" id="productList">
@@ -92,43 +91,57 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        import {{ createClient }} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function loadProducts(catId) {
+        async function loadProducts(catId) {{
             const container = document.getElementById('productList');
             container.innerHTML = '<div class="empty-state">로딩 중...</div>';
-            const { data, error } = await supabase.from('products').select('*').eq('category', catId);
-            if (error || !data || data.length === 0) {
+            const {{ data, error }} = await supabase.from('products').select('*').eq('category', catId);
+            if (error || !data || data.length === 0) {{
                 container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
                 return;
-            }
+            }}
             container.innerHTML = '';
-            data.forEach(p => {
+            data.forEach(p => {{
                 const card = document.createElement('div');
                 card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                card.innerHTML = `<a href="product-detail.html?id=${p.id}">
-                    <div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9;"></div>
+                card.innerHTML = `<a href="product-detail.html?id=${{p.id}}">
+                    <div style="height:250px; background:url('${{p.image_url}}') center/contain no-repeat #f9f9f9;"></div>
                     <div style="padding:20px;">
-                        <h4 style="margin-bottom:10px;">${p.name}</h4>
-                        <p style="font-weight:700; color:var(--color-primary);">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p>
+                        <h4 style="margin-bottom:10px;">${{p.name}}</h4>
+                        <p style="font-weight:700; color:var(--color-primary);">${{p.price ? p.price.toLocaleString() + '원' : '가격문의'}}</p>
                     </div>
                 </a>`;
                 container.appendChild(card);
-            });
-        }
+            }});
+        }}
 
-        document.querySelectorAll('.subcategory-item').forEach(item => {
-            item.addEventListener('click', () => {
+        document.querySelectorAll('.subcategory-item').forEach(item => {{
+            item.addEventListener('click', () => {{
                 document.querySelectorAll('.subcategory-item').forEach(nav => nav.classList.remove('active'));
                 item.classList.add('active');
                 loadProducts(item.dataset.target);
-            });
-        });
+            }});
+        }});
         const firstTab = document.querySelector('.subcategory-item');
         if (firstTab) firstTab.click();
     </script>
 </body>
-</html>
+</html>'''
+
+pages = [
+    {"file": "sign-class.html", "title": "대분류 표지판", "desc": "도서관 이용자가 원하는 책을 빠르게 찾을 수 있도록 돕는 대분류 표지판입니다.", "tabs": '<li class="subcategory-item active" data-target="sign-class-cat-0">분류/대분류 표지판</li>'},
+    {"file": "sign-board.html", "title": "게시판/이용안내", "desc": "질서 있고 세련된 정보 전달을 위한 도서관 전문 게시판입니다.", "tabs": '<li class="subcategory-item active" data-target="sign-board-cat-0">게시판/이용안내</li>'},
+    {"file": "sign-date.html", "title": "대출반납일력표", "desc": "매일의 반납일을 정확하고 깔끔하게 안내하는 도서관 일력표입니다.", "tabs": '<li class="subcategory-item active" data-target="sign-date-cat-0">대출반납일력표</li>'},
+    {"file": "sign-custom.html", "title": "제작 사인물", "desc": "도서관의 아이덴티티를 살려주는 세련된 디자인의 제작 사인물입니다.", "tabs": '<li class="subcategory-item active" data-target="sign-custom-cat-0">제작 사인물</li>'},
+    {"file": "discount.html", "title": "할인상품", "desc": "특별한 혜택으로 만나는 실속 있는 상품들을 놓치지 마세요.", "tabs": '<li class="subcategory-item active" data-target="discount-cat-0">할인상품 전체</li>'}
+]
+
+for p in pages:
+    content = template.format(title=p["title"], desc=p["desc"], tabs=p["tabs"])
+    with open(p["file"], "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"Restored: {p['file']}")
