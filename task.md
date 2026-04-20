@@ -1,0 +1,12 @@
+﻿- [x] Restore Full Premium UI & Layout Consistency
+    - [x] Analyze index.html: Extract reusable Header, Footer, Fixed Banners, Chat, and Modal components
+    - [x] Batch Update Category Pages: Re-integrate rich UI components into:
+        - [x] rfid.html, em.html, access.html
+        - [x] supplies-*.html
+        - [x] furniture-*.html
+        - [x] sign-*.html
+    - [x] Functional Check: Ensure product loading logic (_ IDs) and auth modal still work
+- [x] Verification
+    - [x] Verify Header/Footer richness across all sub-pages
+    - [x] Verify Side Banners and Chat Widget presence
+    - [x] Confirm naming persists as "출입관리시스템"
