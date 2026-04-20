@@ -1,10 +1,10 @@
 // inquiry.js - 실시간 견적/문의 모달 로직 (고객용)
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const { createClient } = typeof supabase !== 'undefined' ? supabase : { createClient: null };
 
 // SG LIMU Supabase 연결정보 (퍼블릭 Key)
 const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = createClient ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. 팝업창 HTML을 바디 맨 끝에 주입
@@ -91,7 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = '정보 전송 중...';
 
         try {
-            const { data, error } = await supabase
+            if (!supabaseClient) throw new Error('Supabase Client not initialized');
+            const { data, error } = await supabaseClient
                 .from('inquiries')
                 .insert([{
                     author: authorVal,

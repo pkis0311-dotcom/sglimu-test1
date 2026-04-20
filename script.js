@@ -8,21 +8,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 기본 슬라이드 데이터 (Supabase 연결 실패나 데이터 없을 때 폴백용)
     const fallbackSlides = [
         {
-            title: "프리미엄 북엔드 시리즈",
-            desc: "흔들림 없는 독서의 완성",
+            title: "프리미엄 도서관 공간",
+            desc: "공간의 가치를 높이는 프리미엄 도서관 가구 솔루션",
             imgUrl: "assets/hero_slide_1.png",
             link: "#"
         },
         {
-            title: "모던 도서관 공간",
-            desc: "공간을 가치있게 만드는 디자인",
+            title: "스마트 시스템",
+            desc: "효율적인 도서관 관리를 위한 RFID/EM 시스템",
             imgUrl: "assets/hero_slide_2.png",
             link: "#"
         },
         {
-            title: "🎉 쇼핑몰 재오픈 기념! 🎉",
-            desc: "지금만 누릴 수 있는 특별 할인",
-            imgUrl: "assets/hero_slide_update_3.png",
+            title: "도서 보호/보수용품",
+            desc: "소중한 도서를 오래도록 보존하는 최상의 선택",
+            imgUrl: "assets/hero_slide_3.png",
+            link: "#"
+        },
+        {
+            title: "맞춤형 제작 가구",
+            desc: "사용자 공간에 최적화된 맞춤형 솔루션",
+            imgUrl: "assets/hero_slide_4.png",
+            link: "#"
+        },
+        {
+            title: "도서관의 모든 것",
+            desc: "성장하는 도서관의 든든한 파트너 SG LIMU",
+            imgUrl: "assets/hero_slide_5.png",
             link: "#"
         }
     ];
@@ -40,13 +52,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     let slidesData = [];
     let popupsData = [];
     try {
-        const { data, error } = await supabase.from('banners').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) {
-            slidesData = data.filter(b => b.type === 'slide').map(b => ({
-                imgUrl: b.image_url,
-                link: b.link_url || '#'
-            }));
-            popupsData = data.filter(b => b.type === 'popup');
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient.from('banners').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('created_at', { ascending: false });
+            if (!error && data && data.length > 0) {
+                slidesData = data.filter(b => b.type === 'slide').map(b => ({
+                    imgUrl: b.image_url,
+                    link: b.link_url || '#'
+                }));
+                popupsData = data.filter(b => b.type === 'popup');
+            }
         }
     } catch (err) {
         console.error("Banner fetch error", err);
