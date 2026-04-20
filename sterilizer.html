@@ -58,7 +58,7 @@
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         async function loadProducts(catId) {
             const container = document.getElementById('productList'); if(!container) return;
-            container.innerHTML = '<div class="empty-state">로딩 중...</div>';
+            container.innerHTML = '<div class="empty-state">데이터를 불러오는 중...</div>';
             const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId);
             if (error || !data || data.length === 0) {
                 container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
@@ -68,7 +68,7 @@
             data.forEach(p => {
                 const card = document.createElement('div');
                 card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                card.innerHTML = <a href="product-detail.html?id=\" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('\') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">\</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">\</p></div></a>;
+                card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${p.price ? p.price.toLocaleString() + "원" : "가격문의"}</p></div></a>`;
                 container.appendChild(card);
             });
         }
@@ -84,3 +84,4 @@
     </script>
 </body>
 </html>
+
