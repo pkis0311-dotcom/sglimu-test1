@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -10,14 +10,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .category-page {
-            padding: 120px 5% 100px;
+            padding: 80px 0 100px;
+            min-height: 800px;
+        }
+        .category-container {
             max-width: 1400px;
             margin: 0 auto;
-            min-height: 800px;
+            padding: 0 5%;
         }
         .category-header {
             text-align: center;
             margin-bottom: 60px;
+            padding: 60px 5%;
+            background-color: var(--color-surface);
+            width: 100%;
         }
         .category-title {
             font-size: 2.5rem;
@@ -127,12 +133,13 @@
             <p>스마트하고 체계적인 도서관 환경을 구축하는 RFID 솔루션입니다.</p>
         </div>
 
-        <ul class="subcategory-nav" id="subCategoryNav">
-            <li class="subcategory-item active" data-target="cat-tag">TAG</li>
-            <li class="subcategory-item" data-target="cat-anti">분실 방지기</li>
-            <li class="subcategory-item" data-target="cat-reader">리더기</li>
-            <li class="subcategory-item" data-target="cat-return">대출 반납기</li>
-        </ul>
+        <div class="category-container">
+            <ul class="subcategory-nav" id="subCategoryNav">
+                <li class="subcategory-item active" data-target="cat-tag">TAG</li>
+                <li class="subcategory-item" data-target="cat-anti">분실 방지기</li>
+                <li class="subcategory-item" data-target="cat-reader">리더기</li>
+                <li class="subcategory-item" data-target="cat-return">대출 반납기</li>
+            </ul>
 
         <div id="cat-tag" class="sub-content active">
             <div class="product-list">
@@ -233,6 +240,7 @@
                 </div>
             </div>
         </section>
+        </div>
     </main>
 
     <footer class="footer">

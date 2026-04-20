@@ -1,4 +1,4 @@
-﻿$template = Get-Content -Raw -Encoding UTF8 "rfid.html"
+$template = Get-Content -Raw -Encoding UTF8 "rfid.html"
 
 $categories = @{
     "em" = @{ title="EM시스템"; desc="가장 확실한 도서 분실 방지 시스템입니다."; subs=@("분실 방지기", "감응제거재생기", "감응 테이프") }
@@ -22,30 +22,32 @@ foreach ($code in $categories.Keys) {
     $header_html += "            <h2 class=""category-title"">$title</h2>`n"
     $header_html += "            <p>$desc</p>`n"
     $header_html += "        </div>`n`n"
-    $header_html += "        <ul class=""subcategory-nav"" id=""subCategoryNav"">`n"
+    $header_html += "        <div class=""category-container"">`n"
+    $header_html += "            <ul class=""subcategory-nav"" id=""subCategoryNav"">`n"
     
     for ($i=0; $i -lt $subs.Length; $i++) {
         $sub = $subs[$i]
         if ($i -eq 0) { $active = " active" } else { $active = "" }
-        $header_html += "            <li class=""subcategory-item$active"" data-target=""cat-$i"">$sub</li>`n"
+        $header_html += "                <li class=""subcategory-item$active"" data-target=""cat-$i"">$sub</li>`n"
     }
-    $header_html += "        </ul>`n`n"
+    $header_html += "            </ul>`n`n"
     
     for ($i=0; $i -lt $subs.Length; $i++) {
         $sub = $subs[$i]
         if ($i -eq 0) { $active = " active" } else { $active = "" }
-        $header_html += "        <div id=""cat-$i"" class=""sub-content$active"">`n"
-        $header_html += "            <div class=""product-list"">`n"
-        $header_html += "                <div class=""product-card visible"">`n"
-        $header_html += "                    <div class=""product-img"" style=""background-image: url('assets/public_library.png'); background-size: cover; background-position: center;""></div>`n"
-        $header_html += "                    <div class=""product-info"">`n"
-        $header_html += "                        <h4>$sub 샘플상품</h4>`n"
+        $header_html += "            <div id=""cat-$i"" class=""sub-content$active"">`n"
+        $header_html += "                <div class=""product-list"">`n"
+        $header_html += "                    <div class=""product-card visible"">`n"
+        $header_html += "                        <div class=""product-img"" style=""background-image: url('assets/public_library.png'); background-size: cover; background-position: center;""></div>`n"
+        $header_html += "                        <div class=""product-info"">`n"
+        $header_html += "                            <h4>$sub 샘플상품</h4>`n"
+        $header_html += "                        </div>`n"
         $header_html += "                    </div>`n"
         $header_html += "                </div>`n"
-        $header_html += "            </div>`n"
-        $header_html += "        </div>`n`n"
+        $header_html += "            </div>`n`n"
     }
     
+    $header_html += "        </div>`n"
     $header_html += "    </main>"
     
     $content = $template -replace '<title>.*?<', "<title>$title - 에스지라이뮤<"

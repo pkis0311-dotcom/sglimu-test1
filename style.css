@@ -26,6 +26,12 @@ body {
     overflow-x: hidden;
 }
 
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 5%;
+}
+
 a {
     text-decoration: none;
     color: inherit;
@@ -215,11 +221,14 @@ button {
 /* Slider Section */
 .hero-slider {
     position: relative;
-    width: 100%;
+    width: 100vw !important;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw !important;
+    margin-right: -50vw !important;
     height: 80vh;
     overflow: hidden;
-    margin: 0 auto;
-    border-radius: 0;
+    border-radius: 0 !important;
     background: #111;
 }
 
