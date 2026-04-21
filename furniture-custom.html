@@ -31,46 +31,15 @@
                     <li class="has-submenu">
                         <a href="#">도서관리 시스템</a>
                         <ul class="submenu">
-                            <li class="has-nested">
-                                <a href="rfid.html">RFID시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="rfid.html?cat=rfid_tag">태그 (TAG)</a></li>
-                                    <li><a href="rfid.html?cat=rfid_anti">분실방지기</a></li>
-                                    <li><a href="rfid.html?cat=rfid_reader">리더기</a></li>
-                                    <li><a href="rfid.html?cat=rfid_return">대출반납기</a></li>
-                                </ul>
-                            </li>
-                            <li class="has-nested">
-                                <a href="em.html">EM시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="em.html?cat=em_anti">분실방지기</a></li>
-                                    <li><a href="em.html?cat=em_gen">감응제거재생기</a></li>
-                                    <li><a href="em.html?cat=em_tape">감응 테이프</a></li>
-                                </ul>
-                            </li>
-                            <li class="has-nested">
-                                <a href="access.html">출입관리시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="access.html?cat=access_7000">TNH-7000A</a></li>
-                                    <li><a href="access.html?cat=access_8000">TNH-8000A</a></li>
-                                    <li><a href="access.html?cat=access_2203">EZ-2203AWG</a></li>
-                                    <li><a href="access.html?cat=access_2204">EZ-2204AWG</a></li>
-                                </ul>
-                            </li>
+                            <li><a href="rfid.html">RFID시스템</a></li>
+                            <li><a href="em.html">EM시스템</a></li>
+                            <li><a href="access.html">출입관리시스템</a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
                         <a href="#">도서관 용품</a>
                         <ul class="submenu">
-                            <li class="has-nested">
-                                <a href="supplies-arrange.html">도서정리 용품 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_keeper">키퍼</a></li>
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_color">색띠라벨</a></li>
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_paper">라벨용지</a></li>
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_bookend">북앤드</a></li>
-                                </ul>
-                            </li>
+                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
                             <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
                             <li><a href="supplies-lend.html">대출용품</a></li>
                             <li><a href="sterilizer.html">책소독기</a></li>
@@ -116,11 +85,13 @@
     <main class="category-page">
         <div class="category-header">
             <h2 class="category-title">제작가구</h2>
-            <p>도서관 환경과 공간에 맞춰진 최적의 커스텀 가구입니다.</p>
+            <p>공간의 특성에 맞춰 최적화된 설계로 제작되는 맞춤형 도서관 가구입니다.</p>
         </div>
         <div class="category-container">
             <ul class="subcategory-nav">
-                <li class="subcategory-item active" data-target="custom_furniture">제작가구</li>
+                <li class="subcategory-item active" data-target="fur_custom_desk">맞춤형 안내 데스크</li>
+                <li class="subcategory-item" data-target="fur_custom_bookshelf">공간 절약형 서가</li>
+                <li class="subcategory-item" data-target="fur_custom_zone">테마 공간 가구</li>
             </ul>
             <div class="product-list" id="productList"></div>
         </div>
@@ -130,15 +101,65 @@
         <div class="footer-container">
             <div class="footer-info">
                 <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
-                <p>Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
-                <p>대표자명 : 강인숙 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
+                <p>Address : 부산광역시 금정구 중앙대로 2210번길 29-1 (두구동)</p>
+                <p>대표자명 : 강인태 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
 
+    <aside class="right-fixed-banner">
+        <ul class="banner-menu">
+            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i></a></li>
+            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i></a></li>
+            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i></a></li>
+            <li class="scroll-btns">
+                <button class="banner-btn scroll-top" id="scrollTopBtn"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn"><i class="fa-solid fa-chevron-down"></i></button>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="chat-widget">
+        <button class="chat-fab" id="chatFab"><i class="fa-solid fa-comment-dots"></i></button>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header"><h5>실시간 상담</h5><button id="chatCloseBtn">&times;</button></div>
+            <div class="chat-body" id="chatBody"><div class="message system-msg">안녕하세요! 에스지라이뮤입니다. 무엇을 도와드릴까요?</div></div>
+            <div class="chat-input-area"><input type="text" id="chatInput" placeholder="메시지 입력..."><button id="chatSendBtn">전송</button></div>
+        </div>
+    </div>
+
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-modal">
+            <div class="auth-close" id="authClose">&times;</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-target="loginPane">로그인</div>
+                <div class="auth-tab" data-target="signupPane">회원가입</div>
+            </div>
+            <div class="auth-content">
+                <div class="auth-pane active" id="loginPane">
+                    <form id="loginForm">
+                        <input type="email" id="loginEmail" placeholder="이메일" required>
+                        <input type="password" id="loginPassword" placeholder="비밀번호" required>
+                        <button type="submit">로그인</button>
+                    </form>
+                </div>
+                <div class="auth-pane" id="signupPane">
+                    <form id="signupForm">
+                        <input type="text" id="signupName" placeholder="이름" required>
+                        <input type="email" id="signupEmail" placeholder="이메일" required>
+                        <button type="submit">가입하기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
+    <script src="cart.js"></script>
+    <script src="inquiry.js"></script>
+    <script src="auth.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             const tabs = document.querySelectorAll('.subcategory-item');

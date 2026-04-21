@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?쒗뭹 ?곸꽭 - ?먯뒪吏?쇱씠裕?/title>
+    <title>제품 상세 - 에스지라이뮤</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="cart.css">
     <link rel="stylesheet" href="inquiry.css">
@@ -42,32 +42,57 @@
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
-                    <li><a href="#">?꾩꽌愿由??쒖뒪??/a>
+                    <li class="has-submenu">
+                        <a href="#">도서관리 시스템</a>
                         <ul class="submenu">
-                            <li><a href="rfid.html">RFID?쒖뒪??/a></li>
-                            <li><a href="em.html">EM?쒖뒪??/a></li>
-                            <li><a href="access.html">異쒖엯愿由ъ떆?ㅽ뀥</a></li>
+                            <li><a href="rfid.html">RFID시스템</a></li>
+                            <li><a href="em.html">EM시스템</a></li>
+                            <li><a href="access.html">출입관리시스템</a></li>
                         </ul>
                     </li>
-                    <li><a href="#">?꾩꽌愿 ?⑺뭹</a>
+                    <li class="has-submenu">
+                        <a href="#">도서관 용품</a>
                         <ul class="submenu">
-                            <li><a href="supplies-arrange.html">?꾩꽌?뺣━ ?⑺뭹</a></li>
-                            <li><a href="supplies-protect.html">?꾩꽌蹂댄샇?⑺뭹</a></li>
-                            <li><a href="supplies-lend.html">?異쒖슜??/a></li>
-                            <li><a href="sterilizer.html">梨낆냼?낃린</a></li>
+                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
+                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
+                            <li><a href="supplies-lend.html">대출용품</a></li>
+                            <li><a href="sterilizer.html">책소독기</a></li>
                         </ul>
                     </li>
-                    <li><a href="#">?꾩꽌愿 媛援?/a>
+                    <li class="has-submenu">
+                        <a href="#">도서관 가구</a>
                         <ul class="submenu">
-                            <li><a href="furniture-koas.html">肄붿븘??/a></li>
-                            <li><a href="furniture-fomus.html">?щ㉧??/a></li>
-                            <li><a href="furniture-fursys.html">?쇱떆??/a></li>
-                            <li><a href="furniture-custom.html">?쒖옉媛援?/a></li>
+                            <li><a href="furniture-koas.html">코아스</a></li>
+                            <li><a href="furniture-fomus.html">포머스</a></li>
+                            <li><a href="furniture-fursys.html">퍼시스</a></li>
+                            <li><a href="furniture-custom.html">제작가구</a></li>
                         </ul>
                     </li>
-                    <li><a href="discount.html">?좎씤?곹뭹</a></li>
+                    <li class="has-submenu">
+                        <a href="#">사인물</a>
+                        <ul class="submenu">
+                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
+                            <li><a href="sign-board.html">게시판/이용안내</a></li>
+                            <li><a href="sign-date.html">대출반납일력표</a></li>
+                            <li><a href="sign-custom.html">제작사인물</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="discount.html">할인상품</a></li>
                 </ul>
             </nav>
+            <div class="header-utils">
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+                </div>
+                <div class="user-auth-wrap" id="userAuthWrap">
+                    <button class="login-trigger-btn" id="loginTriggerBtn">
+                        <i class="fa-regular fa-user"></i>
+                        <span>로그인</span>
+                    </button>
+                </div>
+                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+            </div>
         </div>
     </header>
 
@@ -78,29 +103,29 @@
             </div>
             <div class="product-info-panel">
                 <span class="product-tag" id="prodCategory">Category</span>
-                <h2 class="product-title" id="prodTitle">?쒗뭹紐?/h2>
-                <div class="product-price" id="prodPrice">媛寃⑸Ц??/div>
+                <h2 class="product-title" id="prodTitle">제품명</h2>
+                <div class="product-price" id="prodPrice">가격문의</div>
                 
                 <div class="option-row" id="optionColorRow" style="display:none;">
-                    <span class="option-label">?됱긽 ?좏깮</span>
+                    <span class="option-label">색상 선택</span>
                     <div class="option-list" id="colorList"></div>
                 </div>
                 
                 <div class="option-row" id="optionSizeRow" style="display:none;">
-                    <span class="option-label">?ъ씠利??좏깮</span>
+                    <span class="option-label">사이즈 선택</span>
                     <div class="option-list" id="sizeList"></div>
                 </div>
 
                 <div class="buy-btns">
-                    <button class="btn-cart" id="addToCartBtn">?λ컮援щ땲</button>
-                    <button class="btn-order" id="directOrderBtn">?꾩쟻臾몄쓽 / ?곷떞?좎껌</button>
+                    <button class="btn-cart" id="addToCartBtn">장바구니</button>
+                    <button class="btn-order" id="directOrderBtn">견적문의 / 상담신청</button>
                 </div>
             </div>
         </div>
 
         <div class="detail-tabs">
-            <div class="tab-item active">?쒗뭹 ?곸꽭?ㅻ챸</div>
-            <div class="tab-item">諛곗넚/援먰솚/諛섑뭹</div>
+            <div class="tab-item active">제품 상세설명</div>
+            <div class="tab-item">배송/교환/반품</div>
         </div>
 
         <div class="detail-contents" id="detailBody">
@@ -108,8 +133,20 @@
         </div>
     </main>
 
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
+                <p>Address : 부산광역시 금정구 중앙대로 2210번길 29-1 (두구동)</p>
+                <p>대표자명 : 강인태 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
+                <p class="copyright">Copyright © 2023 SG LIMU. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Supabase client and logic
         const { createClient } = supabase;
         const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
         
@@ -122,10 +159,11 @@
             if(!p) return;
 
             document.getElementById('prodTitle').innerText = p.name;
-            document.getElementById('prodPrice').innerText = (p.price === '?꾪솕臾몄쓽' || !p.price) ? '?꾪솕臾몄쓽' : Number(p.price).toLocaleString() + '??;
+            document.getElementById('prodCategory').innerText = p.category || '기타';
+            document.getElementById('prodPrice').innerText = (p.price === '전화문의' || !p.price) ? '전화문의' : Number(p.price).toLocaleString() + '원';
             document.getElementById('mainImg').src = p.image_url || 'assets/no-image.png';
 
-            // Load Page Data for deep details
+            // Load Page Data for deep details from site_configs
             const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).single();
             const detailBody = document.getElementById('detailBody');
             
@@ -134,7 +172,7 @@
                 if(d.detailImage) detailBody.innerHTML = `<img src="${d.detailImage}">`;
                 else if(d.description) detailBody.innerHTML = `<p style="padding:50px;">${d.description.replace(/\n/g, '<br>')}</p>`;
             } else {
-                detailBody.innerHTML = `<p style="padding:50px; color:#999;">?깅줉???곸꽭 ?ㅻ챸???놁뒿?덈떎.</p>`;
+                detailBody.innerHTML = `<p style="padding:50px; color:#999;">등록된 상세 설명이 없습니다.</p>`;
             }
         }
         
@@ -145,4 +183,3 @@
     <script type="module" src="auth.js"></script>
 </body>
 </html>
-
