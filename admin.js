@@ -945,33 +945,28 @@ window.deleteCategory = async (id) => {
     if(error) alert('삭제 실패: ' + error.message);
     else fetchCategories();
 };
-    document.getElementById('saveDisplayBtn').onclick = async () => {
-        if(!currentSelectedSection) return alert('화면을 선택해주세요.');
-        const selected = Array.from(document.querySelectorAll('.display-item-cb'))
-            .filter(cb => cb.checked).map(cb => cb.value);
-            
-        const { error } = await db.from('site_configs').upsert({
-            key: 'display_' + currentSelectedSection,
-            value: selected
-        });
-        if(error) alert('저장 실패'); else alert('노출 설정이 저장되었습니다.');
-    };
-}
 
-let currentSelectedSection = '';
 function initCategoryDisplayTab() {
-    const container = document.querySelector('.major-category-nav');
+    const container = document.querySelector('.major-btns');
     if(!container) return;
 
-    // Render Major category buttons dynamically
-    const majors = globalCategories.filter(c => c.is_major).sort((a,b) => a.display_order - b.display_order);
-    container.innerHTML = majors.map(m => `
-        <button class="major-btn" data-major="${m.id}">
-            <i class="fa-solid ${m.icon_class || 'fa-folder'}"></i>
-            ${m.name}
-        </button>
-    `).join('');
+    // 카테고리 노출 설정 저장 버튼 로직
+    const saveDisplayBtn = document.getElementById('saveDisplayBtn');
+    if (saveDisplayBtn) {
+        saveDisplayBtn.onclick = async () => {
+            if(!currentSelectedSection) return alert('화면을 선택해주세요.');
+            const selected = Array.from(document.querySelectorAll('.display-item-cb'))
+                .filter(cb => cb.checked).map(cb => cb.value);
+                
+            const { error } = await db.from('site_configs').upsert({
+                key: 'display_' + currentSelectedSection,
+                value: selected
+            });
+            if(error) alert('저장 실패: ' + error.message); else alert('노출 설정이 저장되었습니다.');
+        };
+    }
 
+    // 대분류 버튼 이벤트 연결 (HTML에 이미 버튼이 하드코딩되어 있으므로 이벤트만 연결)
     const majorBtns = container.querySelectorAll('.major-btn');
     majorBtns.forEach(btn => {
         btn.onclick = () => {
@@ -986,8 +981,14 @@ function renderMinorCategories(majorId) {
     const grid = document.getElementById('minorCategoryGrid');
     if(!grid) return;
     
+    // globalCategories에서 해당 대분류의 하위 분류 필터링
     const subs = globalCategories.filter(c => c.parent_id === majorId).sort((a,b) => a.display_order - b.display_order);
     
+    if (subs.length === 0) {
+        grid.innerHTML = '<div style="padding:10px; color:#999; font-size:0.85rem;">하위 분류가 없습니다.</div>';
+        return;
+    }
+
     grid.innerHTML = subs.map(s => `
         <button class="minor-btn ${currentSelectedSection === s.id ? 'active' : ''}" 
                 onclick="window.selectMinorCategory('${s.id}', '${s.name}')">
@@ -996,11 +997,16 @@ function renderMinorCategories(majorId) {
     `).join('');
 }
 
+let currentSelectedSection = '';
 window.selectMinorCategory = (id, name) => {
     currentSelectedSection = id;
     document.querySelectorAll('.minor-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.trim() === name));
-    document.getElementById('displaySectionStatus').style.display = 'block';
-    document.getElementById('currentSelectionName').textContent = name;
+    const statusDiv = document.getElementById('displaySectionStatus');
+    if(statusDiv) statusDiv.style.display = 'block';
+    
+    const nameSpan = document.getElementById('currentSelectionName');
+    if(nameSpan) nameSpan.textContent = name;
+    
     loadCategoryDisplay(id);
 };
 
