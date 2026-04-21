@@ -764,6 +764,14 @@ function updateCategoryManagementTable() {
     if(!tBody) return;
     
     tBody.innerHTML = '';
+
+    // 상위 분류 선택 Select Box 업데이트
+    const parentSelect = document.getElementById('catParentId');
+    if (parentSelect) {
+        const majors = globalCategories.filter(c => c.is_major);
+        parentSelect.innerHTML = '<option value="">없음 (대분류인 경우)</option>' + 
+            majors.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    }
     
     // Sort logic: Majors first, then their respective subs
     const majors = globalCategories.filter(c => c.is_major).sort((a,b) => a.display_order - b.display_order);
@@ -841,27 +849,31 @@ function initCategoryManageTab() {
         
         // Internal Migration logic to avoid file protocol issues
         const INITIAL_DATA = {
-            'system': { icon: 'fa-server', label: '도서관리시스템', subs: [
-                { id: 'rfid_tag', name: 'RFID > 태그 (TAG)' }, { id: 'rfid_anti', name: 'RFID > 분실 방지기' }, { id: 'rfid_reader', name: 'RFID > 리더기' }, { id: 'rfid_return', name: 'RFID > 대출 반납기' },
-                { id: 'em_anti', name: 'EM > 분실 방지기' }, { id: 'em_gen', name: 'EM > 감응제거재생기' }, { id: 'em_tape', name: 'EM > 감응 테이프' },
-                { id: 'access_7000', name: '출입관리 > TNH-7000A' }, { id: 'access_8000', name: '출입관리 > TNH-8000A' }, { id: 'access_2203', name: '출입관리 > EZ-2203AWG' }, { id: 'access_2204', name: '출입관리 > EZ-2204AWG' }
+            'system': { icon: 'fa-server', label: '도서관리 시스템', subs: [
+                { id: 'rfid', name: 'RFID시스템' }, 
+                { id: 'em', name: 'EM시스템' }, 
+                { id: 'access', name: '출입관리시스템' }
             ]},
             'supplies': { icon: 'fa-box-open', label: '도서관 용품', subs: [
-                { id: 'supplies_arrange_keeper', name: '정리 > 키퍼' }, { id: 'supplies_arrange_label_color', name: '정리 > 색띠라벨' }, { id: 'supplies_arrange_label_paper', name: '정리 > 라벨용지' }, { id: 'supplies_arrange_gloves', name: '정리 > 장갑' }, { id: 'supplies_arrange_stamp', name: '정리 > 도장' }, { id: 'supplies_arrange_bookend', name: '정리 > 북앤드' }, { id: 'supplies_arrange_etc', name: '정리 > 기타' },
-                { id: 'supplies_protect_filmo', name: '보호 > 필모시리즈' }, { id: 'supplies_protect_glue', name: '보호 > 중성풀' }, { id: 'supplies_protect_tape', name: '보호 > 양면테이프' }, { id: 'supplies_protect_bookcover', name: '보호 > 북커버' },
-                { id: 'supplies_lend_barcode', name: '대출 > 바코드' }, { id: 'supplies_lend_equip', name: '대출 > 카드프린터/기기' }, { id: 'supplies_lend_card', name: '대출 > 회원증카드' }, { id: 'supplies_lend_thermal', name: '대출 > 감열지' },
-                { id: 'sterilizer_parts', name: '책소독기 소모품' }
+                { id: 'supplies-arrange', name: '도서정리 용품' }, 
+                { id: 'supplies-protect', name: '도서보호, 보수용품' }, 
+                { id: 'supplies-lend', name: '대출용품' }, 
+                { id: 'sterilizer', name: '책소독기' }
             ]},
             'furniture': { icon: 'fa-chair', label: '도서관 가구', subs: [
-                { id: 'koas_shelf', name: '코아스 > 서가' }, { id: 'koas_table', name: '코아스 > 테이블' }, { id: 'koas_chair', name: '코아스 > 의자' }, { id: 'koas_etc', name: '코아스 > 기타' },
-                { id: 'fomus_shelf', name: '포머스 > 서가' }, { id: 'fomus_table', name: '포머스 > 테이블' }, { id: 'fomus_chair', name: '포머스 > 의자' }, { id: 'fomus_etc', name: '포머스 > 기타' },
-                { id: 'fursys_shelf', name: '퍼시스 > 서가' }, { id: 'fursys_table', name: '퍼시스 > 테이블' }, { id: 'fursys_chair', name: '퍼시스 > 의자' }, { id: 'fursys_etc', name: '퍼시스 > 기타' }
+                { id: 'furniture-koas', name: '코아스' }, 
+                { id: 'furniture-fomus', name: '포머스' }, 
+                { id: 'furniture-fursys', name: '퍼시스' }, 
+                { id: 'furniture-custom', name: '제작가구' }
             ]},
             'signage': { icon: 'fa-scroll', label: '사인물', subs: [
-                { id: 'sign_class', name: '분류/대분류 표지판' }, { id: 'sign_board', name: '게시판/이용안내' }, { id: 'sign_date', name: '대출반납일력표' }, { id: 'sign_custom', name: '제작 사인물' }, { id: 'best_product', name: '메인 베스트 상품' }
+                { id: 'sign-class', name: '한국십진분류/대분류표지판' }, 
+                { id: 'sign-board', name: '게시판/이용안내' }, 
+                { id: 'sign-date', name: '대출반납일력표' }, 
+                { id: 'sign-custom', name: '제작사인물' }
             ]},
             'discount': { icon: 'fa-tags', label: '할인상품', subs: [
-                { id: 'discount_items', name: '할인상품 전체' }
+                { id: 'discount', name: '할인상품' }
             ]}
         };
 
@@ -922,7 +934,17 @@ function initCategoryManageTab() {
     fetchCategories();
 }
 
+function refreshParentSelect() {
+    const parentSelect = document.getElementById('catParentId');
+    if (parentSelect) {
+        const majors = globalCategories.filter(c => c.is_major);
+        parentSelect.innerHTML = '<option value="">없음 (대분류인 경우)</option>' + 
+            majors.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    }
+}
+
 window.openCategoryEditModal = (id) => {
+    refreshParentSelect();
     const c = globalCategories.find(x => x.id === id);
     if(!c) return;
     

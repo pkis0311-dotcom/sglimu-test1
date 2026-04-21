@@ -110,8 +110,58 @@ window.addEventListener('scroll', () => {
 /**
  * 정적 GNB를 사용하므로 동적 렌더링은 비활성화하거나 로깅만 남깁니다.
  */
+/**
+ * 데이터베이스의 카테고리 정보를 조회하여 메뉴(GNB)를 동적으로 렌더링합니다.
+ */
 window.renderDynamicGnb = async function() {
-    console.log('Dynamic GNB rendering skipped (using Static GNB for stability).');
+    const gnbUl = document.querySelector('.gnb > ul');
+    if (!gnbUl) return;
+
+    try {
+        if (!supabaseClient) throw new Error('Supabase client not initialized');
+
+        // 1. 카테고리 데이터 가져오기
+        const { data: categories, error } = await supabaseClient
+            .from('categories')
+            .select('*')
+            .order('display_order', { ascending: true });
+
+        if (error) throw error;
+        if (!categories || categories.length === 0) {
+            console.log('No dynamic categories found. Using existing static menu.');
+            return; 
+        }
+
+        // 2. 메뉴 구조 생성
+        let gnbHtml = '';
+        const majors = categories.filter(c => c.is_major);
+
+        majors.forEach(m => {
+            const subs = categories.filter(c => c.parent_id === m.id);
+            
+            if (subs.length > 0) {
+                gnbHtml += `
+                    <li class="has-submenu">
+                        <a href="#">${m.name}</a>
+                        <ul class="submenu">
+                            ${subs.map(s => `<li><a href="${s.id}.html">${s.name}</a></li>`).join('')}
+                        </ul>
+                    </li>
+                `;
+            } else {
+                // 하위 메뉴가 없는 경우 (예: 할인상품)
+                gnbHtml += `<li><a href="${m.id}.html">${m.name}</a></li>`;
+            }
+        });
+
+        // 3. GNB 업데이트
+        gnbUl.innerHTML = gnbHtml;
+        console.log('Dynamic GNB rendered successfully.');
+
+    } catch (err) {
+        console.error('Dynamic GNB rendering failed:', err);
+        // 실패 시 기존 HTML에 하드코딩된 정적 메뉴가 유지되므로 추가 조치 불요
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
