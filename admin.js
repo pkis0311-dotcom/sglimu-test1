@@ -34,12 +34,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Global state for categories
 let globalCategories = [];
-const STATIC_CATEGORIES = { // Legacy fallback for safety
-    'system': { label: '도서관리시스템', icon: 'fa-server' },
-    'supplies': { label: '도서관 용품', icon: 'fa-box-open' },
-    'furniture': { label: '도서관 가구', icon: 'fa-chair' },
-    'signage': { label: '사인물', icon: 'fa-scroll' },
-    'discount': { label: '할인상품', icon: 'fa-tags' }
+
+const LEGACY_ID_MAP = {
+    'access_7000': 'access-cat-0', 'access_8000': 'access-cat-1', 'access_2203': 'access-cat-2', 'access_2204': 'access-cat-3',
+    'discount_items': 'discount-cat-0', 'sign_date': 'sign-date-cat-0', 'sign_custom': 'sign-custom-cat-0', 'sterilizer_parts': 'sterilizer-cat-0',
+    'fomus_shelf': 'fomus-cat-0', 'fomus_table': 'fomus-cat-1', 'fomus_chair': 'fomus-cat-2', 'fomus_etc': 'fomus-cat-3',
+    'fursys_shelf': 'fursys-cat-0', 'fursys_table': 'fursys-table-cat-0', 'fursys_chair': 'fursys-cat-2', 'fursys_etc': 'fursys-cat-3',
+    'koas_table': 'koas-cat-1', 'koas_etc': 'koas-cat-3'
 };
 
 // DOM Elements

@@ -76,12 +76,21 @@ window.renderDynamicGnb = async function() {
     if (!gnbList) return;
 
     try {
+        if (!supabaseClient) {
+            console.warn('Supabase client not initialized. GNB will not be rendered.');
+            return;
+        }
+
         const { data: categories, error } = await supabaseClient
             .from('categories')
             .select('*')
             .order('display_order', { ascending: true });
 
         if (error) throw error;
+        if (!categories || categories.length === 0) {
+            console.warn('No category data found in DB.');
+            return;
+        }
 
         const majors = categories.filter(c => c.is_major);
         let html = '';
