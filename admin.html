@@ -15,24 +15,15 @@
     <div id="loginOverlay" style="display: none;">
         <div class="login-box">
             <h2><i class="fa-solid fa-lock"></i> 관리자 로그인</h2>
-            <div class="login-form-group">
-                <label for="adminEmail">이메일</label>
-                <input type="email" id="adminEmail" placeholder="admin@example.com">
-            </div>
-            <div class="login-form-group">
-                <label for="adminPassword">비밀번호</label>
-                <input type="password" id="adminPassword" placeholder="비밀번호 입력">
-            </div>
+            <div class="login-form-group"><label for="adminEmail">이메일</label><input type="email" id="adminEmail" placeholder="admin@example.com"></div>
+            <div class="login-form-group"><label for="adminPassword">비밀번호</label><input type="password" id="adminPassword" placeholder="비밀번호 입력"></div>
             <button id="loginBtn" class="login-btn">로그인</button>
             <div id="loginMessage"></div>
         </div>
     </div>
 
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>SG LIMU Admin</h2>
-            <p style="font-size:0.8rem; color:#ccc; margin-top:5px;">관리자 대시보드</p>
-        </div>
+        <div class="sidebar-header"><h2>SG LIMU Admin</h2><p style="font-size:0.8rem; color:#ccc; margin-top:5px;">관리자 대시보드</p></div>
         <ul class="sidebar-menu">
             <li class="nav-item active" data-target="tab-products"><i class="fa-solid fa-box-open"></i> 상품 정보 관리</li>
             <li class="nav-item" data-target="tab-page-manage"><i class="fa-solid fa-file-pen"></i> 페이지 내용 관리</li>
@@ -42,17 +33,15 @@
             <li class="nav-item" data-target="tab-banners"><i class="fa-solid fa-images"></i> 메인배너/팝업 관리</li>
             <li class="nav-item" data-target="tab-users"><i class="fa-solid fa-users"></i> 회원(기관) 관리</li>
         </ul>
-        <div class="sidebar-footer">
-            <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</button>
-        </div>
+        <div class="sidebar-footer"><button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</button></div>
     </aside>
 
     <main class="main-content">
         <div id="tab-products" class="tab-pane active">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="page-header">
                 <h1 class="page-title">상품 관리</h1>
                 <div style="display: flex; gap: 10px;">
-                    <button id="downloadProductExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71;"><i class="fa-solid fa-file-excel"></i> 상품리스트 엑셀다운</button>
+                    <button id="downloadProductExcelBtn" class="btn-primary" style="background-color: #27ae60;"><i class="fa-solid fa-file-excel"></i> 상품리스트 엑셀다운</button>
                     <button id="addProductBtn" class="btn-primary"><i class="fa-solid fa-plus"></i> 새 상품 등록</button>
                 </div>
             </div>
@@ -60,42 +49,6 @@
                 <table>
                     <thead><tr><th>대표사진</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>수정일</th><th>관리</th></tr></thead>
                     <tbody id="productTableBody"><tr><td colspan="7" class="empty-state">로딩 중...</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="tab-orders" class="tab-pane">
-            <div class="page-header"><h1 class="page-title"><i class="fa-solid fa-chart-pie"></i> 주문 통계 분석</h1><button id="downloadExcelBtn" class="btn-success"><i class="fa-solid fa-file-excel"></i> 전체 데이터 받기(.xlsx)</button></div>
-            <div class="stats-grid"><div class="stat-card"><h3>금일 주문수</h3><p id="todayOrders">0</p></div><div class="stat-card"><h3>금월 매출액</h3><p id="monthSales">0원</p></div><div class="stat-card"><h3>미처리 문의</h3><p id="pendingInquiry">0</p></div></div>
-            <div class="chart-container" style="margin-top:30px; background:#fff; padding:20px; border-radius:8px; box-shadow:var(--shadow-subtle);"><canvas id="orderChart"></canvas></div>
-        </div>
-
-        <div id="tab-inquiries" class="tab-pane">
-            <div class="page-header"><h1 class="page-title">고객 견적 / 상담 내역</h1></div>
-            <div class="table-card">
-                <table>
-                    <thead><tr><th>문의유형</th><th>작성자/소속</th><th>연락처</th><th>문의 항목/요청상품</th><th>접수일</th><th>처리상태</th><th>상세보기</th></tr></thead>
-                    <tbody id="inquiryTableBody"><tr><td colspan="7" class="empty-state">접수된 문의 내역이 없습니다.</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="tab-banners" class="tab-pane">
-            <div class="page-header"><h1 class="page-title">메인화면 배너 / 팝업 관리</h1><button id="addBannerBtn" class="btn-primary"><i class="fa-solid fa-plus"></i> 새 배너 등록</button></div>
-            <div class="table-card">
-                <table>
-                    <thead><tr><th>이미지</th><th>유형</th><th>링크</th><th>순서</th><th>등록일</th><th>상태</th><th>관리</th></tr></thead>
-                    <tbody id="bannerTableBody"><tr><td colspan="7" class="empty-state">현재 노출 중인 배너가 없습니다.</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="tab-users" class="tab-pane">
-            <div class="page-header"><h1 class="page-title">회원 (도서관/파트너) 관리</h1><button class="btn-secondary" onclick="alert('신규 회원 등록 기능 오픈 예정')"><i class="fa-solid fa-user-plus"></i> 기관 추가 등록</button></div>
-            <div class="table-card">
-                <table>
-                    <thead><tr><th>회원ID</th><th>기관명(학교/관공서명)</th><th>담당자명</th><th>연락처</th><th>B2B 승인여부</th><th>가입일</th><th>권한관리</th></tr></thead>
-                    <tbody id="userTableBody"><tr><td colspan="7" class="empty-state">등록된 관리 회원이 없습니다.</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -111,9 +64,65 @@
                     <div class="form-group full-width"><label><i class="fa-solid fa-camera"></i> 1. 대표사진 관리(최적 비율 1:1)</label><input type="file" id="pageMainImage" class="form-control" accept="image/*" multiple><div class="image-preview" id="pageMainImagePreview"></div></div>
                     <div class="form-group full-width"><label><i class="fa-solid fa-image"></i> 2. 상품 상세페이지 이미지 추가</label><input type="file" id="pageDetailImage" class="form-control" accept="image/*" multiple><div class="image-preview" id="pageDetailImagePreview"></div></div>
                     <div class="form-group full-width"><label><i class="fa-solid fa-align-left"></i> 3. 상품 설명글(Summary)</label><textarea id="pageDescription" class="form-control" rows="4"></textarea></div>
-                    <div class="form-group full-width"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><label style="margin:0;"><i class="fa-solid fa-table-list"></i> 4. 상품 규격표(DIMENSION)</label><button type="button" class="btn-secondary" id="addSpecBtn">항목 추가</button></div><div id="specContainer"></div></div>
+                    <div class="form-group full-width"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><label style="margin:0;"><i class="fa-solid fa-table-list"></i> 4. 상품 규격표(DIMENSION)</label><button type="button" class="btn-secondary" id="addSpecBtn">항목 추가</button></div><div id="specContainer" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+                    <div class="form-group full-width" style="border-top:1px solid #eee; padding-top:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <label style="margin:0;"><i class="fa-solid fa-star"></i> 5. 상품 주요 특징(FEATURES)</label>
+                            <button type="button" class="btn-secondary" id="addFeatureBtn">특징 추가</button>
+                        </div>
+                        <div id="featureContainer" style="display:flex; flex-direction:column; gap:15px;"></div>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <div id="tab-category-display" class="tab-pane">
+            <div class="page-header"><h1 class="page-title">카테고리 노출 설정</h1><p>각 소분류 페이지에 노출할 상품들을 직접 선택하고 배치합니다.</p></div>
+            <div class="display-manage-container" style="display: grid; grid-template-columns: 250px 1fr; gap: 20px; margin-top: 20px;">
+                <div class="category-selector-card" style="background:#fff; padding:20px; border-radius:8px; border:1px solid #eee;">
+                    <h3 style="margin-bottom:15px; font-size:1rem;">대분류 선택</h3>
+                    <div class="major-btns" style="display:flex; flex-direction:column; gap:8px;">
+                        <button class="major-btn active" data-major="system">도서관리시스템</button>
+                        <button class="major-btn" data-major="supplies">도서관용품</button>
+                        <button class="major-btn" data-major="furniture">도서관가구</button>
+                        <button class="major-btn" data-major="signage">사인물</button>
+                        <button class="major-btn" data-major="discount">할인상품</button>
+                    </div>
+                    <h3 style="margin-top:25px; margin-bottom:15px; font-size:1rem;">소분류 선택</h3>
+                    <div id="minorCategoryGrid" style="display:flex; flex-direction:column; gap:5px;"></div>
+                </div>
+                <div class="display-setting-card" style="background:#fff; padding:20px; border-radius:8px; border:1px solid #eee;">
+                    <div id="displaySectionStatus" style="display:none; margin-bottom:20px; padding:15px; background:#f0f7ff; border-radius:6px; border:1px solid #d0e3f7;">
+                        <h4 style="color:#2980b9; margin-bottom:5px;"><i class="fa-solid fa-location-dot"></i> 현재 설정 중인 위치: <span id="currentSelectionName">미선택</span></h4>
+                        <p style="font-size:0.85rem; color:#666;">아래 목록에서 노출할 상품을 체크한 후 [배치 저장] 버튼을 눌러주세요.</p>
+                        <button id="saveDisplayBtn" class="btn-primary" style="margin-top:10px;"><i class="fa-solid fa-save"></i> 배치 저장하기</button>
+                    </div>
+                    <div id="productCheckboxGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        <div style="grid-column: 1/-1; text-align:center; padding:50px; color:#999;">좌측에서 소분류를 먼저 선택해주세요.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-orders" class="tab-pane">
+            <div class="page-header"><h1 class="page-title"><i class="fa-solid fa-chart-pie"></i> 주문 통계 분석</h1><button id="downloadExcelBtn" class="btn-success"><i class="fa-solid fa-file-excel"></i> 전체 데이터 받기(.xlsx)</button></div>
+            <div class="stats-grid"><div class="stat-card"><h3>금일 주문수</h3><p id="todayOrders">0</p></div><div class="stat-card"><h3>금월 매출액</h3><p id="monthSales">0원</p></div><div class="stat-card"><h3>미처리 문의</h3><p id="pendingInquiry">0</p></div></div>
+            <div class="chart-container" style="margin-top:30px; background:#fff; padding:20px; border-radius:8px;"><canvas id="orderChart"></canvas></div>
+        </div>
+
+        <div id="tab-inquiries" class="tab-pane">
+            <div class="page-header"><h1 class="page-title">고객 견적 / 상담 내역</h1></div>
+            <div class="table-card"><table><thead><tr><th>신청번호</th><th>작성자/소속</th><th>연락처</th><th>문의 항목/요청상품</th><th>접수일</th><th>처리상태</th><th>상세보기</th></tr></thead><tbody id="inquiryTableBody"></tbody></table></div>
+        </div>
+
+        <div id="tab-banners" class="tab-pane">
+            <div class="page-header"><h1 class="page-title">메인화면 배너 / 팝업 관리</h1><button id="addBannerBtn" class="btn-primary"><i class="fa-solid fa-plus"></i> 새 배너 등록</button></div>
+            <div class="table-card"><table><thead><tr><th>이미지</th><th>유형</th><th>링크</th><th>순서</th><th>등록일</th><th>상태</th><th>관리</th></tr></thead><tbody id="bannerTableBody"></tbody></table></div>
+        </div>
+
+        <div id="tab-users" class="tab-pane">
+            <div class="page-header"><h1 class="page-title">회원 (도서관/파트너) 관리</h1></div>
+            <div class="table-card"><table><thead><tr><th>회원ID</th><th>기관명</th><th>담당자명</th><th>연락처</th><th>B2B 승인</th><th>가입일</th><th>관리</th></tr></thead><tbody id="userTableBody"></tbody></table></div>
         </div>
     </main>
 
@@ -131,54 +140,24 @@
                             <option value="">카테고리 선택</option>
                             <option value="best_product">메인 베스트 상품</option>
                             <optgroup label="도서관리 시스템">
-                                <option value="rfid_tag">RFID > 태그 (TAG)</option>
-                                <option value="rfid_anti">RFID > 분실방지기</option>
-                                <option value="rfid_reader">RFID > 리더기</option>
-                                <option value="rfid_return">RFID > 대출반납기</option>
-                                <option value="em_anti">EM > 분실방지기</option>
-                                <option value="em_gen">EM > 감응제거재생기</option>
-                                <option value="em_tape">EM > 감응 테이프</option>
-                                <option value="access_7000">출입관리 > TNH-7000A</option>
-                                <option value="access_8000">출입관리 > TNH-8000A</option>
-                                <option value="access_2203">출입관리 > EZ-2203AWG</option>
-                                <option value="access_2204">출입관리 > EZ-2204AWG</option>
+                                <option value="rfid_tag">RFID > 태그 (TAG)</option><option value="rfid_anti">RFID > 분실방지기</option><option value="rfid_reader">RFID > 리더기</option><option value="rfid_return">RFID > 대출반납기</option>
+                                <option value="em_anti">EM > 분실방지기</option><option value="em_gen">EM > 감응제거재생기</option><option value="em_tape">EM > 감응 테이프</option>
+                                <option value="access_7000">출입관리 > TNH-7000A</option><option value="access_8000">출입관리 > TNH-8000A</option><option value="access_2203">출입관리 > EZ-2203AWG</option><option value="access_2204">출입관리 > EZ-2204AWG</option>
                             </optgroup>
                             <optgroup label="도서관 용품">
-                                <option value="supplies_arrange_keeper">정리 > 키퍼</option>
-                                <option value="supplies_arrange_label_color">정리 > 색띠라벨</option>
-                                <option value="supplies_arrange_label_paper">정리 > 라벨용지</option>
-                                <option value="supplies_arrange_bookend">정리 > 북앤드</option>
-                                <option value="supplies_arrange_etc">정리 > 기타</option>
-                                <option value="supplies_protect_filmo">보호 > 필모시리즈</option>
-                                <option value="supplies_protect_glue">보호 > 중성풀</option>
-                                <option value="supplies_protect_tape">보호 > 양면테이프</option>
-                                <option value="supplies_protect_bookcover">보호 > 북커버</option>
-                                <option value="supplies_lend_barcode">대출 > 바코드</option>
-                                <option value="supplies_lend_equip">대출 > 기기</option>
-                                <option value="supplies_lend_card">대출 > 회원증카드</option>
-                                <option value="supplies_lend_thermal">대출 > 감열지</option>
+                                <option value="supplies_arrange_keeper">정리 > 키퍼</option><option value="supplies_arrange_label_color">정리 > 색띠라벨</option><option value="supplies_arrange_label_paper">정리 > 라벨용지</option><option value="supplies_arrange_bookend">정리 > 북앤드</option><option value="supplies_arrange_etc">정리 > 기타</option>
+                                <option value="supplies_protect_filmo">보호 > 필모시리즈</option><option value="supplies_protect_glue">보호 > 중성풀</option><option value="supplies_protect_tape">보호 > 양면테이프</option><option value="supplies_protect_bookcover">보호 > 북커버</option>
+                                <option value="supplies_lend_barcode">대출 > 바코드</option><option value="supplies_lend_equip">대출 > 기기</option><option value="supplies_lend_card">대출 > 회원증카드</option><option value="supplies_lend_thermal">대출 > 감열지</option>
                                 <option value="sterilizer_parts">책소독기 소모품</option>
                             </optgroup>
                             <optgroup label="도서관 가구">
-                                <option value="koas_shelf">코아스 > 서가</option>
-                                <option value="koas_table">코아스 > 테이블</option>
-                                <option value="koas_chair">코아스 > 의자</option>
-                                <option value="koas_etc">코아스 > 기타</option>
-                                <option value="fomus_shelf">포머스 > 서가</option>
-                                <option value="fomus_table">포머스 > 테이블</option>
-                                <option value="fomus_chair">포머스 > 의자</option>
-                                <option value="fomus_etc">포머스 > 기타</option>
-                                <option value="fursys_shelf">퍼시스 > 서가</option>
-                                <option value="fursys_table">퍼시스 > 테이블</option>
-                                <option value="fursys_chair">퍼시스 > 의자</option>
-                                <option value="fursys_etc">퍼시스 > 기타</option>
+                                <option value="koas_shelf">코아스 > 서가</option><option value="koas_table">코아스 > 테이블</option><option value="koas_chair">코아스 > 의자</option><option value="koas_etc">코아스 > 기타</option>
+                                <option value="fomus_shelf">포머스 > 서가</option><option value="fomus_table">포머스 > 테이블</option><option value="fomus_chair">포머스 > 의자</option><option value="fomus_etc">포머스 > 기타</option>
+                                <option value="fursys_shelf">퍼시스 > 서가</option><option value="fursys_table">퍼시스 > 테이블</option><option value="fursys_chair">퍼시스 > 의자</option><option value="fursys_etc">퍼시스 > 기타</option>
                                 <option value="custom_furniture">제작가구</option>
                             </optgroup>
-                            <optgroup label="인사인물">
-                                <option value="sign_class">사인 > 분류/대분류 표지판</option>
-                                <option value="sign_board">사인 > 게시판/이용안내</option>
-                                <option value="sign_date">사인 > 대출반납일력표</option>
-                                <option value="sign_custom">사인 > 제작 사인물</option>
+                            <optgroup label="사인물">
+                                <option value="sign_class">사인 > 분류 표지판</option><option value="sign_board">사인 > 게시판</option><option value="sign_date">사인 > 대출반납일력표</option><option value="sign_custom">사인 > 제작 사인물</option>
                                 <option value="discount_items">할인상품 전체</option>
                             </optgroup>
                         </select>
@@ -198,8 +177,7 @@
         <div class="modal-box">
             <div class="modal-header"><h3 id="bannerModalTitle">배너 등록</h3><button class="close-modal" id="closeBannerModalBtn">&times;</button></div>
             <div class="modal-body">
-                <input type="hidden" id="bannerId">
-                <div class="form-grid">
+                <input type="hidden" id="bannerId"><div class="form-grid">
                     <div class="form-group full-width"><label>이미지 파일</label><input type="file" id="bannerImageFile" class="form-control" accept="image/*"><input type="hidden" id="bannerImageUrl"><div class="image-preview" id="bannerImagePreview"></div></div>
                     <div class="form-group"><label>노출 순서</label><input type="number" id="bannerDisplayOrder" class="form-control" value="0"></div>
                     <div class="form-group"><label>종류</label><select id="bannerType" class="form-control"><option value="slide">메인 슬라이드</option><option value="popup">팝업</option></select></div>
