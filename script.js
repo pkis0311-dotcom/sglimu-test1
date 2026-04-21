@@ -164,9 +164,70 @@ window.renderDynamicGnb = async function() {
     }
 };
 
+/**
+ * 카테고리 상세 페이지의 본문 탭(3단계 소분류)을 동적으로 렌더링합니다.
+ */
+window.renderCategoryTabs = async function() {
+    const tabContainer = document.getElementById('dynamicTabContainer');
+    if (!tabContainer) return; // 탭 컨테이너가 없는 페이지는 건너뜀
+
+    // 1. 현재 페이지의 카테고리 ID 파악 (예: rfid.html -> rfid)
+    const urlParts = window.location.pathname.split('/');
+    const fileName = urlParts[urlParts.length - 1] || 'index.html';
+    const pageId = fileName.replace('.html', '') || 'rfid';
+
+    try {
+        if (!supabaseClient) throw new Error('Supabase client not initialized');
+
+        // 2. 해당 페이지ID를 부모로 가진 3단계 소분류 가져오기
+        const { data: tabs, error } = await supabaseClient
+            .from('categories')
+            .select('*')
+            .eq('parent_id', pageId)
+            .order('display_order', { ascending: true });
+
+        if (error) throw error;
+        if (!tabs || tabs.length === 0) {
+            console.log('No dynamic tabs found for this category:', pageId);
+            return;
+        }
+
+        // 3. 탭 HTML 생성
+        let tabHtml = '<ul class="subcategory-nav">';
+        tabs.forEach((tab, index) => {
+            const isActive = index === 0 ? 'active' : '';
+            tabHtml += `<li class="subcategory-item ${isActive}" onclick="loadGlobalProducts('${tab.id}'); setActiveTab(this)">${tab.name}</li>`;
+        });
+        tabHtml += '</ul>';
+
+        tabContainer.innerHTML = tabHtml;
+        console.log('Dynamic tabs rendered for:', pageId);
+        
+        // 4. 첫 번째 탭의 상품 로드
+        if (tabs.length > 0 && typeof window.loadGlobalProducts === 'function') {
+            window.loadGlobalProducts(tabs[0].id);
+        }
+
+    } catch (err) {
+        console.error('Dynamic tabs rendering failed:', err);
+    }
+};
+
+/**
+ * 탭 클릭 시 활성화 스타일 변경
+ */
+window.setActiveTab = function(el) {
+    const liList = el.parentElement.querySelectorAll('.subcategory-item');
+    liList.forEach(li => li.classList.remove('active'));
+    el.classList.add('active');
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 동적 GNB 실행 (현재는 로그만 출력)
+    // 동적 GNB 실행
     window.renderDynamicGnb();
+    
+    // 카테고리 본문 탭 실행
+    window.renderCategoryTabs();
 
     // 헤더 검색 기능
     const headerSearchBtn = document.getElementById('headerSearchBtn');

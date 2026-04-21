@@ -801,46 +801,56 @@ function updateCategoryManagementTable() {
     console.log("Majors found:", majors.length);
     
     majors.forEach(m => {
-        // Major row
+        // 1단계: 대분류 Row
         tBody.innerHTML += `
-            <tr style="background:#f8f9fa;">
-                <td><span class="badge" style="background:#2980b9; color:#fff;">대분류</span></td>
+            <tr style="background:#f0f4f8;">
+                <td><span class="badge" style="background:#2980b9; color:#fff;">1단계: 대분류</span></td>
                 <td style="font-weight:bold;">${m.id}</td>
                 <td style="font-weight:bold; color:#2980b9;">${m.name}</td>
                 <td>-</td>
                 <td><i class="fa-solid ${m.icon_class || 'fa-folder'}"></i></td>
                 <td>${m.display_order}</td>
                 <td>
-                    <button class="action-btn edit" onclick="window.openCategoryEditModal('${m.id}')" style="display:flex; align-items:center; gap:5px; color:#3498db;">
-                        <i class="fa-solid fa-pen"></i> <span style="font-size:0.85rem;">수정</span>
-                    </button>
-                    <button class="action-btn delete" onclick="window.deleteCategory('${m.id}')" style="display:flex; align-items:center; gap:5px; color:#e74c3c; margin-top:5px;">
-                        <i class="fa-solid fa-trash"></i> <span style="font-size:0.85rem;">삭제</span>
-                    </button>
+                    <button class="action-btn edit" onclick="window.openCategoryEditModal('${m.id}')" style="color:#3498db;"><i class="fa-solid fa-pen"></i> 수정</button>
                 </td>
             </tr>
         `;
         
-        const subs = globalCategories.filter(c => c.parent_id === m.id).sort((a,b) => a.display_order - b.display_order);
-        subs.forEach(s => {
+        const mids = globalCategories.filter(c => c.parent_id === m.id).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
+        mids.forEach(mid => {
+            // 2단계: 중분류(페이지) Row
             tBody.innerHTML += `
-                <tr>
-                    <td><span class="badge" style="background:#bdc3c7; color:#fff;">소분류</span></td>
-                    <td style="padding-left:20px; color:#666;">└ ${s.id}</td>
-                    <td style="padding-left:20px;">${s.name}</td>
+                <tr style="background:#fff;">
+                    <td><span class="badge" style="background:#34495e; color:#fff; margin-left:15px;">2단계: 페이지</span></td>
+                    <td style="padding-left:25px; color:#555;">└ ${mid.id}</td>
+                    <td style="padding-left:25px; font-weight:600;">${mid.name}</td>
                     <td>${m.name}</td>
-                    <td style="font-size:0.8rem; color:#999; max-width:150px; overflow:hidden; text-overflow:ellipsis;">${s.description || '-'}</td>
-                    <td>${s.display_order}</td>
+                    <td>-</td>
+                    <td>${mid.display_order}</td>
                     <td>
-                        <button class="action-btn edit" onclick="window.openCategoryEditModal('${s.id}')" style="display:flex; align-items:center; gap:3px; color:#3498db;">
-                            <i class="fa-solid fa-pen" style="font-size:0.8rem;"></i> <span style="font-size:0.8rem;">수정</span>
-                        </button>
-                        <button class="action-btn delete" onclick="window.deleteCategory('${s.id}')" style="display:flex; align-items:center; gap:3px; color:#e74c3c; margin-top:3px;">
-                            <i class="fa-solid fa-trash" style="font-size:0.8rem;"></i> <span style="font-size:0.8rem;">삭제</span>
-                        </button>
+                        <button class="action-btn edit" onclick="window.openCategoryEditModal('${mid.id}')" style="color:#3498db;"><i class="fa-solid fa-pen"></i> 수정</button>
                     </td>
                 </tr>
             `;
+
+            const subs = globalCategories.filter(c => c.parent_id === mid.id).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
+            subs.forEach(s => {
+                // 3단계: 소분류(본문 탭) Row
+                tBody.innerHTML += `
+                    <tr style="background:#fafafa;">
+                        <td><span class="badge" style="background:#95a5a6; color:#fff; margin-left:30px;">3단계: 본문탭</span></td>
+                        <td style="padding-left:45px; color:#888; font-size:0.85rem;">└ ${s.id}</td>
+                        <td style="padding-left:45px;">${s.name}</td>
+                        <td>${mid.name}</td>
+                        <td style="font-size:0.8rem; color:#999;">${s.description || '-'}</td>
+                        <td>${s.display_order}</td>
+                        <td>
+                            <button class="action-btn edit" onclick="window.openCategoryEditModal('${s.id}')" style="color:#3498db;"><i class="fa-solid fa-pen"></i> 수정</button>
+                            <button class="action-btn delete" onclick="window.deleteCategory('${s.id}')" style="color:#e74c3c;"><i class="fa-solid fa-trash"></i> 삭제</button>
+                        </td>
+                    </tr>
+                `;
+            });
         });
     });
 }
@@ -887,38 +897,79 @@ function initCategoryManageTab() {
             // Internal Migration logic
             const INITIAL_DATA = {
                 'system': { icon: 'fa-server', label: '도서관리 시스템', subs: [
-                    { id: 'rfid', name: 'RFID시스템' }, { id: 'em', name: 'EM시스템' }, { id: 'access', name: '출입관리시스템' }
+                    { id: 'rfid', name: 'RFID시스템', tabs: [
+                        { id: 'rfid-cat-0', name: '태그(TAG)' }, { id: 'rfid-cat-1', name: '분실 방지기' }, { id: 'rfid-cat-2', name: '리더기' }, { id: 'rfid-cat-3', name: '대출 반납기' }
+                    ]},
+                    { id: 'em', name: 'EM시스템', tabs: [
+                        { id: 'em-cat-0', name: '분실 방지기' }, { id: 'em-cat-1', name: '감응제거재생기' }, { id: 'em-cat-2', name: '감응 테이프' }
+                    ]},
+                    { id: 'access', name: '출입관리시스템', tabs: [
+                        { id: 'access-cat-0', name: 'TNH-7000A' }, { id: 'access-cat-1', name: 'TNH-8000A' }, { id: 'access-cat-2', name: 'EZ-2203AWG' }, { id: 'access-cat-3', name: 'EZ-2204AWG' }
+                    ]}
                 ]},
                 'supplies': { icon: 'fa-box-open', label: '도서관 용품', subs: [
-                    { id: 'supplies-arrange', name: '도서정리 용품' }, { id: 'supplies-protect', name: '도서보호, 보수용품' }, { id: 'supplies-lend', name: '대출용품' }, { id: 'sterilizer', name: '책소독기' }
+                    { id: 'supplies-arrange', name: '도서정리 용품', tabs: [
+                        { id: 'arrange-cat-0', name: '키퍼(분류함)' }, { id: 'arrange-cat-1', name: '색띠라벨' }, { id: 'arrange-cat-2', name: '라벨용지' }, { id: 'arrange-cat-3', name: '기타' }
+                    ]},
+                    { id: 'supplies-protect', name: '도서보호, 보수용품', tabs: [
+                        { id: 'protect-cat-0', name: '필모시리즈' }, { id: 'protect-cat-1', name: '중성풀' }, { id: 'protect-cat-2', name: '양면테이프' }, { id: 'protect-cat-3', name: '북커버' }
+                    ]},
+                    { id: 'supplies-lend', name: '대출용품', tabs: [
+                        { id: 'lend-cat-0', name: '바코드관련' }, { id: 'lend-cat-1', name: '카드프린터/기기' }, { id: 'lend-cat-2', name: '회원증카드' }, { id: 'lend-cat-3', name: '감열지' }
+                    ]},
+                    { id: 'sterilizer', name: '책소독기', tabs: [
+                        { id: 'sterilizer-cat-0', name: '책소독기 소모품' }
+                    ]}
                 ]},
                 'furniture': { icon: 'fa-chair', label: '도서관 가구', subs: [
-                    { id: 'furniture-koas', name: '코아스' }, { id: 'furniture-fomus', name: '포머스' }, { id: 'furniture-fursys', name: '퍼시스' }, { id: 'furniture-custom', name: '제작가구' }
+                    { id: 'furniture-koas', name: '코아스', tabs: [
+                        { id: 'koas-cat-0', name: '서가' }, { id: 'koas-cat-1', name: '테이블' }, { id: 'koas-cat-2', name: '의자' }, { id: 'koas-cat-3', name: '기타' }
+                    ]},
+                    { id: 'furniture-fomus', name: '포머스', tabs: [
+                        { id: 'fomus-cat-0', name: '서가' }, { id: 'fomus-cat-1', name: '테이블' }, { id: 'fomus-cat-2', name: '의자' }, { id: 'fomus-cat-3', name: '기타' }
+                    ]},
+                    { id: 'furniture-fursys', name: '퍼시스', tabs: [
+                        { id: 'fursys-cat-0', name: '서가' }, { id: 'fursys-cat-1', name: '테이블' }, { id: 'fursys-cat-2', name: '의자' }, { id: 'fursys-cat-3', name: '기타' }
+                    ]},
+                    { id: 'furniture-custom', name: '제작가구', tabs: [
+                        { id: 'custom-cat-0', name: '제작가구 전체' }
+                    ]}
                 ]},
                 'signage': { icon: 'fa-scroll', label: '사인물', subs: [
-                    { id: 'sign-class', name: '한국십진분류/대분류표지판' }, { id: 'sign-board', name: '게시판/이용안내' }, { id: 'sign-date', name: '대출반납일력표' }, { id: 'sign-custom', name: '제작사인물' }
+                    { id: 'sign-class', name: '서가분류/표지판', tabs: [ { id: 'sign-class-cat-0', name: '분류표지판' } ]},
+                    { id: 'sign-board', name: '게시판/이용안내', tabs: [ { id: 'sign-board-cat-0', name: '게시판/안내' } ]},
+                    { id: 'sign-date', name: '대출반납일력표', tabs: [ { id: 'sign-date-cat-0', name: '일력표' } ]},
+                    { id: 'sign-custom', name: '제작사인물', tabs: [ { id: 'sign-custom-cat-0', name: '제작사인물' } ]}
                 ]},
                 'discount': { icon: 'fa-tags', label: '할인상품', subs: [
-                    { id: 'discount', name: '할인상품' }
+                    { id: 'discount', name: '할인상품', tabs: [ { id: 'discount-cat-0', name: '할인상품 전체' } ] }
                 ]}
             };
 
             let count = 0;
             for(const majorId in INITIAL_DATA) {
-                const data = INITIAL_DATA[majorId];
-                // 1. 대분류 먼저 저장
-                const { error: mError } = await db.from('categories').upsert({
-                    id: majorId, name: data.label, is_major: true, icon_class: data.icon, display_order: count++
+                const major = INITIAL_DATA[majorId];
+                // 1단계: 대분류 저장
+                await db.from('categories').upsert({
+                    id: majorId, name: major.label, is_major: true, icon_class: major.icon, display_order: count++
                 });
-                if(mError) throw new Error(`대분류(${majorId}) 저장 실패: ${mError.message}`);
 
-                // 2. 소분류 저장 (대분류 ID를 parent_id로 참조)
-                for(let j=0; j<data.subs.length; j++) {
-                    const sub = data.subs[j];
-                    const { error: sError } = await db.from('categories').upsert({
-                        id: sub.id, name: sub.name, parent_id: majorId, is_major: false, display_order: j
+                for(let i=0; i<major.subs.length; i++) {
+                    const mid = major.subs[i];
+                    // 2단계: 중분류(페이지) 저장
+                    await db.from('categories').upsert({
+                        id: mid.id, name: mid.name, parent_id: majorId, is_major: false, display_order: i
                     });
-                    if(sError) throw new Error(`소분류(${sub.id}) 저장 실패: ${sError.message}`);
+
+                    if (mid.tabs) {
+                        for(let j=0; j<mid.tabs.length; j++) {
+                            const sub = mid.tabs[j];
+                            // 3단계: 소분류(본문 탭) 저장
+                            await db.from('categories').upsert({
+                                id: sub.id, name: sub.name, parent_id: mid.id, is_major: false, display_order: j
+                            });
+                        }
+                    }
                 }
             }
 
