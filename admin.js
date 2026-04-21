@@ -765,6 +765,18 @@ function updateCategoryManagementTable() {
     
     tBody.innerHTML = '';
 
+    if (globalCategories.length === 0) {
+        tBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    등록된 카테고리가 없습니다.<br>
+                    <span style="font-size:0.9rem; color:#888;">상단의 <b>[초기 데이터 이전]</b> 버튼을 눌러 현재 홈페이지 메뉴를 불러와주세요.</span>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     // 상위 분류 선택 Select Box 업데이트
     const parentSelect = document.getElementById('catParentId');
     if (parentSelect) {
@@ -787,8 +799,12 @@ function updateCategoryManagementTable() {
                 <td><i class="fa-solid ${m.icon_class || 'fa-folder'}"></i></td>
                 <td>${m.display_order}</td>
                 <td>
-                    <button class="action-btn edit" onclick="window.openCategoryEditModal('${m.id}')"><i class="fa-solid fa-pen"></i></button>
-                    <button class="action-btn delete" onclick="window.deleteCategory('${m.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="action-btn edit" onclick="window.openCategoryEditModal('${m.id}')" style="display:flex; align-items:center; gap:5px; color:#3498db;">
+                        <i class="fa-solid fa-pen"></i> <span style="font-size:0.85rem;">수정</span>
+                    </button>
+                    <button class="action-btn delete" onclick="window.deleteCategory('${m.id}')" style="display:flex; align-items:center; gap:5px; color:#e74c3c; margin-top:5px;">
+                        <i class="fa-solid fa-trash"></i> <span style="font-size:0.85rem;">삭제</span>
+                    </button>
                 </td>
             </tr>
         `;
@@ -804,8 +820,12 @@ function updateCategoryManagementTable() {
                     <td style="font-size:0.8rem; color:#999; max-width:150px; overflow:hidden; text-overflow:ellipsis;">${s.description || '-'}</td>
                     <td>${s.display_order}</td>
                     <td>
-                        <button class="action-btn edit" onclick="window.openCategoryEditModal('${s.id}')"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn delete" onclick="window.deleteCategory('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                        <button class="action-btn edit" onclick="window.openCategoryEditModal('${s.id}')" style="display:flex; align-items:center; gap:3px; color:#3498db;">
+                            <i class="fa-solid fa-pen" style="font-size:0.8rem;"></i> <span style="font-size:0.8rem;">수정</span>
+                        </button>
+                        <button class="action-btn delete" onclick="window.deleteCategory('${s.id}')" style="display:flex; align-items:center; gap:3px; color:#e74c3c; margin-top:3px;">
+                            <i class="fa-solid fa-trash" style="font-size:0.8rem;"></i> <span style="font-size:0.8rem;">삭제</span>
+                        </button>
                     </td>
                 </tr>
             `;
