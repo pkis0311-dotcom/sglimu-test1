@@ -103,7 +103,7 @@ const SITE_CATEGORIES = {
     'discount': {
         icon: 'fa-tags', label: '할인상품',
         subs: [
-            { id: 'discount-cat-0', name: '할인상품 전체' }
+            { id: 'discount_items', name: '할인상품 전체' }
         ]
     }
 };
