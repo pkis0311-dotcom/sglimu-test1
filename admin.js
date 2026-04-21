@@ -244,12 +244,19 @@ function updateProductSelects(products) {
         let html = '<option value="">카테고리 선택</option>';
         html += '<option value="best_product">메인 베스트 상품</option>';
         
-        const majors = globalCategories.filter(c => c.is_major).sort((a,b) => a.display_order - b.display_order);
+        const majors = globalCategories.filter(c => c.is_major).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
         majors.forEach(m => {
-            html += `<optgroup label="${m.name}">`;
-            const subs = globalCategories.filter(c => c.parent_id === m.id).sort((a,b) => a.display_order - b.display_order);
-            subs.forEach(s => {
-                html += `<option value="${s.id}">${s.name}</option>`;
+            html += `<optgroup label="${m.name} (대분류)">`;
+            const mids = globalCategories.filter(c => c.parent_id === m.id).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
+            mids.forEach(mid => {
+                // 2단계 (중분류/페이지)
+                html += `<option value="${mid.id}">${mid.name}</option>`;
+                
+                // 3단계 (소분류/탭) - 들여쓰기로 표시
+                const tabs = globalCategories.filter(c => c.parent_id === mid.id).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
+                tabs.forEach(tab => {
+                    html += `<option value="${tab.id}">&nbsp;&nbsp;&nbsp;└ ${tab.name}</option>`;
+                });
             });
             html += `</optgroup>`;
         });
@@ -754,14 +761,16 @@ function createFeatureBlock(title, desc) {
 async function fetchCategories() {
     try {
         const { data, error } = await db.from('categories').select('*').order('display_order', { ascending: true });
-        if (error) throw error;
-        
+        if (error) {
+            console.error('Error fetching categories:', error);
+            return 0;
+        }
+
         globalCategories = data || [];
-        console.log("Fetched categories count:", globalCategories.length);
         
-        // 데이터가 있는데도 안 보이는 경우를 위해 강제 렌더링
-        updateCategoryManagementTable();
-        updateCategorySelectOptions();
+        // 카테고리 정보 변경 시 각 탭의 UI 자동 갱신
+        if(typeof updateCategoryManagementTable === 'function') updateCategoryManagementTable();
+        if(typeof refreshCategoryDisplayUI === 'function') refreshCategoryDisplayUI();
         
         return globalCategories.length;
     } catch (e) {
@@ -1129,8 +1138,7 @@ window.deleteCategory = async (id) => {
 };
 
 function initCategoryDisplayTab() {
-    const container = document.querySelector('.major-btns');
-    if(!container) return;
+    refreshCategoryDisplayUI();
 
     // 카테고리 노출 설정 저장 버튼 로직
     const saveDisplayBtn = document.getElementById('saveDisplayBtn');
@@ -1147,36 +1155,88 @@ function initCategoryDisplayTab() {
             if(error) alert('저장 실패: ' + error.message); else alert('노출 설정이 저장되었습니다.');
         };
     }
-
-    // 대분류 버튼 이벤트 연결 (HTML에 이미 버튼이 하드코딩되어 있으므로 이벤트만 연결)
-    const majorBtns = container.querySelectorAll('.major-btn');
-    majorBtns.forEach(btn => {
-        btn.onclick = () => {
-            majorBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMinorCategories(btn.dataset.major);
-        };
-    });
 }
+
+/**
+ * 카테고리 노출 설정 탭의 대분류 버튼을 동적으로 생성합니다.
+ */
+function refreshCategoryDisplayUI() {
+    const container = document.getElementById('majorCategoryBtns');
+    if(!container) return;
+
+    const majors = globalCategories.filter(c => c.is_major).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
+    
+    if (majors.length === 0) {
+        container.innerHTML = '<div style="padding:10px; color:#999; font-size:0.85rem;">대분류 데이터가 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = majors.map((m, idx) => `
+        <button class="major-btn ${idx === 0 && !currentMajorId ? 'active' : (currentMajorId === m.id ? 'active' : '')}" 
+                onclick="window.handleMajorBtnClick('${m.id}', this)">
+            ${m.name}
+        </button>
+    `).join('');
+
+    // 초기 로딩 시 첫 번째 대분류 강제 선택
+    if (!currentMajorId && majors.length > 0) {
+        handleMajorBtnClick(majors[0].id);
+    } else if (currentMajorId) {
+        renderMinorCategories(currentMajorId);
+    }
+}
+
+let currentMajorId = '';
+window.handleMajorBtnClick = (majorId, btnEl) => {
+    currentMajorId = majorId;
+    if (btnEl) {
+        document.querySelectorAll('.major-btn').forEach(b => b.classList.remove('active'));
+        btnEl.classList.add('active');
+    }
+    renderMinorCategories(majorId);
+};
 
 function renderMinorCategories(majorId) {
     const grid = document.getElementById('minorCategoryGrid');
     if(!grid) return;
     
-    // globalCategories에서 해당 대분류의 하위 분류 필터링
-    const subs = globalCategories.filter(c => c.parent_id === majorId).sort((a,b) => a.display_order - b.display_order);
+    // 2단계(페이지) 분류 필터링
+    const mids = globalCategories.filter(c => c.parent_id === majorId).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
     
-    if (subs.length === 0) {
+    if (mids.length === 0) {
         grid.innerHTML = '<div style="padding:10px; color:#999; font-size:0.85rem;">하위 분류가 없습니다.</div>';
         return;
     }
 
-    grid.innerHTML = subs.map(s => `
-        <button class="minor-btn ${currentSelectedSection === s.id ? 'active' : ''}" 
-                onclick="window.selectMinorCategory('${s.id}', '${s.name}')">
-            ${s.name}
-        </button>
-    `).join('');
+    let html = '';
+    mids.forEach(mid => {
+        // 2단계 버튼
+        const isActiveMid = currentSelectedSection === mid.id ? 'active' : '';
+        html += `
+            <div class="category-display-group" style="margin-bottom:10px; border-bottom:1px solid #f9f9f9; padding-bottom:10px;">
+                <button class="minor-btn ${isActiveMid}" style="width:100%; text-align:left; font-weight:700; background:#f4f7f6;"
+                        onclick="window.selectMinorCategory('${mid.id}', '${mid.name}')">
+                    ${mid.name} (전체)
+                </button>
+                <div class="tab-list" style="padding-left:15px; margin-top:5px; display:flex; flex-direction:column; gap:3px;">
+        `;
+        
+        // 3단계(본문 탭) 분류 필터링
+        const tabs = globalCategories.filter(c => c.parent_id === mid.id).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
+        tabs.forEach(tab => {
+            const isActiveTab = currentSelectedSection === tab.id ? 'active' : '';
+            html += `
+                <button class="minor-btn ${isActiveTab}" style="font-size:0.85rem; padding:6px 10px;"
+                        onclick="window.selectMinorCategory('${tab.id}', '${mid.name} > ${tab.name}')">
+                    └ ${tab.name}
+                </button>
+            `;
+        });
+
+        html += `</div></div>`;
+    });
+
+    grid.innerHTML = html;
 }
 
 let currentSelectedSection = '';
