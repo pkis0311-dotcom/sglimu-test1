@@ -203,10 +203,14 @@ function renderProducts(products) {
         const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="product">` : '<div class="no-img">No Img</div>';
         const dateStr = new Date(p.updated_at || p.created_at).toLocaleDateString('ko-KR');
 
+        // 카테고리 ID를 이름으로 변환 (없으면 ID 그대로 표시)
+        const catObj = globalCategories.find(c => c.id === p.category);
+        const catName = catObj ? catObj.name : p.category;
+
         tr.innerHTML = `
             <td>${imgHtml}</td>
             <td style="font-weight:600;">${p.name}</td>
-            <td><span class="badge" style="background:#f0f2f5; color:#333; padding:4px 8px; border-radius:4px; font-size:0.8rem;">${p.category}</span></td>
+            <td><span class="badge" style="background:#f0f2f5; color:#333; padding:4px 8px; border-radius:4px; font-size:0.8rem;">${catName}</span></td>
             <td>${p.price}</td>
             <td>${p.stock}</td>
             <td style="font-size:0.85rem; color:#888;">${dateStr}</td>
@@ -223,7 +227,11 @@ function updateProductSelects(products) {
     const targetSelect = document.getElementById('targetPageId');
     if (targetSelect) {
         targetSelect.innerHTML = '<option value="">수정할 대상 제품 선택</option>' + 
-            products.map(p => `<option value="${p.id}">${p.name} (${p.category})</option>`).join('');
+            products.map(p => {
+                const catObj = globalCategories.find(c => c.id === p.category);
+                const catName = catObj ? catObj.name : p.category;
+                return `<option value="${p.id}">${p.name} [현재분류: ${catName}]</option>`;
+            }).join('');
     }
     
     // Update category select in product modal dynamically
@@ -855,8 +863,30 @@ function updateCategoryManagementTable() {
     });
 }
 
+function openAddCategoryModal() {
+    refreshParentSelect();
+    document.getElementById('categoryModalTitle').textContent = '새 카테고리 등록';
+    document.getElementById('categoryId').value = '';
+    
+    const idInput = document.getElementById('catIdCode');
+    idInput.value = '';
+    idInput.readOnly = false;
+    idInput.style.backgroundColor = '';
+    
+    document.getElementById('catName').value = '';
+    document.getElementById('catIsMajor').value = 'false';
+    document.getElementById('catParentId').value = '';
+    document.getElementById('catDisplayOrder').value = '0';
+    document.getElementById('catIcon').value = '';
+    document.getElementById('catDesc').value = '';
+    
+    document.getElementById('categoryModal').style.display = 'flex';
+}
+
 function initCategoryManageTab() {
     const addBtn = document.getElementById('addCategoryBtn');
+    if(addBtn) addBtn.onclick = openAddCategoryModal;
+    
     const migrateBtn = document.getElementById('migrateCategoryBtn');
     const saveBtn = document.getElementById('saveCategoryBtn');
     const categoryModal = document.getElementById('categoryModal');
@@ -1038,8 +1068,16 @@ window.openCategoryEditModal = (id) => {
     const c = globalCategories.find(x => x.id === id);
     if(!c) return;
     
+    document.getElementById('categoryModalTitle').textContent = '카테고리 수정';
     document.getElementById('categoryId').value = c.id;
-    document.getElementById('catIdCode').value = c.id;
+    
+    // 수정 시에는 식별 ID 변경 불가 (제품 연결 유지 목적)
+    const idInput = document.getElementById('catIdCode');
+    idInput.value = c.id;
+    idInput.readOnly = true;
+    idInput.style.backgroundColor = '#f4f4f4';
+    idInput.title = '수정 시에는 식별 ID를 변경할 수 없습니다.';
+
     document.getElementById('catName').value = c.name;
     document.getElementById('catIsMajor').value = c.is_major.toString();
     document.getElementById('catParentId').value = c.parent_id || '';
