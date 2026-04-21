@@ -665,29 +665,79 @@ function initPageManageTab() {
     document.getElementById('addSpecBtn').onclick = () => createSpecRow('', '');
     document.getElementById('addFeatureBtn').onclick = () => createFeatureBlock('', '');
     
-    savePageBtn.onclick = async () => {
-        if(!currentPageDataKey) return alert('대상 제품을 선택해주세요.');
-        
-        const data = {
-            description: document.getElementById('pageDescription').value,
-            specs: [],
-            features: []
-        };
-        
-        document.querySelectorAll('.spec-row').forEach(row => {
-            const inputs = row.querySelectorAll('input');
-            if(inputs[0].value) data.specs.push({ key: inputs[0].value, val: inputs[1].value });
-        });
-        
-        document.querySelectorAll('.feature-block').forEach(block => {
-            const title = block.querySelector('input').value;
-            const desc = block.querySelector('textarea').value;
-            if(title) data.features.push({ title, desc });
-        });
+        savePageBtn.onclick = async () => {
+            if(!currentPageDataKey) return alert('대상 제품을 선택해주세요.');
+            
+            savePageBtn.disabled = true;
+            savePageBtn.textContent = '저장 중...';
 
-        const { error } = await db.from('site_configs').upsert({ key: currentPageDataKey, value: data });
-        if(error) alert('저장 실패: ' + error.message); else alert('상세페이지 내용이 저장되었습니다.');
-    };
+            try {
+                const data = {
+                    description: document.getElementById('pageDescription').value,
+                    specs: [],
+                    features: [],
+                    mainImageUrl: '',
+                    detailImageUrls: []
+                };
+                
+                // 1. 규격/사양 수집
+                document.querySelectorAll('.spec-row').forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    if(inputs[0].value) data.specs.push({ key: inputs[0].value, val: inputs[1].value });
+                });
+                
+                // 2. 주요특징 수집
+                document.querySelectorAll('.feature-block').forEach(block => {
+                    const title = block.querySelector('input').value;
+                    const desc = block.querySelector('textarea').value;
+                    if(title) data.features.push({ title, desc });
+                });
+
+                // 3. 이미지 업로드 처리 (Main Detail)
+                const mainFile = document.getElementById('pageMainImage').files[0];
+                if (mainFile) {
+                    const fileExt = mainFile.name.split('.').pop();
+                    const fileName = `main_${Date.now()}.${fileExt}`;
+                    const filePath = `product_details/${fileName}`;
+                    const { error: uploadError } = await db.storage.from('banner-images').upload(filePath, mainFile);
+                    if (!uploadError) {
+                        const { data: { publicUrl } } = db.storage.from('banner-images').getPublicUrl(filePath);
+                        data.mainImageUrl = publicUrl;
+                    }
+                } else {
+                    data.mainImageUrl = document.getElementById('pageMainImagePreview').dataset.url || '';
+                }
+
+                // 4. 추가 이미지 업로드 처리 (Multiple)
+                const detailFiles = document.getElementById('pageDetailImage').files;
+                const existingDetailUrls = JSON.parse(document.getElementById('pageDetailImagePreview').dataset.urls || '[]');
+                data.detailImageUrls = [...existingDetailUrls];
+
+                for (let i = 0; i < detailFiles.length; i++) {
+                    const file = detailFiles[i];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `detail_${Date.now()}_${i}.${fileExt}`;
+                    const filePath = `product_details/${fileName}`;
+                    const { error: uploadError } = await db.storage.from('banner-images').upload(filePath, file);
+                    if (!uploadError) {
+                        const { data: { publicUrl } } = db.storage.from('banner-images').getPublicUrl(filePath);
+                        data.detailImageUrls.push(publicUrl);
+                    }
+                }
+
+                const { error } = await db.from('site_configs').upsert({ key: currentPageDataKey, value: data });
+                if(error) throw error;
+                
+                alert('상세페이지 내용이 성공적으로 저장되었습니다.');
+                loadPageData(); // 최신 상태로 새로고침
+            } catch (err) {
+                console.error("Save Page Error:", err);
+                alert('저장 실패: ' + err.message);
+            } finally {
+                savePageBtn.disabled = false;
+                savePageBtn.textContent = '상세페이지 저장하기';
+            }
+        };
     
     targetSelect.dataset.init = "true";
 }
@@ -714,15 +764,84 @@ async function loadPageData() {
 
     const specContainer = document.getElementById('specContainer');
     const featureContainer = document.getElementById('featureContainer');
+    const mainPreview = document.getElementById('pageMainImagePreview');
+    const detailPreview = document.getElementById('pageDetailImagePreview');
+
     specContainer.innerHTML = '';
     featureContainer.innerHTML = '';
+    mainPreview.innerHTML = '';
+    detailPreview.innerHTML = '';
     document.getElementById('pageDescription').value = '';
     
-    if(!rawData) return;
+    // 파일 인풋 초기화
+    document.getElementById('pageMainImage').value = '';
+    document.getElementById('pageDetailImage').value = '';
+
+    if(!rawData) {
+        mainPreview.dataset.url = '';
+        detailPreview.dataset.urls = '[]';
+        return;
+    }
     
     document.getElementById('pageDescription').value = rawData.description || '';
     if(rawData.specs) rawData.specs.forEach(s => createSpecRow(s.key, s.val));
     if(rawData.features) rawData.features.forEach(f => createFeatureBlock(f.title, f.desc));
+    
+    // 이미지 프리뷰 처리
+    if (rawData.mainImageUrl) {
+        mainPreview.innerHTML = `<img src="${rawData.mainImageUrl}" style="max-width:200px; border-radius:4px; border:1px solid #ddd;">
+                                 <button type="button" class="action-btn delete" onclick="this.parentElement.dataset.url=''; this.parentElement.innerHTML=''" style="position: absolute; margin-left: -25px;"><i class="fa-solid fa-circle-xmark"></i></button>`;
+        mainPreview.dataset.url = rawData.mainImageUrl;
+    }
+
+    if (rawData.detailImageUrls && rawData.detailImageUrls.length > 0) {
+        detailPreview.dataset.urls = JSON.stringify(rawData.detailImageUrls);
+        rawData.detailImageUrls.forEach((url, idx) => {
+            const wrap = document.createElement('div');
+            wrap.style.display = 'inline-block';
+            wrap.style.position = 'relative';
+            wrap.style.margin = '5px';
+            wrap.innerHTML = `<img src="${url}" style="width:100px; height:100px; object-fit:cover; border-radius:4px; border:1px solid #ddd;">
+                             <button type="button" class="action-btn delete" onclick="removeDetailImage(${idx})" style="position: absolute; top: -5px; right: -5px; background: #fff; border-radius: 50%;"><i class="fa-solid fa-circle-xmark" style="color:#e74c3c;"></i></button>`;
+            detailPreview.appendChild(wrap);
+        });
+    } else {
+        detailPreview.dataset.urls = '[]';
+    }
+}
+
+window.removeDetailImage = (idx) => {
+    const detailPreview = document.getElementById('pageDetailImagePreview');
+    let urls = JSON.parse(detailPreview.dataset.urls || '[]');
+    urls.splice(idx, 1);
+    detailPreview.dataset.urls = JSON.stringify(urls);
+    // UI 갱신 (간단히 다시 로드)
+    const mockData = {
+        description: document.getElementById('pageDescription').value,
+        specs: [],
+        features: [],
+        mainImageUrl: document.getElementById('pageMainImagePreview').dataset.url,
+        detailImageUrls: urls
+    };
+    // ... 다시 그리기 로직 (loadPageData의 일부 재사용 가능)
+    // 여기서는 단순히 현재 데이터 상태를 업데이트하는 용도로만 사용
+    loadPageDataManual(mockData);
+};
+
+function loadPageDataManual(rawData) {
+    const detailPreview = document.getElementById('pageDetailImagePreview');
+    detailPreview.innerHTML = '';
+    if (rawData.detailImageUrls) {
+        rawData.detailImageUrls.forEach((url, idx) => {
+            const wrap = document.createElement('div');
+            wrap.style.display = 'inline-block';
+            wrap.style.position = 'relative';
+            wrap.style.margin = '5px';
+            wrap.innerHTML = `<img src="${url}" style="width:100px; height:100px; object-fit:cover; border-radius:4px; border:1px solid #ddd;">
+                             <button type="button" class="action-btn delete" onclick="removeDetailImage(${idx})" style="position: absolute; top: -5px; right: -5px; background: #fff; border-radius: 50%;"><i class="fa-solid fa-circle-xmark" style="color:#e74c3c;"></i></button>`;
+            detailPreview.appendChild(wrap);
+        });
+    }
 }
 
 function createSpecRow(key, val) {

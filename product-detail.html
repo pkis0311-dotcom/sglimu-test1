@@ -34,6 +34,10 @@
         .tab-item.active::after { content:''; position:absolute; bottom:-2px; left:0; width:100%; height:2px; background:#222; }
         .detail-contents { text-align: center; }
         .detail-contents img { max-width: 100%; }
+        
+        /* New Styles for specs and features */
+        .specs-section table th { font-weight: 600; background: #f8f9fa; color: #333; }
+        .feature-item h3 { color: #2c3e50; border-left: 5px solid #3498db; padding-left: 15px; }
     </style>
 </head>
 <body>
@@ -146,7 +150,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase client and logic
         const { createClient } = supabase;
         const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
         
@@ -163,19 +166,40 @@
             document.getElementById('prodPrice').innerText = (p.price === '전화문의' || !p.price) ? '전화문의' : Number(p.price).toLocaleString() + '원';
             document.getElementById('mainImg').src = p.image_url || 'assets/no-image.png';
 
-            // Load Page Data for deep details from site_configs
-            const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).single();
+            const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).maybeSingle();
             const detailBody = document.getElementById('detailBody');
-            
+            detailBody.innerHTML = '';
+
             if(config && config.value) {
                 const d = config.value;
-                if(d.detailImage) detailBody.innerHTML = `<img src="${d.detailImage}">`;
-                else if(d.description) detailBody.innerHTML = `<p style="padding:50px;">${d.description.replace(/\n/g, '<br>')}</p>`;
+                let html = '';
+
+                if (d.mainImageUrl) html += `<div style="margin-bottom:60px;"><img src="${d.mainImageUrl}" style="max-width:100%; border-radius:12px;"></div>`;
+                if (d.description) html += `<div style="padding:40px 0 80px; font-size:1.15rem; line-height:1.8; color:#444; max-width:900px; margin:0 auto; text-align:center;">${d.description.replace(/\n/g, '<br>')}</div>`;
+                
+                if (d.features && d.features.length > 0) {
+                    html += `<div style="margin-bottom:100px;">`;
+                    d.features.forEach(f => {
+                        html += `<div style="margin-bottom:80px; text-align:left;"><h3 style="font-size:1.8rem; margin-bottom:20px; color:#222; border-left:4px solid #3498db; padding-left:15px;">${f.title}</h3><p style="font-size:1.05rem; color:#666; line-height:1.7;">${f.desc.replace(/\n/g, '<br>')}</p></div>`;
+                    });
+                    html += `</div>`;
+                }
+
+                if (d.specs && d.specs.length > 0) {
+                    html += `<div style="margin-bottom:100px; text-align:left;"><h3 style="font-size:1.5rem; margin-bottom:30px; color:#222; text-align:center;">PRODUCT SPECIFICATION</h3><table style="width:100%; border-collapse: collapse; border-top:2px solid #222; border-bottom:1px solid #ddd;"><tbody>${d.specs.map(s => `<tr><th style="width:250px; padding:18px 25px; background:#f9f9f9; text-align:left; border-bottom:1px solid #eee; font-weight:600; color:#444;">${s.key}</th><td style="padding:18px 25px; border-bottom:1px solid #eee; color:#666;">${s.val}</td></tr>`).join('')}</tbody></table></div>`;
+                }
+
+                if (d.detailImageUrls && d.detailImageUrls.length > 0) {
+                    html += `<div style="display:flex; flex-direction:column; gap:20px; align-items:center;">`;
+                    d.detailImageUrls.forEach(url => { html += `<img src="${url}" style="max-width:100%; display:block; border-radius:4px;">`; });
+                    html += `</div>`;
+                }
+
+                detailBody.innerHTML = html || '<p style="padding:100px 0; color:#999;">데이터가 없습니다.</p>';
             } else {
-                detailBody.innerHTML = `<p style="padding:50px; color:#999;">등록된 상세 설명이 없습니다.</p>`;
+                detailBody.innerHTML = `<p style="padding:100px 0; color:#999; font-size:1rem;">제품 상세 정보가 아직 등록되지 않았습니다.</p>`;
             }
         }
-        
         document.addEventListener('DOMContentLoaded', loadProductDetail);
     </script>
     <script src="script.js"></script>
