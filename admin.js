@@ -742,11 +742,19 @@ async function fetchCategories() {
     try {
         const { data, error } = await db.from('categories').select('*').order('display_order', { ascending: true });
         if (error) throw error;
+        
         globalCategories = data || [];
+        console.log("Fetched categories count:", globalCategories.length);
+        
+        // 데이터가 있는데도 안 보이는 경우를 위해 강제 렌더링
         updateCategoryManagementTable();
         updateCategorySelectOptions();
+        
+        return globalCategories.length;
     } catch (e) {
         console.error("Categories fetch error:", e);
+        alert("카테고리 정보를 가져오는데 실패했습니다: " + e.message);
+        return 0;
     }
 }
 
@@ -785,8 +793,12 @@ function updateCategoryManagementTable() {
             majors.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
     }
     
-    // Sort logic: Majors first, then their respective subs
-    const majors = globalCategories.filter(c => c.is_major).sort((a,b) => a.display_order - b.display_order);
+    // Sort logic: Majors first (동적 타입 체크 추가)
+    const majors = globalCategories.filter(c => 
+        c.is_major === true || c.is_major === 'true' || c.is_major === 1 || c.is_major === '1'
+    ).sort((a,b) => (a.display_order || 0) - (b.display_order || 0));
+    
+    console.log("Majors found:", majors.length);
     
     majors.forEach(m => {
         // Major row
@@ -867,51 +879,58 @@ function initCategoryManageTab() {
     migrateBtn.onclick = async () => {
         if(!confirm("기존 하드코딩된 카테고리 데이터를 DB로 이전하시겠습니까? (이미 데이터가 있다면 중복될 수 있습니다.)")) return;
         
-        // Internal Migration logic to avoid file protocol issues
-        const INITIAL_DATA = {
-            'system': { icon: 'fa-server', label: '도서관리 시스템', subs: [
-                { id: 'rfid', name: 'RFID시스템' }, 
-                { id: 'em', name: 'EM시스템' }, 
-                { id: 'access', name: '출입관리시스템' }
-            ]},
-            'supplies': { icon: 'fa-box-open', label: '도서관 용품', subs: [
-                { id: 'supplies-arrange', name: '도서정리 용품' }, 
-                { id: 'supplies-protect', name: '도서보호, 보수용품' }, 
-                { id: 'supplies-lend', name: '대출용품' }, 
-                { id: 'sterilizer', name: '책소독기' }
-            ]},
-            'furniture': { icon: 'fa-chair', label: '도서관 가구', subs: [
-                { id: 'furniture-koas', name: '코아스' }, 
-                { id: 'furniture-fomus', name: '포머스' }, 
-                { id: 'furniture-fursys', name: '퍼시스' }, 
-                { id: 'furniture-custom', name: '제작가구' }
-            ]},
-            'signage': { icon: 'fa-scroll', label: '사인물', subs: [
-                { id: 'sign-class', name: '한국십진분류/대분류표지판' }, 
-                { id: 'sign-board', name: '게시판/이용안내' }, 
-                { id: 'sign-date', name: '대출반납일력표' }, 
-                { id: 'sign-custom', name: '제작사인물' }
-            ]},
-            'discount': { icon: 'fa-tags', label: '할인상품', subs: [
-                { id: 'discount', name: '할인상품' }
-            ]}
-        };
+        const originalText = migrateBtn.textContent;
+        migrateBtn.disabled = true;
+        migrateBtn.textContent = '데이터 이전 중...';
 
-        let count = 0;
-        for(const majorId in INITIAL_DATA) {
-            const data = INITIAL_DATA[majorId];
-            await db.from('categories').upsert({
-                id: majorId, name: data.label, is_major: true, icon_class: data.icon, display_order: count++
-            });
-            for(let j=0; j<data.subs.length; j++) {
-                const sub = data.subs[j];
-                await db.from('categories').upsert({
-                    id: sub.id, name: sub.name, parent_id: majorId, is_major: false, display_order: j
+        try {
+            // Internal Migration logic
+            const INITIAL_DATA = {
+                'system': { icon: 'fa-server', label: '도서관리 시스템', subs: [
+                    { id: 'rfid', name: 'RFID시스템' }, { id: 'em', name: 'EM시스템' }, { id: 'access', name: '출입관리시스템' }
+                ]},
+                'supplies': { icon: 'fa-box-open', label: '도서관 용품', subs: [
+                    { id: 'supplies-arrange', name: '도서정리 용품' }, { id: 'supplies-protect', name: '도서보호, 보수용품' }, { id: 'supplies-lend', name: '대출용품' }, { id: 'sterilizer', name: '책소독기' }
+                ]},
+                'furniture': { icon: 'fa-chair', label: '도서관 가구', subs: [
+                    { id: 'furniture-koas', name: '코아스' }, { id: 'furniture-fomus', name: '포머스' }, { id: 'furniture-fursys', name: '퍼시스' }, { id: 'furniture-custom', name: '제작가구' }
+                ]},
+                'signage': { icon: 'fa-scroll', label: '사인물', subs: [
+                    { id: 'sign-class', name: '한국십진분류/대분류표지판' }, { id: 'sign-board', name: '게시판/이용안내' }, { id: 'sign-date', name: '대출반납일력표' }, { id: 'sign-custom', name: '제작사인물' }
+                ]},
+                'discount': { icon: 'fa-tags', label: '할인상품', subs: [
+                    { id: 'discount', name: '할인상품' }
+                ]}
+            };
+
+            let count = 0;
+            for(const majorId in INITIAL_DATA) {
+                const data = INITIAL_DATA[majorId];
+                // 1. 대분류 먼저 저장
+                const { error: mError } = await db.from('categories').upsert({
+                    id: majorId, name: data.label, is_major: true, icon_class: data.icon, display_order: count++
                 });
+                if(mError) throw new Error(`대분류(${majorId}) 저장 실패: ${mError.message}`);
+
+                // 2. 소분류 저장 (대분류 ID를 parent_id로 참조)
+                for(let j=0; j<data.subs.length; j++) {
+                    const sub = data.subs[j];
+                    const { error: sError } = await db.from('categories').upsert({
+                        id: sub.id, name: sub.name, parent_id: majorId, is_major: false, display_order: j
+                    });
+                    if(sError) throw new Error(`소분류(${sub.id}) 저장 실패: ${sError.message}`);
+                }
             }
+
+            const totalCount = await fetchCategories();
+            alert("데이터 이전이 완료되었습니다. (총 " + totalCount + "개의 카테고리가 등록되었습니다.)");
+        } catch (err) {
+            console.error("Migration fatal error:", err);
+            alert("이전 중 오류가 발생했습니다: " + err.message + "\n\n테이블이 생성되어 있는지 확인해주세요.");
+        } finally {
+            migrateBtn.disabled = false;
+            migrateBtn.textContent = originalText;
         }
-        alert("데이터 이전이 완료되었습니다.");
-        fetchCategories();
     };
 
     saveBtn.onclick = async () => {
