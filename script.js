@@ -6,6 +6,7 @@ const supabaseClient = db; // Mapping for legacy code
 
 /**
  * 전역 제품 로딩 함수
+ * DB의 products 테이블에서 category 필드가 catId와 일치하는 상품을 가져옵니다.
  */
 window.loadGlobalProducts = async function(catId) {
     const container = document.getElementById('productList');
@@ -14,12 +15,51 @@ window.loadGlobalProducts = async function(catId) {
     container.innerHTML = '<div class="empty-state">데이터를 불러오는 중...</div>';
 
     try {
-        const { data, error } = await supabaseClient
+        if (!supabaseClient) throw new Error('Supabase client not initialized');
+
+        // 찾을 후보군 목록 생성
+        const candidates = [
+            catId, 
+            catId.replace(/-/g, '_'), 
+            catId.replace(/_/g, '-'),
+            catId.split('-').pop(), // 마지막 파트만 (예: supplies-arrange-cat-5 -> cat-5)
+            catId.split('_').pop()
+        ];
+        
+        // 중복 제거
+        const uniqueCandidates = [...new Set(candidates)];
+        
+        // 1. products 테이블의 category 컬럼에서 검색
+        let { data, error } = await supabaseClient
             .from('products')
             .select('*')
-            .eq('category', catId);
+            .in('category', uniqueCandidates);
 
         if (error) throw error;
+
+        // 2. 결과가 없으면 site_configs 매핑 확인 (display_ 접두사)
+        if (!data || data.length === 0) {
+            // site_configs에서 display_{catId} 또는 display_{다른 후보} 검색
+            const configKeys = uniqueCandidates.map(c => 'display_' + c);
+            
+            const { data: configRows } = await supabaseClient
+                .from('site_configs')
+                .select('key, value')
+                .in('key', configKeys);
+            
+            if (configRows && configRows.length > 0) {
+                // 첫 번째로 발견된 유효한 매핑 상품 ID들을 가져옴
+                const productIds = configRows[0].value;
+                if (productIds && productIds.length > 0) {
+                    const { data: mappedProducts, error: mapError } = await supabaseClient
+                        .from('products')
+                        .select('*')
+                        .in('id', productIds);
+                    
+                    if (!mapError) data = mappedProducts;
+                }
+            }
+        }
 
         if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
@@ -30,14 +70,14 @@ window.loadGlobalProducts = async function(catId) {
         data.forEach(p => {
             const card = document.createElement('div');
             card.className = 'product-card';
-            card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden; transition: transform 0.3s ease;";
+            card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden; transition: transform 0.3s ease; cursor:pointer;";
             
             card.innerHTML = `
                 <a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;">
-                    <div class="product-img-wrapper" style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div>
+                    <div class="product-img-wrapper" style="height:250px; background:url('${p.image_url || 'assets/no-img.png'}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div>
                     <div style="padding:20px;">
                         <h4 style="margin-bottom:10px; font-weight:600; font-size:1rem; color:#333;">${p.name}</h4>
-                        <p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">
+                        <p style="font-weight:700; color:#3498db; font-size:1.1rem;">
                             ${p.price && p.price !== '전화문의' ? (typeof p.price === 'number' ? p.price.toLocaleString() + '원' : p.price) : '가격문의'}
                         </p>
                     </div>
@@ -61,7 +101,6 @@ window.addEventListener('scroll', () => {
         header.classList.toggle('scrolled', window.scrollY > 50);
     }
     
-    // Scroll to Top 버튼 노출 로직
     const scrollTopBtn = document.getElementById('scrollTopBtn');
     if (scrollTopBtn) {
         scrollTopBtn.style.display = window.scrollY > 300 ? 'flex' : 'none';
@@ -69,74 +108,29 @@ window.addEventListener('scroll', () => {
 });
 
 /**
- * 동적 GNB 렌더링 함수
+ * 정적 GNB를 사용하므로 동적 렌더링은 비활성화하거나 로깅만 남깁니다.
  */
 window.renderDynamicGnb = async function() {
-    const gnbList = document.getElementById('gnbList');
-    if (!gnbList) return;
-
-    try {
-        if (!supabaseClient) {
-            console.warn('Supabase client not initialized. GNB will not be rendered.');
-            return;
-        }
-
-        const { data: categories, error } = await supabaseClient
-            .from('categories')
-            .select('*')
-            .order('display_order', { ascending: true });
-
-        if (error) throw error;
-        if (!categories || categories.length === 0) {
-            console.warn('No category data found in DB.');
-            return;
-        }
-
-        const majors = categories.filter(c => c.is_major);
-        let html = '';
-
-        majors.forEach(m => {
-            const subs = categories.filter(c => c.parent_id === m.id);
-            if (subs.length > 0) {
-                html += `
-                    <li class="has-submenu">
-                        <a href="category.html?code=${m.id}">${m.name}</a>
-                        <ul class="submenu">
-                            ${subs.map(s => `<li><a href="category.html?code=${s.id}">${s.name}</a></li>`).join('')}
-                        </ul>
-                    </li>
-                `;
-            } else {
-                html += `<li><a href="category.html?code=${m.id}">${m.name}</a></li>`;
-            }
-        });
-        
-        // 할인상품 등 고정 메뉴가 필요한 경우 추가 가능
-        // html += `<li><a href="discount.html">할인상품</a></li>`;
-
-        gnbList.innerHTML = html;
-    } catch (err) {
-        console.error('Error rendering GNB:', err);
-    }
+    console.log('Dynamic GNB rendering skipped (using Static GNB for stability).');
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 동적 GNB 실행
+    // 동적 GNB 실행 (현재는 로그만 출력)
     window.renderDynamicGnb();
 
-    // 검색 버튼 전역 연동
+    // 헤더 검색 기능
     const headerSearchBtn = document.getElementById('headerSearchBtn');
     if (headerSearchBtn) {
         headerSearchBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const input = document.querySelector('.search-input');
             if (input && input.value) {
-                alert('\"' + input.value + '\" 검색 기능은 개발 중입니다.');
+                alert('"' + input.value + '" 검색 기능은 개발 중입니다.');
             }
         });
     }
 
-    // 채팅 관련 전역 로직
+    // 채팅 위젯
     const chatFab = document.getElementById('chatFab');
     const chatWindow = document.getElementById('chatWindow');
     const chatCloseBtn = document.getElementById('chatCloseBtn');
