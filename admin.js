@@ -174,8 +174,12 @@ function initDashboard() {
 // ==========================================
 async function fetchProducts() {
     if(!productTableBody) return;
-    productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">상품 데이터를 불러오는 중입니다...</td></tr>';
+    productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
     
+    // 1. 카테고리 정보 먼저 명확히 불러오기 (Race Condition 방지)
+    await fetchCategories(); 
+    
+    // 2. 상품 정보 불러오기
     const { data: products, error } = await db.from('products').select('*').order('created_at', { ascending: false });
     globalProducts = products || [];
 
@@ -184,10 +188,10 @@ async function fetchProducts() {
         productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터를 가져오는데 실패했습니다: ' + error.message + '</td></tr>';
         return;
     }
-    renderProducts(products);
-    // Dynamic Category select loading in product modal
-    await fetchCategories(); 
-    updateProductSelects(products);
+
+    // 3. 셀렉박스 및 테이블 렌더링 (순서 중요)
+    updateProductSelects(globalProducts);
+    renderProducts(globalProducts);
 }
 function renderProducts(products) {
     if(!productTableBody) return;
@@ -331,6 +335,7 @@ if(saveProductBtn) {
         if(!data.name || !data.category) {
             saveMsg.textContent = '상품명과 카테고리는 필수 입력 항목입니다.';
             saveMsg.className = 'msg error';
+            alert('상품명과 카테고리를 모두 선택해주세요. 카테고리가 비어있으면 제품이 사라질 수 있습니다.');
             return;
         }
 
@@ -819,7 +824,8 @@ function updateCategoryManagementTable() {
                 <td><i class="fa-solid ${m.icon_class || 'fa-folder'}"></i></td>
                 <td>${m.display_order}</td>
                 <td>
-                    <button class="action-btn edit" onclick="window.openCategoryEditModal('${m.id}')" style="color:#3498db;"><i class="fa-solid fa-pen"></i> 수정</button>
+                    <button class="action-btn edit" onclick="window.openCategoryEditModal('${m.id}')" style="color:#3498db;" title="수정"><i class="fa-solid fa-pen"></i></button>
+                    <button class="action-btn add-sub" onclick="window.openAddSubCategoryModal('${m.id}')" style="color:#27ae60;" title="하위 분류 추가"><i class="fa-solid fa-plus-circle"></i></button>
                 </td>
             </tr>
         `;
@@ -836,7 +842,8 @@ function updateCategoryManagementTable() {
                     <td>-</td>
                     <td>${mid.display_order}</td>
                     <td>
-                        <button class="action-btn edit" onclick="window.openCategoryEditModal('${mid.id}')" style="color:#3498db;"><i class="fa-solid fa-pen"></i> 수정</button>
+                        <button class="action-btn edit" onclick="window.openCategoryEditModal('${mid.id}')" style="color:#3498db;" title="수정"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn add-sub" onclick="window.openAddSubCategoryModal('${mid.id}')" style="color:#27ae60;" title="본문 탭 추가"><i class="fa-solid fa-plus-circle"></i></button>
                     </td>
                 </tr>
             `;
@@ -1057,9 +1064,20 @@ function initCategoryManageTab() {
 function refreshParentSelect() {
     const parentSelect = document.getElementById('catParentId');
     if (parentSelect) {
+        // 3단계 구조를 지원하기 위해 대분류(1단계)와 페이지(2단계) 모두 부모가 될 수 있도록 함
+        const potentialParents = globalCategories.filter(c => c.is_major || (c.parent_id && !globalCategories.some(child => child.parent_id === c.id && child.is_major === false && !child.id.includes('cat-'))));
+        // 간단하게: 현재 3단계를 지원하므로 'is_major'인 것과 그 자식들(2단계)까지 보여줌
         const majors = globalCategories.filter(c => c.is_major);
-        parentSelect.innerHTML = '<option value="">없음 (대분류인 경우)</option>' + 
-            majors.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+        let html = '<option value="">없음 (대분류인 경우)</option>';
+        
+        majors.forEach(m => {
+            html += `<option value="${m.id}" style="font-weight:bold;">${m.name} (대분류)</option>`;
+            const subs = globalCategories.filter(c => c.parent_id === m.id);
+            subs.forEach(s => {
+                html += `<option value="${s.id}">&nbsp;&nbsp;└ ${s.name} (페이지)</option>`;
+            });
+        });
+        parentSelect.innerHTML = html;
     }
 }
 
@@ -1085,8 +1103,22 @@ window.openCategoryEditModal = (id) => {
     document.getElementById('catIcon').value = c.icon_class || '';
     document.getElementById('catDesc').value = c.description || '';
     
-    document.getElementById('categoryModalTitle').textContent = '카테고리 정보 수정';
     document.getElementById('categoryModal').style.display = 'flex';
+};
+
+/**
+ * 하위 카테고리 추가 모달 열기
+ */
+window.openAddSubCategoryModal = (parentId) => {
+    openAddCategoryModal(); // 기본 초기화
+    
+    refreshParentSelect();
+    const p = globalCategories.find(x => x.id === parentId);
+    if(p) {
+        document.getElementById('categoryModalTitle').textContent = `[${p.name}] 아래에 새로운 분류 추가`;
+        document.getElementById('catParentId').value = parentId;
+        document.getElementById('catIsMajor').value = 'false';
+    }
 };
 
 window.deleteCategory = async (id) => {
