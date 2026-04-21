@@ -116,11 +116,13 @@ button {
     transition: width 0.3s ease;
 }
 
-.gnb > ul > li:hover > a {
+.gnb > ul > li:hover > a,
+.gnb > ul > li.is-open > a {
     color: var(--color-primary);
 }
 
-.gnb > ul > li:hover > a::after {
+.gnb > ul > li:hover > a::after,
+.gnb > ul > li.is-open > a::after {
     width: 100%;
 }
 
@@ -145,7 +147,7 @@ button {
     border: 1px solid var(--color-border);
 }
 
-.gnb .has-submenu:hover .submenu {
+.gnb .has-submenu.is-open .submenu {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
@@ -198,10 +200,18 @@ button {
     z-index: 10;
 }
 
-.gnb .submenu li:hover > .nested-submenu {
+.gnb .submenu li.is-open > .nested-submenu {
     opacity: 1;
     visibility: visible;
     transform: translateX(5px);
+}
+
+/* 화살표 아이콘 회전 효과 */
+.gnb .submenu li.has-nested > a i {
+    transition: transform 0.3s ease;
+}
+.gnb .submenu li.has-nested.is-open > a i {
+    transform: rotate(90deg);
 }
 
 .nested-submenu li a {

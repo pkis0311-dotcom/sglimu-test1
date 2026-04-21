@@ -69,17 +69,38 @@ window.addEventListener('scroll', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 공통 드롭다운 처리 로직 (이후 하드코딩된 헤더와 호환)
-    const gnbItems = document.querySelectorAll('.gnb > ul > li.has-submenu');
+    // GNB 대분류 및 중간분류 클릭 기반 토글 로직
+    const gnbItems = document.querySelectorAll('.gnb li.has-submenu, .gnb li.has-nested');
+    
     gnbItems.forEach(item => {
-        item.addEventListener('mouseenter', () => {
-            const submenu = item.querySelector('.submenu');
-            if(submenu) submenu.style.display = 'block';
+        const link = item.querySelector('a');
+        if (!link) return;
+
+        link.addEventListener('click', (e) => {
+            // 하위 메뉴가 있는 경우에만 처리
+            const hasSub = item.classList.contains('has-submenu') || item.classList.contains('has-nested');
+            if (hasSub) {
+                // 현재 메뉴가 닫혀있다면 열기 (페이지 이동 방지)
+                if (!item.classList.contains('is-open')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // 같은 레벨의 다른 메뉴 닫기
+                    const siblings = item.parentElement.querySelectorAll(':scope > li');
+                    siblings.forEach(sib => sib.classList.remove('is-open'));
+
+                    item.classList.add('is-open');
+                } 
+                // 이미 열려있다면 링크대로 이동 (default behavior)
+            }
         });
-        item.addEventListener('mouseleave', () => {
-            const submenu = item.querySelector('.submenu');
-            if(submenu) submenu.style.display = 'none';
-        });
+    });
+
+    // 외부 클릭 시 메뉴 닫기
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.gnb')) {
+            gnbItems.forEach(item => item.classList.remove('is-open'));
+        }
     });
 
     // 검색 버튼 전역 연동
