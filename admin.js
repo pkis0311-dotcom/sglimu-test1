@@ -812,13 +812,23 @@ function initCategoryManageTab() {
     
     if(!addBtn || addBtn.dataset.init) return;
 
+    // Helper: Generate safe ID from name
+    const generateId = (name) => {
+        if (!name) return 'cat_' + Date.now();
+        return 'cat_' + name.trim().toLowerCase()
+            .replace(/[^a-z0-9가-힣]/g, '_')
+            .replace(/_+/g, '_')
+            .substring(0, 20) + '_' + Math.floor(Math.random() * 1000);
+    };
+
     addBtn.onclick = () => {
         document.getElementById('categoryId').value = '';
         document.getElementById('catIdCode').value = '';
+        document.getElementById('catIdCode').placeholder = '비워두면 자동 생성됩니다';
         document.getElementById('catName').value = '';
         document.getElementById('catIsMajor').value = 'false';
         document.getElementById('catParentId').value = '';
-        document.getElementById('catDisplayOrder').value = '0';
+        document.getElementById('catDisplayOrder').value = (globalCategories.length + 1).toString();
         document.getElementById('catIcon').value = 'fa-folder';
         document.getElementById('catDesc').value = '';
         document.getElementById('categoryModalTitle').textContent = '새 카테고리 등록';
@@ -872,12 +882,22 @@ function initCategoryManageTab() {
     };
 
     saveBtn.onclick = async () => {
-        const idCode = document.getElementById('catIdCode').value;
-        if(!idCode) return alert('식별 ID는 필수입니다.');
+        const catName = document.getElementById('catName').value.trim();
+        if(!catName) return alert('카테고리 이름은 필수입니다.');
+
+        let idCode = document.getElementById('catIdCode').value.trim();
+        const isEditing = document.getElementById('categoryId').value !== '';
         
+        // If new and ID is empty, generate one
+        if(!isEditing && !idCode) {
+            idCode = generateId(catName);
+        } else if (!idCode) {
+            return alert('수정 시에는 식별 ID를 삭제할 수 없습니다.');
+        }
+
         const payload = {
             id: idCode,
-            name: document.getElementById('catName').value,
+            name: catName,
             is_major: document.getElementById('catIsMajor').value === 'true',
             parent_id: document.getElementById('catParentId').value || null,
             display_order: parseInt(document.getElementById('catDisplayOrder').value) || 0,
@@ -888,6 +908,7 @@ function initCategoryManageTab() {
         const { error } = await db.from('categories').upsert(payload);
         if(error) alert('저장 실패: ' + error.message);
         else {
+            alert('카테고리가 저장되었습니다.');
             categoryModal.style.display = 'none';
             fetchCategories();
         }
@@ -936,10 +957,37 @@ window.deleteCategory = async (id) => {
     };
 }
 
-function renderMinorCategories(majorKey) {
-    const cat = SITE_CATEGORIES[majorKey];
+let currentSelectedSection = '';
+function initCategoryDisplayTab() {
+    const container = document.querySelector('.major-category-nav');
+    if(!container) return;
+
+    // Render Major category buttons dynamically
+    const majors = globalCategories.filter(c => c.is_major).sort((a,b) => a.display_order - b.display_order);
+    container.innerHTML = majors.map(m => `
+        <button class="major-btn" data-major="${m.id}">
+            <i class="fa-solid ${m.icon_class || 'fa-folder'}"></i>
+            ${m.name}
+        </button>
+    `).join('');
+
+    const majorBtns = container.querySelectorAll('.major-btn');
+    majorBtns.forEach(btn => {
+        btn.onclick = () => {
+            majorBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMinorCategories(btn.dataset.major);
+        };
+    });
+}
+
+function renderMinorCategories(majorId) {
     const grid = document.getElementById('minorCategoryGrid');
-    grid.innerHTML = cat.subs.map(s => `
+    if(!grid) return;
+    
+    const subs = globalCategories.filter(c => c.parent_id === majorId).sort((a,b) => a.display_order - b.display_order);
+    
+    grid.innerHTML = subs.map(s => `
         <button class="minor-btn ${currentSelectedSection === s.id ? 'active' : ''}" 
                 onclick="window.selectMinorCategory('${s.id}', '${s.name}')">
             ${s.name}
