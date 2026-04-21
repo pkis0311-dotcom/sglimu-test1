@@ -22,15 +22,46 @@
                     <li class="has-submenu">
                         <a href="#">도서관리 시스템</a>
                         <ul class="submenu">
-                            <li><a href="rfid.html">RFID시스템</a></li>
-                            <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입관리시스템</a></li>
+                            <li class="has-nested">
+                                <a href="rfid.html">RFID시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="rfid.html?cat=rfid_tag">태그 (TAG)</a></li>
+                                    <li><a href="rfid.html?cat=rfid_anti">분실방지기</a></li>
+                                    <li><a href="rfid.html?cat=rfid_reader">리더기</a></li>
+                                    <li><a href="rfid.html?cat=rfid_return">대출반납기</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-nested">
+                                <a href="em.html">EM시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="em.html?cat=em_anti">분실방지기</a></li>
+                                    <li><a href="em.html?cat=em_gen">감응제거재생기</a></li>
+                                    <li><a href="em.html?cat=em_tape">감응 테이프</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-nested">
+                                <a href="access.html">출입관리시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="access.html?cat=access_7000">TNH-7000A</a></li>
+                                    <li><a href="access.html?cat=access_8000">TNH-8000A</a></li>
+                                    <li><a href="access.html?cat=access_2203">EZ-2203AWG</a></li>
+                                    <li><a href="access.html?cat=access_2204">EZ-2204AWG</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
                     <li class="has-submenu">
                         <a href="#">도서관 용품</a>
                         <ul class="submenu">
-                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
+                            <li class="has-nested">
+                                <a href="supplies-arrange.html">도서정리 용품 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_keeper">키퍼</a></li>
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_color">색띠라벨</a></li>
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_paper">라벨용지</a></li>
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_bookend">북앤드</a></li>
+                                </ul>
+                            </li>
                             <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
                             <li><a href="supplies-lend.html">대출용품</a></li>
                             <li><a href="sterilizer.html">책소독기</a></li>

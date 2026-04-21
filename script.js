@@ -4,7 +4,188 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 const db = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 const supabaseClient = db; // Mapping for legacy code
 
+/**
+ * GNB(Global Navigation Bar) HTML 정의
+ */
+const GNB_HTML = `
+    <div class="header-container">
+        <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
+        <nav class="gnb">
+            <ul>
+                <li class="has-submenu">
+                    <a href="#">도서관리 시스템</a>
+                    <ul class="submenu">
+                        <li class="has-nested">
+                            <a href="rfid.html">RFID시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="rfid.html?cat=rfid_tag">태그 (TAG)</a></li>
+                                <li><a href="rfid.html?cat=rfid_anti">분실방지기</a></li>
+                                <li><a href="rfid.html?cat=rfid_reader">리더기</a></li>
+                                <li><a href="rfid.html?cat=rfid_return">대출반납기</a></li>
+                            </ul>
+                        </li>
+                        <li class="has-nested">
+                            <a href="em.html">EM시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="em.html?cat=em_anti">분실방지기</a></li>
+                                <li><a href="em.html?cat=em_gen">감응제거재생기</a></li>
+                                <li><a href="em.html?cat=em_tape">감응 테이프</a></li>
+                            </ul>
+                        </li>
+                        <li class="has-nested">
+                            <a href="access.html">출입관리시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="access.html?cat=access_7000">TNH-7000A</a></li>
+                                <li><a href="access.html?cat=access_8000">TNH-8000A</a></li>
+                                <li><a href="access.html?cat=access_2203">EZ-2203AWG</a></li>
+                                <li><a href="access.html?cat=access_2204">EZ-2204AWG</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="#">도서관 용품</a>
+                    <ul class="submenu">
+                        <li class="has-nested">
+                            <a href="supplies-arrange.html">도서정리 용품 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="supplies-arrange.html?cat=supplies_arrange_keeper">키퍼</a></li>
+                                <li><a href="supplies-arrange.html?cat=supplies_arrange_label_color">색띠라벨</a></li>
+                                <li><a href="supplies-arrange.html?cat=supplies_arrange_label_paper">라벨용지</a></li>
+                                <li><a href="supplies-arrange.html?cat=supplies_arrange_bookend">북앤드</a></li>
+                            </ul>
+                        </li>
+                        <li class="has-nested">
+                            <a href="supplies-protect.html">도서보호용품 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="supplies-protect.html?cat=supplies_protect_filmo">필모시리즈</a></li>
+                                <li><a href="supplies-protect.html?cat=supplies_protect_glue">중성풀</a></li>
+                                <li><a href="supplies-protect.html?cat=supplies_protect_tape">양면테이프</a></li>
+                                <li><a href="supplies-protect.html?cat=supplies_protect_bookcover">북커버</a></li>
+                            </ul>
+                        </li>
+                        <li class="has-nested">
+                            <a href="supplies-lend.html">대출용품 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="supplies-lend.html?cat=supplies_lend_barcode">바코드</a></li>
+                                <li><a href="supplies-lend.html?cat=supplies_lend_equip">카드프린터/기기</a></li>
+                                <li><a href="supplies-lend.html?cat=supplies_lend_card">회원증카드</a></li>
+                                <li><a href="supplies-lend.html?cat=supplies_lend_thermal">감열지</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="sterilizer.html">책소독기</a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="#">도서관 가구</a>
+                    <ul class="submenu">
+                        <li class="has-nested">
+                            <a href="furniture-koas.html">코아스 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="furniture-koas.html?cat=koas_shelf">서가</a></li>
+                                <li><a href="furniture-koas.html?cat=koas_table">테이블</a></li>
+                                <li><a href="furniture-koas.html?cat=koas_chair">의자</a></li>
+                            </ul>
+                        </li>
+                        <li class="has-nested">
+                            <a href="furniture-fursys.html">퍼시스 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="furniture-fursys.html?cat=fursys_shelf">서가</a></li>
+                                <li><a href="furniture-fursys.html?cat=fursys_table">테이블</a></li>
+                                <li><a href="furniture-fursys.html?cat=fursys_chair">의자</a></li>
+                            </ul>
+                        </li>
+                        <li class="has-nested">
+                            <a href="furniture-fomus.html">포머스 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                            <ul class="nested-submenu">
+                                <li><a href="furniture-fomus.html?cat=fomus_shelf">서가</a></li>
+                                <li><a href="furniture-fomus.html?cat=fomus_table">테이블</a></li>
+                                <li><a href="furniture-fomus.html?cat=fomus_chair">의자</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="furniture-custom.html">제작가구</a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="#">사인물</a>
+                    <ul class="submenu">
+                        <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
+                        <li><a href="sign-board.html">게시판/이용안내</a></li>
+                        <li><a href="sign-date.html">대출반납일력표</a></li>
+                        <li><a href="sign-custom.html">제작사인물</a></li>
+                    </ul>
+                </li>
+                <li><a href="discount.html">할인상품</a></li>
+            </ul>
+        </nav>
+        <div class="header-utils">
+            <div class="search-wrapper">
+                <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+            </div>
+            <div class="user-auth-wrap" id="userAuthWrap">
+                <button class="login-trigger-btn" id="loginTriggerBtn">
+                    <i class="fa-regular fa-user"></i>
+                    <span>로그인</span>
+                </button>
+            </div>
+            <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+        </div>
+    </div>
+`;
+
+/**
+ * 전역 카테고리 로딩 함수 (쇼핑몰 전체 공용)
+ * @param {string} catId - 카테고리 ID (예: rfid_tag)
+ * @param {string} containerId - 제품이 표시될 컨테이너 ID
+ */
+window.loadGlobalProducts = async function(catId, containerId = 'productList') {
+    const container = document.getElementById(containerId); 
+    if(!container) return;
+    
+    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999;">데이터를 불러오는 중...</div>';
+    
+    try {
+        if (!supabaseClient) throw new Error("Supabase Client not initialized");
+        
+        const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId);
+        
+        if (error || !data || data.length === 0) {
+            container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999;">해당 카테고리에 상품이 없습니다.</div>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        data.forEach(p => {
+            const card = document.createElement('div');
+            card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden; transition: transform 0.3s ease; cursor: pointer;";
+            card.onmouseenter = () => card.style.transform = "translateY(-10px)";
+            card.onmouseleave = () => card.style.transform = "translateY(0)";
+            
+            card.innerHTML = `
+                <a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;">
+                    <div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div>
+                    <div style="padding:20px;">
+                        <h4 style="margin-bottom:10px; font-weight:600; font-size:1rem; line-height:1.4; height:2.8em; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.name}</h4>
+                        <p style="font-weight:700; color:var(--color-primary); font-size:1.1rem; margin-top:10px;">${p.price && !isNaN(parseInt(p.price)) ? parseInt(p.price).toLocaleString() + '원' : (p.price || '가격문의')}</p>
+                    </div>
+                </a>
+            `;
+            container.appendChild(card);
+        });
+    } catch (e) {
+        console.error("Product load error:", e);
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999;">데이터 로드 실패</div>';
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
+    // 0. GNB Injection
+    const header = document.querySelector('.header');
+    if (header) {
+        header.innerHTML = GNB_HTML;
+    }
+
     // 기본 슬라이드 데이터 (Supabase 연결 실패나 데이터 없을 때 폴백용)
     const fallbackSlides = [
         {
@@ -455,4 +636,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             revealObserver.observe(el);
         });
     }, 100);
+
+    // 8. Handle URL Category Parameter (For Deep Linking)
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialCat = urlParams.get('cat');
+    if (initialCat) {
+        // 소분류 탭이 있는 페이지라면 해당 탭 활성화 후 로드
+        const targetTab = document.querySelector(`.subcategory-item[data-target="${initialCat}"]`);
+        if (targetTab) {
+            targetTab.click();
+        } else {
+            // 탭이 없는 페이지거나 일반 로드 상황
+            window.loadGlobalProducts(initialCat);
+        }
+    }
 });

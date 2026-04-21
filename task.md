@@ -1,12 +1,12 @@
-﻿- [x] Restore Full Premium UI & Layout Consistency
-    - [x] Analyze index.html: Extract reusable Header, Footer, Fixed Banners, Chat, and Modal components
-    - [x] Batch Update Category Pages: Re-integrate rich UI components into:
-        - [x] rfid.html, em.html, access.html
-        - [x] supplies-*.html
-        - [x] furniture-*.html
-        - [x] sign-*.html
-    - [x] Functional Check: Ensure product loading logic (_ IDs) and auth modal still work
-- [x] Verification
-    - [x] Verify Header/Footer richness across all sub-pages
-    - [x] Verify Side Banners and Chat Widget presence
-    - [x] Confirm naming persists as "출입관리시스템"
+- [x] GNB 3단계(Main > Sub > Nested) 구조 설계 및 script.js 반영
+- [x] CSS (style.css)를 통한 중첩 서브메뉴 스타일 및 애니메이션 구현
+- [x] window.loadGlobalProducts(catId) 전역 함수 구현 및 URL 파라미터 연동
+- [x] 개별 카테고리 HTML 파일 전수 리뉴얼 (rfid, em, access, supplies, furniture, sign ...)
+    - [x] rfid.html 리팩토링
+    - [x] em.html 리팩토링
+    - [x] access.html 리팩토링
+    - [x] 도서관 용품 관련 페이지 리팩토링
+    - [x] 도서관 가구 관련 페이지 리팩토링
+    - [x] 사인물 관련 페이지 리팩토링
+- [x] 텍스트 인코딩(UTF-8 No BOM) 준수 및 코드 중복 제거 확인
+- [x] 전체 사이트 정합성 검증 (GNB 주입 확인)
