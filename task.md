@@ -1,12 +1,14 @@
-- [x] GNB 3단계(Main > Sub > Nested) 구조 설계 및 script.js 반영
-- [x] CSS (style.css)를 통한 중첩 서브메뉴 스타일 및 애니메이션 구현
-- [x] window.loadGlobalProducts(catId) 전역 함수 구현 및 URL 파라미터 연동
-- [x] 개별 카테고리 HTML 파일 전수 리뉴얼 (rfid, em, access, supplies, furniture, sign ...)
-    - [x] rfid.html 리팩토링
-    - [x] em.html 리팩토링
-    - [x] access.html 리팩토링
-    - [x] 도서관 용품 관련 페이지 리팩토링
-    - [x] 도서관 가구 관련 페이지 리팩토링
-    - [x] 사인물 관련 페이지 리팩토링
-- [x] 텍스트 인코딩(UTF-8 No BOM) 준수 및 코드 중복 제거 확인
-- [x] 전체 사이트 정합성 검증 (GNB 주입 확인)
+- [x] GNB 및 상품 로딩 시스템 롤백 (독립 파일 구조로 복구)
+    - [x] `TEMPLATE` 기반 독립적 HTML 구조 복원 (16개 카테고리 페이지)
+    - [x] `restore_mall_pages.py` (또는 수동 write)로 일괄 복구 완료
+- [x] 한글 인코딩(UTF-8) 깨짐 현상 전면 수정
+    - [x] `admin.js` 한글 복구 및 UTF-8 저장
+    - [x] `script.js` 한글 복구 및 UTF-8 저장
+    - [x] 모든 HTML 파일 `charset="UTF-8"` 및 실제 파일 인코딩 정합성 확보
+- [x] GNB 3단계 계층 구조 및 클릭 기능 복구
+    - [x] 소분류 카테고리 클릭 시 상품 로딩 기능 확인
+    - [x] GNB 호버 시 3단계 서브메뉴 노출 확인
+- [x] 관리자 사이트 기능 및 데이터 표시 복구
+    - [x] 관리자 로그인 및 메뉴 한글 깨짐 수정
+    - [x] 카테고리 매핑 데이터(`SITE_CATEGORIES`) 복구
+- [x] 최종 브라우저 검증 및 안정성 확인
