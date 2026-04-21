@@ -68,7 +68,53 @@ window.addEventListener('scroll', () => {
     }
 });
 
+/**
+ * 동적 GNB 렌더링 함수
+ */
+window.renderDynamicGnb = async function() {
+    const gnbList = document.getElementById('gnbList');
+    if (!gnbList) return;
+
+    try {
+        const { data: categories, error } = await supabaseClient
+            .from('categories')
+            .select('*')
+            .order('display_order', { ascending: true });
+
+        if (error) throw error;
+
+        const majors = categories.filter(c => c.is_major);
+        let html = '';
+
+        majors.forEach(m => {
+            const subs = categories.filter(c => c.parent_id === m.id);
+            if (subs.length > 0) {
+                html += `
+                    <li class="has-submenu">
+                        <a href="category.html?code=${m.id}">${m.name}</a>
+                        <ul class="submenu">
+                            ${subs.map(s => `<li><a href="category.html?code=${s.id}">${s.name}</a></li>`).join('')}
+                        </ul>
+                    </li>
+                `;
+            } else {
+                html += `<li><a href="category.html?code=${m.id}">${m.name}</a></li>`;
+            }
+        });
+        
+        // 할인상품 등 고정 메뉴가 필요한 경우 추가 가능
+        // html += `<li><a href="discount.html">할인상품</a></li>`;
+
+        gnbList.innerHTML = html;
+    } catch (err) {
+        console.error('Error rendering GNB:', err);
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+    // 동적 GNB 실행
+    window.renderDynamicGnb();
+
     // 검색 버튼 전역 연동
     const headerSearchBtn = document.getElementById('headerSearchBtn');
     if (headerSearchBtn) {
@@ -90,6 +136,4 @@ document.addEventListener('DOMContentLoaded', () => {
         chatFab.onclick = () => chatWindow.style.display = 'flex';
         chatCloseBtn.onclick = () => chatWindow.style.display = 'none';
     }
-    
-    // 모바일 지원 등을 위한 추가 초기화 로직이 필요하면 여기에 작성
 });

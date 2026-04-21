@@ -27,6 +27,7 @@
         <ul class="sidebar-menu">
             <li class="nav-item active" data-target="tab-products"><i class="fa-solid fa-box-open"></i> 상품 정보 관리</li>
             <li class="nav-item" data-target="tab-page-manage"><i class="fa-solid fa-file-pen"></i> 페이지 내용 관리</li>
+            <li class="nav-item" data-target="tab-category-manage"><i class="fa-solid fa-tags"></i> 카테고리 정보 관리</li>
             <li class="nav-item" data-target="tab-category-display"><i class="fa-solid fa-layer-group"></i> 카테고리 노출 설정</li>
             <li class="nav-item" data-target="tab-orders"><i class="fa-solid fa-chart-line"></i> 주문 통계 분석</li>
             <li class="nav-item" data-target="tab-inquiries"><i class="fa-solid fa-comment-dots"></i> 견적/상담 관리</li>
@@ -120,6 +121,22 @@
             <div class="table-card"><table><thead><tr><th>이미지</th><th>유형</th><th>링크</th><th>순서</th><th>등록일</th><th>상태</th><th>관리</th></tr></thead><tbody id="bannerTableBody"></tbody></table></div>
         </div>
 
+        <div id="tab-category-manage" class="tab-pane">
+            <div class="page-header">
+                <h1 class="page-title">카테고리 정보 관리</h1>
+                <div style="display:flex; gap:10px;">
+                    <button id="migrateCategoryBtn" class="btn-primary" style="background:#f39c12;"><i class="fa-solid fa-truck-ramp-box"></i> 초기 데이터 이전</button>
+                    <button id="addCategoryBtn" class="btn-primary"><i class="fa-solid fa-plus"></i> 새 카테고리 등록</button>
+                </div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead><tr><th>구분</th><th>ID/코드</th><th>카테고리명</th><th>상위분류</th><th>아이콘/설명</th><th>순서</th><th>관리</th></tr></thead>
+                    <tbody id="categoryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
         <div id="tab-users" class="tab-pane">
             <div class="page-header"><h1 class="page-title">회원 (도서관/파트너) 관리</h1></div>
             <div class="table-card"><table><thead><tr><th>회원ID</th><th>기관명</th><th>담당자명</th><th>연락처</th><th>B2B 승인</th><th>가입일</th><th>관리</th></tr></thead><tbody id="userTableBody"></tbody></table></div>
@@ -188,6 +205,34 @@
             <div class="modal-footer"><button type="button" class="btn-secondary" id="cancelBannerModalBtn">취소</button><button type="button" class="btn-primary" id="saveBannerBtn">저장하기</button><div id="saveBannerMsg"></div></div>
         </div>
     </div>
+    <div id="categoryModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header"><h3 id="categoryModalTitle">카테고리 등록/수정</h3><button class="close-modal" id="closeCategoryModalBtn">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="categoryId">
+                <div class="form-grid">
+                    <div class="form-group"><label>식별 ID (영문/숫자)</label><input type="text" id="catIdCode" class="form-control" placeholder="예: rfid_tag"></div>
+                    <div class="form-group"><label>카테고리 명</label><input type="text" id="catName" class="form-control" placeholder="표시될 이름"></div>
+                    <div class="form-group">
+                        <label>유형 설정</label>
+                        <select id="catIsMajor" class="form-control">
+                            <option value="false">소분류 (Sub Category)</option>
+                            <option value="true">대분류 (Major Group)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>상위 대분류 선택 (소분류인 경우)</label>
+                        <select id="catParentId" class="form-control"><option value="">없음 (대분류인 경우)</option></select>
+                    </div>
+                    <div class="form-group"><label>표시 순서</label><input type="number" id="catDisplayOrder" class="form-control" value="0"></div>
+                    <div class="form-group"><label>아이콘 클래스 (FontAwesome)</label><input type="text" id="catIcon" class="form-control" placeholder="fa-folder"></div>
+                    <div class="form-group full-width"><label>카테고리 설명 (헤더 노출용)</label><textarea id="catDesc" class="form-control" rows="2"></textarea></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn-secondary" id="cancelCategoryModalBtn">취소</button><button type="button" class="btn-primary" id="saveCategoryBtn">저장하기</button><div id="catSaveMsg"></div></div>
+        </div>
+    </div>
+
     <script src="admin.js"></script>
 </body>
 </html>

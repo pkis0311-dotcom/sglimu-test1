@@ -32,88 +32,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// ==========================================
-// 사이트 통합 카테고리 정의 및 레거시 데이터 매핑
-// ==========================================
-const LEGACY_ID_MAP = {
-    'access_7000': 'access-cat-0', 'access_8000': 'access-cat-1', 'access_2203': 'access-cat-2', 'access_2204': 'access-cat-3',
-    'discount_items': 'discount-cat-0', 'sign_date': 'sign-date-cat-0', 'sign_custom': 'sign-custom-cat-0', 'sterilizer_parts': 'sterilizer-cat-0',
-    'fomus_shelf': 'fomus-cat-0', 'fomus_table': 'fomus-cat-1', 'fomus_chair': 'fomus-cat-2', 'fomus_etc': 'fomus-cat-3',
-    'fursys_shelf': 'fursys-cat-0', 'fursys_table': 'fursys-table-cat-0', 'fursys_chair': 'fursys-cat-2', 'fursys_etc': 'fursys-cat-3',
-    'koas_table': 'koas-cat-1', 'koas_etc': 'koas-cat-3'
-};
-
-const SITE_CATEGORIES = {
-    'system': {
-        icon: 'fa-server', label: '도서관리시스템',
-        subs: [
-            { id: 'rfid_tag', name: 'RFID > 태그 (TAG)' },
-            { id: 'rfid_anti', name: 'RFID > 분실 방지기' },
-            { id: 'rfid_reader', name: 'RFID > 리더기' },
-            { id: 'rfid_return', name: 'RFID > 대출 반납기' },
-            { id: 'em_anti', name: 'EM > 분실 방지기' },
-            { id: 'em_gen', name: 'EM > 감응제거재생기' },
-            { id: 'em_tape', name: 'EM > 감응 테이프' },
-            { id: 'access_7000', name: '출입관리 > TNH-7000A' },
-            { id: 'access_8000', name: '출입관리 > TNH-8000A' },
-            { id: 'access_2203', name: '출입관리 > EZ-2203AWG' },
-            { id: 'access_2204', name: '출입관리 > EZ-2204AWG' }
-        ]
-    },
-    'supplies': {
-        icon: 'fa-box-open', label: '도서관 용품',
-        subs: [
-            { id: 'supplies_arrange_keeper', name: '정리 > 키퍼' },
-            { id: 'supplies_arrange_label_color', name: '정리 > 색띠라벨' },
-            { id: 'supplies_arrange_label_paper', name: '정리 > 라벨용지' },
-            { id: 'supplies_arrange_gloves', name: '정리 > 장갑' },
-            { id: 'supplies_arrange_stamp', name: '정리 > 도장' },
-            { id: 'supplies_arrange_bookend', name: '정리 > 북앤드' },
-            { id: 'supplies_arrange_etc', name: '정리 > 기타' },
-            { id: 'supplies_protect_filmo', name: '보호 > 필모시리즈' },
-            { id: 'supplies_protect_glue', name: '보호 > 중성풀' },
-            { id: 'supplies_protect_tape', name: '보호 > 양면테이프' },
-            { id: 'supplies_protect_bookcover', name: '보호 > 북커버' },
-            { id: 'supplies_lend_barcode', name: '대출 > 바코드' },
-            { id: 'supplies_lend_equip', name: '대출 > 카드프린터/기기' },
-            { id: 'supplies_lend_card', name: '대출 > 회원증카드' },
-            { id: 'supplies_lend_thermal', name: '대출 > 감열지' },
-            { id: 'sterilizer_parts', name: '책소독기 소모품' }
-        ]
-    },
-    'furniture': {
-        icon: 'fa-chair', label: '도서관 가구',
-        subs: [
-            { id: 'koas_shelf', name: '코아스 > 서가' },
-            { id: 'koas_table', name: '코아스 > 테이블' },
-            { id: 'koas_chair', name: '코아스 > 의자' },
-            { id: 'koas_etc', name: '코아스 > 기타' },
-            { id: 'fomus_shelf', name: '포머스 > 서가' },
-            { id: 'fomus_table', name: '포머스 > 테이블' },
-            { id: 'fomus_chair', name: '포머스 > 의자' },
-            { id: 'fomus_etc', name: '포머스 > 기타' },
-            { id: 'fursys_shelf', name: '퍼시스 > 서가' },
-            { id: 'fursys_table', name: '퍼시스 > 테이블' },
-            { id: 'fursys_chair', name: '퍼시스 > 의자' },
-            { id: 'fursys_etc', name: '퍼시스 > 기타' }
-        ]
-    },
-    'signage': {
-        icon: 'fa-scroll', label: '사인물',
-        subs: [
-            { id: 'sign_class', name: '분류/대분류 표지판' },
-            { id: 'sign_board', name: '게시판/이용안내' },
-            { id: 'sign_date', name: '대출반납일력표' },
-            { id: 'sign_custom', name: '제작 사인물' },
-            { id: 'best_product', name: '메인 베스트 상품' }
-        ]
-    },
-    'discount': {
-        icon: 'fa-tags', label: '할인상품',
-        subs: [
-            { id: 'discount_items', name: '할인상품 전체' }
-        ]
-    }
+// Global state for categories
+let globalCategories = [];
+const STATIC_CATEGORIES = { // Legacy fallback for safety
+    'system': { label: '도서관리시스템', icon: 'fa-server' },
+    'supplies': { label: '도서관 용품', icon: 'fa-box-open' },
+    'furniture': { label: '도서관 가구', icon: 'fa-chair' },
+    'signage': { label: '사인물', icon: 'fa-scroll' },
+    'discount': { label: '할인상품', icon: 'fa-tags' }
 };
 
 // DOM Elements
@@ -233,6 +159,7 @@ navItems.forEach(item => {
         if (target === 'tab-users') fetchUsers();
         if (target === 'tab-page-manage') initPageManageTab();
         if (target === 'tab-category-display') initCategoryDisplayTab();
+        if (target === 'tab-category-manage') initCategoryManageTab();
     });
 });
 
@@ -257,6 +184,8 @@ async function fetchProducts() {
         return;
     }
     renderProducts(products);
+    // Dynamic Category select loading in product modal
+    await fetchCategories(); 
     updateProductSelects(products);
 }
 function renderProducts(products) {
@@ -296,6 +225,24 @@ function updateProductSelects(products) {
             products.map(p => `<option value="${p.id}">${p.name} (${p.category})</option>`).join('');
     }
     
+    // Update category select in product modal dynamically
+    const productCategory = document.getElementById('productCategory');
+    if (productCategory) {
+        let html = '<option value="">카테고리 선택</option>';
+        html += '<option value="best_product">메인 베스트 상품</option>';
+        
+        const majors = globalCategories.filter(c => c.is_major).sort((a,b) => a.display_order - b.display_order);
+        majors.forEach(m => {
+            html += `<optgroup label="${m.name}">`;
+            const subs = globalCategories.filter(c => c.parent_id === m.id).sort((a,b) => a.display_order - b.display_order);
+            subs.forEach(s => {
+                html += `<option value="${s.id}">${s.name}</option>`;
+            });
+            html += `</optgroup>`;
+        });
+        productCategory.innerHTML = html;
+    }
+
     const displayCheckboxGrid = document.getElementById('productCheckboxGrid');
     if (displayCheckboxGrid) {
         displayCheckboxGrid.innerHTML = products.map(p => `
@@ -787,17 +734,195 @@ function createFeatureBlock(title, desc) {
     document.getElementById('featureContainer').appendChild(div);
 }
 
-let currentSelectedSection = '';
-function initCategoryDisplayTab() {
-    const majorBtns = document.querySelectorAll('.major-btn');
-    majorBtns.forEach(btn => {
-        btn.onclick = () => {
-            majorBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMinorCategories(btn.dataset.major);
-        };
-    });
+// ==========================================
+// 7. 카테고리 정보 동적 관리
+// ==========================================
+async function fetchCategories() {
+    try {
+        const { data, error } = await db.from('categories').select('*').order('display_order', { ascending: true });
+        if (error) throw error;
+        globalCategories = data || [];
+        updateCategoryManagementTable();
+        updateCategorySelectOptions();
+    } catch (e) {
+        console.error("Categories fetch error:", e);
+    }
+}
+
+function updateCategorySelectOptions() {
+    const parentSelect = document.getElementById('catParentId');
+    if(!parentSelect) return;
     
+    const majors = globalCategories.filter(c => c.is_major);
+    parentSelect.innerHTML = '<option value="">없음 (대분류인 경우)</option>' + 
+        majors.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+}
+
+function updateCategoryManagementTable() {
+    const tBody = document.getElementById('categoryTableBody');
+    if(!tBody) return;
+    
+    tBody.innerHTML = '';
+    
+    // Sort logic: Majors first, then their respective subs
+    const majors = globalCategories.filter(c => c.is_major).sort((a,b) => a.display_order - b.display_order);
+    
+    majors.forEach(m => {
+        // Major row
+        tBody.innerHTML += `
+            <tr style="background:#f8f9fa;">
+                <td><span class="badge" style="background:#2980b9; color:#fff;">대분류</span></td>
+                <td style="font-weight:bold;">${m.id}</td>
+                <td style="font-weight:bold; color:#2980b9;">${m.name}</td>
+                <td>-</td>
+                <td><i class="fa-solid ${m.icon_class || 'fa-folder'}"></i></td>
+                <td>${m.display_order}</td>
+                <td>
+                    <button class="action-btn edit" onclick="window.openCategoryEditModal('${m.id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="action-btn delete" onclick="window.deleteCategory('${m.id}')"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+        
+        const subs = globalCategories.filter(c => c.parent_id === m.id).sort((a,b) => a.display_order - b.display_order);
+        subs.forEach(s => {
+            tBody.innerHTML += `
+                <tr>
+                    <td><span class="badge" style="background:#bdc3c7; color:#fff;">소분류</span></td>
+                    <td style="padding-left:20px; color:#666;">└ ${s.id}</td>
+                    <td style="padding-left:20px;">${s.name}</td>
+                    <td>${m.name}</td>
+                    <td style="font-size:0.8rem; color:#999; max-width:150px; overflow:hidden; text-overflow:ellipsis;">${s.description || '-'}</td>
+                    <td>${s.display_order}</td>
+                    <td>
+                        <button class="action-btn edit" onclick="window.openCategoryEditModal('${s.id}')"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn delete" onclick="window.deleteCategory('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+}
+
+function initCategoryManageTab() {
+    const addBtn = document.getElementById('addCategoryBtn');
+    const migrateBtn = document.getElementById('migrateCategoryBtn');
+    const saveBtn = document.getElementById('saveCategoryBtn');
+    const categoryModal = document.getElementById('categoryModal');
+    
+    if(!addBtn || addBtn.dataset.init) return;
+
+    addBtn.onclick = () => {
+        document.getElementById('categoryId').value = '';
+        document.getElementById('catIdCode').value = '';
+        document.getElementById('catName').value = '';
+        document.getElementById('catIsMajor').value = 'false';
+        document.getElementById('catParentId').value = '';
+        document.getElementById('catDisplayOrder').value = '0';
+        document.getElementById('catIcon').value = 'fa-folder';
+        document.getElementById('catDesc').value = '';
+        document.getElementById('categoryModalTitle').textContent = '새 카테고리 등록';
+        categoryModal.style.display = 'flex';
+    };
+
+    migrateBtn.onclick = async () => {
+        if(!confirm("기존 하드코딩된 카테고리 데이터를 DB로 이전하시겠습니까? (이미 데이터가 있다면 중복될 수 있습니다.)")) return;
+        
+        // Internal Migration logic to avoid file protocol issues
+        const INITIAL_DATA = {
+            'system': { icon: 'fa-server', label: '도서관리시스템', subs: [
+                { id: 'rfid_tag', name: 'RFID > 태그 (TAG)' }, { id: 'rfid_anti', name: 'RFID > 분실 방지기' }, { id: 'rfid_reader', name: 'RFID > 리더기' }, { id: 'rfid_return', name: 'RFID > 대출 반납기' },
+                { id: 'em_anti', name: 'EM > 분실 방지기' }, { id: 'em_gen', name: 'EM > 감응제거재생기' }, { id: 'em_tape', name: 'EM > 감응 테이프' },
+                { id: 'access_7000', name: '출입관리 > TNH-7000A' }, { id: 'access_8000', name: '출입관리 > TNH-8000A' }, { id: 'access_2203', name: '출입관리 > EZ-2203AWG' }, { id: 'access_2204', name: '출입관리 > EZ-2204AWG' }
+            ]},
+            'supplies': { icon: 'fa-box-open', label: '도서관 용품', subs: [
+                { id: 'supplies_arrange_keeper', name: '정리 > 키퍼' }, { id: 'supplies_arrange_label_color', name: '정리 > 색띠라벨' }, { id: 'supplies_arrange_label_paper', name: '정리 > 라벨용지' }, { id: 'supplies_arrange_gloves', name: '정리 > 장갑' }, { id: 'supplies_arrange_stamp', name: '정리 > 도장' }, { id: 'supplies_arrange_bookend', name: '정리 > 북앤드' }, { id: 'supplies_arrange_etc', name: '정리 > 기타' },
+                { id: 'supplies_protect_filmo', name: '보호 > 필모시리즈' }, { id: 'supplies_protect_glue', name: '보호 > 중성풀' }, { id: 'supplies_protect_tape', name: '보호 > 양면테이프' }, { id: 'supplies_protect_bookcover', name: '보호 > 북커버' },
+                { id: 'supplies_lend_barcode', name: '대출 > 바코드' }, { id: 'supplies_lend_equip', name: '대출 > 카드프린터/기기' }, { id: 'supplies_lend_card', name: '대출 > 회원증카드' }, { id: 'supplies_lend_thermal', name: '대출 > 감열지' },
+                { id: 'sterilizer_parts', name: '책소독기 소모품' }
+            ]},
+            'furniture': { icon: 'fa-chair', label: '도서관 가구', subs: [
+                { id: 'koas_shelf', name: '코아스 > 서가' }, { id: 'koas_table', name: '코아스 > 테이블' }, { id: 'koas_chair', name: '코아스 > 의자' }, { id: 'koas_etc', name: '코아스 > 기타' },
+                { id: 'fomus_shelf', name: '포머스 > 서가' }, { id: 'fomus_table', name: '포머스 > 테이블' }, { id: 'fomus_chair', name: '포머스 > 의자' }, { id: 'fomus_etc', name: '포머스 > 기타' },
+                { id: 'fursys_shelf', name: '퍼시스 > 서가' }, { id: 'fursys_table', name: '퍼시스 > 테이블' }, { id: 'fursys_chair', name: '퍼시스 > 의자' }, { id: 'fursys_etc', name: '퍼시스 > 기타' }
+            ]},
+            'signage': { icon: 'fa-scroll', label: '사인물', subs: [
+                { id: 'sign_class', name: '분류/대분류 표지판' }, { id: 'sign_board', name: '게시판/이용안내' }, { id: 'sign_date', name: '대출반납일력표' }, { id: 'sign_custom', name: '제작 사인물' }, { id: 'best_product', name: '메인 베스트 상품' }
+            ]},
+            'discount': { icon: 'fa-tags', label: '할인상품', subs: [
+                { id: 'discount_items', name: '할인상품 전체' }
+            ]}
+        };
+
+        let count = 0;
+        for(const majorId in INITIAL_DATA) {
+            const data = INITIAL_DATA[majorId];
+            await db.from('categories').upsert({
+                id: majorId, name: data.label, is_major: true, icon_class: data.icon, display_order: count++
+            });
+            for(let j=0; j<data.subs.length; j++) {
+                const sub = data.subs[j];
+                await db.from('categories').upsert({
+                    id: sub.id, name: sub.name, parent_id: majorId, is_major: false, display_order: j
+                });
+            }
+        }
+        alert("데이터 이전이 완료되었습니다.");
+        fetchCategories();
+    };
+
+    saveBtn.onclick = async () => {
+        const idCode = document.getElementById('catIdCode').value;
+        if(!idCode) return alert('식별 ID는 필수입니다.');
+        
+        const payload = {
+            id: idCode,
+            name: document.getElementById('catName').value,
+            is_major: document.getElementById('catIsMajor').value === 'true',
+            parent_id: document.getElementById('catParentId').value || null,
+            display_order: parseInt(document.getElementById('catDisplayOrder').value) || 0,
+            icon_class: document.getElementById('catIcon').value,
+            description: document.getElementById('catDesc').value
+        };
+
+        const { error } = await db.from('categories').upsert(payload);
+        if(error) alert('저장 실패: ' + error.message);
+        else {
+            categoryModal.style.display = 'none';
+            fetchCategories();
+        }
+    };
+
+    document.getElementById('closeCategoryModalBtn').onclick = () => categoryModal.style.display = 'none';
+    document.getElementById('cancelCategoryModalBtn').onclick = () => categoryModal.style.display = 'none';
+    
+    addBtn.dataset.init = "true";
+    fetchCategories();
+}
+
+window.openCategoryEditModal = (id) => {
+    const c = globalCategories.find(x => x.id === id);
+    if(!c) return;
+    
+    document.getElementById('categoryId').value = c.id;
+    document.getElementById('catIdCode').value = c.id;
+    document.getElementById('catName').value = c.name;
+    document.getElementById('catIsMajor').value = c.is_major.toString();
+    document.getElementById('catParentId').value = c.parent_id || '';
+    document.getElementById('catDisplayOrder').value = c.display_order;
+    document.getElementById('catIcon').value = c.icon_class || '';
+    document.getElementById('catDesc').value = c.description || '';
+    
+    document.getElementById('categoryModalTitle').textContent = '카테고리 정보 수정';
+    document.getElementById('categoryModal').style.display = 'flex';
+};
+
+window.deleteCategory = async (id) => {
+    if(!confirm('해당 카테고리를 삭제하시겠습니까? (하위 분류가 있는 경우 함께 삭제되거나 오류가 발생할 수 있습니다.)')) return;
+    const { error } = await db.from('categories').delete().eq('id', id);
+    if(error) alert('삭제 실패: ' + error.message);
+    else fetchCategories();
+};
     document.getElementById('saveDisplayBtn').onclick = async () => {
         if(!currentSelectedSection) return alert('화면을 선택해주세요.');
         const selected = Array.from(document.querySelectorAll('.display-item-cb'))
