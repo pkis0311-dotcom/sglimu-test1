@@ -12,42 +12,50 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .detail-page { padding: 120px 5% 100px; max-width: 1400px; margin: 0 auto; }
-        .product-main { display: flex; gap: 50px; margin-bottom: 80px; }
-        .product-gallery { flex: 1; }
-        .main-img { width: 100%; border-radius: 12px; border: 1px solid #eee; margin-bottom: 15px; }
-        .product-info-panel { flex: 1; display: flex; flex-direction: column; }
-        .product-tag { color: var(--color-primary); font-weight: 700; font-size: 0.9rem; margin-bottom: 10px; display: block; }
-        .product-title { font-size: 2.2rem; color: #222; font-weight: 700; margin-bottom: 20px; }
-        .product-price { font-size: 1.8rem; color: var(--color-primary); font-weight: 700; border-bottom: 1px solid #eee; padding-bottom: 25px; margin-bottom: 30px; }
-        .option-row { margin-bottom: 20px; }
-        .option-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; display: block; }
-        .option-list { display: flex; gap: 10px; flex-wrap: wrap; }
-        .option-item { padding: 8px 20px; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
-        .option-item.active { border-color: var(--color-primary); color: var(--color-primary); background: #f0f7ff; }
-        .buy-btns { display: flex; gap: 15px; margin-top: 40px; }
-        .btn-cart { flex: 1; height: 60px; font-size: 1.1rem; font-weight: 600; border: 1px solid #ddd; background: #fff; cursor: pointer; }
-        .btn-order { flex: 2; height: 60px; font-size: 1.1rem; font-weight: 600; background: #222; color: #fff; border: none; cursor: pointer; }
+        .product-main { display: flex; gap: 60px; margin-bottom: 80px; align-items: flex-start; }
+        .product-gallery { flex: 1.1; }
+        .main-img { width: 100%; border-radius: 10px; border: 1px solid #eee; }
         
-        .detail-tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 50px; }
-        .tab-item { padding: 15px 40px; font-size: 1.1rem; font-weight: 600; color: #999; cursor: pointer; position: relative; }
+        .product-info-panel { flex: 0.9; display: flex; flex-direction: column; }
+        .product-badges { margin-bottom: 15px; }
+        .badge-best { background: #8ec342; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        
+        .product-tag { color: var(--color-primary); font-weight: 700; font-size: 0.95rem; margin-bottom: 15px; display: block; }
+        .product-title { font-size: 2.2rem; color: #222; font-weight: 700; margin-bottom: 20px; line-height: 1.3; }
+        .product-desc-top { color: #666; line-height: 1.7; margin-bottom: 30px; font-size: 1.05rem; }
+        
+        .product-price { font-size: 2rem; color: var(--color-primary); font-weight: 700; margin-bottom: 50px; padding-top: 10px; }
+        
+        .option-row { margin-bottom: 25px; }
+        .option-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; display: block; color: #444; }
+        .option-list { display: flex; gap: 10px; flex-wrap: wrap; }
+        .option-item { padding: 10px 22px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.9rem; background: #fff; transition: all 0.2s; }
+        .option-item.active { border-color: #222; color: #222; background: #f9f9f9; font-weight: 600; }
+        
+        .buy-btns { display: flex; gap: 15px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 40px; }
+        .btn-cart { flex: 1; height: 60px; font-size: 1.1rem; font-weight: 600; border: 1px solid #ddd; background: #fff; color: #333; transition: all 0.3s; }
+        .btn-order { flex: 2; height: 60px; font-size: 1.1rem; font-weight: 600; background: #222; color: #fff; border: none; cursor: pointer; transition: all 0.3s; }
+        .btn-cart:hover { background: #f5f5f5; }
+        .btn-order:hover { background: #444; }
+        
+        .detail-tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 50px; margin-top: 40px; }
+        .tab-item { padding: 18px 45px; font-size: 1.1rem; font-weight: 600; color: #999; cursor: pointer; position: relative; }
         .tab-item.active { color: #222; }
         .tab-item.active::after { content:''; position:absolute; bottom:-2px; left:0; width:100%; height:2px; background:#222; }
-        .detail-contents { text-align: center; }
-        .detail-contents img { max-width: 100%; }
         
         /* Classic Styles for specs and features */
-        .section-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 30px; margin-top: 60px; font-size: 1.1rem; font-weight: 700; color: #222; text-align: left; }
+        .section-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 40px; margin-top: 80px; font-size: 1.15rem; font-weight: 700; color: #222; text-align: left; letter-spacing: 1px; }
         
-        .spec-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.95rem; }
-        .spec-table th, .spec-table td { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 12px 15px; text-align: left; }
-        .spec-table th { background-color: #f9f9f9; width: 25%; font-weight: 600; color: #333; }
-        .spec-table td { color: #555; }
+        .spec-table { width: 100%; border-collapse: collapse; margin-bottom: 60px; font-size: 0.95rem; }
+        .spec-table th, .spec-table td { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 18px 25px; text-align: left; }
+        .spec-table th { background-color: #f9f9f9; width: 250px; font-weight: 600; color: #444; }
+        .spec-table td { color: #666; line-height: 1.6; }
         
         .detail-features { margin: 40px 0; }
-        .feature-item { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px dashed #eee; text-align: left; }
-        .feature-item h5 { font-size: 1.2rem; color: #222; margin-bottom: 10px; display: flex; align-items: center; }
-        .feature-item h5 span { display: inline-block; background: #8ec342; color: #fff; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-right: 10px; font-size: 0.9rem; flex-shrink: 0; }
-        .feature-item p { color: #666; line-height: 1.6; padding-left: 38px; }
+        .feature-item { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px dashed #eee; text-align: left; }
+        .feature-item h5 { font-size: 1.25rem; color: #222; margin-bottom: 15px; display: flex; align-items: center; font-weight: 700; }
+        .feature-item h5 span { display: inline-block; background: #8ec342; color: #fff; width: 30px; height: 30px; line-height: 30px; text-align: center; border-radius: 50%; margin-right: 12px; font-size: 0.9rem; flex-shrink: 0; font-weight: 600; }
+        .feature-item p { color: #777; line-height: 1.8; padding-left: 42px; font-size: 1.05rem; }
     </style>
 </head>
 <body>
@@ -116,8 +124,12 @@
                 <img id="mainImg" class="main-img" src="assets/no-image.png">
             </div>
             <div class="product-info-panel">
+                <div class="product-badges" id="prodBadges">
+                    <span class="badge-best">BEST</span>
+                </div>
                 <span class="product-tag" id="prodCategory">Category</span>
                 <h2 class="product-title" id="prodTitle">제품명</h2>
+                <div class="product-desc-top" id="prodDescTop">제품에 대한 요약 설명입니다.</div>
                 <div class="product-price" id="prodPrice">가격문의</div>
                 
                 <div class="option-row" id="optionColorRow" style="display:none;">
@@ -178,17 +190,26 @@
 
             const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).maybeSingle();
             const detailBody = document.getElementById('detailBody');
+            const topDescEl = document.getElementById('prodDescTop');
             detailBody.innerHTML = '';
+            topDescEl.innerHTML = '';
 
             if(config && config.value) {
                 const d = config.value;
                 let html = '';
 
+                // Render description in top panel instead of body
+                if (d.description) {
+                    topDescEl.innerHTML = d.description.replace(/\n/g, '<br>');
+                    topDescEl.style.display = 'block';
+                } else {
+                    topDescEl.style.display = 'none';
+                }
+
                 // DETAIL VIEW Title
                 html += `<h4 class="section-header">DETAIL VIEW</h4>`;
 
                 if (d.mainImageUrl) html += `<div style="margin-bottom:60px; text-align:center;"><img src="${d.mainImageUrl}" style="max-width:100%; border-radius:12px;"></div>`;
-                if (d.description) html += `<div style="padding:20px 0 60px; font-size:1.1rem; line-height:1.7; color:#444; text-align:left;">${d.description.replace(/\n/g, '<br>')}</div>`;
                 
                 if (d.features && d.features.length > 0) {
                     html += `<div class="detail-features">`;
@@ -221,6 +242,7 @@
 
                 detailBody.innerHTML = html || '<p style="padding:100px 0; color:#999; text-align:center;">데이터가 없습니다.</p>';
             } else {
+                topDescEl.style.display = 'none';
                 detailBody.innerHTML = `<p style="padding:100px 0; color:#999; font-size:1rem; text-align:center;">제품 상세 정보가 아직 등록되지 않았습니다.</p>`;
             }
         }
