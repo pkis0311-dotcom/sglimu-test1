@@ -11,51 +11,76 @@
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .detail-page { padding: 120px 5% 100px; max-width: 1400px; margin: 0 auto; }
-        .product-main { display: flex; gap: 60px; margin-bottom: 80px; align-items: flex-start; }
-        .product-gallery { flex: 1.1; }
-        .main-img { width: 100%; border-radius: 10px; border: 1px solid #eee; }
+        :root {
+            --premium-gray: #f8f9fa;
+            --premium-dark: #212529;
+            --premium-accent: #8ec342;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+            --transition-premium: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .detail-page { padding: 140px 5% 100px; max-width: 1300px; margin: 0 auto; }
         
-        .product-info-panel { flex: 0.9; display: flex; flex-direction: column; }
-        .product-badges { margin-bottom: 15px; }
-        .badge-best { background: #8ec342; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .product-main { display: flex; gap: 80px; margin-bottom: 100px; align-items: flex-start; }
+        .product-gallery { flex: 1.2; position: sticky; top: 140px; }
+        .main-img-container { background: #fff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft); border: 1px solid #f0f0f0; transition: var(--transition-premium); }
+        .main-img-container:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+        .main-img { width: 100%; height: auto; object-fit: contain; }
         
-        .product-tag { color: var(--color-primary); font-weight: 700; font-size: 0.95rem; margin-bottom: 15px; display: block; }
-        .product-title { font-size: 2.2rem; color: #222; font-weight: 700; margin-bottom: 20px; line-height: 1.3; }
-        .product-desc-top { color: #666; line-height: 1.7; margin-bottom: 30px; font-size: 1.05rem; }
+        .product-info-panel { flex: 0.8; display: flex; flex-direction: column; }
+        .product-tag { color: var(--premium-accent); font-weight: 700; font-size: 0.9rem; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .product-title { font-size: 2.8rem; color: var(--premium-dark); font-weight: 800; margin-bottom: 15px; line-height: 1.2; letter-spacing: -0.02em; }
+        .product-desc-top { color: #6c757d; line-height: 1.8; margin-bottom: 35px; font-size: 1.1rem; }
         
-        .product-price { font-size: 2rem; color: var(--color-primary); font-weight: 700; margin-bottom: 50px; padding-top: 10px; }
+        .product-price { font-size: 2.2rem; color: #222; font-weight: 700; margin-bottom: 45px; display: flex; align-items: baseline; gap: 8px; }
         
-        .option-row { margin-bottom: 25px; }
-        .option-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; display: block; color: #444; }
-        .option-list { display: flex; gap: 10px; flex-wrap: wrap; }
-        .option-item { padding: 10px 22px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.9rem; background: #fff; transition: all 0.2s; }
-        .option-item.active { border-color: #222; color: #222; background: #f9f9f9; font-weight: 600; }
+        .option-row { margin-bottom: 32px; }
+        .option-label { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; display: block; color: #adb5bd; }
+        .option-list { display: flex; gap: 12px; flex-wrap: wrap; }
         
-        .buy-btns { display: flex; gap: 15px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 40px; }
-        .btn-cart { flex: 1; height: 60px; font-size: 1.1rem; font-weight: 600; border: 1px solid #ddd; background: #fff; color: #333; transition: all 0.3s; }
-        .btn-order { flex: 2; height: 60px; font-size: 1.1rem; font-weight: 600; background: #222; color: #fff; border: none; cursor: pointer; transition: all 0.3s; }
-        .btn-cart:hover { background: #f5f5f5; }
-        .btn-order:hover { background: #444; }
+        /* Premium Chips */
+        .option-item { padding: 12px 24px; border: 1px solid #e9ecef; border-radius: 12px; cursor: pointer; font-size: 0.95rem; background: #fff; color: #495057; transition: var(--transition-premium); font-weight: 500; min-width: 80px; text-align: center; }
+        .option-item:hover { border-color: #adb5bd; transform: translateY(-2px); }
+        .option-item.active { background: var(--premium-dark); color: #fff; border-color: var(--premium-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.15); font-weight: 600; }
         
-        .detail-tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 50px; margin-top: 40px; }
-        .tab-item { padding: 18px 45px; font-size: 1.1rem; font-weight: 600; color: #999; cursor: pointer; position: relative; }
-        .tab-item.active { color: #222; }
-        .tab-item.active::after { content:''; position:absolute; bottom:-2px; left:0; width:100%; height:2px; background:#222; }
+        /* Color Chips */
+        .color-chip { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #e9ecef; cursor: pointer; transition: var(--transition-premium); position: relative; }
+        .color-chip:hover { transform: scale(1.15); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .color-chip.active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--premium-dark); }
+        .color-chip .chip-name { position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; white-space: nowrap; opacity: 0; transition: var(--transition-premium); color: #666; font-weight: 600; }
+        .color-chip:hover .chip-name, .color-chip.active .chip-name { opacity: 1; bottom: -30px; }
+
+        .buy-btns { display: flex; gap: 15px; margin-top: 40px; }
+        .btn-cart { flex: 1; height: 64px; border-radius: 16px; font-size: 1.1rem; font-weight: 700; border: 2px solid #e9ecef; background: #fff; color: var(--premium-dark); transition: var(--transition-premium); }
+        .btn-order { flex: 2; height: 64px; border-radius: 16px; font-size: 1.1rem; font-weight: 700; background: var(--premium-dark); color: #fff; border: none; cursor: pointer; transition: var(--transition-premium); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
         
-        /* Classic Styles for specs and features */
-        .section-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 40px; margin-top: 80px; font-size: 1.15rem; font-weight: 700; color: #222; text-align: left; letter-spacing: 1px; }
+        .btn-cart:hover { border-color: var(--premium-dark); background: #f8f9fa; }
+        .btn-order:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); background: #343a40; }
         
-        .spec-table { width: 100%; border-collapse: collapse; margin-bottom: 60px; font-size: 0.95rem; }
-        .spec-table th, .spec-table td { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 18px 25px; text-align: left; }
-        .spec-table th { background-color: #f9f9f9; width: 250px; font-weight: 600; color: #444; }
-        .spec-table td { color: #666; line-height: 1.6; }
+        /* Detail Section Styles */
+        .detail-tabs { display: flex; gap: 40px; margin-bottom: 60px; margin-top: 80px; justify-content: center; }
+        .tab-item { font-size: 1.25rem; font-weight: 700; color: #dee2e6; cursor: pointer; position: relative; transition: var(--transition-premium); padding-bottom: 10px; }
+        .tab-item.active { color: var(--premium-dark); }
+        .tab-item.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:40px; height:4px; background:var(--premium-accent); border-radius: 2px; }
         
-        .detail-features { margin: 40px 0; }
-        .feature-item { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px dashed #eee; text-align: left; }
-        .feature-item h5 { font-size: 1.25rem; color: #222; margin-bottom: 15px; display: flex; align-items: center; font-weight: 700; }
-        .feature-item h5 span { display: inline-block; background: #8ec342; color: #fff; width: 30px; height: 30px; line-height: 30px; text-align: center; border-radius: 50%; margin-right: 12px; font-size: 0.9rem; flex-shrink: 0; font-weight: 600; }
-        .feature-item p { color: #777; line-height: 1.8; padding-left: 42px; font-size: 1.05rem; }
+        .section-header { margin-top: 100px; margin-bottom: 50px; font-size: 1.3rem; font-weight: 800; color: var(--premium-dark); text-align: left; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 20px; }
+        .section-header::after { content: ''; flex: 1; height: 1px; background: #eee; }
+        
+        .spec-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; margin-bottom: 80px; }
+        .spec-table th, .spec-table td { padding: 25px 35px; text-align: left; }
+        .spec-table th { background-color: #f8f9fa; width: 300px; font-weight: 700; color: #495057; border-radius: 16px 0 0 16px; border: 1px solid #f0f0f0; border-right: none; }
+        .spec-table td { background-color: #fff; color: #6c757d; border: 1px solid #f0f0f0; border-left: none; border-radius: 0 16px 16px 0; line-height: 1.6; }
+        
+        .feature-item { margin-bottom: 60px; text-align: left; display: grid; grid-template-columns: 80px 1fr; gap: 20px; align-items: flex-start; }
+        .feature-num { background: #f8f9fa; color: var(--premium-accent); width: 60px; height: 60px; line-height: 60px; text-align: center; border-radius: 20px; font-size: 1.4rem; font-weight: 800; border: 1px solid #f0f0f0; }
+        .feature-content h5 { font-size: 1.5rem; color: var(--premium-dark); margin-bottom: 15px; font-weight: 700; }
+        .feature-content p { color: #6c757d; line-height: 1.8; font-size: 1.1rem; }
+
+        @media (max-width: 1024px) {
+            .product-main { flex-direction: column; gap: 40px; }
+            .product-gallery { position: static; width: 100%; }
+            .product-title { font-size: 2.2rem; }
+        }
     </style>
 </head>
 <body>
@@ -121,7 +146,9 @@
     <main class="detail-page">
         <div class="product-main">
             <div class="product-gallery">
-                <img id="mainImg" class="main-img" src="assets/no-image.png">
+                <div class="main-img-container">
+                    <img id="mainImg" class="main-img" src="assets/no-image.png">
+                </div>
             </div>
             <div class="product-info-panel">
                 <div class="product-badges" id="prodBadges">
@@ -133,25 +160,25 @@
                 <div class="product-price" id="prodPrice">가격문의</div>
                 
                 <div class="option-row" id="optionColorRow" style="display:none;">
-                    <span class="option-label">색상 선택</span>
+                    <span class="option-label">Colors</span>
                     <div class="option-list" id="colorList"></div>
                 </div>
                 
                 <div class="option-row" id="optionSizeRow" style="display:none;">
-                    <span class="option-label">사이즈 선택</span>
+                    <span class="option-label">Sizes</span>
                     <div class="option-list" id="sizeList"></div>
                 </div>
 
                 <div class="buy-btns">
-                    <button class="btn-cart" id="addToCartBtn">장바구니</button>
-                    <button class="btn-order" id="directOrderBtn">견적문의 / 상담신청</button>
+                    <button class="btn-cart" id="addToCartBtn">Cart</button>
+                    <button class="btn-order" id="directOrderBtn">Contact for Quote</button>
                 </div>
             </div>
         </div>
 
         <div class="detail-tabs">
-            <div class="tab-item active">제품 상세설명</div>
-            <div class="tab-item">배송/교환/반품</div>
+            <div class="tab-item active">OVERVIEW</div>
+            <div class="tab-item">SHIPPING</div>
         </div>
 
         <div class="detail-contents" id="detailBody" style="max-width: 1100px; margin: 0 auto;">
@@ -184,6 +211,7 @@
             if(!p) return;
 
             document.getElementById('prodTitle').innerText = p.name;
+            document.title = p.name + " - SG LIMU";
             document.getElementById('prodCategory').innerText = p.category || '기타';
             document.getElementById('prodPrice').innerText = (p.price === '전화문의' || !p.price) ? '전화문의' : Number(p.price).toLocaleString() + '원';
             document.getElementById('mainImg').src = p.image_url || 'assets/no-image.png';
@@ -191,14 +219,54 @@
             const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).maybeSingle();
             const detailBody = document.getElementById('detailBody');
             const topDescEl = document.getElementById('prodDescTop');
+            const colorList = document.getElementById('colorList');
+            const sizeList = document.getElementById('sizeList');
+            const colorRow = document.getElementById('optionColorRow');
+            const sizeRow = document.getElementById('optionSizeRow');
+
             detailBody.innerHTML = '';
             topDescEl.innerHTML = '';
+            colorList.innerHTML = '';
+            sizeList.innerHTML = '';
+            colorRow.style.display = 'none';
+            sizeRow.style.display = 'none';
 
             if(config && config.value) {
                 const d = config.value;
                 let html = '';
 
-                // Render description in top panel instead of body
+                // Render options
+                if(d.colors && d.colors.length > 0) {
+                    colorRow.style.display = 'block';
+                    d.colors.forEach((c, idx) => {
+                        const chip = document.createElement('div');
+                        chip.className = 'color-chip' + (idx === 0 ? ' active' : '');
+                        chip.style.backgroundColor = c.hex;
+                        chip.innerHTML = `<span class="chip-name">${c.name}</span>`;
+                        chip.onclick = () => {
+                            colorList.querySelectorAll('.color-chip').forEach(el => el.classList.remove('active'));
+                            chip.classList.add('active');
+                        };
+                        colorList.appendChild(chip);
+                    });
+                }
+
+                if(d.sizes && d.sizes.length > 0) {
+                    sizeRow.style.display = 'block';
+                    d.sizes.forEach((s, idx) => {
+                        const chip = document.createElement('div');
+                        chip.className = 'option-item' + (idx === 0 ? ' active' : '');
+                        chip.innerText = s.name;
+                        chip.onclick = () => {
+                            sizeList.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
+                            chip.classList.add('active');
+                            // Price update logic should go here if needed
+                        };
+                        sizeList.appendChild(chip);
+                    });
+                }
+
+                // Render description
                 if (d.description) {
                     topDescEl.innerHTML = d.description.replace(/\n/g, '<br>');
                     topDescEl.style.display = 'block';
@@ -206,10 +274,9 @@
                     topDescEl.style.display = 'none';
                 }
 
-                // DETAIL VIEW Title
-                html += `<h4 class="section-header">DETAIL VIEW</h4>`;
-
-                if (d.mainImageUrl) html += `<div style="margin-bottom:60px; text-align:center;"><img src="${d.mainImageUrl}" style="max-width:100%; border-radius:12px;"></div>`;
+                // DETAIL VIEW
+                html += `<h4 class="section-header">Product Story</h4>`;
+                if (d.mainImageUrl) html += `<div style="margin-bottom:80px; text-align:center;"><img src="${d.mainImageUrl}" style="max-width:100%; border-radius:24px; box-shadow: var(--shadow-soft);"></div>`;
                 
                 if (d.features && d.features.length > 0) {
                     html += `<div class="detail-features">`;
@@ -217,15 +284,18 @@
                         const num = (idx + 1).toString().padStart(2, '0');
                         html += `
                             <div class="feature-item">
-                                <h5><span>${num}</span> ${f.title}</h5>
-                                <p>${f.desc.replace(/\n/g, '<br>')}</p>
+                                <div class="feature-num">${num}</div>
+                                <div class="feature-content">
+                                    <h5>${f.title}</h5>
+                                    <p>${f.desc.replace(/\n/g, '<br>')}</p>
+                                </div>
                             </div>`;
                     });
                     html += `</div>`;
                 }
 
                 if (d.specs && d.specs.length > 0) {
-                    html += `<h4 class="section-header">DIMENSION (제품 규격)</h4>`;
+                    html += `<h4 class="section-header">Specifications</h4>`;
                     html += `
                         <table class="spec-table">
                             <tbody>
@@ -235,15 +305,15 @@
                 }
 
                 if (d.detailImageUrls && d.detailImageUrls.length > 0) {
-                    html += `<div style="display:flex; flex-direction:column; gap:20px; align-items:center; margin-top:60px;">`;
-                    d.detailImageUrls.forEach(url => { html += `<img src="${url}" style="max-width:100%; display:block; border-radius:4px;">`; });
+                    html += `<div style="display:flex; flex-direction:column; gap:40px; align-items:center; margin-top:80px;">`;
+                    d.detailImageUrls.forEach(url => { html += `<img src="${url}" style="max-width:100%; display:block; border-radius:12px; box-shadow: var(--shadow-soft);">`; });
                     html += `</div>`;
                 }
 
-                detailBody.innerHTML = html || '<p style="padding:100px 0; color:#999; text-align:center;">데이터가 없습니다.</p>';
+                detailBody.innerHTML = html || '<p style="padding:100px 0; color:#999; text-align:center;">No detail data available.</p>';
             } else {
                 topDescEl.style.display = 'none';
-                detailBody.innerHTML = `<p style="padding:100px 0; color:#999; font-size:1rem; text-align:center;">제품 상세 정보가 아직 등록되지 않았습니다.</p>`;
+                detailBody.innerHTML = `<p style="padding:100px 0; color:#999; font-size:1rem; text-align:center;">상세 정보가 아직 등록되지 않았습니다.</p>`;
             }
         }
         document.addEventListener('DOMContentLoaded', loadProductDetail);

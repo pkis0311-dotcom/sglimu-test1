@@ -664,6 +664,8 @@ function initPageManageTab() {
 
     document.getElementById('addSpecBtn').onclick = () => createSpecRow('', '');
     document.getElementById('addFeatureBtn').onclick = () => createFeatureBlock('', '');
+    document.getElementById('addPageColorBtn').onclick = () => createPageColorRow('', '#000000');
+    document.getElementById('addPageSizeBtn').onclick = () => createPageSizeRow('', '');
     
         savePageBtn.onclick = async () => {
             if(!currentPageDataKey) return alert('대상 제품을 선택해주세요.');
@@ -676,6 +678,8 @@ function initPageManageTab() {
                     description: document.getElementById('pageDescription').value,
                     specs: [],
                     features: [],
+                    colors: [],
+                    sizes: [],
                     mainImageUrl: '',
                     detailImageUrls: []
                 };
@@ -691,6 +695,18 @@ function initPageManageTab() {
                     const title = block.querySelector('input').value;
                     const desc = block.querySelector('textarea').value;
                     if(title) data.features.push({ title, desc });
+                });
+
+                // 2.1 색상 옵션 수집
+                document.querySelectorAll('.page-color-row').forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    if(inputs[0].value) data.colors.push({ name: inputs[0].value, hex: inputs[1].value });
+                });
+
+                // 2.2 사이즈 옵션 수집
+                document.querySelectorAll('.page-size-row').forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    if(inputs[0].value) data.sizes.push({ name: inputs[0].value, price: inputs[1].value });
                 });
 
                 // 3. 이미지 업로드 처리 (Main Detail)
@@ -764,11 +780,15 @@ async function loadPageData() {
 
     const specContainer = document.getElementById('specContainer');
     const featureContainer = document.getElementById('featureContainer');
+    const colorContainer = document.getElementById('pageColorContainer');
+    const sizeContainer = document.getElementById('pageSizeContainer');
     const mainPreview = document.getElementById('pageMainImagePreview');
     const detailPreview = document.getElementById('pageDetailImagePreview');
 
     specContainer.innerHTML = '';
     featureContainer.innerHTML = '';
+    colorContainer.innerHTML = '';
+    sizeContainer.innerHTML = '';
     mainPreview.innerHTML = '';
     detailPreview.innerHTML = '';
     document.getElementById('pageDescription').value = '';
@@ -786,6 +806,8 @@ async function loadPageData() {
     document.getElementById('pageDescription').value = rawData.description || '';
     if(rawData.specs) rawData.specs.forEach(s => createSpecRow(s.key, s.val));
     if(rawData.features) rawData.features.forEach(f => createFeatureBlock(f.title, f.desc));
+    if(rawData.colors) rawData.colors.forEach(c => createPageColorRow(c.name, c.hex));
+    if(rawData.sizes) rawData.sizes.forEach(s => createPageSizeRow(s.name, s.price));
     
     // 이미지 프리뷰 처리
     if (rawData.mainImageUrl) {
@@ -872,6 +894,32 @@ function createFeatureBlock(title, desc) {
         <textarea class="form-control" rows="2" placeholder="상세 설명">${desc}</textarea>
     `;
     document.getElementById('featureContainer').appendChild(div);
+}
+
+function createPageColorRow(name, hex) {
+    const div = document.createElement('div');
+    div.className = 'page-color-row';
+    div.style.display = 'flex';
+    div.style.gap = '10px';
+    div.innerHTML = `
+        <input type="text" value="${name}" class="form-control" placeholder="색상명(예: 화이트)">
+        <input type="color" value="${hex || '#000000'}" class="form-control" style="width:60px; padding:2px;">
+        <button class="action-btn delete" onclick="this.parentElement.remove()"><i class="fa-solid fa-circle-minus"></i></button>
+    `;
+    document.getElementById('pageColorContainer').appendChild(div);
+}
+
+function createPageSizeRow(name, price) {
+    const div = document.createElement('div');
+    div.className = 'page-size-row';
+    div.style.display = 'flex';
+    div.style.gap = '10px';
+    div.innerHTML = `
+        <input type="text" value="${name}" class="form-control" placeholder="사이즈명(예: 대형)">
+        <input type="text" value="${price}" class="form-control" placeholder="추가금액(예: +5,000)">
+        <button class="action-btn delete" onclick="this.parentElement.remove()"><i class="fa-solid fa-circle-minus"></i></button>
+    `;
+    document.getElementById('pageSizeContainer').appendChild(div);
 }
 
 // ==========================================
