@@ -11,70 +11,114 @@
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+    <style>
         :root {
-            --premium-gray: #f8f9fa;
-            --premium-dark: #212529;
-            --premium-accent: #8ec342;
-            --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
-            --transition-premium: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            --apple-bg: #fbfbfb;
+            --apple-text: #1d1d1f;
+            --apple-gray: #86868b;
+            --apple-blue: #0066cc;
+            --apple-accent: #8ec342;
+            --apple-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --transition-apple: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        .detail-page { padding: 140px 5% 100px; max-width: 1300px; margin: 0 auto; }
-        
-        .product-main { display: flex; gap: 80px; margin-bottom: 100px; align-items: flex-start; }
-        .product-gallery { flex: 1.2; position: sticky; top: 140px; }
-        .main-img-container { background: #fff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft); border: 1px solid #f0f0f0; transition: var(--transition-premium); }
-        .main-img-container:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
-        .main-img { width: 100%; height: auto; object-fit: contain; }
-        
-        .product-info-panel { flex: 0.8; display: flex; flex-direction: column; }
-        .product-tag { color: var(--premium-accent); font-weight: 700; font-size: 0.9rem; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
-        .product-title { font-size: 2.8rem; color: var(--premium-dark); font-weight: 800; margin-bottom: 15px; line-height: 1.2; letter-spacing: -0.02em; }
-        .product-desc-top { color: #6c757d; line-height: 1.8; margin-bottom: 35px; font-size: 1.1rem; }
-        
-        .product-price { font-size: 2.2rem; color: #222; font-weight: 700; margin-bottom: 45px; display: flex; align-items: baseline; gap: 8px; }
-        
-        .option-row { margin-bottom: 32px; }
-        .option-label { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; display: block; color: #adb5bd; }
-        .option-list { display: flex; gap: 12px; flex-wrap: wrap; }
-        
-        /* Premium Chips */
-        .option-item { padding: 12px 24px; border: 1px solid #e9ecef; border-radius: 12px; cursor: pointer; font-size: 0.95rem; background: #fff; color: #495057; transition: var(--transition-premium); font-weight: 500; min-width: 80px; text-align: center; }
-        .option-item:hover { border-color: #adb5bd; transform: translateY(-2px); }
-        .option-item.active { background: var(--premium-dark); color: #fff; border-color: var(--premium-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.15); font-weight: 600; }
-        
-        /* Color Chips */
-        .color-chip { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #e9ecef; cursor: pointer; transition: var(--transition-premium); position: relative; }
-        .color-chip:hover { transform: scale(1.15); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .color-chip.active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--premium-dark); }
-        .color-chip .chip-name { position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; white-space: nowrap; opacity: 0; transition: var(--transition-premium); color: #666; font-weight: 600; }
-        .color-chip:hover .chip-name, .color-chip.active .chip-name { opacity: 1; bottom: -30px; }
+        body { background-color: var(--apple-bg); color: var(--apple-text); line-height: 1.1; letter-spacing: -0.01em; }
 
-        .buy-btns { display: flex; gap: 15px; margin-top: 40px; }
-        .btn-cart { flex: 1; height: 64px; border-radius: 16px; font-size: 1.1rem; font-weight: 700; border: 2px solid #e9ecef; background: #fff; color: var(--premium-dark); transition: var(--transition-premium); }
-        .btn-order { flex: 2; height: 64px; border-radius: 16px; font-size: 1.1rem; font-weight: 700; background: var(--premium-dark); color: #fff; border: none; cursor: pointer; transition: var(--transition-premium); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        /* Sticky Action Bar */
+        .sticky-action-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10%;
+            transform: translateY(-100%);
+            transition: transform 0.4s ease;
+        }
+        .sticky-action-bar.visible { transform: translateY(0); }
+        .sticky-title { font-size: 1.2rem; font-weight: 700; color: var(--apple-text); }
+        .sticky-buy-btn { background: var(--apple-accent); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.3s; }
+        .sticky-buy-btn:hover { background: #7ab135; }
+
+        .detail-page { padding-top: 0; max-width: 100%; margin: 0; }
+
+        /* Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 5% 60px;
+            text-align: center;
+            background: #fff;
+        }
+        .hero-tag { font-size: 1.1rem; color: var(--apple-accent); font-weight: 700; margin-bottom: 15px; }
+        .hero-title { font-size: 5rem; font-weight: 800; margin-bottom: 25px; letter-spacing: -0.03em; }
+        .hero-price { font-size: 1.8rem; font-weight: 600; color: var(--apple-text); margin-bottom: 40px; }
+        .hero-image-wrap { width: 100%; max-width: 1000px; margin-top: 40px; border-radius: 30px; overflow: hidden; transform: scale(0.95); opacity: 0; transition: var(--transition-apple); }
+        .hero-image-wrap.active { transform: scale(1); opacity: 1; }
+        .hero-img { width: 100%; height: auto; object-fit: cover; }
+
+        /* Buy Section (Side by Side) */
+        .buy-section {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            padding: 100px 10%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--apple-bg);
+        }
+        .buy-gallery { position: sticky; top: 100px; height: fit-content; }
+        .buy-gallery-img { width: 100%; border-radius: 20px; box-shadow: var(--apple-shadow); background: #fff; padding: 40px; }
+
+        .buy-options { display: flex; flex-direction: column; gap: 40px; }
+        .selection-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 20px; }
         
-        .btn-cart:hover { border-color: var(--premium-dark); background: #f8f9fa; }
-        .btn-order:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); background: #343a40; }
-        
-        /* Detail Section Styles */
-        .detail-tabs { display: flex; gap: 40px; margin-bottom: 60px; margin-top: 80px; justify-content: center; }
-        .tab-item { font-size: 1.25rem; font-weight: 700; color: #dee2e6; cursor: pointer; position: relative; transition: var(--transition-premium); padding-bottom: 10px; }
-        .tab-item.active { color: var(--premium-dark); }
-        .tab-item.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:40px; height:4px; background:var(--premium-accent); border-radius: 2px; }
-        
-        .section-header { margin-top: 100px; margin-bottom: 50px; font-size: 1.3rem; font-weight: 800; color: var(--premium-dark); text-align: left; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 20px; }
-        .section-header::after { content: ''; flex: 1; height: 1px; background: #eee; }
-        
-        .spec-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; margin-bottom: 80px; }
-        .spec-table th, .spec-table td { padding: 25px 35px; text-align: left; }
-        .spec-table th { background-color: #f8f9fa; width: 300px; font-weight: 700; color: #495057; border-radius: 16px 0 0 16px; border: 1px solid #f0f0f0; border-right: none; }
-        .spec-table td { background-color: #fff; color: #6c757d; border: 1px solid #f0f0f0; border-left: none; border-radius: 0 16px 16px 0; line-height: 1.6; }
-        
-        .feature-item { margin-bottom: 60px; text-align: left; display: grid; grid-template-columns: 80px 1fr; gap: 20px; align-items: flex-start; }
-        .feature-num { background: #f8f9fa; color: var(--premium-accent); width: 60px; height: 60px; line-height: 60px; text-align: center; border-radius: 20px; font-size: 1.4rem; font-weight: 800; border: 1px solid #f0f0f0; }
-        .feature-content h5 { font-size: 1.5rem; color: var(--premium-dark); margin-bottom: 15px; font-weight: 700; }
-        .feature-content p { color: #6c757d; line-height: 1.8; font-size: 1.1rem; }
+        /* Configuration Cards */
+        .option-group { border-bottom: 1px solid #e5e5e7; padding-bottom: 40px; }
+        .option-label { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; display: block; color: var(--apple-gray); }
+        .card-list { display: flex; flex-direction: column; gap: 12px; }
+        .config-card { border: 1px solid #d2d2d7; border-radius: 12px; padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: var(--transition-apple); background: #fff; }
+        .config-card:hover { border-color: var(--apple-gray); }
+        .config-card.active { border-color: var(--apple-blue); border-width: 2px; padding: 19px; }
+        .card-name { font-size: 1rem; font-weight: 600; color: var(--apple-text); }
+        .card-price-extra { font-size: 0.9rem; color: var(--apple-gray); }
+
+        /* Features Section */
+        .features-section { padding: 100px 10%; background: #ffffff; }
+        .section-headline { font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 80px; letter-spacing: -0.02em; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
+        .feature-card { background: #f5f5f7; border-radius: 28px; padding: 40px; position: relative; overflow: hidden; transition: var(--transition-apple); opacity: 0; transform: translateY(40px); }
+        .feature-card.reveal { opacity: 1; transform: translateY(0); }
+        .feature-card h3 { font-size: 1.8rem; font-weight: 700; margin-bottom: 15px; }
+        .feature-card p { font-size: 1.1rem; line-height: 1.5; color: var(--apple-gray); }
+        .feature-card .card-icon { font-size: 2.5rem; color: var(--apple-accent); margin-bottom: 20px; display: block; }
+
+        /* Specs Section */
+        .specs-section { padding: 100px 10%; background: var(--apple-bg); }
+        .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; margin-top: 60px; }
+        .spec-item { border-top: 1px solid #d2d2d7; padding-top: 20px; }
+        .spec-key { font-size: 0.9rem; color: var(--apple-gray); font-weight: 600; margin-bottom: 10px; display: block; }
+        .spec-val { font-size: 1.1rem; font-weight: 700; color: var(--apple-text); line-height: 1.4; }
+
+        .reveal-node { transition: var(--transition-apple); }
+
+        @media (max-width: 1024px) {
+            .hero-title { font-size: 3rem; }
+            .buy-section { grid-template-columns: 1fr; gap: 40px; }
+            .buy-gallery { position: static; }
+            .feature-grid { grid-template-columns: 1fr; }
+        }
 
         @media (max-width: 1024px) {
             .product-main { flex-direction: column; gap: 40px; }
@@ -83,7 +127,12 @@
         }
     </style>
 </head>
-<body>
+    <!-- Sticky Action Bar -->
+    <div id="stickyBar" class="sticky-action-bar">
+        <div class="sticky-title" id="stickyTitle">Product Name</div>
+        <button class="sticky-buy-btn" id="stickyBuyBtn">Get Quote</button>
+    </div>
+
     <header class="header">
         <div class="header-container">
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
@@ -143,47 +192,56 @@
         </div>
     </header>
 
-    <main class="detail-page">
-        <div class="product-main">
-            <div class="product-gallery">
-                <div class="main-img-container">
-                    <img id="mainImg" class="main-img" src="assets/no-image.png">
+    <main class="detail-page" id="appleLayout">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <span class="hero-tag" id="heroCategory">Library Solution</span>
+            <h1 class="hero-title" id="heroTitle">Innovation in Every Detail.</h1>
+            <p class="hero-price" id="heroPrice">From KRW 1,200,000</p>
+            <div class="hero-image-wrap" id="heroImgWrap">
+                <img id="heroImg" class="hero-img" src="assets/no-image.png">
+            </div>
+        </section>
+
+        <!-- Buy / Config Section -->
+        <section class="buy-section">
+            <div class="buy-gallery">
+                <img id="buyMainImg" class="buy-gallery-img" src="assets/no-image.png">
+            </div>
+            <div class="buy-options">
+                <h2 class="selection-title">Customize your choice.</h2>
+                
+                <div class="option-group" id="groupColors" style="display:none;">
+                    <span class="option-label">Colors. Choose your favorite.</span>
+                    <div class="card-list" id="appleColorList"></div>
+                </div>
+
+                <div class="option-group" id="groupSizes" style="display:none;">
+                    <span class="option-label">Finish and Size.</span>
+                    <div class="card-list" id="appleSizeList"></div>
+                </div>
+
+                <div class="order-summary" style="margin-top:20px;">
+                    <p style="font-size: 0.9rem; color: #6e6e73; margin-bottom: 20px;">Need help? Our experts are ready to assist you in designing the perfect library space.</p>
+                    <button class="btn-order" id="appleDirectOrderBtn" style="width:100%; border-radius:12px; height:56px; background:var(--apple-blue); color:white; font-weight:700;">Contact our Expert</button>
                 </div>
             </div>
-            <div class="product-info-panel">
-                <div class="product-badges" id="prodBadges">
-                    <span class="badge-best">BEST</span>
-                </div>
-                <span class="product-tag" id="prodCategory">Category</span>
-                <h2 class="product-title" id="prodTitle">제품명</h2>
-                <div class="product-desc-top" id="prodDescTop">제품에 대한 요약 설명입니다.</div>
-                <div class="product-price" id="prodPrice">가격문의</div>
-                
-                <div class="option-row" id="optionColorRow" style="display:none;">
-                    <span class="option-label">Colors</span>
-                    <div class="option-list" id="colorList"></div>
-                </div>
-                
-                <div class="option-row" id="optionSizeRow" style="display:none;">
-                    <span class="option-label">Sizes</span>
-                    <div class="option-list" id="sizeList"></div>
-                </div>
+        </section>
 
-                <div class="buy-btns">
-                    <button class="btn-cart" id="addToCartBtn">Cart</button>
-                    <button class="btn-order" id="directOrderBtn">Contact for Quote</button>
-                </div>
-            </div>
-        </div>
+        <!-- Features Section -->
+        <section class="features-section" id="appleFeaturesWrap">
+            <h2 class="section-headline">Everything you need. <br>And then some.</h2>
+            <div class="feature-grid" id="appleFeatureGrid"></div>
+        </section>
 
-        <div class="detail-tabs">
-            <div class="tab-item active">OVERVIEW</div>
-            <div class="tab-item">SHIPPING</div>
-        </div>
-
-        <div class="detail-contents" id="detailBody" style="max-width: 1100px; margin: 0 auto;">
-            <!-- Dynamic content -->
-        </div>
+        <!-- Specs Section -->
+        <section class="specs-section" id="appleSpecsWrap">
+            <h2 class="section-headline" style="text-align:left; font-size:2rem; margin-bottom:40px;">Tech Specs.</h2>
+            <div class="spec-grid" id="appleSpecGrid"></div>
+        </section>
+        
+        <!-- Bottom Images -->
+        <section class="bottom-gallery" id="appleBottomGallery" style="padding: 100px 10%; display: flex; flex-direction: column; gap: 40px;"></section>
     </main>
 
     <footer class="footer">
@@ -202,7 +260,7 @@
         const { createClient } = supabase;
         const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
         
-        async function loadProductDetail() {
+        async function loadAppleProductDetail() {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             if(!id) return;
@@ -210,113 +268,136 @@
             const { data: p } = await db.from('products').select('*').eq('id', id).single();
             if(!p) return;
 
-            document.getElementById('prodTitle').innerText = p.name;
+            // Header/Hero Info
             document.title = p.name + " - SG LIMU";
-            document.getElementById('prodCategory').innerText = p.category || '기타';
-            document.getElementById('prodPrice').innerText = (p.price === '전화문의' || !p.price) ? '전화문의' : Number(p.price).toLocaleString() + '원';
-            document.getElementById('mainImg').src = p.image_url || 'assets/no-image.png';
+            document.getElementById('stickyTitle').innerText = p.name;
+            document.getElementById('heroCategory').innerText = p.category || 'Premium Furniture';
+            document.getElementById('heroTitle').innerText = p.name;
+            document.getElementById('heroPrice').innerText = (p.price === '전화문의' || !p.price) ? '전화문의' : 'From KRW ' + Number(p.price).toLocaleString();
+            
+            const mainImgUrl = p.image_url || 'assets/no-image.png';
+            document.getElementById('heroImg').src = mainImgUrl;
+            document.getElementById('buyMainImg').src = mainImgUrl;
 
-            const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).maybeSingle();
-            const detailBody = document.getElementById('detailBody');
-            const topDescEl = document.getElementById('prodDescTop');
-            const colorList = document.getElementById('colorList');
-            const sizeList = document.getElementById('sizeList');
-            const colorRow = document.getElementById('optionColorRow');
-            const sizeRow = document.getElementById('optionSizeRow');
-
-            detailBody.innerHTML = '';
-            topDescEl.innerHTML = '';
-            colorList.innerHTML = '';
-            sizeList.innerHTML = '';
-            colorRow.style.display = 'none';
-            sizeRow.style.display = 'none';
-
-            if(config && config.value) {
-                const d = config.value;
-                let html = '';
-
-                // Render options
-                if(d.colors && d.colors.length > 0) {
-                    colorRow.style.display = 'block';
-                    d.colors.forEach((c, idx) => {
-                        const chip = document.createElement('div');
-                        chip.className = 'color-chip' + (idx === 0 ? ' active' : '');
-                        chip.style.backgroundColor = c.hex;
-                        chip.innerHTML = `<span class="chip-name">${c.name}</span>`;
-                        chip.onclick = () => {
-                            colorList.querySelectorAll('.color-chip').forEach(el => el.classList.remove('active'));
-                            chip.classList.add('active');
-                        };
-                        colorList.appendChild(chip);
-                    });
-                }
-
-                if(d.sizes && d.sizes.length > 0) {
-                    sizeRow.style.display = 'block';
-                    d.sizes.forEach((s, idx) => {
-                        const chip = document.createElement('div');
-                        chip.className = 'option-item' + (idx === 0 ? ' active' : '');
-                        chip.innerText = s.name;
-                        chip.onclick = () => {
-                            sizeList.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
-                            chip.classList.add('active');
-                            // Price update logic should go here if needed
-                        };
-                        sizeList.appendChild(chip);
-                    });
-                }
-
-                // Render description
-                if (d.description) {
-                    topDescEl.innerHTML = d.description.replace(/\n/g, '<br>');
-                    topDescEl.style.display = 'block';
+            // Scroll animations & Sticky control
+            window.addEventListener('scroll', () => {
+                const stickyBar = document.getElementById('stickyBar');
+                const heroSection = document.querySelector('.hero-section');
+                if (window.scrollY > heroSection.offsetHeight - 52) {
+                    stickyBar.classList.add('visible');
                 } else {
-                    topDescEl.style.display = 'none';
+                    stickyBar.classList.remove('visible');
                 }
+            });
 
-                // DETAIL VIEW
-                html += `<h4 class="section-header">Product Story</h4>`;
-                if (d.mainImageUrl) html += `<div style="margin-bottom:80px; text-align:center;"><img src="${d.mainImageUrl}" style="max-width:100%; border-radius:24px; box-shadow: var(--shadow-soft);"></div>`;
-                
-                if (d.features && d.features.length > 0) {
-                    html += `<div class="detail-features">`;
-                    d.features.forEach((f, idx) => {
-                        const num = (idx + 1).toString().padStart(2, '0');
-                        html += `
-                            <div class="feature-item">
-                                <div class="feature-num">${num}</div>
-                                <div class="feature-content">
-                                    <h5>${f.title}</h5>
-                                    <p>${f.desc.replace(/\n/g, '<br>')}</p>
-                                </div>
-                            </div>`;
-                    });
-                    html += `</div>`;
-                }
+            // Reveal Hero image with slight delay
+            setTimeout(() => {
+                document.getElementById('heroImgWrap').classList.add('active');
+            }, 300);
 
-                if (d.specs && d.specs.length > 0) {
-                    html += `<h4 class="section-header">Specifications</h4>`;
-                    html += `
-                        <table class="spec-table">
-                            <tbody>
-                                ${d.specs.map(s => `<tr><th>${s.key}</th><td>${s.val}</td></tr>`).join('')}
-                            </tbody>
-                        </table>`;
-                }
+            // Fetch Detail Config
+            const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).maybeSingle();
+            if(!config || !config.value) return;
+            const d = config.value;
 
-                if (d.detailImageUrls && d.detailImageUrls.length > 0) {
-                    html += `<div style="display:flex; flex-direction:column; gap:40px; align-items:center; margin-top:80px;">`;
-                    d.detailImageUrls.forEach(url => { html += `<img src="${url}" style="max-width:100%; display:block; border-radius:12px; box-shadow: var(--shadow-soft);">`; });
-                    html += `</div>`;
-                }
-
-                detailBody.innerHTML = html || '<p style="padding:100px 0; color:#999; text-align:center;">No detail data available.</p>';
-            } else {
-                topDescEl.style.display = 'none';
-                detailBody.innerHTML = `<p style="padding:100px 0; color:#999; font-size:1rem; text-align:center;">상세 정보가 아직 등록되지 않았습니다.</p>`;
+            // Render Colors (Apple Style cards)
+            const colorList = document.getElementById('appleColorList');
+            if(d.colors && d.colors.length > 0) {
+                document.getElementById('groupColors').style.display = 'block';
+                d.colors.forEach((c, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'config-card' + (idx === 0 ? ' active' : '');
+                    card.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:20px; height:20px; border-radius:50%; background:${c.hex}; border:1px solid #ddd;"></div>
+                            <span class="card-name">${c.name}</span>
+                        </div>
+                    `;
+                    card.onclick = () => {
+                        colorList.querySelectorAll('.config-card').forEach(el => el.classList.remove('active'));
+                        card.classList.add('active');
+                    };
+                    colorList.appendChild(card);
+                });
             }
+
+            // Render Sizes (Apple Style cards)
+            const sizeList = document.getElementById('appleSizeList');
+            if(d.sizes && d.sizes.length > 0) {
+                document.getElementById('groupSizes').style.display = 'block';
+                d.sizes.forEach((s, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'config-card' + (idx === 0 ? ' active' : '');
+                    card.innerHTML = `
+                        <span class="card-name">${s.name}</span>
+                        <span class="card-price-extra">${s.price || ''}</span>
+                    `;
+                    card.onclick = () => {
+                        sizeList.querySelectorAll('.config-card').forEach(el => el.classList.remove('active'));
+                        card.classList.add('active');
+                    };
+                    sizeList.appendChild(card);
+                });
+            }
+
+            // Render Features (Premium Experience Cards)
+            const featureGrid = document.getElementById('appleFeatureGrid');
+            if(d.features && d.features.length > 0) {
+                d.features.forEach(f => {
+                    const card = document.createElement('div');
+                    card.className = 'feature-card';
+                    card.innerHTML = `
+                        <i class="fa-solid fa-star-of-life card-icon"></i>
+                        <h3>${f.title}</h3>
+                        <p>${f.desc.replace(/\n/g, '<br>')}</p>
+                    `;
+                    featureGrid.appendChild(card);
+                });
+            } else {
+                document.getElementById('appleFeaturesWrap').style.display = 'none';
+            }
+
+            // Render Specs (Grid)
+            const specGrid = document.getElementById('appleSpecGrid');
+            if(d.specs && d.specs.length > 0) {
+                d.specs.forEach(s => {
+                    const item = document.createElement('div');
+                    item.className = 'spec-item';
+                    item.innerHTML = `<span class="spec-key">${s.key}</span><span class="spec-val">${s.val}</span>`;
+                    specGrid.appendChild(item);
+                });
+            } else {
+                document.getElementById('appleSpecsWrap').style.display = 'none';
+            }
+
+            // Bottom Gallery
+            const bottomGall = document.getElementById('appleBottomGallery');
+            if(d.detailImageUrls && d.detailImageUrls.length > 0) {
+                d.detailImageUrls.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.width = '100%';
+                    img.style.borderRadius = '24px';
+                    img.style.boxShadow = 'var(--apple-shadow)';
+                    bottomGall.appendChild(img);
+                });
+            }
+
+            // Initialize Intersection Observer for reveals
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            setTimeout(() => {
+                document.querySelectorAll('.feature-card, .spec-item').forEach(el => observer.observe(el));
+            }, 100);
         }
-        document.addEventListener('DOMContentLoaded', loadProductDetail);
+
+        document.addEventListener('DOMContentLoaded', loadAppleProductDetail);
     </script>
     <script src="script.js"></script>
     <script src="cart.js"></script>
