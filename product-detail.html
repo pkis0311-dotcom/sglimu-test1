@@ -35,9 +35,19 @@
         .detail-contents { text-align: center; }
         .detail-contents img { max-width: 100%; }
         
-        /* New Styles for specs and features */
-        .specs-section table th { font-weight: 600; background: #f8f9fa; color: #333; }
-        .feature-item h3 { color: #2c3e50; border-left: 5px solid #3498db; padding-left: 15px; }
+        /* Classic Styles for specs and features */
+        .section-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 30px; margin-top: 60px; font-size: 1.1rem; font-weight: 700; color: #222; text-align: left; }
+        
+        .spec-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.95rem; }
+        .spec-table th, .spec-table td { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 12px 15px; text-align: left; }
+        .spec-table th { background-color: #f9f9f9; width: 25%; font-weight: 600; color: #333; }
+        .spec-table td { color: #555; }
+        
+        .detail-features { margin: 40px 0; }
+        .feature-item { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px dashed #eee; text-align: left; }
+        .feature-item h5 { font-size: 1.2rem; color: #222; margin-bottom: 10px; display: flex; align-items: center; }
+        .feature-item h5 span { display: inline-block; background: #8ec342; color: #fff; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-right: 10px; font-size: 0.9rem; flex-shrink: 0; }
+        .feature-item p { color: #666; line-height: 1.6; padding-left: 38px; }
     </style>
 </head>
 <body>
@@ -132,7 +142,7 @@
             <div class="tab-item">배송/교환/반품</div>
         </div>
 
-        <div class="detail-contents" id="detailBody">
+        <div class="detail-contents" id="detailBody" style="max-width: 1100px; margin: 0 auto;">
             <!-- Dynamic content -->
         </div>
     </main>
@@ -174,30 +184,44 @@
                 const d = config.value;
                 let html = '';
 
-                if (d.mainImageUrl) html += `<div style="margin-bottom:60px;"><img src="${d.mainImageUrl}" style="max-width:100%; border-radius:12px;"></div>`;
-                if (d.description) html += `<div style="padding:40px 0 80px; font-size:1.15rem; line-height:1.8; color:#444; max-width:900px; margin:0 auto; text-align:center;">${d.description.replace(/\n/g, '<br>')}</div>`;
+                // DETAIL VIEW Title
+                html += `<h4 class="section-header">DETAIL VIEW</h4>`;
+
+                if (d.mainImageUrl) html += `<div style="margin-bottom:60px; text-align:center;"><img src="${d.mainImageUrl}" style="max-width:100%; border-radius:12px;"></div>`;
+                if (d.description) html += `<div style="padding:20px 0 60px; font-size:1.1rem; line-height:1.7; color:#444; text-align:left;">${d.description.replace(/\n/g, '<br>')}</div>`;
                 
                 if (d.features && d.features.length > 0) {
-                    html += `<div style="margin-bottom:100px;">`;
-                    d.features.forEach(f => {
-                        html += `<div style="margin-bottom:80px; text-align:left;"><h3 style="font-size:1.8rem; margin-bottom:20px; color:#222; border-left:4px solid #3498db; padding-left:15px;">${f.title}</h3><p style="font-size:1.05rem; color:#666; line-height:1.7;">${f.desc.replace(/\n/g, '<br>')}</p></div>`;
+                    html += `<div class="detail-features">`;
+                    d.features.forEach((f, idx) => {
+                        const num = (idx + 1).toString().padStart(2, '0');
+                        html += `
+                            <div class="feature-item">
+                                <h5><span>${num}</span> ${f.title}</h5>
+                                <p>${f.desc.replace(/\n/g, '<br>')}</p>
+                            </div>`;
                     });
                     html += `</div>`;
                 }
 
                 if (d.specs && d.specs.length > 0) {
-                    html += `<div style="margin-bottom:100px; text-align:left;"><h3 style="font-size:1.5rem; margin-bottom:30px; color:#222; text-align:center;">PRODUCT SPECIFICATION</h3><table style="width:100%; border-collapse: collapse; border-top:2px solid #222; border-bottom:1px solid #ddd;"><tbody>${d.specs.map(s => `<tr><th style="width:250px; padding:18px 25px; background:#f9f9f9; text-align:left; border-bottom:1px solid #eee; font-weight:600; color:#444;">${s.key}</th><td style="padding:18px 25px; border-bottom:1px solid #eee; color:#666;">${s.val}</td></tr>`).join('')}</tbody></table></div>`;
+                    html += `<h4 class="section-header">DIMENSION (제품 규격)</h4>`;
+                    html += `
+                        <table class="spec-table">
+                            <tbody>
+                                ${d.specs.map(s => `<tr><th>${s.key}</th><td>${s.val}</td></tr>`).join('')}
+                            </tbody>
+                        </table>`;
                 }
 
                 if (d.detailImageUrls && d.detailImageUrls.length > 0) {
-                    html += `<div style="display:flex; flex-direction:column; gap:20px; align-items:center;">`;
+                    html += `<div style="display:flex; flex-direction:column; gap:20px; align-items:center; margin-top:60px;">`;
                     d.detailImageUrls.forEach(url => { html += `<img src="${url}" style="max-width:100%; display:block; border-radius:4px;">`; });
                     html += `</div>`;
                 }
 
-                detailBody.innerHTML = html || '<p style="padding:100px 0; color:#999;">데이터가 없습니다.</p>';
+                detailBody.innerHTML = html || '<p style="padding:100px 0; color:#999; text-align:center;">데이터가 없습니다.</p>';
             } else {
-                detailBody.innerHTML = `<p style="padding:100px 0; color:#999; font-size:1rem;">제품 상세 정보가 아직 등록되지 않았습니다.</p>`;
+                detailBody.innerHTML = `<p style="padding:100px 0; color:#999; font-size:1rem; text-align:center;">제품 상세 정보가 아직 등록되지 않았습니다.</p>`;
             }
         }
         document.addEventListener('DOMContentLoaded', loadProductDetail);
