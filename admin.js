@@ -3,13 +3,7 @@
 
 let db;
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // 0. DOM 요소가 제대로 잡혔는지 확인 (혹시 모를 에러 방지)
-    if (!loginOverlay) {
-        console.error("Critical: UI elements not found!");
-        return;
-    }
-
+document.addEventListener('DOMContentLoaded', () => {
     if (typeof supabase === 'undefined') {
         console.error("Supabase library is not loaded. Please check your internet connection and ensure the CDN script is included in admin.html.");
         alert("Supabase 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.");
@@ -17,19 +11,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const { createClient } = supabase;
+
+    // ==========================================
+    // 🚨 사용자(관리자)님, 여기에 Supabase 설정값을 넣어주세요! 🚨
+    // ==========================================
     const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
     db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // 시스템 초기화
-    try {
-        await checkSession();
-    } catch (e) {
-        console.error("Session check failed", e);
-        // 세션 체크 실패시 로그인창 강제 노출
-        loginOverlay.style.display = 'flex';
-    }
+    checkSession();
 });
 
 // ==========================================
@@ -39,65 +31,60 @@ const SITE_CATEGORIES = {
     'system': {
         icon: 'fa-server', label: '도서관리시스템',
         subs: [
-            { id: 'rfid_tag', name: 'RFID > 태그 (TAG)' },
-            { id: 'rfid_anti', name: 'RFID > 분실 방지기' },
-            { id: 'rfid_reader', name: 'RFID > 리더기' },
-            { id: 'rfid_return', name: 'RFID > 대출 반납기' },
-            { id: 'em_anti', name: 'EM > 분실 방지기' },
-            { id: 'em_gen', name: 'EM > 감응제거재생기' },
-            { id: 'em_tape', name: 'EM > 감응 테이프' },
-            { id: 'access_7000', name: '출입관리 > TNH-7000A' },
-            { id: 'access_8000', name: '출입관리 > TNH-8000A' },
-            { id: 'access_2203', name: '출입관리 > EZ-2203AWG' },
-            { id: 'access_2204', name: '출입관리 > EZ-2204AWG' }
+            { id: 'rfid-cat-tag', name: 'RFID > 태그 (TAG)' },
+            { id: 'rfid-cat-anti', name: 'RFID > 분실 방지기' },
+            { id: 'rfid-cat-reader', name: 'RFID > 리더기' },
+            { id: 'rfid-cat-return', name: 'RFID > 대출 반납기' },
+            { id: 'em-cat-0', name: 'EM > 분실 방지기' },
+            { id: 'em-cat-1', name: 'EM > 감응제거재생기' },
+            { id: 'em-cat-2', name: 'EM > 감응 테이프' }
         ]
     },
     'supplies': {
         icon: 'fa-box-open', label: '도서관 용품',
         subs: [
-            { id: 'supplies_arrange_keeper', name: '정리 > 키퍼' },
-            { id: 'supplies_arrange_label_color', name: '정리 > 색띠라벨' },
-            { id: 'supplies_arrange_label_paper', name: '정리 > 라벨용지' },
-            { id: 'supplies_arrange_gloves', name: '정리 > 장갑' },
-            { id: 'supplies_arrange_stamp', name: '정리 > 도장' },
-            { id: 'supplies_arrange_bookend', name: '정리 > 북앤드' },
-            { id: 'supplies_arrange_etc', name: '정리 > 기타' },
-            { id: 'supplies_protect_filmo', name: '보호 > 필모시리즈' },
-            { id: 'supplies_protect_glue', name: '보호 > 중성풀' },
-            { id: 'supplies_protect_tape', name: '보호 > 양면테이프' },
-            { id: 'supplies_protect_bookcover', name: '보호 > 북커버' },
-            { id: 'supplies_lend_barcode', name: '대출 > 바코드' },
-            { id: 'supplies_lend_equip', name: '대출 > 카드프린터/기기' },
-            { id: 'supplies_lend_card', name: '대출 > 회원증카드' },
-            { id: 'supplies_lend_thermal', name: '대출 > 감열지' },
-            { id: 'sterilizer_parts', name: '책소독기 소모품' }
+            { id: 'supplies-arrange-cat-0', name: '정리 > 키퍼' },
+            { id: 'supplies-arrange-cat-1', name: '정리 > 색띠라벨' },
+            { id: 'supplies-arrange-cat-2', name: '정리 > 라벨용지' },
+            { id: 'supplies-arrange-cat-3', name: '정리 > 장갑' },
+            { id: 'supplies-arrange-cat-4', name: '정리 > 도장' },
+            { id: 'supplies-arrange-cat-5', name: '정리 > 북앤드' },
+            { id: 'supplies-arrange-cat-6', name: '정리 > 기타' },
+            { id: 'supplies-protect-cat-0', name: '보호 > 필모시리즈' },
+            { id: 'supplies-protect-cat-1', name: '보호 > 중성풀' },
+            { id: 'supplies-protect-cat-2', name: '보호 > 양면테이프' },
+            { id: 'supplies-protect-cat-3', name: '보호 > 북커버' },
+            { id: 'supplies-lend-cat-0', name: '대출 > 바코드' },
+            { id: 'supplies-lend-cat-1', name: '대출 > 카드프린터/기기' },
+            { id: 'supplies-lend-cat-2', name: '대출 > 회원증카드' },
+            { id: 'supplies-lend-cat-3', name: '대출 > 감열지' },
+            { id: 'sterilizer-cat-0', name: '책소독기 소모품' }
         ]
     },
     'furniture': {
         icon: 'fa-chair', label: '도서관 가구',
         subs: [
-            { id: 'koas_shelf', name: '코아스 > 서가' },
-            { id: 'koas_table', name: '코아스 > 테이블' },
-            { id: 'koas_chair', name: '코아스 > 의자' },
-            { id: 'koas_etc', name: '코아스 > 기타' },
-            { id: 'fomus_shelf', name: '포머스 > 서가' },
-            { id: 'fomus_table', name: '포머스 > 테이블' },
-            { id: 'fomus_chair', name: '포머스 > 의자' },
-            { id: 'fomus_etc', name: '포머스 > 기타' },
-            { id: 'fursys_shelf', name: '퍼시스 > 서가' },
-            { id: 'fursys_table', name: '퍼시스 > 테이블' },
-            { id: 'fursys_chair', name: '퍼시스 > 의자' },
-            { id: 'fursys_etc', name: '퍼시스 > 기타' }
+            { id: 'koas-cat-0', name: '코아스 > 서가' },
+            { id: 'koas-cat-1', name: '코아스 > 테이블' },
+            { id: 'koas-cat-2', name: '코아스 > 의자' },
+            { id: 'koas-cat-3', name: '코아스 > 기타' },
+            { id: 'fomus-cat-0', name: '포머스 > 서가' },
+            { id: 'fomus-cat-1', name: '포머스 > 테이블' },
+            { id: 'fomus-cat-2', name: '포머스 > 의자' },
+            { id: 'fomus-cat-3', name: '포머스 > 기타' },
+            { id: 'fursys-cat-0', name: '퍼시스 > 서가' },
+            { id: 'fursys-cat-1', name: '퍼시스 > 테이블' },
+            { id: 'fursys-cat-2', name: '퍼시스 > 의자' },
+            { id: 'fursys-cat-3', name: '퍼시스 > 기타' }
         ]
     },
     'signage': {
         icon: 'fa-scroll', label: '사인물',
         subs: [
-            { id: 'sign_class', name: '분류/대분류 표지판' },
-            { id: 'sign_board', name: '게시판/이용안내' },
-            { id: 'sign_date', name: '대출반납일력표' },
-            { id: 'sign_custom', name: '제작 사인물' },
-            { id: 'best_product', name: '메인 베스트 상품' }
+            { id: 'sign-class-cat-0', name: '분류/대분류 표지판' },
+            { id: 'sign-board-cat-0', name: '게시판/이용안내' },
+            { id: 'sign-date-cat-0', name: '대출반납일력표' },
+            { id: 'sign-custom-cat-0', name: '제작 사인물' }
         ]
     },
     'discount': {

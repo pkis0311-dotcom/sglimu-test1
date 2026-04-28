@@ -268,7 +268,7 @@ button {
     height: 100%;
     object-fit: cover;
     z-index: -1;
-    filter: brightness(1.1);
+    filter: brightness(0.85);
     transition: transform 6s ease-out;
     transform: scale(1);
 }
