@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제품 상세 - 에스지라이뮤</title>
+    <title>?쒗뭹 ?곸꽭 - ?먯뒪吏?쇱씠裕?/title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="cart.css">
     <link rel="stylesheet" href="inquiry.css">
@@ -11,494 +11,138 @@
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-    <style>
-        :root {
-            --apple-bg: #fbfbfb;
-            --apple-text: #1d1d1f;
-            --apple-gray: #86868b;
-            --apple-blue: #0066cc;
-            --apple-accent: #8ec342;
-            --apple-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            --transition-apple: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        body { background-color: #fff; color: var(--apple-text); line-height: 1.1; letter-spacing: -0.01em; }
-
-        /* Sticky Action Bar */
-        .sticky-action-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 52px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 10%;
-            transform: translateY(-100%);
-            transition: transform 0.4s ease;
-        }
-        .sticky-action-bar.visible { transform: translateY(0); }
-        .sticky-title { font-size: 1.2rem; font-weight: 700; color: var(--apple-text); }
-        .sticky-buy-btn { background: var(--apple-accent); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.3s; }
-        .sticky-buy-btn:hover { background: #7ab135; }
-
-        .detail-page { padding: 0; max-width: 100%; }
-
-        /* Hero Section */
-        .hero-section {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 120px 5% 60px;
-            text-align: center;
-            background: #fff;
-        }
-        .hero-tag { font-size: 1.1rem; color: var(--apple-accent); font-weight: 700; margin-bottom: 15px; }
-        .hero-title { font-size: 4.5rem; font-weight: 800; margin-bottom: 25px; letter-spacing: -0.03em; }
-        .hero-price-tag { font-size: 1.8rem; font-weight: 600; color: var(--apple-text); margin-bottom: 40px; }
-        .hero-image-wrap { width: 100%; max-width: 900px; margin-top: 40px; border-radius: 30px; overflow: hidden; transform: scale(0.95); opacity: 0; transition: var(--transition-apple); }
-        .hero-image-wrap.active { transform: scale(1); opacity: 1; }
-        .hero-img { width: 100%; height: auto; object-fit: cover; }
-
-        /* Apple Store Purchase Section (Side by Side) */
-        .buy-section {
-            display: flex;
-            padding: 100px 10%;
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #fff;
-            gap: 100px;
-            border-top: 1px solid #f5f5f7;
-        }
-        .buy-gallery { flex: 1; position: sticky; top: 100px; height: calc(100vh - 100px); display: flex; align-items: center; justify-content: center; }
-        .buy-gallery-img { max-width: 100%; max-height: 70vh; border-radius: 20px; object-fit: contain; }
-
-        .buy-options { flex: 1; padding: 0 20px 100px; }
-        .selection-header { margin-bottom: 60px; }
-        .selection-title { font-size: 3rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.02em; }
-        .selection-price { font-size: 1.5rem; font-weight: 600; color: #1d1d1f; margin-top: 10px; display: block; }
+        .detail-page { padding: 120px 5% 100px; max-width: 1400px; margin: 0 auto; }
+        .product-main { display: flex; gap: 50px; margin-bottom: 80px; }
+        .product-gallery { flex: 1; }
+        .main-img { width: 100%; border-radius: 12px; border: 1px solid #eee; margin-bottom: 15px; }
+        .product-info-panel { flex: 1; display: flex; flex-direction: column; }
+        .product-tag { color: var(--color-primary); font-weight: 700; font-size: 0.9rem; margin-bottom: 10px; display: block; }
+        .product-title { font-size: 2.2rem; color: #222; font-weight: 700; margin-bottom: 20px; }
+        .product-price { font-size: 1.8rem; color: var(--color-primary); font-weight: 700; border-bottom: 1px solid #eee; padding-bottom: 25px; margin-bottom: 30px; }
+        .option-row { margin-bottom: 20px; }
+        .option-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; display: block; }
+        .option-list { display: flex; gap: 10px; flex-wrap: wrap; }
+        .option-item { padding: 8px 20px; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .option-item.active { border-color: var(--color-primary); color: var(--color-primary); background: #f0f7ff; }
+        .buy-btns { display: flex; gap: 15px; margin-top: 40px; }
+        .btn-cart { flex: 1; height: 60px; font-size: 1.1rem; font-weight: 600; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+        .btn-order { flex: 2; height: 60px; font-size: 1.1rem; font-weight: 600; background: #222; color: #fff; border: none; cursor: pointer; }
         
-        /* Configuration Cards */
-        .option-group { margin-bottom: 60px; }
-        .option-label { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; display: block; }
-        .card-list { display: flex; flex-direction: column; gap: 12px; }
-        .config-card { border: 1px solid #d2d2d7; border-radius: 12px; padding: 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; background: #fff; }
-        .config-card:hover { border-color: #86868b; }
-        .config-card.active { border-color: var(--apple-blue); border-width: 2px; padding: 23px; }
-        .card-name { font-size: 1.1rem; font-weight: 600; color: #1d1d1f; }
-        .card-price-extra { font-size: 0.9rem; color: #6e6e73; }
-
-        /* Summary & Buttons */
-        .buy-actions { margin-top: 60px; padding-top: 40px; border-top: 1px solid #d2d2d7; }
-        .selection-summary { margin-bottom: 30px; font-size: 1.1rem; color: #1d1d1f; line-height: 1.5; }
-        .summary-total { font-size: 2.2rem; font-weight: 800; margin-bottom: 30px; display: block; }
-        
-        .action-btns { display: flex; flex-direction: column; gap: 15px; }
-        .btn-cart-apple { background: var(--apple-blue); color: #fff; border: none; height: 56px; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .btn-cart-apple:hover { background: #0077ed; opacity: 0.9; }
-        .btn-quote-apple { background: #f5f5f7; color: var(--apple-blue); border: none; height: 56px; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .btn-quote-apple:hover { background: #e8e8ed; }
-
-        /* Features Section */
-        .features-section { padding: 120px 10%; background: #fbfbfb; }
-        .section-headline { font-size: 3.5rem; font-weight: 800; text-align: center; margin-bottom: 100px; letter-spacing: -0.02em; }
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
-        .feature-card { background: #f5f5f7; border-radius: 28px; padding: 40px; position: relative; overflow: hidden; transition: var(--transition-apple); opacity: 0; transform: translateY(40px); }
-        .feature-card.reveal { opacity: 1; transform: translateY(0); }
-        .feature-card h3 { font-size: 1.8rem; font-weight: 700; margin-bottom: 15px; }
-        .feature-card p { font-size: 1.1rem; line-height: 1.5; color: var(--apple-gray); }
-        .feature-card .card-icon { font-size: 2.5rem; color: var(--apple-accent); margin-bottom: 20px; display: block; }
-
-        /* Specs Section */
-        .specs-section { padding: 100px 10%; background: var(--apple-bg); }
-        .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; margin-top: 60px; }
-        .spec-item { border-top: 1px solid #d2d2d7; padding-top: 20px; }
-        .spec-key { font-size: 0.9rem; color: var(--apple-gray); font-weight: 600; margin-bottom: 10px; display: block; }
-        .spec-val { font-size: 1.1rem; font-weight: 700; color: var(--apple-text); line-height: 1.4; }
-
-        .reveal-node { transition: var(--transition-apple); }
-
-        @media (max-width: 1024px) {
-            .hero-title { font-size: 3rem; }
-            .buy-section { grid-template-columns: 1fr; gap: 40px; }
-            .buy-gallery { position: static; }
-            .feature-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 1024px) {
-            .product-main { flex-direction: column; gap: 40px; }
-            .product-gallery { position: static; width: 100%; }
-            .product-title { font-size: 2.2rem; }
-        }
+        .detail-tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 50px; }
+        .tab-item { padding: 15px 40px; font-size: 1.1rem; font-weight: 600; color: #999; cursor: pointer; position: relative; }
+        .tab-item.active { color: #222; }
+        .tab-item.active::after { content:''; position:absolute; bottom:-2px; left:0; width:100%; height:2px; background:#222; }
+        .detail-contents { text-align: center; }
+        .detail-contents img { max-width: 100%; }
     </style>
 </head>
-    <!-- Sticky Action Bar -->
-    <div id="stickyBar" class="sticky-action-bar">
-        <div class="sticky-title" id="stickyTitle">Product Name</div>
-        <button class="sticky-buy-btn" id="stickyBuyBtn">Get Quote</button>
-    </div>
-
+<body>
     <header class="header">
         <div class="header-container">
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
-                    <li class="has-submenu">
-                        <a href="#">도서관리 시스템</a>
+                    <li><a href="#">?꾩꽌愿由??쒖뒪??/a>
                         <ul class="submenu">
-                            <li><a href="rfid.html">RFID시스템</a></li>
-                            <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입관리시스템</a></li>
+                            <li><a href="rfid.html">RFID?쒖뒪??/a></li>
+                            <li><a href="em.html">EM?쒖뒪??/a></li>
+                            <li><a href="access.html">異쒖엯愿由ъ떆?ㅽ뀥</a></li>
                         </ul>
                     </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 용품</a>
+                    <li><a href="#">?꾩꽌愿 ?⑺뭹</a>
                         <ul class="submenu">
-                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
-                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
-                            <li><a href="supplies-lend.html">대출용품</a></li>
-                            <li><a href="sterilizer.html">책소독기</a></li>
+                            <li><a href="supplies-arrange.html">?꾩꽌?뺣━ ?⑺뭹</a></li>
+                            <li><a href="supplies-protect.html">?꾩꽌蹂댄샇?⑺뭹</a></li>
+                            <li><a href="supplies-lend.html">?異쒖슜??/a></li>
+                            <li><a href="sterilizer.html">梨낆냼?낃린</a></li>
                         </ul>
                     </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 가구</a>
+                    <li><a href="#">?꾩꽌愿 媛援?/a>
                         <ul class="submenu">
-                            <li><a href="furniture-koas.html">코아스</a></li>
-                            <li><a href="furniture-fomus.html">포머스</a></li>
-                            <li><a href="furniture-fursys.html">퍼시스</a></li>
-                            <li><a href="furniture-custom.html">제작가구</a></li>
+                            <li><a href="furniture-koas.html">肄붿븘??/a></li>
+                            <li><a href="furniture-fomus.html">?щ㉧??/a></li>
+                            <li><a href="furniture-fursys.html">?쇱떆??/a></li>
+                            <li><a href="furniture-custom.html">?쒖옉媛援?/a></li>
                         </ul>
                     </li>
-                    <li class="has-submenu">
-                        <a href="#">사인물</a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
-                            <li><a href="sign-board.html">게시판/이용안내</a></li>
-                            <li><a href="sign-date.html">대출반납일력표</a></li>
-                            <li><a href="sign-custom.html">제작사인물</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="discount.html">할인상품</a></li>
+                    <li><a href="discount.html">?좎씤?곹뭹</a></li>
                 </ul>
             </nav>
-            <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
-                </div>
-                <div class="user-auth-wrap" id="userAuthWrap">
-                    <button class="login-trigger-btn" id="loginTriggerBtn">
-                        <i class="fa-regular fa-user"></i>
-                        <span>로그인</span>
-                    </button>
-                </div>
-                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
-            </div>
         </div>
     </header>
 
-    <main class="detail-page" id="appleLayout">
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <span class="hero-tag" id="heroCategory">Library Solution</span>
-            <h1 class="hero-title" id="heroTitle">Innovation in Every Detail.</h1>
-            <p class="hero-price-tag" id="heroPrice">From KRW 1,200,000</p>
-            <div class="hero-image-wrap" id="heroImgWrap">
-                <img id="heroImg" class="hero-img" src="assets/no-image.png">
+    <main class="detail-page">
+        <div class="product-main">
+            <div class="product-gallery">
+                <img id="mainImg" class="main-img" src="assets/no-image.png">
             </div>
-        </section>
-
-        <!-- Apple Store Purchase Section -->
-        <section class="buy-section">
-            <div class="buy-gallery">
-                <img id="buyMainImg" class="buy-gallery-img" src="assets/no-image.png">
-            </div>
-            <div class="buy-options">
-                <div class="selection-header">
-                    <h2 class="selection-title" id="selectionTitle">Product Name</h2>
-                    <span class="selection-price" id="selectionPrice">KRW 0</span>
+            <div class="product-info-panel">
+                <span class="product-tag" id="prodCategory">Category</span>
+                <h2 class="product-title" id="prodTitle">?쒗뭹紐?/h2>
+                <div class="product-price" id="prodPrice">媛寃⑸Ц??/div>
+                
+                <div class="option-row" id="optionColorRow" style="display:none;">
+                    <span class="option-label">?됱긽 ?좏깮</span>
+                    <div class="option-list" id="colorList"></div>
                 </div>
                 
-                <div class="option-group" id="groupColors" style="display:none;">
-                    <span class="option-label">Finish. Pick your favorite.</span>
-                    <div class="card-list" id="appleColorList"></div>
+                <div class="option-row" id="optionSizeRow" style="display:none;">
+                    <span class="option-label">?ъ씠利??좏깮</span>
+                    <div class="option-list" id="sizeList"></div>
                 </div>
 
-                <div class="option-group" id="groupSizes" style="display:none;">
-                    <span class="option-label">Size. Choose what fits.</span>
-                    <div class="card-list" id="appleSizeList"></div>
+                <div class="buy-btns">
+                    <button class="btn-cart" id="addToCartBtn">?λ컮援щ땲</button>
+                    <button class="btn-order" id="directOrderBtn">?꾩쟻臾몄쓽 / ?곷떞?좎껌</button>
                 </div>
-
-                <div class="buy-actions" id="buyActions">
-                    <div class="selection-summary" id="selectionSummary">
-                        Select options to see your custom configuration.
-                    </div>
-                    <div class="summary-total" id="summaryTotal">KRW 0</div>
-                    
-                    <div class="action-btns">
-                        <button class="btn-cart-apple" id="appleAddToCartBtn">Add to Bag</button>
-                        <button class="btn-quote-apple" id="appleQuoteBtn">Request a Quote</button>
-                    </div>
-                    <p style="font-size: 0.85rem; color: #6e6e73; margin-top:20px; line-height: 1.4;">Need expert advice? Our library specialists are here to help you configure the perfect solution for your space.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="features-section" id="appleFeaturesWrap">
-            <h2 class="section-headline">Everything you need. <br>And then some.</h2>
-            <div class="feature-grid" id="appleFeatureGrid"></div>
-        </section>
-
-        <!-- Specs Section -->
-        <section class="specs-section" id="appleSpecsWrap">
-            <h2 class="section-headline" style="text-align:left; font-size:2rem; margin-bottom:40px;">Tech Specs.</h2>
-            <div class="spec-grid" id="appleSpecGrid"></div>
-        </section>
-        
-        <!-- Bottom Images -->
-        <section class="bottom-gallery" id="appleBottomGallery" style="padding: 100px 10%; display: flex; flex-direction: column; gap: 40px;"></section>
-    </main>
-
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-info">
-                <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
-                <p>Address : 부산광역시 금정구 중앙대로 2210번길 29-1 (두구동)</p>
-                <p>대표자명 : 강인태 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
-                <p class="copyright">Copyright © 2023 SG LIMU. All rights reserved.</p>
             </div>
         </div>
-    </footer>
+
+        <div class="detail-tabs">
+            <div class="tab-item active">?쒗뭹 ?곸꽭?ㅻ챸</div>
+            <div class="tab-item">諛곗넚/援먰솚/諛섑뭹</div>
+        </div>
+
+        <div class="detail-contents" id="detailBody">
+            <!-- Dynamic content -->
+        </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const { createClient } = supabase;
         const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
         
-        // State for config
-        let currentProduct = null;
-        let pageConfig = null;
-        let selectedColor = null;
-        let selectedSize = null;
-
-        async function loadAppleProductDetail() {
+        async function loadProductDetail() {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             if(!id) return;
 
             const { data: p } = await db.from('products').select('*').eq('id', id).single();
             if(!p) return;
-            currentProduct = p;
 
-            // Header/Hero Info
-            document.title = p.name + " - SG LIMU";
-            document.getElementById('stickyTitle').innerText = p.name;
-            document.getElementById('selectionTitle').innerText = p.name;
-            document.getElementById('heroCategory').innerText = p.category || 'Premium Furniture';
-            document.getElementById('heroTitle').innerText = p.name;
+            document.getElementById('prodTitle').innerText = p.name;
+            document.getElementById('prodPrice').innerText = (p.price === '?꾪솕臾몄쓽' || !p.price) ? '?꾪솕臾몄쓽' : Number(p.price).toLocaleString() + '??;
+            document.getElementById('mainImg').src = p.image_url || 'assets/no-image.png';
+
+            // Load Page Data for deep details
+            const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).single();
+            const detailBody = document.getElementById('detailBody');
             
-            const basePrice = (p.price === '전화문의' || !p.price) ? 0 : Number(p.price);
-            const priceText = basePrice === 0 ? '전화문의' : 'From KRW ' + basePrice.toLocaleString();
-            document.getElementById('heroPrice').innerText = priceText;
-            document.getElementById('selectionPrice').innerText = priceText;
-            
-            const mainImgUrl = p.image_url || 'assets/no-image.png';
-            document.getElementById('heroImg').src = mainImgUrl;
-            document.getElementById('buyMainImg').src = mainImgUrl;
-
-            // Scroll animations & Sticky control
-            window.addEventListener('scroll', () => {
-                const stickyBar = document.getElementById('stickyBar');
-                const heroSection = document.querySelector('.hero-section');
-                if (window.scrollY > heroSection.offsetHeight - 52) {
-                    stickyBar.classList.add('visible');
-                } else {
-                    stickyBar.classList.remove('visible');
-                }
-            });
-
-            // Reveal Hero image with slight delay
-            setTimeout(() => {
-                document.getElementById('heroImgWrap').classList.add('active');
-            }, 300);
-
-            // Fetch Detail Config
-            const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).maybeSingle();
-            if(!config || !config.value) return;
-            pageConfig = config.value;
-            const d = pageConfig;
-
-            // Render Colors
-            const colorList = document.getElementById('appleColorList');
-            if(d.colors && d.colors.length > 0) {
-                document.getElementById('groupColors').style.display = 'block';
-                d.colors.forEach((c, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'config-card';
-                    if(idx === 0) { card.classList.add('active'); selectedColor = c; }
-                    card.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div style="width:24px; height:24px; border-radius:50%; background:${c.hex}; border:1px solid #ddd;"></div>
-                            <span class="card-name">${c.name}</span>
-                        </div>
-                    `;
-                    card.onclick = () => {
-                        colorList.querySelectorAll('.config-card').forEach(el => el.classList.remove('active'));
-                        card.classList.add('active');
-                        selectedColor = c;
-                        updateSummary();
-                    };
-                    colorList.appendChild(card);
-                });
-            }
-
-            // Render Sizes
-            const sizeList = document.getElementById('appleSizeList');
-            if(d.sizes && d.sizes.length > 0) {
-                document.getElementById('groupSizes').style.display = 'block';
-                d.sizes.forEach((s, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'config-card';
-                    if(idx === 0) { card.classList.add('active'); selectedSize = s; }
-                    card.innerHTML = `
-                        <span class="card-name">${s.name}</span>
-                        <span class="card-price-extra">${s.price || ''}</span>
-                    `;
-                    card.onclick = () => {
-                        sizeList.querySelectorAll('.config-card').forEach(el => el.classList.remove('active'));
-                        card.classList.add('active');
-                        selectedSize = s;
-                        updateSummary();
-                    };
-                    sizeList.appendChild(card);
-                });
-            }
-
-            updateSummary();
-
-            // Render Features
-            const featureGrid = document.getElementById('appleFeatureGrid');
-            if(d.features && d.features.length > 0) {
-                d.features.forEach(f => {
-                    const card = document.createElement('div');
-                    card.className = 'feature-card';
-                    card.innerHTML = `
-                        <i class="fa-solid fa-star-of-life card-icon"></i>
-                        <h3>${f.title}</h3>
-                        <p>${f.desc.replace(/\n/g, '<br>')}</p>
-                    `;
-                    featureGrid.appendChild(card);
-                });
+            if(config && config.value) {
+                const d = config.value;
+                if(d.detailImage) detailBody.innerHTML = `<img src="${d.detailImage}">`;
+                else if(d.description) detailBody.innerHTML = `<p style="padding:50px;">${d.description.replace(/\n/g, '<br>')}</p>`;
             } else {
-                document.getElementById('appleFeaturesWrap').style.display = 'none';
+                detailBody.innerHTML = `<p style="padding:50px; color:#999;">?깅줉???곸꽭 ?ㅻ챸???놁뒿?덈떎.</p>`;
             }
-
-            // Render Specs
-            const specGrid = document.getElementById('appleSpecGrid');
-            if(d.specs && d.specs.length > 0) {
-                d.specs.forEach(s => {
-                    const item = document.createElement('div');
-                    item.className = 'spec-item';
-                    item.innerHTML = `<span class="spec-key">${s.key}</span><span class="spec-val">${s.val}</span>`;
-                    specGrid.appendChild(item);
-                });
-            } else {
-                document.getElementById('appleSpecsWrap').style.display = 'none';
-            }
-
-            // Bottom Gallery
-            const bottomGall = document.getElementById('appleBottomGallery');
-            if(d.detailImageUrls && d.detailImageUrls.length > 0) {
-                d.detailImageUrls.forEach(url => {
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.style.width = '100%';
-                    img.style.borderRadius = '24px';
-                    bottomGall.appendChild(img);
-                });
-            }
-
-            // Observer
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) entry.target.classList.add('reveal');
-                });
-            }, { threshold: 0.1 });
-            setTimeout(() => { document.querySelectorAll('.feature-card, .spec-item').forEach(el => observer.observe(el)); }, 100);
         }
-
-        function updateSummary() {
-            if(!currentProduct) return;
-            
-            let summaryText = `Your ${currentProduct.name} configuration: `;
-            if(selectedColor) summaryText += `<strong>${selectedColor.name}</strong>`;
-            if(selectedColor && selectedSize) summaryText += ` and `;
-            if(selectedSize) summaryText += `<strong>${selectedSize.name}</strong>`;
-            
-            document.getElementById('selectionSummary').innerHTML = summaryText;
-            
-            const basePrice = (currentProduct.price === '전화문의' || !currentProduct.price) ? 0 : Number(currentProduct.price);
-            
-            // Size might have extra price like "+ 50,000"
-            let extraPrice = 0;
-            if(selectedSize && selectedSize.price) {
-                const match = selectedSize.price.match(/[0-9,]+/);
-                if(match) extraPrice = parseInt(match[0].replace(/,/g, '')) || 0;
-            }
-            
-            const total = basePrice + extraPrice;
-            const totalText = total === 0 ? '전화문의' : 'KRW ' + total.toLocaleString();
-            
-            document.getElementById('summaryTotal').innerText = totalText;
-            document.getElementById('selectionPrice').innerText = totalText;
-        }
-
-        // Add to Cart Event
-        document.getElementById('appleAddToCartBtn').onclick = () => {
-            if(!currentProduct) return;
-            
-            const basePrice = (currentProduct.price === '전화문의' || !currentProduct.price) ? 0 : Number(currentProduct.price);
-            let extraPrice = 0;
-            if(selectedSize && selectedSize.price) {
-                const match = selectedSize.price.match(/[0-9,]+/);
-                if(match) extraPrice = parseInt(match[0].replace(/,/g, '')) || 0;
-            }
-            
-            const totalPrice = basePrice + extraPrice;
-            const optionString = (selectedColor ? selectedColor.name : '') + (selectedSize ? ' / ' + selectedSize.name : '');
-            
-            const item = {
-                id: currentProduct.id + '_' + new Date().getTime(),
-                name: currentProduct.name + (optionString ? ` (${optionString})` : ''),
-                price: totalPrice,
-                qty: 1
-            };
-            
-            if(typeof addToCart === 'function') {
-                addToCart(item);
-                openCart();
-            } else {
-                console.error('Cart logic not loaded');
-            }
-        };
-
-        document.getElementById('appleQuoteBtn').onclick = () => {
-            alert('Expert consultation request has been sent. We will contact you shortly.');
-        };
-
-        document.addEventListener('DOMContentLoaded', loadAppleProductDetail);
+        
+        document.addEventListener('DOMContentLoaded', loadProductDetail);
     </script>
     <script src="script.js"></script>
     <script src="cart.js"></script>
     <script type="module" src="auth.js"></script>
 </body>
 </html>
+

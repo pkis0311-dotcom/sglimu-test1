@@ -1,14 +1,12 @@
-- [x] GNB 및 상품 로딩 시스템 롤백 (독립 파일 구조로 복구)
-    - [x] `TEMPLATE` 기반 독립적 HTML 구조 복원 (16개 카테고리 페이지)
-    - [x] `restore_mall_pages.py` (또는 수동 write)로 일괄 복구 완료
-- [x] 한글 인코딩(UTF-8) 깨짐 현상 전면 수정
-    - [x] `admin.js` 한글 복구 및 UTF-8 저장
-    - [x] `script.js` 한글 복구 및 UTF-8 저장
-    - [x] 모든 HTML 파일 `charset="UTF-8"` 및 실제 파일 인코딩 정합성 확보
-- [x] GNB 3단계 계층 구조 및 클릭 기능 복구
-    - [x] 소분류 카테고리 클릭 시 상품 로딩 기능 확인
-    - [x] GNB 호버 시 3단계 서브메뉴 노출 확인
-- [x] 관리자 사이트 기능 및 데이터 표시 복구
-    - [x] 관리자 로그인 및 메뉴 한글 깨짐 수정
-    - [x] 카테고리 매핑 데이터(`SITE_CATEGORIES`) 복구
-- [x] 최종 브라우저 검증 및 안정성 확인
+﻿- [x] Restore Full Premium UI & Layout Consistency
+    - [x] Analyze index.html: Extract reusable Header, Footer, Fixed Banners, Chat, and Modal components
+    - [x] Batch Update Category Pages: Re-integrate rich UI components into:
+        - [x] rfid.html, em.html, access.html
+        - [x] supplies-*.html
+        - [x] furniture-*.html
+        - [x] sign-*.html
+    - [x] Functional Check: Ensure product loading logic (_ IDs) and auth modal still work
+- [x] Verification
+    - [x] Verify Header/Footer richness across all sub-pages
+    - [x] Verify Side Banners and Chat Widget presence
+    - [x] Confirm naming persists as "출입관리시스템"
