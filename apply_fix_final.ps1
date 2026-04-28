@@ -1,9 +1,11 @@
+# apply_fix_final.ps1
+$template = @'
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>코아스 가구 - SG LIMU</title>
+    <title>{title} - SG LIMU</title>
     <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="auth.css"><link rel="stylesheet" href="cart.css"><link rel="stylesheet" href="inquiry.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -51,10 +53,10 @@
         </div>
     </header>
     <main class="category-page">
-        <div class="category-header"><h2 class="category-title">코아스 가구</h2><p>코아스의 프리미엄 도서관 가구 시리즈입니다.</p></div>
+        <div class="category-header"><h2 class="category-title">{title}</h2><p>{desc}</p></div>
         <div class="category-container">
             <div id="topProductSection"></div>
-            <ul class="subcategory-nav"><li class="subcategory-item active" data-target="koas_shelf">서가</li><li class="subcategory-item" data-target="koas_table">테이블</li><li class="subcategory-item" data-target="koas_chair">의자</li><li class="subcategory-item" data-target="koas_etc">기타</li></ul><div class="product-list" id="productList"></div>
+            {categoryLogic}
         </div>
     </main>
     <footer class="footer">
@@ -143,3 +145,39 @@
     </script>
 </body>
 </html>
+'@
+
+function GenPage($filename, $title, $desc, $logic) {
+    global $template
+    $c = $template.Replace("{title}", $title).Replace("{desc}", $desc).Replace("{categoryLogic}", $logic)
+    [System.IO.File]::WriteAllText((Join-Path (Get-Location) $filename), $c, [System.Text.Encoding]::UTF8)
+    Write-Host "Generated $filename"
+}
+
+# Define pages in a way that avoids complex parsing
+# Format: filename|title|desc|logic
+$pagesData = @(
+    "rfid.html|RFID시스템|스마트하고 체계적인 도서관 환경을 구축하는 RFID 솔루션입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"rfid_tag`">태그 (TAG)</li><li class=`"subcategory-item`" data-target=`"rfid_anti`">분실방지기</li><li class=`"subcategory-item`" data-target=`"rfid_reader`">리더기</li><li class=`"subcategory-item`" data-target=`"rfid_return`">대출반납기</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "em.html|EM시스템|보안과 경제성을 모두 잡은 전통적인 도서 분실 방지 EM 솔루션입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"em_anti`">분실방지기</li><li class=`"subcategory-item`" data-target=`"em_gen`">감응제거재생기</li><li class=`"subcategory-item`" data-target=`"em_tape`">감응 테이프</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "access.html|출입관리시스템|스마트하고 체계적인 도서관 환경을 구축하는 출입관리 솔루션입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"access_7000`">TNH-7000A</li><li class=`"subcategory-item`" data-target=`"access_8000`">TNH-8000A</li><li class=`"subcategory-item`" data-target=`"access_2203`">EZ-2203AWG</li><li class=`"subcategory-item`" data-target=`"access_2204`">EZ-2204AWG</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "supplies-arrange.html|도서정리 용품|도서를 분류하고 정리하는데 필요한 필수 소모품들입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"supplies_arrange_keeper`">키퍼</li><li class=`"subcategory-item`" data-target=`"supplies_arrange_label_color`">색띠라벨</li><li class=`"subcategory-item`" data-target=`"supplies_arrange_label_paper`">라벨용지</li><li class=`"subcategory-item`" data-target=`"supplies_arrange_bookend`">북앤드</li><li class=`"subcategory-item`" data-target=`"supplies_arrange_etc`">기타</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "supplies-protect.html|도서보호, 보수용품|소중한 도서를 오래도록 보존하기 위한 보조 용품들입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"supplies_protect_filmo`">필모시리즈</li><li class=`"subcategory-item`" data-target=`"supplies_protect_glue`">중성풀</li><li class=`"subcategory-item`" data-target=`"supplies_protect_tape`">양면테이프</li><li class=`"subcategory-item`" data-target=`"supplies_protect_bookcover`">북커버</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "supplies-lend.html|대출용품|도서 대출 및 반납 처리에 필요한 용품들입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"supplies_lend_barcode`">바코드</li><li class=`"subcategory-item`" data-target=`"supplies_lend_equip`">카드프린터/기기</li><li class=`"subcategory-item`" data-target=`"supplies_lend_card`">회원증카드</li><li class=`"subcategory-item`" data-target=`"supplies_lend_thermal`">감열지</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "furniture-koas.html|코아스 가구|코아스의 프리미엄 도서관 가구 시리즈입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"koas_shelf`">서가</li><li class=`"subcategory-item`" data-target=`"koas_table`">테이블</li><li class=`"subcategory-item`" data-target=`"koas_chair`">의자</li><li class=`"subcategory-item`" data-target=`"koas_etc`">기타</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "furniture-fomus.html|포머스 가구|포머스의 실용적이고 현대적인 도서관 가구입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"fomus_shelf`">서가</li><li class=`"subcategory-item`" data-target=`"fomus_table`">테이블</li><li class=`"subcategory-item`" data-target=`"fomus_chair`">의자</li><li class=`"subcategory-item`" data-target=`"fomus_etc`">기타</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "furniture-fursys.html|퍼시스 가구|퍼시스의 스마트한 도서관 오피스 솔루션입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"fursys_shelf`">서가</li><li class=`"subcategory-item`" data-target=`"fursys_table`">테이블</li><li class=`"subcategory-item`" data-target=`"fursys_chair`">의자</li><li class=`"subcategory-item`" data-target=`"fursys_etc`">기타</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "furniture-custom.html|제작가구|도서관 환경과 공간에 맞춰진 최적의 커스텀 가구입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"custom_furniture`">제작가구</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "sign-class.html|분류 표지판|도서관 분류 및 안내를 위한 디자인 사인물입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"sign_class`">분류표지판</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "sign-board.html|게시판|도서관 안내 및 공지를 위한 게시판 시스템입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"sign_board`">게시판</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "sign-date.html|대출반납일력표|직관적으로 대출 및 반납 기한을 알려주는 도서관 전용 일력표입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"sign_date`">일력표</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "sign-custom.html|제작사인물|도서관 브랜드와 인테리어에 맞게 제작되는 전용 사인물 시리즈입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"sign_custom`">제작사인물</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "sterilizer.html|책소독기|소중한 도서를 청결하고 안전하게 보존하기 위한 책소독기 및 소모품입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"sterilizer_parts`">소모품</li></ul><div class=`"product-list`" id=`"productList`"></div>",
+    "discount.html|할인상품|특별한 가격으로 만나보실 수 있는 좋은 기회의 할인 상품들입니다.|<ul class=`"subcategory-nav`"><li class=`"subcategory-item active`" data-target=`"discount_items`">할인상품</li></ul><div class=`"product-list`" id=`"productList`"></div>"
+)
+
+foreach ($line in $pagesData) {
+    if ($line.Contains("|")) {
+        $parts = $line.Split("|")
+        GenPage $parts[0] $parts[1] $parts[2] $parts[3]
+    }
+}
