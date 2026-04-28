@@ -16,17 +16,12 @@
         .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
         .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
         .empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }
-        
-        /* Hero Product Style */
         .top-product-row { margin-bottom: 80px; padding: 40px; background: #fff; border-radius: 24px; border: 1px solid #eee; display: flex; gap: 50px; align-items: center; }
         .top-product-img { flex: 1; max-width: 500px; border-radius: 15px; overflow: hidden; background: #f9f9f9; }
         .top-product-img img { width: 100%; height: auto; display: block; object-fit: contain; }
         .top-product-info { flex: 1; }
         .top-product-info h3 { font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #1a1a1a; }
         .top-product-info .price { font-size: 1.8rem; font-weight: 800; color: var(--color-primary); margin-bottom: 25px; }
-        .top-product-btns { display: flex; gap: 15px; }
-        .btn-top-buy { flex: 1; height: 56px; background: #222; color: #fff; border-radius: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-        .btn-top-cart { flex: 1; height: 56px; background: #fff; color: #222; border: 2px solid #222; border-radius: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
         @media (max-width: 992px) { .top-product-row { flex-direction: column; padding: 20px; } .top-product-img { max-width: 100%; } }
     </style>
 </head>
@@ -34,112 +29,90 @@
     <header class="header">
         <div class="header-container">
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
-            <nav class="gnb">
-                <ul>
-                    <li class="has-submenu"><a href="#">도서관리 시스템</a><ul class="submenu"><li><a href="rfid.html">RFID시스템</a></li><li><a href="em.html">EM시스템</a></li><li><a href="access.html">출입관리시스템</a></li></ul></li>
-                    <li class="has-submenu"><a href="#">도서관 용품</a><ul class="submenu"><li><a href="supplies-arrange.html">도서정리 용품</a></li><li><a href="supplies-protect.html">도서보호, 보수용품</a></li><li><a href="supplies-lend.html">대출용품</a></li><li><a href="sterilizer.html">책소독기</a></li></ul></li>
-                    <li class="has-submenu"><a href="#">도서관 가구</a><ul class="submenu"><li><a href="furniture-koas.html">코아스</a></li><li><a href="furniture-fomus.html">포머스</a></li><li><a href="furniture-fursys.html">퍼시스</a></li><li><a href="furniture-custom.html">제작가구</a></li></ul></li>
-                    <li class="has-submenu"><a href="#">사인물</a><ul class="submenu"><li><a href="sign-class.html">한국십진분류/대분류표지판</a></li><li><a href="sign-board.html">게시판/이용안내</a></li><li><a href="sign-date.html">대출반납일력표</a></li><li><a href="sign-custom.html">제작사인물</a></li></ul></li>
-                    <li><a href="discount.html">할인상품</a></li>
-                </ul>
-            </nav>
-            <div class="header-utils">
-                <div class="search-wrapper"><input type="text" class="search-input" placeholder="검색어를 입력하세요"><a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a></div>
-                <div class="user-auth-wrap" id="userAuthWrap"><button class="login-trigger-btn" id="loginTriggerBtn"><i class="fa-regular fa-user"></i><span>로그인</span></button></div>
-                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
-            </div>
+            ...
         </div>
     </header>
     <main class="category-page">
         <div class="category-header"><h2 class="category-title">코아스 가구</h2><p>코아스의 프리미엄 도서관 가구 시리즈입니다.</p></div>
         <div class="category-container">
             <div id="topProductSection"></div>
-            <ul class="subcategory-nav"><li class="subcategory-item active" data-target="koas_shelf">서가</li><li class="subcategory-item" data-target="koas_table">테이블</li><li class="subcategory-item" data-target="koas_chair">의자</li><li class="subcategory-item" data-target="koas_etc">기타</li></ul><div class="product-list" id="productList"></div>
+            <ul class="subcategory-nav">
+                <li class="subcategory-item active" onclick="window.loadProducts('koas_shelf', this)">서가</li>
+                <li class="subcategory-item" onclick="window.loadProducts('koas_table', this)">테이블</li>
+                <li class="subcategory-item" onclick="window.loadProducts('koas_chair', this)">의자</li>
+                <li class="subcategory-item" onclick="window.loadProducts('koas_etc', this)">기타</li>
+            </ul>
+            <div class="product-list" id="productList"></div>
         </div>
     </main>
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-info">
-                <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
-                <p>Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
-                <p>대표자명 : 강인숙 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
-                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
-            </div>
-        </div>
-    </footer>
-    <aside class="right-fixed-banner">
-        <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i></a></li>
-            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i></a></li>
-            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i></a></li>
-            <li class="scroll-btns"><button class="banner-btn scroll-top" id="scrollTopBtn"><i class="fa-solid fa-chevron-up"></i></button><button class="banner-btn scroll-bottom" id="scrollBottomBtn"><i class="fa-solid fa-chevron-down"></i></button></li>
-        </ul>
-    </aside>
-    <div class="chat-widget"><button class="chat-fab" id="chatFab"><i class="fa-solid fa-comment-dots"></i></button><div class="chat-window" id="chatWindow"><div class="chat-header"><h5>실시간 상담</h5><button id="chatCloseBtn">&times;</button></div><div class="chat-body" id="chatBody"><div class="message system-msg">안녕하세요. 에스지라이뮤입니다. 무엇을 도와드릴까요?</div></div><div class="chat-input-area"><input type="text" id="chatInput" placeholder="메시지 입력..."><button id="chatSendBtn">전송</button></div></div></div>
-    <div class="auth-overlay" id="authOverlay"><div class="auth-modal"><div class="auth-close" id="authClose">&times;</div><div class="auth-tabs"><div class="auth-tab active" data-target="loginPane">로그인</div><div class="auth-tab" data-target="signupPane">회원가입</div></div><div class="auth-content"><div class="auth-pane active" id="loginPane"><form id="loginForm"><input type="email" id="loginEmail" placeholder="이메일" required><input type="password" id="loginPassword" placeholder="비밀번호" required><button type="submit">로그인</button></form></div><div class="auth-pane" id="signupPane"><form id="signupForm"><input type="text" id="signupName" placeholder="이름" required><input type="email" id="signupEmail" placeholder="이메일" required><button type="submit">가입하기</button></form></div></div></div></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script><script src="cart.js"></script><script src="inquiry.js"></script><script src="auth.js"></script>
     <script>
         const { createClient } = supabase;
         const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        async function loadProducts(catId) {
+        const sc = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        window.updateQty = function(change) {
+            const input = document.getElementById('qtyInput');
+            if(!input) return;
+            let val = parseInt(input.value) + change;
+            if (val < 1) val = 1;
+            input.value = val;
+        };
+
+        window.loadProducts = async function(catId, el) {
+            if(el) {
+                document.querySelectorAll('.subcategory-item').forEach(nav => nav.classList.remove('active'));
+                el.classList.add('active');
+            }
             const container = document.getElementById('productList');
             const topSection = document.getElementById('topProductSection');
             if(!container) return;
-            
             container.innerHTML = '<div class="empty-state">데이터를 불러오는 중...</div>';
             if(topSection) topSection.innerHTML = '';
-
-            const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId);
-            if (error || !data || data.length === 0) {
-                container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
-                return;
-            }
-
-            // 1. Render Top Product (First item)
-            const p0 = data[0];
-            if(topSection) {
-                const priceText = p0.price ? (typeof p0.price === 'number' ? p0.price.toLocaleString() + '원' : p0.price) : '가격문의';
-                topSection.innerHTML = `
-                    <div class="top-product-row">
-                        <div class="top-product-img">
-                            <img src="${p0.image_url || 'assets/no-img.png'}" alt="${p0.name}">
-                        </div>
-                        <div class="top-product-info">
-                            <h3>${p0.name}</h3>
-                            <p class="price">${priceText}</p>
-                            <div class="top-product-btns">
-                                <a href="product-detail.html?id=${p0.id}" class="btn-top-buy">상세보기 / 구매하기</a>
-                                <button class="btn-top-cart" onclick="addToCart({id:'${p0.id}', name:'${p0.name}', price:${typeof p0.price === 'number' ? p0.price : 0}, qty:1})">장바구니 담기</button>
+            try {
+                const { data, error } = await sc.from('products').select('*').eq('category', catId);
+                if (error || !data || data.length === 0) {
+                    container.innerHTML = `<div class="empty-state">해당 카테고리(${catId})에 상품이 없습니다.</div>`;
+                    return;
+                }
+                const p0 = data[0];
+                if(topSection) {
+                    const priceText = p0.price ? (typeof p0.price === 'number' ? p0.price.toLocaleString() + '원' : p0.price) : '가격문의';
+                    const pPrice = typeof p0.price === 'number' ? p0.price : 0;
+                    topSection.innerHTML = `
+                        <div class="top-product-row">
+                            <div class="top-product-img"><img src="${p0.image_url || 'assets/no-img.png'}" alt="${p0.name}"></div>
+                            <div class="top-product-info">
+                                <h2 style="font-size:1.8rem; margin-bottom:10px;">${p0.name}</h2>
+                                <p class="price">${priceText}</p>
+                                <div class="purchase-options">
+                                    <div class="option-group"><label>제품 선택</label><select class="option-select"><option value="">제품을 선택하세요</option><option value="default">기본 옵션</option></select></div>
+                                    <div class="option-group"><label>수량</label><div class="quantity-control"><button class="qty-btn" onclick="window.updateQty(-1)"><i class="fa-solid fa-minus"></i></button><input type="text" class="qty-input" id="qtyInput" value="1" readonly><button class="qty-btn" onclick="window.updateQty(1)"><i class="fa-solid fa-plus"></i></button></div></div>
+                                </div>
+                                <div class="buy-btn-group">
+                                    <button class="btn-large btn-cart" onclick="addToCart({id:'${p0.id}', name:'${p0.name}', price:${pPrice}, qty:parseInt(document.getElementById('qtyInput').value)})">장바구니 담기</button>
+                                    <a href="product-detail.html?id=${p0.id}" class="btn-large btn-buy">상세보기 / 구매하기</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
+                container.innerHTML = '';
+                data.slice(1).forEach(p => {
+                    const card = document.createElement('div');
+                    card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
+                    const pPrice = p.price ? (typeof p.price === 'number' ? p.price.toLocaleString() + '원' : p.price) : '가격문의';
+                    card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${pPrice}</p></div></a>`;
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div class="empty-state">오류가 발생했습니다.</div>';
             }
-
-            // 2. Render remaining products in grid
-            container.innerHTML = '';
-            data.slice(1).forEach(p => {
-                const card = document.createElement('div');
-                card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
-                const pPrice = p.price ? (typeof p.price === 'number' ? p.price.toLocaleString() + '원' : p.price) : '가격문의';
-                card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${pPrice}</p></div></a>`;
-                container.appendChild(card);
-            });
-        }
-        document.querySelectorAll('.subcategory-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.subcategory-item').forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-                loadProducts(item.dataset.target);
-            });
-        });
-        window.addEventListener('DOMContentLoaded', () => {
-            const firstTab = document.querySelector('.subcategory-item.active');
-            if(firstTab) loadProducts(firstTab.dataset.target);
-        });
+        };
+        window.addEventListener('DOMContentLoaded', () => { window.loadProducts('koas_shelf'); });
     </script>
 </body>
 </html>
