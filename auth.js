@@ -7,14 +7,22 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 세션 영속성 설정을 위해 옵션 추가
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+    }
+});
 
 // ==========================================
 // 📱 Kakao SDK Initialization
 // ==========================================
-const KAKAO_JS_KEY = 'afd6cc8f3b753cd6907f9eeadeac2342'; // [중요] 여기에 카카오 JavaScript 키를 입력하세요!
+const KAKAO_JS_KEY = 'afd6cc8f3b753cd6907f9eeadeac2342'; 
 if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
     Kakao.init(KAKAO_JS_KEY);
+    console.log('Kakao SDK Initialized:', Kakao.isInitialized());
 }
 
 // DOM Elements
@@ -75,45 +83,51 @@ let selectedUserType = 'individual';
 const typeBtns = document.querySelectorAll('.auth-type-btn');
 const bizGroup = document.getElementById('bizGroup');
 
-typeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        typeBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedUserType = btn.dataset.type;
-        
-        if (bizGroup) {
-            bizGroup.style.display = (selectedUserType === 'business') ? 'block' : 'none';
-        }
+if (typeBtns) {
+    typeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            typeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedUserType = btn.dataset.type;
+            
+            if (bizGroup) {
+                bizGroup.style.display = (selectedUserType === 'business') ? 'block' : 'none';
+            }
+        });
     });
-});
+}
 
 // ==========================================
 // 2. Auth Logic - Social
 // ==========================================
 async function signInWithSocial(provider) {
-    // 유저 타입을 저장 (가입 시 필요)
     localStorage.setItem('pending_user_type', selectedUserType);
     
-    // Supabase를 통한 다이렉트 소셜 로그인 (가장 안정적)
+    console.log(`Starting login with ${provider}...`);
     const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-            redirectTo: window.location.origin,
+            redirectTo: window.location.origin + window.location.pathname,
             queryParams: {
-                prompt: 'none' // 이미 로그인된 경우 자동으로 넘어가도록 설정
+                prompt: 'none'
             }
         }
     });
-    if (error) alert(`${provider} 로그인 오류: ` + error.message);
+    if (error) {
+        console.error('Login Error:', error);
+        alert(`${provider} 로그인 오류: ` + error.message);
+    }
 }
 
 if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => signInWithSocial('kakao'));
 if (naverLoginBtn) naverLoginBtn.addEventListener('click', () => signInWithSocial('naver'));
 if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => signInWithSocial('google'));
 
-socialSignupBtns.forEach(btn => {
-    btn.addEventListener('click', () => signInWithSocial(btn.dataset.provider));
-});
+if (socialSignupBtns) {
+    socialSignupBtns.forEach(btn => {
+        btn.addEventListener('click', () => signInWithSocial(btn.dataset.provider));
+    });
+}
 
 // ==========================================
 // 3. Auth Logic - Email/PW & Profile
@@ -258,25 +272,34 @@ if (completeProfileForm) {
 async function checkProfileCompletion(user) {
     if (!user) return;
     
-    // 프로필 정보 가져오기
+    console.log('Checking profile completion for:', user.email);
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
     
-    if (error && error.code !== 'PGRST116') return;
+    if (error && error.code !== 'PGRST116') {
+        console.error('Profile fetch error:', error);
+        return;
+    }
 
-    // 카카오 등으로 첫 로그인 시 전화번호나 기관 정보가 없으면 추가 입력창 호출
     if (!profile || !profile.phone || !profile.organization) {
+        console.log('Profile incomplete, opening completion pane.');
         openAuthModal('completeProfilePane');
+    } else {
+        console.log('Profile complete.');
     }
 }
 
-async function updateAuthUI(user) {
-    if (!userAuthWrap) return;
+function updateAuthUI(user) {
+    if (!userAuthWrap) {
+        console.warn('userAuthWrap element not found!');
+        return;
+    }
 
     if (user) {
+        console.log('Updating UI for logged-in user:', user.email);
         const userName = user.user_metadata.full_name || user.email.split('@')[0];
         userAuthWrap.innerHTML = `
             <div class="user-profile-nav">
@@ -284,13 +307,17 @@ async function updateAuthUI(user) {
                 <button class="logout-btn" id="logoutBtn">로그아웃</button>
             </div>
         `;
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.reload();
-        });
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.reload();
+            });
+        }
         
         checkProfileCompletion(user);
     } else {
+        console.log('Updating UI for guest user.');
         userAuthWrap.innerHTML = `
             <button class="login-trigger-btn" id="loginTriggerBtn">
                 <i class="fa-regular fa-user"></i>
@@ -302,20 +329,21 @@ async function updateAuthUI(user) {
     }
 }
 
-async function initAuth() {
-    // 세션 정보를 먼저 확인 (리다이렉트 후 처리 포함)
-    const { data: { session } } = await supabase.auth.getSession();
+// 초기 세션 확인 및 리스너 등록
+supabase.auth.onAuthStateChange((event, session) => {
+    console.log('Auth State Changed:', event, session);
     if (session) {
         updateAuthUI(session.user);
-    }
-}
-
-initAuth();
-
-supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN') {
-        updateAuthUI(session.user);
-    } else if (event === 'SIGNED_OUT') {
+    } else {
         updateAuthUI(null);
+    }
+});
+
+// 페이지 로드 시 즉시 실행
+document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Initial Session Check:', session);
+    if (session) {
+        updateAuthUI(session.user);
     }
 });
