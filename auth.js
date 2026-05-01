@@ -1,5 +1,5 @@
 // auth.js
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const { createClient } = typeof supabase !== 'undefined' ? supabase : { createClient: null };
 
 // ==========================================
 // 🚨 Supabase Configuration (Sync with admin.js)
@@ -7,7 +7,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = createClient ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const authSupabase = supabaseClient; // Local reference for this script
 
 // DOM Elements
 const authOverlay = document.getElementById('authOverlay');
@@ -88,7 +89,7 @@ async function signInWithSocial(provider) {
     // Store user type in localStorage to use after redirect (for new users)
     localStorage.setItem('pending_user_type', selectedUserType);
     
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: provider,
         options: {
             redirectTo: window.location.origin,
@@ -135,7 +136,7 @@ if (signupForm) {
 
         signupMsg.textContent = '가입 처리 중...';
 
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
             email,
             password,
             options: {
@@ -171,7 +172,7 @@ if (loginForm) {
         loginMsg.className = 'auth-message';
         loginMsg.textContent = '로그인 중...';
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email,
             password
         });
@@ -205,10 +206,10 @@ if (completeProfileForm) {
         completeMsg.className = 'auth-message';
         completeMsg.textContent = '저장 중...';
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
 
-        const { error } = await supabase.from('profiles').update({
+        const { error } = await supabaseClient.from('profiles').update({
             phone: phone,
             organization: org,
             address: address,
@@ -236,7 +237,7 @@ if (completeProfileForm) {
 async function checkProfileCompletion(user) {
     if (!user) return;
     
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', user.id)
@@ -265,7 +266,7 @@ async function updateAuthUI(user) {
             </div>
         `;
         document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.reload();
         });
         
@@ -284,16 +285,25 @@ async function updateAuthUI(user) {
 }
 
 async function initAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
-    updateAuthUI(session ? session.user : null);
+    if (!supabaseClient) return;
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const user = session ? session.user : null;
+    updateAuthUI(user);
+    
+    // [자동 실행] 사이트 처음 접속 시 로그인이 안 되어 있으면 창 띄우기
+    if (!user) {
+        setTimeout(() => openAuthModal(), 500); 
+    }
 }
 
 initAuth();
 
-supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN') {
-        updateAuthUI(session.user);
-    } else if (event === 'SIGNED_OUT') {
-        updateAuthUI(null);
-    }
-});
+if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN') {
+            updateAuthUI(session.user);
+        } else if (event === 'SIGNED_OUT') {
+            updateAuthUI(null);
+        }
+    });
+}
