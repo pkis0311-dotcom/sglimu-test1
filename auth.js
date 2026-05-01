@@ -12,9 +12,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ==========================================
 // 📱 Kakao SDK Initialization
 // ==========================================
-const KAKAO_JS_KEY = 'YOUR_KAKAO_JS_KEY'; // [중요] 여기에 카카오 JavaScript 키를 입력하세요!
+const KAKAO_JS_KEY = 'aa35d04f38233f74d1424c86c66d7c5c'; // [중요] 여기에 카카오 JavaScript 키를 입력하세요!
 if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
-    Kakao.init(KAKAO_JS_KEY);
+    Kakao.init(aa35d04f38233f74d1424c86c66d7c5c);
     console.log('Kakao SDK Initialized:', Kakao.isInitialized());
 }
 
@@ -81,7 +81,7 @@ typeBtns.forEach(btn => {
         typeBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedUserType = btn.dataset.type;
-        
+
         if (bizGroup) {
             bizGroup.style.display = (selectedUserType === 'business') ? 'block' : 'none';
         }
@@ -93,15 +93,15 @@ typeBtns.forEach(btn => {
 // ==========================================
 async function signInWithSocial(provider) {
     localStorage.setItem('pending_user_type', selectedUserType);
-    
+
     // 카카오 SDK를 이용한 로그인 (팝업 방식)
     if (provider === 'kakao' && typeof Kakao !== 'undefined' && Kakao.isInitialized()) {
         Kakao.Auth.login({
-            success: function(authObj) {
+            success: function (authObj) {
                 console.log('Kakao Login Success:', authObj);
                 Kakao.API.request({
                     url: '/v2/user/me',
-                    success: async function(res) {
+                    success: async function (res) {
                         console.log('Kakao User Info:', res);
                         // 세션 유지를 위해 Supabase OAuth 연동 호출
                         const { error } = await supabase.auth.signInWithOAuth({
@@ -110,12 +110,12 @@ async function signInWithSocial(provider) {
                         });
                         if (error) alert('카카오 연동 오류: ' + error.message);
                     },
-                    fail: function(error) {
+                    fail: function (error) {
                         console.error('Kakao User Info Fail:', error);
                     }
                 });
             },
-            fail: function(err) {
+            fail: function (err) {
                 console.error('Kakao Login Fail:', err);
             }
         });
@@ -157,7 +157,7 @@ if (signupForm) {
         const address = document.getElementById('signupAddress')?.value;
 
         if (signupMsg) signupMsg.className = 'auth-message';
-        
+
         if (passwordConfirm && password !== passwordConfirm) {
             if (signupMsg) {
                 signupMsg.textContent = '비밀번호가 일치하지 않습니다.';
@@ -282,13 +282,13 @@ if (completeProfileForm) {
 
 async function checkProfileCompletion(user) {
     if (!user) return;
-    
+
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
-    
+
     if (error && error.code !== 'PGRST116') return;
 
     if (!profile || !profile.phone || !profile.organization) {
@@ -311,7 +311,7 @@ async function updateAuthUI(user) {
             await supabase.auth.signOut();
             window.location.reload();
         });
-        
+
         checkProfileCompletion(user);
     } else {
         userAuthWrap.innerHTML = `
