@@ -12,10 +12,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ==========================================
 // 📱 Kakao SDK Initialization
 // ==========================================
-const KAKAO_JS_KEY = 'YOUR_KAKAO_JS_KEY'; // [중요] 여기에 카카오 JavaScript 키를 입력하세요!
+const KAKAO_JS_KEY = 'afd6cc8f3b753cd6907f9eeadeac2342'; // [중요] 여기에 카카오 JavaScript 키를 입력하세요!
 if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
     Kakao.init(KAKAO_JS_KEY);
-    console.log('Kakao SDK Initialized:', Kakao.isInitialized());
 }
 
 // DOM Elements
@@ -92,40 +91,17 @@ typeBtns.forEach(btn => {
 // 2. Auth Logic - Social
 // ==========================================
 async function signInWithSocial(provider) {
+    // 유저 타입을 저장 (가입 시 필요)
     localStorage.setItem('pending_user_type', selectedUserType);
     
-    // 카카오 SDK를 이용한 로그인 (팝업 방식)
-    if (provider === 'kakao' && typeof Kakao !== 'undefined' && Kakao.isInitialized()) {
-        Kakao.Auth.login({
-            success: function(authObj) {
-                console.log('Kakao Login Success:', authObj);
-                Kakao.API.request({
-                    url: '/v2/user/me',
-                    success: async function(res) {
-                        console.log('Kakao User Info:', res);
-                        // 세션 유지를 위해 Supabase OAuth 연동 호출
-                        const { error } = await supabase.auth.signInWithOAuth({
-                            provider: 'kakao',
-                            options: { redirectTo: window.location.origin }
-                        });
-                        if (error) alert('카카오 연동 오류: ' + error.message);
-                    },
-                    fail: function(error) {
-                        console.error('Kakao User Info Fail:', error);
-                    }
-                });
-            },
-            fail: function(err) {
-                console.error('Kakao Login Fail:', err);
-            }
-        });
-        return;
-    }
-
+    // Supabase를 통한 다이렉트 소셜 로그인 (가장 안정적)
     const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-            redirectTo: window.location.origin
+            redirectTo: window.location.origin,
+            queryParams: {
+                prompt: 'none' // 이미 로그인된 경우 자동으로 넘어가도록 설정
+            }
         }
     });
     if (error) alert(`${provider} 로그인 오류: ` + error.message);
@@ -282,6 +258,7 @@ if (completeProfileForm) {
 async function checkProfileCompletion(user) {
     if (!user) return;
     
+    // 프로필 정보 가져오기
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -290,6 +267,7 @@ async function checkProfileCompletion(user) {
     
     if (error && error.code !== 'PGRST116') return;
 
+    // 카카오 등으로 첫 로그인 시 전화번호나 기관 정보가 없으면 추가 입력창 호출
     if (!profile || !profile.phone || !profile.organization) {
         openAuthModal('completeProfilePane');
     }
@@ -325,8 +303,11 @@ async function updateAuthUI(user) {
 }
 
 async function initAuth() {
+    // 세션 정보를 먼저 확인 (리다이렉트 후 처리 포함)
     const { data: { session } } = await supabase.auth.getSession();
-    updateAuthUI(session ? session.user : null);
+    if (session) {
+        updateAuthUI(session.user);
+    }
 }
 
 initAuth();
