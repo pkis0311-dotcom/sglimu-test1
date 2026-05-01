@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>Supabase Check 2</title>
+    <link rel="stylesheet" href="auth.css">
 </head>
 <body>
     <div id="log" style="white-space: pre-wrap; font-family: monospace; background: #eee; padding: 20px;"></div>
@@ -48,5 +49,49 @@
 
         check();
     </script>
+    <!-- Auth Modal Overlay -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-modal">
+            <div class="auth-close" id="authClose">&times;</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-target="loginPane">로그??/div>
+                <div class="auth-tab" data-target="signupPane">?�원가??/div>
+            </div>
+            <div class="auth-content">
+                <div class="auth-pane active" id="loginPane">
+                    <div class="auth-header"><h2>?�영?�니??</h2><p>간편로그?�으�?빠르�??�작?�세??</p></div>
+                    <div class="social-login-grid">
+                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카??로그??/button>
+                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?�이�?로그??/button>
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그??/button>
+                    </div>
+                    <div class="auth-divider"><span>?�는</span></div>
+                    <form id="loginForm">
+                        <div class="auth-form-group"><label>?�메??/label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>비�?번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비�?번호�??�력?�세?? required></div>
+                        <button type="submit" class="auth-submit-btn">로그??/button>
+                    </form>
+                    <div id="loginMsg" class="auth-message"></div>
+                </div>
+                <div class="auth-pane" id="signupPane">
+                    <div class="auth-header"><h2>?�원가??/h2><p>간단???�보 ?�력?�로 ??많�? ?�택???�리?�요.</p></div>
+                    <form id="signupForm">
+                        <div class="auth-row">
+                            <div class="auth-form-group"><label>?�름 *</label><input type="text" id="signupName" class="auth-input" placeholder="?�길?? required></div>
+                            <div class="auth-form-group"><label>?�화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        </div>
+                        <div class="auth-form-group"><label>?�메??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>비�?번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???�상 ?�력" minlength="6" required></div>
+                        <div class="auth-form-group"><label>?�속기�? / ?�교 / ?�서관�?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?�국?�?�교 ?�서관"></div>
+                        <div class="auth-form-group"><label>배송/방문??주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="?�체 주소�??�력?�세??></div>
+                        <button type="submit" class="auth-submit-btn">가?�하�?/button>
+                    </form>
+                    <div id="signupMsg" class="auth-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="auth.js"></script>
 </body>
 </html>
+

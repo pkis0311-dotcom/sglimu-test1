@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>할인상품 - SG LIMU</title>
+    <title>할인상품 - 에스지라이뮤</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="auth.css">
     <link rel="stylesheet" href="cart.css">
@@ -13,7 +13,7 @@
     <style>
         .category-page { padding: 80px 0 100px; min-height: 800px; }
         .category-container { max-width: 1400px; margin: 0 auto; padding: 0 5%; }
-        .category-header { text-align: center; margin-bottom: 60px; padding: 80px 5% 60px; background-color: var(--color-surface); border-radius: 20px; }
+        .category-header { text-align: center; margin-bottom: 60px; padding: 100px 5% 60px; background-color: var(--color-surface); border-radius: 20px; }
         .category-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; }
         .subcategory-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }
         .subcategory-item { padding: 12px 30px; font-weight: 600; color: var(--color-text-light); background: #fff; border: 1px solid var(--color-border); border-radius: 30px; cursor: pointer; transition: var(--transition-smooth); }
@@ -31,15 +31,46 @@
                     <li class="has-submenu">
                         <a href="#">도서관리 시스템</a>
                         <ul class="submenu">
-                            <li><a href="rfid.html">RFID시스템</a></li>
-                            <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입관리시스템</a></li>
+                            <li class="has-nested">
+                                <a href="rfid.html">RFID시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="rfid.html?cat=rfid_tag">태그 (TAG)</a></li>
+                                    <li><a href="rfid.html?cat=rfid_anti">분실방지기</a></li>
+                                    <li><a href="rfid.html?cat=rfid_reader">리더기</a></li>
+                                    <li><a href="rfid.html?cat=rfid_return">대출반납기</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-nested">
+                                <a href="em.html">EM시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="em.html?cat=em_anti">분실방지기</a></li>
+                                    <li><a href="em.html?cat=em_gen">감응제거재생기</a></li>
+                                    <li><a href="em.html?cat=em_tape">감응 테이프</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-nested">
+                                <a href="access.html">출입관리시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="access.html?cat=access_7000">TNH-7000A</a></li>
+                                    <li><a href="access.html?cat=access_8000">TNH-8000A</a></li>
+                                    <li><a href="access.html?cat=access_2203">EZ-2203AWG</a></li>
+                                    <li><a href="access.html?cat=access_2204">EZ-2204AWG</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
                     <li class="has-submenu">
                         <a href="#">도서관 용품</a>
                         <ul class="submenu">
-                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
+                            <li class="has-nested">
+                                <a href="supplies-arrange.html">도서정리 용품 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                                <ul class="nested-submenu">
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_keeper">키퍼</a></li>
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_color">색띠라벨</a></li>
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_paper">라벨용지</a></li>
+                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_bookend">북앤드</a></li>
+                                </ul>
+                            </li>
                             <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
                             <li><a href="supplies-lend.html">대출용품</a></li>
                             <li><a href="sterilizer.html">책소독기</a></li>
@@ -67,47 +98,67 @@
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper"><input type="text" class="search-input" placeholder="검색어를 입력하세요"><a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a></div>
-                <div class="user-auth-wrap" id="userAuthWrap"><button class="login-trigger-btn" id="loginTriggerBtn"><i class="fa-regular fa-user"></i><span>로그인</span></button></div>
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+                </div>
+                <div class="user-auth-wrap" id="userAuthWrap">
+                    <button class="login-trigger-btn" id="loginTriggerBtn">
+                        <i class="fa-regular fa-user"></i>
+                        <span>로그인</span>
+                    </button>
+                </div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
         </div>
     </header>
+
     <main class="category-page">
         <div class="category-header">
             <h2 class="category-title">할인상품</h2>
             <p>특별한 가격으로 만나보실 수 있는 좋은 기회의 할인 상품들입니다.</p>
         </div>
         <div class="category-container">
-            <div id="dynamicTabContainer"></div>
+            <ul class="subcategory-nav">
+                <li class="subcategory-item active" data-target="discount_items">할인상품</li>
+            </ul>
             <div class="product-list" id="productList"></div>
         </div>
     </main>
+
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
                 <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
-                <p>Address : 부산광역시 금정구 중앙대로 2210번길 29-1 (두구동)</p>
-                <p>대표자명 : 강인태 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
+                <p>Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
+                <p>대표자명 : 강인숙 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script><script src="cart.js"></script><script src="inquiry.js"></script><script src="auth.js"></script>
+    <script src="script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', () => {
             const tabs = document.querySelectorAll('.subcategory-item');
-            const pageId = 'discount';
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     tabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    window.loadGlobalProducts(pageId + '-' + tab.dataset.target);
+                    window.loadGlobalProducts(tab.dataset.target);
                 });
             });
-            const firstTab = document.querySelector('.subcategory-item.active');
-            if(firstTab) window.loadGlobalProducts(pageId + '-' + firstTab.dataset.target);
+
+            const initialCat = new URLSearchParams(window.location.search).get('cat');
+            if (initialCat) {
+                const targetTab = document.querySelector(`.subcategory-item[data-target="${initialCat}"]`);
+                if (targetTab) targetTab.click();
+                else window.loadGlobalProducts(initialCat);
+            } else {
+                const firstTab = document.querySelector('.subcategory-item.active');
+                if(firstTab) window.loadGlobalProducts(firstTab.dataset.target);
+            }
         });
     </script>
 </body>

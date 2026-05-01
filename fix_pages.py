@@ -1,4 +1,4 @@
-import os
+﻿import os
 
 template = """<!DOCTYPE html>
 <html lang="ko">
@@ -18,18 +18,6 @@ template = """<!DOCTYPE html>
         .subcategory-item.active { color: #fff; background: var(--color-primary); border-color: var(--color-primary); }
         .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
         .empty-state { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #999; }
-        
-        /* Hero Product Style */
-        .top-product-row { margin-bottom: 80px; padding: 40px; background: #fff; border-radius: 24px; border: 1px solid #eee; display: flex; gap: 50px; align-items: center; }
-        .top-product-img { flex: 1; max-width: 500px; border-radius: 15px; overflow: hidden; background: #f9f9f9; }
-        .top-product-img img { width: 100%; height: auto; display: block; object-fit: contain; }
-        .top-product-info { flex: 1; }
-        .top-product-info h3 { font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #1a1a1a; }
-        .top-product-info .price { font-size: 1.8rem; font-weight: 800; color: var(--color-primary); margin-bottom: 25px; }
-        .top-product-btns { display: flex; gap: 15px; }
-        .btn-top-buy { flex: 1; height: 56px; background: #222; color: #fff; border-radius: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-        .btn-top-cart { flex: 1; height: 56px; background: #fff; color: #222; border: 2px solid #222; border-radius: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-        @media (max-width: 992px) { .top-product-row { flex-direction: column; padding: 20px; } .top-product-img { max-width: 100%; } }
     </style>
 </head>
 <body>
@@ -52,13 +40,7 @@ template = """<!DOCTYPE html>
             </div>
         </div>
     </header>
-    <main class="category-page">
-        <div class="category-header"><h2 class="category-title">{title}</h2><p>{desc}</p></div>
-        <div class="category-container">
-            <div id="topProductSection"></div>
-            {categoryLogic}
-        </div>
-    </main>
+    <main class="category-page"><div class="category-header"><h2 class="category-title">{title}</h2><p>{desc}</p></div><div class="category-container">{categoryLogic}</div></main>
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
@@ -87,43 +69,15 @@ template = """<!DOCTYPE html>
         const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         async function loadProducts(catId) {
-            const container = document.getElementById('productList');
-            const topSection = document.getElementById('topProductSection');
-            if(!container) return;
-            
+            const container = document.getElementById('productList'); if(!container) return;
             container.innerHTML = '<div class="empty-state">데이터를 불러오는 중...</div>';
-            if(topSection) topSection.innerHTML = '';
-
             const { data, error } = await supabaseClient.from('products').select('*').eq('category', catId);
             if (error || !data || data.length === 0) {
                 container.innerHTML = '<div class="empty-state">해당 카테고리에 상품이 없습니다.</div>';
                 return;
             }
-
-            // 1. Render Top Product (First item)
-            const p0 = data[0];
-            if(topSection) {
-                const priceText = p0.price ? p0.price.toLocaleString() + '원' : '가격문의';
-                topSection.innerHTML = `
-                    <div class="top-product-row">
-                        <div class="top-product-img">
-                            <img src="${p0.image_url || 'assets/no-img.png'}" alt="${p0.name}">
-                        </div>
-                        <div class="top-product-info">
-                            <h3>${p0.name}</h3>
-                            <p class="price">${priceText}</p>
-                            <div class="top-product-btns">
-                                <a href="product-detail.html?id=${p0.id}" class="btn-top-buy">상세보기 / 구매하기</a>
-                                <button class="btn-top-cart" onclick="addToCart({id:'${p0.id}', name:'${p0.name}', price:${typeof p0.price === 'number' ? p0.price : 0}, qty:1})">장바구니 담기</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // 2. Render remaining products in grid
             container.innerHTML = '';
-            data.slice(1).forEach(p => {
+            data.forEach(p => {
                 const card = document.createElement('div');
                 card.style.cssText = "background:#fff; border-radius:15px; border:1px solid #eee; overflow:hidden;";
                 card.innerHTML = `<a href="product-detail.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div style="height:250px; background:url('${p.image_url}') center/contain no-repeat #f9f9f9; border-bottom:1px solid #eee;"></div><div style="padding:20px;"><h4 style="margin-bottom:10px; font-weight:600;">${p.name}</h4><p style="font-weight:700; color:var(--color-primary); font-size:1.1rem;">${p.price ? p.price.toLocaleString() + '원' : '가격문의'}</p></div></a>`;
