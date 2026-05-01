@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="cart.css">
     <link rel="stylesheet" href="inquiry.css">
     <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="auth.css">
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <header class="header">
@@ -492,6 +495,78 @@
                         <button type="submit" class="auth-submit-btn">媛?낇븯湲?/button>
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="auth.js"></script>
+    <!-- Auth Modal Overlay -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-modal">
+            <div class="auth-close" id="authClose">&times;</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-target="loginPane">濡쒓렇??/div>
+                <div class="auth-tab" data-target="signupPane">?뚯썝媛??/div>
+            </div>
+            <div class="auth-content">
+                <div class="auth-pane active" id="loginPane">
+                    <div class="auth-header"><h2>?섏쁺?⑸땲??</h2><p>媛꾪렪濡쒓렇?몄쑝濡?鍮좊Ⅴ寃??쒖옉?섏꽭??</p></div>
+                    <div class="social-login-grid">
+                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 移댁뭅??濡쒓렇??/button>
+                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰?濡쒓렇??/button>
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 濡쒓렇??/button>
+                    </div>
+                    <div class="auth-divider"><span>?먮뒗</span></div>
+                    <form id="loginForm">
+                        <div class="auth-form-group"><label>?대찓??/label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>鍮꾨?踰덊샇</label><input type="password" id="loginPassword" class="auth-input" placeholder="鍮꾨?踰덊샇瑜??낅젰?섏꽭?? required></div>
+                        <button type="submit" class="auth-submit-btn">濡쒓렇??/button>
+                    </form>
+                    <div id="loginMsg" class="auth-message"></div>
+                </div>
+                <div class="auth-pane" id="signupPane">
+                    <div class="auth-header"><h2>?뚯썝媛??/h2><p>媛꾨떒???뺣낫 ?낅젰?쇰줈 ??留롮? ?쒗깮???꾨━?몄슂.</p></div>
+                    <div class="auth-social-signup">
+                        <div class="auth-social-signup-header"><span>媛꾪렪 ?뚯썝媛??/span></div>
+                        <div class="social-login-grid">
+                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 移댁뭅?ㅻ줈 ?쒖옉</button>
+                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰꾨줈 ?쒖옉</button>
+                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google濡??쒖옉</button>
+                        </div>
+                    </div>
+                    <div class="auth-divider"><span>?먮뒗 ?대찓?쇰줈 媛??/span></div>
+                    <div class="auth-type-selector" id="userTypeSelector">
+                        <div class="auth-type-btn active" data-type="individual">媛쒖씤 ?뚯썝</div>
+                        <div class="auth-type-btn" data-type="business">湲곌? / ?ъ뾽??/div>
+                    </div>
+                    <form id="signupForm">
+                        <div class="auth-row">
+                            <div class="auth-form-group"><label>?대쫫 *</label><input type="text" id="signupName" class="auth-input" placeholder="?띻만?? required></div>
+                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        </div>
+                        <div class="auth-form-group"><label>?대찓??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-row">
+                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???댁긽" minlength="6" required></div>
+                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 ?뺤씤 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="??踰????낅젰" required></div>
+                        </div>
+                        <div class="auth-form-group" id="orgGroup"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿"></div>
+                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>?ъ뾽???깅줉踰덊샇</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
+                        <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="signupAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
+                        <button type="submit" class="auth-submit-btn">媛?낇븯湲?/button>
+                    </form>
+                    <div id="signupMsg" class="auth-message"></div>
+                </div>
+                <div class="auth-pane" id="completeProfilePane">
+                    <div class="auth-header"><h2>異붽? ?뺣낫 ?낅젰</h2><p>?먰솢???쒕퉬???댁슜???꾪빐 ?꾩닔 ?뺣낫瑜??낅젰??二쇱꽭??</p></div>
+                    <form id="completeProfileForm">
+                        <div class="highlight-box">
+                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                            <div class="auth-form-group"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?*</label><input type="text" id="completeOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿" required></div>
+                            <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="completeAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
+                        </div>
+                        <button type="submit" class="auth-submit-btn">?뺣낫 ???諛??쒖옉?섍린</button>
+                    </form>
+                    <div id="completeMsg" class="auth-message"></div>
                 </div>
             </div>
         </div>

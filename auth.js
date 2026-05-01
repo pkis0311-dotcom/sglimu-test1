@@ -9,6 +9,15 @@ const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ==========================================
+// 📱 Kakao SDK Initialization
+// ==========================================
+const KAKAO_JS_KEY = 'YOUR_KAKAO_JS_KEY'; // [중요] 여기에 카카오 JavaScript 키를 입력하세요!
+if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+    Kakao.init(KAKAO_JS_KEY);
+    console.log('Kakao SDK Initialized:', Kakao.isInitialized());
+}
+
 // DOM Elements
 const authOverlay = document.getElementById('authOverlay');
 const loginTriggerBtn = document.getElementById('loginTriggerBtn');
@@ -24,7 +33,6 @@ const signupMsg = document.getElementById('signupMsg');
 const userAuthWrap = document.getElementById('userAuthWrap');
 
 // Social Login Buttons
-// Social Login & Signup Buttons
 const kakaoLoginBtn = document.getElementById('kakaoLoginBtn');
 const naverLoginBtn = document.getElementById('naverLoginBtn');
 const googleLoginBtn = document.getElementById('googleLoginBtn');
@@ -34,11 +42,13 @@ const socialSignupBtns = document.querySelectorAll('.social-signup-btn');
 // 1. Modal & Tab Logic
 // ==========================================
 function openAuthModal(tab = 'loginPane') {
+    if (!authOverlay) return;
     authOverlay.style.display = 'flex';
     switchTab(tab);
 }
 
 function closeAuthModal() {
+    if (!authOverlay) return;
     authOverlay.style.display = 'none';
 }
 
@@ -55,7 +65,7 @@ function switchTab(targetId) {
 
 if (loginTriggerBtn) loginTriggerBtn.addEventListener('click', () => openAuthModal());
 if (authClose) authClose.addEventListener('click', closeAuthModal);
-authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuthModal(); });
+if (authOverlay) authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuthModal(); });
 
 authTabs.forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.target));
@@ -72,11 +82,8 @@ typeBtns.forEach(btn => {
         btn.classList.add('active');
         selectedUserType = btn.dataset.type;
         
-        // Toggle business fields
-        if (selectedUserType === 'business') {
-            bizGroup.style.display = 'block';
-        } else {
-            bizGroup.style.display = 'none';
+        if (bizGroup) {
+            bizGroup.style.display = (selectedUserType === 'business') ? 'block' : 'none';
         }
     });
 });
@@ -85,16 +92,41 @@ typeBtns.forEach(btn => {
 // 2. Auth Logic - Social
 // ==========================================
 async function signInWithSocial(provider) {
-    // Store user type in localStorage to use after redirect (for new users)
     localStorage.setItem('pending_user_type', selectedUserType);
     
+    // 카카오 SDK를 이용한 로그인 (팝업 방식)
+    if (provider === 'kakao' && typeof Kakao !== 'undefined' && Kakao.isInitialized()) {
+        Kakao.Auth.login({
+            success: function(authObj) {
+                console.log('Kakao Login Success:', authObj);
+                Kakao.API.request({
+                    url: '/v2/user/me',
+                    success: async function(res) {
+                        console.log('Kakao User Info:', res);
+                        // 세션 유지를 위해 Supabase OAuth 연동 호출
+                        const { error } = await supabase.auth.signInWithOAuth({
+                            provider: 'kakao',
+                            options: { redirectTo: window.location.origin }
+                        });
+                        if (error) alert('카카오 연동 오류: ' + error.message);
+                    },
+                    fail: function(error) {
+                        console.error('Kakao User Info Fail:', error);
+                    }
+                });
+            },
+            fail: function(err) {
+                console.error('Kakao Login Fail:', err);
+            }
+        });
+        return;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
             redirectTo: window.location.origin,
-            queryParams: {
-                prompt: 'select_account'
-            }
+            queryParams: { prompt: 'select_account' }
         }
     });
     if (error) alert(`${provider} 로그인 오류: ` + error.message);
@@ -112,7 +144,6 @@ socialSignupBtns.forEach(btn => {
 // 3. Auth Logic - Email/PW & Profile
 // ==========================================
 
-// SIGN UP
 if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -120,20 +151,22 @@ if (signupForm) {
         const phone = document.getElementById('signupPhone').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
-        const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
-        const organization = document.getElementById('signupOrg').value;
-        const bizNumber = document.getElementById('signupBizNumber').value;
-        const address = document.getElementById('signupAddress').value;
+        const passwordConfirm = document.getElementById('signupPasswordConfirm')?.value;
+        const organization = document.getElementById('signupOrg')?.value;
+        const bizNumber = document.getElementById('signupBizNumber')?.value;
+        const address = document.getElementById('signupAddress')?.value;
 
-        signupMsg.className = 'auth-message';
+        if (signupMsg) signupMsg.className = 'auth-message';
         
-        if (password !== passwordConfirm) {
-            signupMsg.textContent = '비밀번호가 일치하지 않습니다.';
-            signupMsg.classList.add('error');
+        if (passwordConfirm && password !== passwordConfirm) {
+            if (signupMsg) {
+                signupMsg.textContent = '비밀번호가 일치하지 않습니다.';
+                signupMsg.classList.add('error');
+            }
             return;
         }
 
-        signupMsg.textContent = '가입 처리 중...';
+        if (signupMsg) signupMsg.textContent = '가입 처리 중...';
 
         const { data, error } = await supabase.auth.signUp({
             email,
@@ -151,25 +184,30 @@ if (signupForm) {
         });
 
         if (error) {
-            signupMsg.textContent = '가입 오류: ' + error.message;
-            signupMsg.classList.add('error');
+            if (signupMsg) {
+                signupMsg.textContent = '가입 오류: ' + error.message;
+                signupMsg.classList.add('error');
+            }
         } else {
-            signupMsg.textContent = '가입 성공! 이메일을 확인하거나 로그인해 주세요.';
-            signupMsg.classList.add('success');
+            if (signupMsg) {
+                signupMsg.textContent = '가입 성공! 이메일을 확인하거나 로그인해 주세요.';
+                signupMsg.classList.add('success');
+            }
             signupForm.reset();
         }
     });
 }
 
-// LOGIN
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
 
-        loginMsg.className = 'auth-message';
-        loginMsg.textContent = '로그인 중...';
+        if (loginMsg) {
+            loginMsg.className = 'auth-message';
+            loginMsg.textContent = '로그인 중...';
+        }
 
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
@@ -177,11 +215,15 @@ if (loginForm) {
         });
 
         if (error) {
-            loginMsg.textContent = '로그인 실패: ' + error.message;
-            loginMsg.classList.add('error');
+            if (loginMsg) {
+                loginMsg.textContent = '로그인 실패: ' + error.message;
+                loginMsg.classList.add('error');
+            }
         } else {
-            loginMsg.textContent = '반갑습니다! 로그인 성공.';
-            loginMsg.classList.add('success');
+            if (loginMsg) {
+                loginMsg.textContent = '반갑습니다! 로그인 성공.';
+                loginMsg.classList.add('success');
+            }
             setTimeout(() => {
                 closeAuthModal();
                 updateAuthUI(data.user);
@@ -190,7 +232,6 @@ if (loginForm) {
     });
 }
 
-// PROFILE COMPLETION
 const completeProfileForm = document.getElementById('completeProfileForm');
 const completeMsg = document.getElementById('completeMsg');
 
@@ -202,8 +243,10 @@ if (completeProfileForm) {
         const address = document.getElementById('completeAddress').value;
         const userType = localStorage.getItem('pending_user_type') || 'individual';
 
-        completeMsg.className = 'auth-message';
-        completeMsg.textContent = '저장 중...';
+        if (completeMsg) {
+            completeMsg.className = 'auth-message';
+            completeMsg.textContent = '저장 중...';
+        }
 
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
@@ -216,11 +259,15 @@ if (completeProfileForm) {
         }).eq('id', user.id);
 
         if (error) {
-            completeMsg.textContent = '저장 실패: ' + error.message;
-            completeMsg.classList.add('error');
+            if (completeMsg) {
+                completeMsg.textContent = '저장 실패: ' + error.message;
+                completeMsg.classList.add('error');
+            }
         } else {
-            completeMsg.textContent = '저장 완료! 환영합니다.';
-            completeMsg.classList.add('success');
+            if (completeMsg) {
+                completeMsg.textContent = '저장 완료! 환영합니다.';
+                completeMsg.classList.add('success');
+            }
             setTimeout(() => {
                 closeAuthModal();
                 window.location.reload();
@@ -242,20 +289,16 @@ async function checkProfileCompletion(user) {
         .eq('id', user.id)
         .single();
     
-    if (error && error.code !== 'PGRST116') return; // PGRST116 is 'not found'
+    if (error && error.code !== 'PGRST116') return;
 
-    // If profile is missing phone or organization, show completion pane
     if (!profile || !profile.phone || !profile.organization) {
-        // Clear pending type after we know we're using it
         openAuthModal('completeProfilePane');
-        // Pre-fill name if available
-        if (profile && profile.full_name) {
-            // Optional: pre-fill fields
-        }
     }
 }
 
 async function updateAuthUI(user) {
+    if (!userAuthWrap) return;
+
     if (user) {
         const userName = user.user_metadata.full_name || user.email.split('@')[0];
         userAuthWrap.innerHTML = `
@@ -269,7 +312,6 @@ async function updateAuthUI(user) {
             window.location.reload();
         });
         
-        // After UI update, check for profile completion
         checkProfileCompletion(user);
     } else {
         userAuthWrap.innerHTML = `
