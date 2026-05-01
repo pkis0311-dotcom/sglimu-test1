@@ -1,191 +1,26 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제품 상세 - 에스지라이뮤</title>
+    <title>SG프리미엄 원목 인체공학 의자 - 에스지라이뮤</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="cart.css">
-    <link rel="stylesheet" href="inquiry.css">
-    <link rel="stylesheet" href="auth.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-    <style>
-        :root {
-            --apple-bg: #fbfbfb;
-            --apple-text: #1d1d1f;
-            --apple-gray: #86868b;
-            --apple-blue: #0066cc;
-            --apple-accent: #8ec342;
-            --apple-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            --transition-apple: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        body { background-color: #fff; color: var(--apple-text); line-height: 1.1; letter-spacing: -0.01em; }
-
-        /* Sticky Action Bar */
-        .sticky-action-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 52px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 10%;
-            transform: translateY(-100%);
-            transition: transform 0.4s ease;
-        }
-        .sticky-action-bar.visible { transform: translateY(0); }
-        .sticky-title { font-size: 1.2rem; font-weight: 700; color: var(--apple-text); }
-        .sticky-buy-btn { background: var(--apple-accent); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.3s; }
-        .sticky-buy-btn:hover { background: #7ab135; }
-
-        .detail-page { padding: 0; max-width: 100%; }
-
-        /* Hero Section */
-        .hero-section {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 120px 5% 60px;
-            text-align: center;
-            background: #fff;
-        }
-        .hero-tag { font-size: 1.1rem; color: var(--apple-accent); font-weight: 700; margin-bottom: 15px; }
-        .hero-title { font-size: 4.5rem; font-weight: 800; margin-bottom: 25px; letter-spacing: -0.03em; }
-        .hero-price-tag { font-size: 1.8rem; font-weight: 600; color: var(--apple-text); margin-bottom: 40px; }
-        .hero-image-wrap { width: 100%; max-width: 900px; margin-top: 40px; border-radius: 30px; overflow: hidden; transform: scale(0.95); opacity: 0; transition: var(--transition-apple); }
-        .hero-image-wrap.active { transform: scale(1); opacity: 1; }
-        .hero-img { width: 100%; height: auto; object-fit: cover; }
-
-        /* Apple Store Purchase Section (Side by Side) */
-        .buy-section {
-            display: flex;
-            padding: 100px 10%;
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #fff;
-            gap: 100px;
-            border-top: 1px solid #f5f5f7;
-        }
-        .buy-gallery { flex: 1; position: sticky; top: 100px; height: calc(100vh - 100px); display: flex; align-items: center; justify-content: center; }
-        .buy-gallery-img { max-width: 100%; max-height: 70vh; border-radius: 20px; object-fit: contain; }
-
-        .buy-options { flex: 1; padding: 0 20px 100px; }
-        .selection-header { margin-bottom: 60px; }
-        .selection-title { font-size: 3rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.02em; }
-        .selection-price { font-size: 1.5rem; font-weight: 600; color: #1d1d1f; margin-top: 10px; display: block; }
-        
-        /* Configuration Cards */
-        .option-group { margin-bottom: 60px; }
-        .option-label { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; display: block; }
-        .card-list { display: flex; flex-direction: column; gap: 12px; }
-        .config-card { border: 1px solid #d2d2d7; border-radius: 12px; padding: 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; background: #fff; }
-        .config-card:hover { border-color: #86868b; }
-        .config-card.active { border-color: var(--apple-blue); border-width: 2px; padding: 23px; }
-        .card-name { font-size: 1.1rem; font-weight: 600; color: #1d1d1f; }
-        .card-price-extra { font-size: 0.9rem; color: #6e6e73; }
-
-        /* Summary & Buttons */
-        .buy-actions { margin-top: 60px; padding-top: 40px; border-top: 1px solid #d2d2d7; }
-        .selection-summary { margin-bottom: 30px; font-size: 1.1rem; color: #1d1d1f; line-height: 1.5; }
-        .summary-total { font-size: 2.2rem; font-weight: 800; margin-bottom: 30px; display: block; }
-        
-        .action-btns { display: flex; flex-direction: column; gap: 15px; }
-        .btn-cart-apple { background: var(--apple-blue); color: #fff; border: none; height: 56px; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .btn-cart-apple:hover { background: #0077ed; opacity: 0.9; }
-        .btn-quote-apple { background: #f5f5f7; color: var(--apple-blue); border: none; height: 56px; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .btn-quote-apple:hover { background: #e8e8ed; }
-
-        /* Features Section */
-        .features-section { padding: 120px 10%; background: #fbfbfb; }
-        .section-headline { font-size: 3.5rem; font-weight: 800; text-align: center; margin-bottom: 100px; letter-spacing: -0.02em; }
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
-        .feature-card { background: #f5f5f7; border-radius: 28px; padding: 40px; position: relative; overflow: hidden; transition: var(--transition-apple); opacity: 0; transform: translateY(40px); }
-        .feature-card.reveal { opacity: 1; transform: translateY(0); }
-        .feature-card h3 { font-size: 1.8rem; font-weight: 700; margin-bottom: 15px; }
-        .feature-card p { font-size: 1.1rem; line-height: 1.5; color: var(--apple-gray); }
-        .feature-card .card-icon { font-size: 2.5rem; color: var(--apple-accent); margin-bottom: 20px; display: block; }
-
-        /* Specs Section */
-        .specs-section { padding: 100px 10%; background: var(--apple-bg); }
-        .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; margin-top: 60px; }
-        .spec-item { border-top: 1px solid #d2d2d7; padding-top: 20px; }
-        .spec-key { font-size: 0.9rem; color: var(--apple-gray); font-weight: 600; margin-bottom: 10px; display: block; }
-        .spec-val { font-size: 1.1rem; font-weight: 700; color: var(--apple-text); line-height: 1.4; }
-
-        .reveal-node { transition: var(--transition-apple); }
-
-        @media (max-width: 1024px) {
-            .hero-title { font-size: 3rem; }
-            .buy-section { grid-template-columns: 1fr; gap: 40px; }
-            .buy-gallery { position: static; }
-            .feature-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 1024px) {
-            .product-main { flex-direction: column; gap: 40px; }
-            .product-gallery { position: static; width: 100%; }
-            .product-title { font-size: 2.2rem; }
-        }
-    </style>
+    <link rel="stylesheet" href="cart.css">
+    <link rel="stylesheet" href="inquiry.css">
 </head>
-    <!-- Sticky Action Bar -->
-    <div id="stickyBar" class="sticky-action-bar">
-        <div class="sticky-title" id="stickyTitle">Product Name</div>
-        <button class="sticky-buy-btn" id="stickyBuyBtn">Get Quote</button>
-    </div>
-
+<body>
     <header class="header">
         <div class="header-container">
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
-                    <li class="has-submenu">
-                        <a href="#">도서관리 시스템</a>
-                        <ul class="submenu">
-                            <li><a href="rfid.html">RFID시스템</a></li>
-                            <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입관리시스템</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 용품</a>
-                        <ul class="submenu">
-                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
-                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
-                            <li><a href="supplies-lend.html">대출용품</a></li>
-                            <li><a href="sterilizer.html">책소독기</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 가구</a>
-                        <ul class="submenu">
-                            <li><a href="furniture-koas.html">코아스</a></li>
-                            <li><a href="furniture-fomus.html">포머스</a></li>
-                            <li><a href="furniture-fursys.html">퍼시스</a></li>
-                            <li><a href="furniture-custom.html">제작가구</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">사인물</a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
-                            <li><a href="sign-board.html">게시판/이용안내</a></li>
-                            <li><a href="sign-date.html">대출반납일력표</a></li>
-                            <li><a href="sign-custom.html">제작사인물</a></li>
-                        </ul>
-                    </li>
+                    <li class="has-submenu"><a href="#">도서관리 시스템</a><ul class="submenu"><li><a href="rfid.html">RFID시스템</a></li><li><a href="em.html">EM시스템</a></li><li><a href="access.html">출입통제시스템</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">도서관 용품</a><ul class="submenu"><li><a href="supplies-arrange.html">도서정리 용품</a></li><li><a href="supplies-protect.html">도서보호, 보수용품</a></li><li><a href="supplies-lend.html">대출용품</a></li><li><a href="sterilizer.html">책소독기</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">도서관 가구</a><ul class="submenu"><li><a href="furniture-koas.html">코아스</a></li><li><a href="furniture-fomus.html">포머스</a></li><li><a href="furniture-fursys.html">퍼시스</a></li><li><a href="furniture-custom.html">제작가구</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">사인물</a><ul class="submenu"><li><a href="sign-class.html">한국십진분류/대분류표지판</a></li><li><a href="sign-board.html">게시판/이용안내</a></li><li><a href="sign-date.html">대출반납일력표</a></li><li><a href="sign-custom.html">제작사인물</a></li></ul></li>
+                
                     <li><a href="discount.html">할인상품</a></li>
                 </ul>
             </nav>
@@ -194,311 +29,207 @@
                     <input type="text" class="search-input" placeholder="검색어를 입력하세요">
                     <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
-                <div class="user-auth-wrap" id="userAuthWrap">
-                    <button class="login-trigger-btn" id="loginTriggerBtn">
-                        <i class="fa-regular fa-user"></i>
-                        <span>로그인</span>
-                    </button>
-                </div>
+                <a href="#"><i class="fa-regular fa-user"></i></a>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
         </div>
     </header>
 
-    <main class="detail-page" id="appleLayout">
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <span class="hero-tag" id="heroCategory">Library Solution</span>
-            <h1 class="hero-title" id="heroTitle">Innovation in Every Detail.</h1>
-            <p class="hero-price-tag" id="heroPrice">From KRW 1,200,000</p>
-            <div class="hero-image-wrap" id="heroImgWrap">
-                <img id="heroImg" class="hero-img" src="assets/no-image.png">
-            </div>
-        </section>
+    <main class="product-detail-page">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
+            <a href="furniture-fomus.html">도서관 가구</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
+            <strong>포머스 의자</strong>
+        </div>
 
-        <!-- Apple Store Purchase Section -->
-        <section class="buy-section">
-            <div class="buy-gallery">
-                <img id="buyMainImg" class="buy-gallery-img" src="assets/no-image.png">
-            </div>
-            <div class="buy-options">
-                <div class="selection-header">
-                    <h2 class="selection-title" id="selectionTitle">Product Name</h2>
-                    <span class="selection-price" id="selectionPrice">KRW 0</span>
+        <div class="product-detail-top">
+            <!-- Left: Gallery -->
+            <div class="gallery-wrapper">
+                <div class="main-image-container">
+                    <img src="product-main.png" alt="SG프리미엄 원목 인체공학 도서관 의자" id="mainImage">
                 </div>
+                <div class="thumbnail-list">
+                    <div class="thumb-item active" onclick="changeImage('product-main.png', this)">
+                        <img src="product-main.png" alt="썸네일1">
+                    </div>
+                    <div class="thumb-item" onclick="changeImage('product-lifestyle.png', this)">
+                        <img src="product-lifestyle.png" alt="썸네일2">
+                    </div>
+                    <div class="thumb-item" onclick="changeImage('product-specs.png', this)">
+                        <img src="product-specs.png" alt="썸네일3">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Info -->
+            <div class="info-wrapper">
+                <div class="product-badges">
+                    <span class="badge badge-new">NEW</span>
+                    <span class="badge badge-best">BEST</span>
+                </div>
+                <h2 class="product-title">SG프리미엄 원목 인체공학 도서관 의자 SG-C500</h2>
+                <p class="product-desc">장시간 앉아도 편안한 인체공학적 설계와 천연 원목의 만남. 프리미엄 도서관 열람실에 최적화된 최고급 의자입니다.</p>
                 
-                <div class="option-group" id="groupColors" style="display:none;">
-                    <span class="option-label">Finish. Pick your favorite.</span>
-                    <div class="card-list" id="appleColorList"></div>
+                <div class="product-price">
+                    235,000<span>원</span>
                 </div>
 
-                <div class="option-group" id="groupSizes" style="display:none;">
-                    <span class="option-label">Size. Choose what fits.</span>
-                    <div class="card-list" id="appleSizeList"></div>
-                </div>
-
-                <div class="buy-actions" id="buyActions">
-                    <div class="selection-summary" id="selectionSummary">
-                        Select options to see your custom configuration.
+                <div class="purchase-options">
+                    <div class="option-group">
+                        <label for="colorOption">색상 선택</label>
+                        <select id="colorOption" class="option-select">
+                            <option value="">색상을 선택하세요</option>
+                            <option value="오크">내추럴 오크</option>
+                            <option value="월넛">다크 월넛 (+15,000원)</option>
+                            <option value="화이트">모던 화이트</option>
+                        </select>
                     </div>
-                    <div class="summary-total" id="summaryTotal">KRW 0</div>
                     
-                    <div class="action-btns">
-                        <button class="btn-cart-apple" id="appleAddToCartBtn">Add to Bag</button>
-                        <button class="btn-quote-apple" id="appleQuoteBtn">Request a Quote</button>
+                    <div class="option-group" style="margin-top: 20px;">
+                        <label>수량</label>
+                        <div class="quantity-control">
+                            <button class="qty-btn" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <input type="text" class="qty-input" id="qtyInput" value="1" readonly>
+                            <button class="qty-btn" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
+                        </div>
                     </div>
-                    <p style="font-size: 0.85rem; color: #6e6e73; margin-top:20px; line-height: 1.4;">Need expert advice? Our library specialists are here to help you configure the perfect solution for your space.</p>
+                </div>
+
+                <div class="total-price-box">
+                    <span class="label">총 상품금액</span>
+                    <div class="total"><span id="totalPrice">235,000</span><span style="font-size:1.2rem;font-weight:500;margin-left:5px;">원</span></div>
+                </div>
+
+                <div class="buy-btn-group" style="margin-top:30px;">
+                    <button class="btn-icon-large" title="관심상품"><i class="fa-regular fa-heart"></i></button>
+                    <button class="btn-large btn-cart">장바구니</button>
+                    <button class="btn-large btn-buy">바로구매</button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Features Section -->
-        <section class="features-section" id="appleFeaturesWrap">
-            <h2 class="section-headline">Everything you need. <br>And then some.</h2>
-            <div class="feature-grid" id="appleFeatureGrid"></div>
-        </section>
+        <div class="product-detail-bottom">
+            <div class="detail-tabs-nav">
+                <div class="detail-tab-btn active" onclick="switchTab(0, this)">상세정보</div>
+                <div class="detail-tab-btn" onclick="switchTab(1, this)">구매안내</div>
+                <div class="detail-tab-btn" onclick="switchTab(2, this)">상품후기 (12)</div>
+                <div class="detail-tab-btn" onclick="switchTab(3, this)">Q&A (3)</div>
+            </div>
 
-        <!-- Specs Section -->
-        <section class="specs-section" id="appleSpecsWrap">
-            <h2 class="section-headline" style="text-align:left; font-size:2rem; margin-bottom:40px;">Tech Specs.</h2>
-            <div class="spec-grid" id="appleSpecGrid"></div>
-        </section>
-        
-        <!-- Bottom Images -->
-        <section class="bottom-gallery" id="appleBottomGallery" style="padding: 100px 10%; display: flex; flex-direction: column; gap: 40px;"></section>
+            <div class="detail-tab-content active" id="tab0">
+                <div class="spec-image-container">
+                    <img src="product-lifestyle.png" alt="라이프스타일 컷">
+                    <img src="product-specs.png" alt="스펙 도면">
+                </div>
+                <div class="info-text-box">
+                    <h4>제품 스펙 요약</h4>
+                    <p>
+                        <strong>재질:</strong> 최고급 북미산 천연 오크 원목, 고밀도 메모리폼(패브릭)<br>
+                        <strong>크기:</strong> (W)580 x (D)550 x (H)890 mm<br>
+                        <strong>무게:</strong> 6.5 kg<br>
+                        <strong>제조국:</strong> 대한민국<br>
+                        <strong>품질보증기준:</strong> 구매형일로부터 1년 무상 A/S<br><br>
+                        사용자의 체형에 맞게 등받이 각도가 미세하게 조절되는 플렉스 틸팅 기술이 적용되어, 장시간의 독서나 공부에도 허리에 무리가 가지 않습니다. 프리미엄 패브릭은 오염에 강한 발수 처리로 관리하기 용이합니다.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="detail-tab-content" id="tab1">
+                <div class="info-text-box">
+                    <h4>배송/교환/반품 안내</h4>
+                    <p>
+                        <strong>배송안내</strong><br>
+                        - 결제 완료 후 3~5일 내에 출고됩니다. (주말/공휴일 제외)<br>
+                        - 제주 및 도서 산간 지역은 추가 배송비가 발생할 수 있습니다.<br><br>
+                        
+                        <strong>교환/반품 안내</strong><br>
+                        - 상품 수령 후 7일 이내에 고객센터를 통해 접수해 주셔야 합니다.<br>
+                        - 단순 변심으로 인한 반품 시 왕복 택배비는 고객님 부담입니다.<br>
+                        - 조립/설치 후에는 제품 하자를 제외하고 교환/반품이 불가합니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tab2">
+                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
+                    <i class="fa-regular fa-comment-dots" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666;">등록된 상품후기가 없습니다.</h3>
+                    <p style="color: #999;">첫 번째 리뷰를 남겨주세요!</p>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tab3">
+                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
+                    <i class="fa-regular fa-circle-question" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666;">등록된 Q&A가 없습니다.</h3>
+                    <p style="color: #999;">상품에 대한 궁금증을 남겨주시면 빠르게 답변해 드립니다.</p>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(주)에스지라이뮤</strong> | Tel : 1544-5703 | 팩스 : 051-518-5985 | E-Mail : limu101@nate.com</p>
-                <p>Address : 부산광역시 금정구 중앙대로 2210번길 29-1 (두구동)</p>
-                <p>대표자명 : 강인태 | 사업자번호 : 621-81-42086 | 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
-                <p class="copyright">Copyright © 2023 SG LIMU. All rights reserved.</p>
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const { createClient } = supabase;
-        const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
-        
-        // State for config
-        let currentProduct = null;
-        let pageConfig = null;
-        let selectedColor = null;
-        let selectedSize = null;
+    <aside class="right-fixed-banner">
+        <ul class="banner-menu">
+            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i></a></li>
+            <li class="scroll-btns">
+                <button class="banner-btn scroll-top" id="scrollTopBtn"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn"><i class="fa-solid fa-chevron-down"></i></button>
+            </li>
+        </ul>
+    </aside>
+    <div class="chat-widget"><button class="chat-fab" id="chatFab"><i class="fa-solid fa-comment-dots"></i></button></div>
 
-        async function loadAppleProductDetail() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            if(!id) return;
-
-            const { data: p } = await db.from('products').select('*').eq('id', id).single();
-            if(!p) return;
-            currentProduct = p;
-
-            // Header/Hero Info
-            document.title = p.name + " - SG LIMU";
-            document.getElementById('stickyTitle').innerText = p.name;
-            document.getElementById('selectionTitle').innerText = p.name;
-            document.getElementById('heroCategory').innerText = p.category || 'Premium Furniture';
-            document.getElementById('heroTitle').innerText = p.name;
-            
-            const basePrice = (p.price === '전화문의' || !p.price) ? 0 : Number(p.price);
-            const priceText = basePrice === 0 ? '전화문의' : 'From KRW ' + basePrice.toLocaleString();
-            document.getElementById('heroPrice').innerText = priceText;
-            document.getElementById('selectionPrice').innerText = priceText;
-            
-            const mainImgUrl = p.image_url || 'assets/no-image.png';
-            document.getElementById('heroImg').src = mainImgUrl;
-            document.getElementById('buyMainImg').src = mainImgUrl;
-
-            // Scroll animations & Sticky control
-            window.addEventListener('scroll', () => {
-                const stickyBar = document.getElementById('stickyBar');
-                const heroSection = document.querySelector('.hero-section');
-                if (window.scrollY > heroSection.offsetHeight - 52) {
-                    stickyBar.classList.add('visible');
-                } else {
-                    stickyBar.classList.remove('visible');
-                }
-            });
-
-            // Reveal Hero image with slight delay
-            setTimeout(() => {
-                document.getElementById('heroImgWrap').classList.add('active');
-            }, 300);
-
-            // Fetch Detail Config
-            const { data: config } = await db.from('site_configs').select('value').eq('key', 'pageData_' + id).maybeSingle();
-            if(!config || !config.value) return;
-            pageConfig = config.value;
-            const d = pageConfig;
-
-            // Render Colors
-            const colorList = document.getElementById('appleColorList');
-            if(d.colors && d.colors.length > 0) {
-                document.getElementById('groupColors').style.display = 'block';
-                d.colors.forEach((c, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'config-card';
-                    if(idx === 0) { card.classList.add('active'); selectedColor = c; }
-                    card.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div style="width:24px; height:24px; border-radius:50%; background:${c.hex}; border:1px solid #ddd;"></div>
-                            <span class="card-name">${c.name}</span>
-                        </div>
-                    `;
-                    card.onclick = () => {
-                        colorList.querySelectorAll('.config-card').forEach(el => el.classList.remove('active'));
-                        card.classList.add('active');
-                        selectedColor = c;
-                        updateSummary();
-                    };
-                    colorList.appendChild(card);
-                });
-            }
-
-            // Render Sizes
-            const sizeList = document.getElementById('appleSizeList');
-            if(d.sizes && d.sizes.length > 0) {
-                document.getElementById('groupSizes').style.display = 'block';
-                d.sizes.forEach((s, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'config-card';
-                    if(idx === 0) { card.classList.add('active'); selectedSize = s; }
-                    card.innerHTML = `
-                        <span class="card-name">${s.name}</span>
-                        <span class="card-price-extra">${s.price || ''}</span>
-                    `;
-                    card.onclick = () => {
-                        sizeList.querySelectorAll('.config-card').forEach(el => el.classList.remove('active'));
-                        card.classList.add('active');
-                        selectedSize = s;
-                        updateSummary();
-                    };
-                    sizeList.appendChild(card);
-                });
-            }
-
-            updateSummary();
-
-            // Render Features
-            const featureGrid = document.getElementById('appleFeatureGrid');
-            if(d.features && d.features.length > 0) {
-                d.features.forEach(f => {
-                    const card = document.createElement('div');
-                    card.className = 'feature-card';
-                    card.innerHTML = `
-                        <i class="fa-solid fa-star-of-life card-icon"></i>
-                        <h3>${f.title}</h3>
-                        <p>${f.desc.replace(/\n/g, '<br>')}</p>
-                    `;
-                    featureGrid.appendChild(card);
-                });
-            } else {
-                document.getElementById('appleFeaturesWrap').style.display = 'none';
-            }
-
-            // Render Specs
-            const specGrid = document.getElementById('appleSpecGrid');
-            if(d.specs && d.specs.length > 0) {
-                d.specs.forEach(s => {
-                    const item = document.createElement('div');
-                    item.className = 'spec-item';
-                    item.innerHTML = `<span class="spec-key">${s.key}</span><span class="spec-val">${s.val}</span>`;
-                    specGrid.appendChild(item);
-                });
-            } else {
-                document.getElementById('appleSpecsWrap').style.display = 'none';
-            }
-
-            // Bottom Gallery
-            const bottomGall = document.getElementById('appleBottomGallery');
-            if(d.detailImageUrls && d.detailImageUrls.length > 0) {
-                d.detailImageUrls.forEach(url => {
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.style.width = '100%';
-                    img.style.borderRadius = '24px';
-                    bottomGall.appendChild(img);
-                });
-            }
-
-            // Observer
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) entry.target.classList.add('reveal');
-                });
-            }, { threshold: 0.1 });
-            setTimeout(() => { document.querySelectorAll('.feature-card, .spec-item').forEach(el => observer.observe(el)); }, 100);
-        }
-
-        function updateSummary() {
-            if(!currentProduct) return;
-            
-            let summaryText = `Your ${currentProduct.name} configuration: `;
-            if(selectedColor) summaryText += `<strong>${selectedColor.name}</strong>`;
-            if(selectedColor && selectedSize) summaryText += ` and `;
-            if(selectedSize) summaryText += `<strong>${selectedSize.name}</strong>`;
-            
-            document.getElementById('selectionSummary').innerHTML = summaryText;
-            
-            const basePrice = (currentProduct.price === '전화문의' || !currentProduct.price) ? 0 : Number(currentProduct.price);
-            
-            // Size might have extra price like "+ 50,000"
-            let extraPrice = 0;
-            if(selectedSize && selectedSize.price) {
-                const match = selectedSize.price.match(/[0-9,]+/);
-                if(match) extraPrice = parseInt(match[0].replace(/,/g, '')) || 0;
-            }
-            
-            const total = basePrice + extraPrice;
-            const totalText = total === 0 ? '전화문의' : 'KRW ' + total.toLocaleString();
-            
-            document.getElementById('summaryTotal').innerText = totalText;
-            document.getElementById('selectionPrice').innerText = totalText;
-        }
-
-        // Add to Cart Event
-        document.getElementById('appleAddToCartBtn').onclick = () => {
-            if(!currentProduct) return;
-            
-            const basePrice = (currentProduct.price === '전화문의' || !currentProduct.price) ? 0 : Number(currentProduct.price);
-            let extraPrice = 0;
-            if(selectedSize && selectedSize.price) {
-                const match = selectedSize.price.match(/[0-9,]+/);
-                if(match) extraPrice = parseInt(match[0].replace(/,/g, '')) || 0;
-            }
-            
-            const totalPrice = basePrice + extraPrice;
-            const optionString = (selectedColor ? selectedColor.name : '') + (selectedSize ? ' / ' + selectedSize.name : '');
-            
-            const item = {
-                id: currentProduct.id + '_' + new Date().getTime(),
-                name: currentProduct.name + (optionString ? ` (${optionString})` : ''),
-                price: totalPrice,
-                qty: 1
-            };
-            
-            if(typeof addToCart === 'function') {
-                addToCart(item);
-                openCart();
-            } else {
-                console.error('Cart logic not loaded');
-            }
-        };
-
-        document.getElementById('appleQuoteBtn').onclick = () => {
-            alert('Expert consultation request has been sent. We will contact you shortly.');
-        };
-
-        document.addEventListener('DOMContentLoaded', loadAppleProductDetail);
-    </script>
     <script src="script.js"></script>
+    <script>
+        // Product Detail Page Specific JS
+        const basePrice = 235000;
+
+        function changeImage(src, element) {
+            document.getElementById('mainImage').src = src;
+            document.querySelectorAll('.thumb-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function updateQty(change) {
+            const input = document.getElementById('qtyInput');
+            let current = parseInt(input.value);
+            let newVal = current + change;
+            if (newVal < 1) newVal = 1;
+            input.value = newVal;
+            
+            // Calc Total Price based on options too
+            const select = document.getElementById('colorOption');
+            let optPrice = 0;
+            if(select.value === '월넛') optPrice = 15000;
+            
+            const total = (basePrice + optPrice) * newVal;
+            document.getElementById('totalPrice').innerText = total.toLocaleString();
+        }
+
+        document.getElementById('colorOption')?.addEventListener('change', function() {
+            updateQty(0); // recalculate total
+        });
+
+        function switchTab(index, element) {
+            document.querySelectorAll('.detail-tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.detail-tab-content').forEach(el => el.classList.remove('active'));
+            
+            element.classList.add('active');
+            document.getElementById('tab' + index).classList.add('active');
+        }
+    </script>
+    <!-- SG LIMU Global Scripts -->
     <script src="cart.js"></script>
-    <script type="module" src="auth.js"></script>
+    <script type="module" src="inquiry.js"></script>
 </body>
 </html>
+

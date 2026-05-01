@@ -57,18 +57,18 @@ for code, data in categories.items():
     subs = data["subs"]
     
     # build the replacement main chunk
-    header_html = f'''<main class="category-page">\n        <div class="category-header">\n            <h2 class="category-title">{title}</h2>\n            <p>{desc}</p>\n        </div>\n\n        <div class="category-container">\n            <ul class="subcategory-nav" id="subCategoryNav">\n'''
+    header_html = f'''<main class="category-page">\n        <div class="category-header">\n            <h2 class="category-title">{title}</h2>\n            <p>{desc}</p>\n        </div>\n\n        <ul class="subcategory-nav" id="subCategoryNav">\n'''
     for i, sub in enumerate(subs):
         active_class = ' active' if i == 0 else ''
-        header_html += f'                <li class="subcategory-item{active_class}" data-target="cat-{i}">{sub}</li>\n'
+        header_html += f'            <li class="subcategory-item{active_class}" data-target="cat-{i}">{sub}</li>\n'
         
-    header_html += '            </ul>\n\n'
+    header_html += '        </ul>\n\n'
     
     for i, sub in enumerate(subs):
         active_class = ' active' if i == 0 else ''
-        header_html += f'''            <div id="cat-{i}" class="sub-content{active_class}">\n                <div class="product-list">\n                    <div class="product-card visible">\n                        <div class="product-img" style="background-image: url(\\'assets/public_library.png\\'); background-size: cover; background-position: center;"></div>\n                        <div class="product-info">\n                            <h4>{sub} 상품</h4>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n'''
+        header_html += f'''        <div id="cat-{i}" class="sub-content{active_class}">\n            <div class="product-list">\n                <div class="product-card visible">\n                    <div class="product-img" style="background-image: url(\\'assets/public_library.png\\'); background-size: cover; background-position: center;"></div>\n                    <div class="product-info">\n                        <h4>{sub} 상품</h4>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n'''
         
-    header_html += '        </div>\n    </main>'
+    header_html += '    </main>'
     
     # replace title tag
     content = re.sub(r'<title>.*?<', f'<title>{title} - 에스지라이뮤<', template)
