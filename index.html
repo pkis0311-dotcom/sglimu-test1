@@ -22,46 +22,15 @@
                     <li class="has-submenu">
                         <a href="#">도서관리 시스템</a>
                         <ul class="submenu">
-                            <li class="has-nested">
-                                <a href="rfid.html">RFID시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="rfid.html?cat=rfid_tag">태그 (TAG)</a></li>
-                                    <li><a href="rfid.html?cat=rfid_anti">분실방지기</a></li>
-                                    <li><a href="rfid.html?cat=rfid_reader">리더기</a></li>
-                                    <li><a href="rfid.html?cat=rfid_return">대출반납기</a></li>
-                                </ul>
-                            </li>
-                            <li class="has-nested">
-                                <a href="em.html">EM시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="em.html?cat=em_anti">분실방지기</a></li>
-                                    <li><a href="em.html?cat=em_gen">감응제거재생기</a></li>
-                                    <li><a href="em.html?cat=em_tape">감응 테이프</a></li>
-                                </ul>
-                            </li>
-                            <li class="has-nested">
-                                <a href="access.html">출입관리시스템 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="access.html?cat=access_7000">TNH-7000A</a></li>
-                                    <li><a href="access.html?cat=access_8000">TNH-8000A</a></li>
-                                    <li><a href="access.html?cat=access_2203">EZ-2203AWG</a></li>
-                                    <li><a href="access.html?cat=access_2204">EZ-2204AWG</a></li>
-                                </ul>
-                            </li>
+                            <li><a href="rfid.html">RFID시스템</a></li>
+                            <li><a href="em.html">EM시스템</a></li>
+                            <li><a href="access.html">출입통제시스템</a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
                         <a href="#">도서관 용품</a>
                         <ul class="submenu">
-                            <li class="has-nested">
-                                <a href="supplies-arrange.html">도서정리 용품 <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-                                <ul class="nested-submenu">
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_keeper">키퍼</a></li>
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_color">색띠라벨</a></li>
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_label_paper">라벨용지</a></li>
-                                    <li><a href="supplies-arrange.html?cat=supplies_arrange_bookend">북앤드</a></li>
-                                </ul>
-                            </li>
+                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
                             <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
                             <li><a href="supplies-lend.html">대출용품</a></li>
                             <li><a href="sterilizer.html">책소독기</a></li>
@@ -128,21 +97,43 @@
             <h3 class="section-title">Best Products</h3>
             
             <ul class="product-tabs" id="productTabs">
-                <li class="tab-item active" data-tab="tab-system">도서관리 시스템</li>
+                <li class="tab-item active" data-tab="tab-system">도서관 시스템</li>
                 <li class="tab-item" data-tab="tab-tape">태그/감응테이프</li>
                 <li class="tab-item" data-tab="tab-supplies">도서관 용품</li>
                 <li class="tab-item" data-tab="tab-cases">설치사례</li>
             </ul>
 
             <div class="tab-content active" id="tab-system">
-                <div class="product-grid" id="grid-system">
-                    <!-- Dynamic rendering by JS -->
+                <div class="product-grid">
+                    <div class="product-card">
+                        <div class="product-img" style="background-image: url('assets/rfid_equipment.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
+                        <div class="product-info">
+                            <h4>RFID 장비</h4>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-img" style="background-image: url('assets/em_equipment.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
+                        <div class="product-info">
+                            <h4>EM 장비</h4>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="tab-content" id="tab-tape">
-                <div class="product-grid" id="grid-tape">
-                    <!-- Dynamic rendering by JS -->
+                <div class="product-grid">
+                    <div class="product-card">
+                        <div class="product-img" style="background-image: url('assets/rfid_tag.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
+                        <div class="product-info">
+                            <h4>RFID 태그</h4>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-img" style="background-image: url('assets/em_tape.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
+                        <div class="product-info">
+                            <h4>감응테이프</h4>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -241,11 +232,11 @@
             </div>
             <div class="chat-body" id="chatBody">
                 <div class="message system-msg">
-                    안녕하세요. 에스지라이뮤입니다.<br>무엇을 도와드릴까요?
+                    안녕하세요! 에스지라이뮤입니다.<br>무엇을 도와드릴까요?
                 </div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="메시지를 입력하세요..">
+                <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
                 <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -265,8 +256,8 @@
                 <!-- Login Pane -->
                 <div class="auth-pane active" id="loginPane">
                     <div class="auth-header">
-                        <h2>환영합니다</h2>
-                        <p>간편로그인으로 빠르게 시작하세요</p>
+                        <h2>환영합니다!</h2>
+                        <p>간편로그인으로 빠르게 시작하세요.</p>
                     </div>
 
                     <div class="social-login-grid">
@@ -304,6 +295,28 @@
                         <p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p>
                     </div>
 
+                    <div class="auth-social-signup">
+                        <div class="auth-social-signup-header"><span>간편 회원가입</span></div>
+                        <div class="social-login-grid">
+                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao">
+                                <i class="fa-solid fa-comment"></i> 카카오로 시작
+                            </button>
+                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver">
+                                <i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작
+                            </button>
+                            <button class="social-btn btn-google social-signup-btn" data-provider="google">
+                                <i class="fa-brands fa-google"></i> Google로 시작
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="auth-divider"><span>또는 이메일로 가입</span></div>
+
+                    <div class="auth-type-selector" id="userTypeSelector">
+                        <div class="auth-type-btn active" data-type="individual">개인 회원</div>
+                        <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
+                    </div>
+
                     <form id="signupForm">
                         <div class="auth-row">
                             <div class="auth-form-group">
@@ -319,13 +332,23 @@
                             <label>이메일 *</label>
                             <input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required>
                         </div>
-                        <div class="auth-form-group">
-                            <label>비밀번호 *</label>
-                            <input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required>
+                        <div class="auth-row">
+                            <div class="auth-form-group">
+                                <label>비밀번호 *</label>
+                                <input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required>
+                            </div>
+                            <div class="auth-form-group">
+                                <label>비밀번호 확인 *</label>
+                                <input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required>
+                            </div>
                         </div>
-                        <div class="auth-form-group">
+                        <div class="auth-form-group" id="orgGroup">
                             <label>소속기관 / 학교 / 도서관명</label>
                             <input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관">
+                        </div>
+                        <div class="auth-form-group" id="bizGroup" style="display: none;">
+                            <label>사업자 등록번호</label>
+                            <input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000">
                         </div>
                         <div class="auth-form-group">
                             <label>배송/방문용 주소</label>
@@ -336,15 +359,41 @@
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
                 </div>
+
+                <!-- Profile Completion Pane -->
+                <div class="auth-pane" id="completeProfilePane">
+                    <div class="auth-header">
+                        <h2>추가 정보 입력</h2>
+                        <p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p>
+                    </div>
+
+                    <form id="completeProfileForm">
+                        <div class="highlight-box">
+                            <div class="auth-form-group">
+                                <label>전화번호 *</label>
+                                <input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required>
+                            </div>
+                            <div class="auth-form-group">
+                                <label>소속기관 / 학교 / 도서관명 *</label>
+                                <input type="text" id="completeOrg" class="auth-input" placeholder="예: 한국대학교 도서관" required>
+                            </div>
+                            <div class="auth-form-group">
+                                <label>배송/방문용 주소</label>
+                                <input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요">
+                            </div>
+                        </div>
+                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
+                    </form>
+                    <div id="completeMsg" class="auth-message"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
     <!-- SG LIMU Global Scripts -->
     <script src="cart.js"></script>
-    <script src="inquiry.js"></script>
-    <script src="auth.js"></script>
+    <script type="module" src="inquiry.js"></script>
+    <script type="module" src="auth.js"></script>
 </body>
 </html>
