@@ -43,6 +43,7 @@
             <li class="nav-item active" data-target="tab-products"><i class="fa-solid fa-box-open"></i> 제품 전/후 관리</li>
             <li class="nav-item" data-target="tab-page-manage"><i class="fa-solid fa-file-pen"></i> 상세페이지 관리</li>
             <li class="nav-item" data-target="tab-category-display"><i class="fa-solid fa-layer-group"></i> 카테고리 전시 관리</li>
+            <li class="nav-item" data-target="tab-category-manage"><i class="fa-solid fa-sitemap"></i> 카테고리 구성 관리</li>
             <li class="nav-item" data-target="tab-orders"><i class="fa-solid fa-chart-line"></i> 주문 통계 분석</li>
             <li class="nav-item" data-target="tab-inquiries"><i class="fa-solid fa-comment-dots"></i> 견적/문의 상담 관리</li>
             <li class="nav-item" data-target="tab-banners"><i class="fa-solid fa-images"></i> 메인 배너/팝업 관리</li>
@@ -335,11 +336,7 @@
                         <i class="fa-solid fa-sitemap" style="color:#3498db; margin-right:8px;"></i> 1단계: 관리할 대분류를 선택하세요
                     </label>
                     <div id="majorCategoryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px;">
-                        <button class="major-btn active" data-major="system"><i class="fa-solid fa-server"></i> 도서관리시스템</button>
-                        <button class="major-btn" data-major="supplies"><i class="fa-solid fa-box-open"></i> 도서관 용품</button>
-                        <button class="major-btn" data-major="furniture"><i class="fa-solid fa-chair"></i> 도서관 가구</button>
-                        <button class="major-btn" data-major="signage"><i class="fa-solid fa-scroll"></i> 사인물</button>
-                        <button class="major-btn" data-major="discount"><i class="fa-solid fa-tags"></i> 할인상품</button>
+                        <!-- JS에서 동적으로 생성됩니다 -->
                     </div>
 
                     <label style="font-weight: 700; color: #2c3e50; font-size: 1.1rem; display: block; margin-bottom: 16px;">
@@ -364,6 +361,28 @@
                         <div style="color:#999; text-align:center; width:100%;">잠시만 기다려 주세요...</div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- 8. 카테고리 구성 관리 탭 (신규) -->
+        <!-- ======================= -->
+        <div id="tab-category-manage" class="tab-pane">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 class="page-title"><i class="fa-solid fa-sitemap"></i> 카테고리 구성 관리 (3단계 계층)</h1>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" id="saveCategoryConfigBtn" style="background-color: #27ae60; border-color: #2ecc71;">
+                        <i class="fa-solid fa-save"></i> 설정 영구 저장
+                    </button>
+                    <button class="btn-primary" id="addMajorBtn">
+                        <i class="fa-solid fa-plus"></i> 새 대분류 추가
+                    </button>
+                </div>
+            </div>
+            
+            <div id="categoryManageContainer" class="category-manage-grid">
+                <!-- JS에서 동적으로 대분류 카드가 생성됩니다 -->
+                <div class="empty-state">카테고리 정보를 불러오는 중입니다...</div>
             </div>
         </div>
     </main>
@@ -391,65 +410,8 @@
                     <div class="form-group">
                         <label>카테고리 구분 *</label>
                         <select id="productCategory" class="form-control">
-                            <option value="best_product">★ 메인화면 베스트 상품</option>
-                            
-                            <optgroup label="도서관리시스템">
-                                <option value="rfid-cat-tag">RFID > 태그 (TAG)</option>
-                                <option value="rfid-cat-anti">RFID > 분실 방지기</option>
-                                <option value="rfid-cat-reader">RFID > 리더기</option>
-                                <option value="rfid-cat-return">RFID > 대출 반납기</option>
-                                <option value="em-cat-0">EM > 분실 방지기</option>
-                                <option value="em-cat-1">EM > 감응제거재생기</option>
-                                <option value="em-cat-2">EM > 감응 테이프</option>
-                            </optgroup>
-
-                            <optgroup label="도서관 용품 - 정리">
-                                <option value="supplies-arrange-cat-0">정리 > 키퍼</option>
-                                <option value="supplies-arrange-cat-1">정리 > 색띠라벨</option>
-                                <option value="supplies-arrange-cat-2">정리 > 라벨용지</option>
-                                <option value="supplies-arrange-cat-3">정리 > 장갑</option>
-                                <option value="supplies-arrange-cat-4">정리 > 도장</option>
-                                <option value="supplies-arrange-cat-5">정리 > 북앤드</option>
-                                <option value="supplies-arrange-cat-6">정리 > 기타</option>
-                            </optgroup>
-
-                            <optgroup label="도서관 용품 - 보호/대출/기타">
-                                <option value="supplies-protect-cat-0">보호 > 필모시리즈</option>
-                                <option value="supplies-protect-cat-1">보호 > 중성풀</option>
-                                <option value="supplies-protect-cat-2">보호 > 양면테이프</option>
-                                <option value="supplies-protect-cat-3">보호 > 북커버</option>
-                                <option value="supplies-lend-cat-0">대출 > 바코드</option>
-                                <option value="supplies-lend-cat-1">대출 > 카드프린터/기기</option>
-                                <option value="supplies-lend-cat-2">대출 > 회원증카드</option>
-                                <option value="supplies-lend-cat-3">대출 > 감열지</option>
-                                <option value="sterilizer-cat-0">책소독기 소모품</option>
-                            </optgroup>
-
-                            <optgroup label="도서관 가구 - 코아스">
-                                <option value="koas-cat-0">코아스 > 서가</option>
-                                <option value="koas-cat-1">코아스 > 테이블</option>
-                                <option value="koas-cat-2">코아스 > 의자</option>
-                                <option value="koas-cat-3">코아스 > 기타</option>
-                            </optgroup>
-
-                            <optgroup label="도서관 가구 - 포머스/퍼시스">
-                                <option value="fomus-cat-0">포머스 > 서가</option>
-                                <option value="fomus-cat-1">포머스 > 테이블</option>
-                                <option value="fomus-cat-2">포머스 > 의자</option>
-                                <option value="fomus-cat-3">포머스 > 기타</option>
-                                <option value="fursys-cat-0">퍼시스 > 서가</option>
-                                <option value="fursys-cat-1">퍼시스 > 테이블</option>
-                                <option value="fursys-cat-2">퍼시스 > 의자</option>
-                                <option value="fursys-cat-3">퍼시스 > 기타</option>
-                            </optgroup>
-
-                            <optgroup label="사인물/할인상품">
-                                <option value="sign-class-cat-0">사인물 > 분류/대분류 표지판</option>
-                                <option value="sign-board-cat-0">사인물 > 게시판/이용안내</option>
-                                <option value="sign-date-cat-0">사인물 > 대출반납일력표</option>
-                                <option value="sign-custom-cat-0">사인물 > 제작 사인물</option>
-                                <option value="discount-cat-0">할인상품 전체</option>
-                            </optgroup>
+                            <!-- JS에서 동적으로 채워집니다 -->
+                            <option value="">카테고리를 불러오는 중...</option>
                         </select>
                     </div>
                     <div class="form-group">

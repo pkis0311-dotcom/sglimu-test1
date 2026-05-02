@@ -596,3 +596,116 @@ td {
         grid-template-columns: 1fr;
     }
 }
+
+/* -------------------------------------
+   CATEGORY MANAGEMENT UI (NEW)
+-------------------------------------- */
+.category-manage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.major-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--admin-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.major-card-header {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.major-card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--admin-sidebar);
+}
+
+.major-card-body {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.middle-item {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #eee;
+}
+
+.middle-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.middle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.middle-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.sub-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.sub-badge {
+    background: #eaf2f8;
+    color: #2980b9;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #d4e6f1;
+}
+
+.sub-badge i {
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.sub-badge i:hover {
+    color: var(--danger);
+}
+
+.add-mini-btn {
+    background: transparent;
+    border: 1px dashed #ccc;
+    color: #999;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-mini-btn:hover {
+    border-color: var(--admin-primary);
+    color: var(--admin-primary);
+    background: #f0f7f0;
+}
