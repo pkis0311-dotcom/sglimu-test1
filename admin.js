@@ -1472,8 +1472,8 @@ function renderCategoryManagement() {
 
             let subsHtml = middle.subs.map(sub => `
                 <span class="sub-badge">
-                    ${sub.label}
-                    <i class="fa-solid fa-xmark" onclick="deleteSubCategory('${mKey}', '${midKey}', '${sub.id}')"></i>
+                    <span class="sub-label" onclick="editSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="이름 수정" style="cursor:pointer;">${sub.label}</span>
+                    <i class="fa-solid fa-xmark" onclick="deleteSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="삭제"></i>
                 </span>
             `).join('');
 
@@ -1482,8 +1482,9 @@ function renderCategoryManagement() {
                     <div class="middle-header">
                         <h4><i class="fa-solid fa-chevron-right"></i> ${middle.label}</h4>
                         <div style="display:flex; gap:5px;">
-                            <button class="add-mini-btn" onclick="addSubCategory('${mKey}', '${midKey}')"><i class="fa-solid fa-plus"></i> 소분류 추가</button>
-                            <button class="action-btn delete" style="font-size:0.8rem; margin:0;" onclick="deleteMiddleCategory('${mKey}', '${midKey}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="add-mini-btn" onclick="addSubCategory('${mKey}', '${midKey}')"><i class="fa-solid fa-plus"></i> 추가</button>
+                            <button class="action-btn edit" style="font-size:0.8rem; margin:0; color:var(--primary);" onclick="editMiddleCategory('${mKey}', '${midKey}')" title="이름 수정"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn delete" style="font-size:0.8rem; margin:0;" onclick="deleteMiddleCategory('${mKey}', '${midKey}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                     <div class="sub-list">
@@ -1499,7 +1500,8 @@ function renderCategoryManagement() {
                 <h3><i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}</h3>
                 <div style="display:flex; gap:5px;">
                     <button class="add-mini-btn" style="color:var(--admin-primary); border-color:var(--admin-primary);" onclick="addMiddleCategory('${mKey}')"><i class="fa-solid fa-plus"></i> 중간분류 추가</button>
-                    <button class="action-btn delete" style="margin:0;" onclick="deleteMajorCategory('${mKey}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="action-btn edit" style="margin:0; color:var(--primary);" onclick="editMajorCategory('${mKey}')" title="이름 수정"><i class="fa-solid fa-pen"></i></button>
+                    <button class="action-btn delete" style="margin:0;" onclick="deleteMajorCategory('${mKey}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
             <div class="major-card-body">
@@ -1549,6 +1551,35 @@ window.deleteSubCategory = (mKey, midKey, subId) => {
 window.deleteMajorCategory = (mKey) => {
     if (confirm(`대분류 "${SITE_CATEGORIES[mKey].label}"와 하위의 모든 분류를 삭제하시겠습니까?`)) {
         delete SITE_CATEGORIES[mKey];
+        renderCategoryManagement();
+    }
+};
+
+window.editMajorCategory = (mKey) => {
+    const oldLabel = SITE_CATEGORIES[mKey].label;
+    const newLabel = prompt("대분류 명칭 수정:", oldLabel);
+    if (newLabel && newLabel !== oldLabel) {
+        SITE_CATEGORIES[mKey].label = newLabel;
+        renderCategoryManagement();
+    }
+};
+
+window.editMiddleCategory = (mKey, midKey) => {
+    const oldLabel = SITE_CATEGORIES[mKey].middles[midKey].label;
+    const newLabel = prompt("중간분류 명칭 수정:", oldLabel);
+    if (newLabel && newLabel !== oldLabel) {
+        SITE_CATEGORIES[mKey].middles[midKey].label = newLabel;
+        renderCategoryManagement();
+    }
+};
+
+window.editSubCategory = (mKey, midKey, subId) => {
+    const middle = SITE_CATEGORIES[mKey].middles[midKey];
+    const sub = middle.subs.find(s => s.id === subId);
+    const oldLabel = sub.label;
+    const newLabel = prompt("소분류 명칭 수정:", oldLabel);
+    if (newLabel && newLabel !== oldLabel) {
+        sub.label = newLabel;
         renderCategoryManagement();
     }
 };

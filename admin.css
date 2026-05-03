@@ -683,6 +683,11 @@ td {
     border: 1px solid #d4e6f1;
 }
 
+.sub-label:hover {
+    text-decoration: underline;
+    color: #1a5276;
+}
+
 .sub-badge i {
     cursor: pointer;
     font-size: 0.75rem;
