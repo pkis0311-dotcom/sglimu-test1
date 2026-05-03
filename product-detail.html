@@ -471,17 +471,17 @@
                             if(featureStyle === 'type-a') {
                                 featureContainer.innerHTML += `
                                     <div class="feature-item">
-                                        <h5 style="font-size:1.1rem; color:#222; margin-bottom:10px; display:flex; align-items:center;">
-                                            <span class="feature-num">${num}</span>
-                                            ${feat.title}
-                                        </h5>
-                                        <p style="color:#666; line-height:1.6; padding-left:34px;">${feat.desc.replace(/\n/g, '<br>')}</p>
+                                        <div class="feature-num">${num}</div>
+                                        <div class="feature-content">
+                                            <h5>${feat.title}</h5>
+                                            <p>${feat.desc.replace(/\n/g, '<br>')}</p>
+                                        </div>
                                     </div>
                                 `;
                             } else if(featureStyle === 'type-b') {
                                 featureContainer.innerHTML += `
                                     <div class="feature-item">
-                                        <h5><i class="fa-solid fa-circle-check"></i> ${feat.title}</h5>
+                                        <h5>${feat.title}</h5>
                                         <p>${feat.desc.replace(/\n/g, '<br>')}</p>
                                     </div>
                                 `;
