@@ -380,12 +380,12 @@
                 descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
             }
 
-            // 4. 상세페이지 관리(Supabase) 연동
-            // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
-            const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
-            const data = configData ? configData.value : null;
+                // 상세페이지 관리(Supabase) 연동
+                const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
+                const data = configData ? configData.value : null;
+                console.log("Loaded Page Data:", data); // DEBUG용
 
-            if(data) {
+                if(data) {
                 // 제품 설명 (Summary)
                 if(data.description) {
                     const descElem = document.getElementById('dynamicDesc');
@@ -427,19 +427,18 @@
                 }
                 
                 // 제품 사양 (DIMENSION) 렌더링
-                if(data.specs && data.specs.length > 0) {
-                    const specContainer = document.getElementById('dynamicSpecContainer');
-                    const specStyle = data.specStyle || 'type-a';
-                    
-                    if(specContainer) {
+                const specContainer = document.getElementById('dynamicSpecContainer');
+                if(specContainer) {
+                    if(data && data.specs && data.specs.length > 0) {
+                        const specStyle = data.specStyle || 'type-a';
                         specContainer.innerHTML = '';
                         const div = document.createElement('div');
                         div.className = `spec-container ${specStyle}`;
                         
                         if(specStyle === 'type-a') {
-                            let html = '<table class="spec-table"><tbody>';
+                            let html = '<table class="spec-table" style="width:100%; border-collapse:collapse;"><tbody>';
                             data.specs.forEach(s => {
-                                html += `<tr><th>${s.key}</th><td>${s.val}</td></tr>`;
+                                html += `<tr><th style="padding:15px; text-align:left;">${s.key}</th><td style="padding:15px;">${s.val}</td></tr>`;
                             });
                             html += '</tbody></table>';
                             div.innerHTML = html;
@@ -458,11 +457,10 @@
                 }
                 
                 // 제품 특징 (DETAIL VIEW) 렌더링
-                if(data.features && data.features.length > 0) {
-                    const featureContainer = document.getElementById('dynamicFeatures');
-                    const featureStyle = data.featureStyle || 'type-a';
-                    
-                    if(featureContainer) {
+                const featureContainer = document.getElementById('dynamicFeatures');
+                if(featureContainer) {
+                    if(data && data.features && data.features.length > 0) {
+                        const featureStyle = data.featureStyle || 'type-a';
                         featureContainer.innerHTML = '';
                         featureContainer.className = `feature-container ${featureStyle}`;
                         
