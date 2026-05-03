@@ -107,10 +107,7 @@ async function signInWithSocial(provider) {
     const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-            redirectTo: window.location.origin + window.location.pathname,
-            queryParams: {
-                prompt: 'none'
-            }
+            redirectTo: window.location.origin + window.location.pathname
         }
     });
     if (error) {
