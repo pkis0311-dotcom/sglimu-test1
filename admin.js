@@ -170,6 +170,8 @@ loginBtn.addEventListener('click', async () => {
         loginOverlay.style.display = 'none';
         emailInput.value = '';
         passInput.value = '';
+        // [FIX] 로그인 시에도 카테고리 정보 로드 보장
+        await fetchCategories();
         initDashboard();
     }
 });
@@ -248,8 +250,12 @@ async function fetchProducts() {
         let displayCategory = p.category;
         for (const mKey in SITE_CATEGORIES) {
             const major = SITE_CATEGORIES[mKey];
+            if (!major || !major.middles) continue;
+
             for (const midKey in major.middles) {
                 const middle = major.middles[midKey];
+                if (!middle || !Array.isArray(middle.subs)) continue;
+
                 const sub = middle.subs.find(s => s.id === p.category);
                 if (sub) {
                     displayCategory = `${major.label} > ${middle.label} > ${sub.label}`;
@@ -801,12 +807,12 @@ async function fetchInquiries() {
             <td style="font-size:0.9rem; color:#666;">${dateStr}</td>
             <td>${statusBadge}</td>
             <td>
-                <select onchange="updateInquiryStatus(${inq.id}, this.value)" style="padding:5px; border-radius:4px; border:1px solid #ccc; font-size:0.9rem;">
+                <select onchange="updateInquiryStatus('${inq.id}', this.value)" style="padding:5px; border-radius:4px; border:1px solid #ccc; font-size:0.9rem;">
                     <option value="open" ${inq.status === 'open' ? 'selected' : ''}>대기중</option>
                     <option value="processing" ${inq.status === 'processing' ? 'selected' : ''}>확인(처리)중</option>
                     <option value="closed" ${inq.status === 'closed' ? 'selected' : ''}>답변완료</option>
                 </select>
-                <button class="action-btn" style="margin-left:10px; color:#3498db" onclick="alert('👤 고객명/기관: ${inq.author}\\n📞 연락처: ${inq.phone}\\n🕒 접수일시: ${dateStr}\\n\\n📋 [문의 및 요청내용]\\n${inq.title.replace(/'/g, "\\'")}')" title="내용 전체보기"><i class="fa-solid fa-envelope-open-text"></i></button>
+                <button class="action-btn" style="margin-left:10px; color:#3498db" onclick="alert('👤 고객명/기관: ${inq.author ? inq.author.replace(/'/g, "\\'") : ''}\\n📞 연락처: ${inq.phone || ''}\\n🕒 접수일시: ${dateStr}\\n\\n📋 [문의 및 요청내용]\\n${inq.title ? inq.title.replace(/'/g, "\\'") : ''}')" title="내용 전체보기"><i class="fa-solid fa-envelope-open-text"></i></button>
             </td>
         `;
         tBody.appendChild(tr);
@@ -1277,11 +1283,13 @@ function initCategoryDisplayTab() {
     // 2. 소분류 렌더링 함수 (3단계 대응)
     function renderMinorCategories(majorKey) {
         const major = SITE_CATEGORIES[majorKey];
-        if (!major) return;
+        if (!major || !major.middles) return;
 
         let html = '';
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
+
             middle.subs.forEach(sub => {
                 const displayName = `${middle.label} > ${sub.label}`;
                 html += `
@@ -1331,9 +1339,13 @@ function initCategoryDisplayTab() {
                 value: selectedProducts
             });
 
-    // 4. 저장 버튼
-    if(saveBtn && !saveBtn.dataset.init) {
-        // ... (저장 로직은 동일)
+            if (displayError) {
+                alert('저장 실패: ' + displayError.message);
+                return;
+            }
+            alert(`[${selectionName.innerText}] 화면 배치가 성공적으로 저장되었습니다.`);
+        };
+        saveBtn.dataset.init = "true";
     }
 
     // 초기 실행
@@ -1360,14 +1372,21 @@ async function fetchCategories() {
     try {
         const { data, error } = await db.from('site_configs').select('value').eq('key', 'site_categories').single();
         if (error || !data) {
-            console.log("No site_categories found, initializing with default.");
+            console.log("No site_categories found or error fetching. Initializing with default.");
             SITE_CATEGORIES = DEFAULT_CATEGORIES;
-            await db.from('site_configs').upsert({ key: 'site_categories', value: DEFAULT_CATEGORIES });
+            // 404 에러 등이 아닐 경우(데이터가 없을 경우)만 업서트 시도
+            if (!data) {
+                await db.from('site_configs').upsert({ key: 'site_categories', value: DEFAULT_CATEGORIES });
+            }
         } else {
             SITE_CATEGORIES = data.value;
         }
     } catch (err) {
         console.error("fetchCategories Error:", err);
+        SITE_CATEGORIES = DEFAULT_CATEGORIES;
+    }
+    // 데이터 유효성 최소 보장
+    if (!SITE_CATEGORIES || typeof SITE_CATEGORIES !== 'object') {
         SITE_CATEGORIES = DEFAULT_CATEGORIES;
     }
 }
@@ -1381,9 +1400,13 @@ function updateProductModalDropdown() {
     
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
+        if (!major || !major.middles) continue;
+
         html += `<optgroup label="${major.label}">`;
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
+
             middle.subs.forEach(sub => {
                 html += `<option value="${sub.id}">${middle.label} > ${sub.label}</option>`;
             });
@@ -1445,6 +1468,8 @@ function renderCategoryManagement() {
         let middlesHtml = '';
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
+
             let subsHtml = middle.subs.map(sub => `
                 <span class="sub-badge">
                     ${sub.label}

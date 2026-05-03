@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug DB</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Debug</h1>
+    <pre id="output">Loading...</pre>
+    <script>
+        const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function debug() {
+            const out = document.getElementById('output');
+            try {
+                out.textContent = 'Fetching site_configs...';
+                const { data, error } = await supabase.from('site_configs').select('*');
+                if (error) throw error;
+                out.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                out.textContent = 'Error: ' + err.message;
+            }
+        }
+        debug();
+    </script>
+</body>
+</html>
