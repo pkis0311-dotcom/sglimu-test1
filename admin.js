@@ -1111,6 +1111,8 @@ function initPageManageTab() {
                     mainImages: mainImages,
                     detailImages: detailImages, // [변경] 다중 이미지 대응
                     description: pageDescription.value,
+                    specStyle: document.getElementById('specStyle').value,
+                    featureStyle: document.getElementById('featureStyle').value,
                     specs: [],
                     features: []
                 };
@@ -1206,6 +1208,8 @@ async function loadPageData() {
     pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
     pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
     pageDescription.value = '';
+    document.getElementById('specStyle').value = 'type-a';
+    document.getElementById('featureStyle').value = 'type-a';
 
     if(!rawData) return;
     const data = rawData;
@@ -1230,6 +1234,8 @@ async function loadPageData() {
         });
     }
     pageDescription.value = data.description || '';
+    if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
+    if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
     if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
     if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
 }

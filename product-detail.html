@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -135,26 +135,31 @@
                 
                 <div class="info-text-box">
                     <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 25px;">DETAIL VIEW</h4>
-                    <div class="detail-features" id="dynamicFeatures">
+                    <div id="dynamicFeatures">
                         <!-- 동적 특징 데이터 삽입 영역 -->
                          <div class="feature-item">
                             <p>관리자 페이지에서 '특징'을 추가하면 이곳에 표시됩니다.</p>
                          </div>
                     </div>
+                </div>
 
-                    <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 50px;">DIMENSION (제품 사양)</h4>
-                    <table class="spec-table" style="width:100%; border-collapse:collapse;">
-                        <tbody id="dynamicSpecTable">
-                            <tr>
-                                <th style="background:#f9f9f9; padding:12px; border-top:1px solid #ddd; border-bottom:1px solid #ddd; text-align:left; width:25%;">재질</th>
-                                <td style="padding:12px; border-top:1px solid #ddd; border-bottom:1px solid #ddd;">최고급 북미산 천연 오크 원목, 고밀도 메모리폼(패브릭)</td>
-                            </tr>
-                            <tr>
-                                <th style="background:#f9f9f9; padding:12px; border-bottom:1px solid #ddd; text-align:left;">크기</th>
-                                <td style="padding:12px; border-bottom:1px solid #ddd;">(W)580 x (D)550 x (H)890 mm</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="info-text-box">
+                    <h4 id="specTitle" style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 50px;">DIMENSION (제품 사양)</h4>
+                    <div id="dynamicSpecContainer">
+                        <table class="spec-table" style="width:100%; border-collapse:collapse;">
+                            <tbody id="dynamicSpecTable">
+                                <tr>
+                                    <th style="background:#f9f9f9; padding:12px; border-top:1px solid #ddd; border-bottom:1px solid #ddd; text-align:left; width:25%;">재질</th>
+                                    <td style="padding:12px; border-top:1px solid #ddd; border-bottom:1px solid #ddd;">최고급 북미산 천연 오크 원목, 고밀도 메모리폼(패브릭)</td>
+                                </tr>
+                                <tr>
+                                    <th style="background:#f9f9f9; padding:12px; border-bottom:1px solid #ddd; text-align:left;">크기</th>
+                                    <td style="padding:12px; border-bottom:1px solid #ddd;">(W)580 x (D)550 x (H)890 mm</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 </div>
             </div>
             
@@ -421,34 +426,77 @@
                     }
                 }
                 
-                // 제품 사양 (DIMENSION) 테이블
+                // 제품 사양 (DIMENSION) 렌더링
                 if(data.specs && data.specs.length > 0) {
-                    const specBody = document.getElementById('dynamicSpecTable');
-                    if(specBody) {
-                        specBody.innerHTML = '';
-                        data.specs.forEach(s => {
-                            specBody.innerHTML += `<tr><th style="background:#f9f9f9; padding:12px; border-bottom:1px solid #ddd; text-align:left; width:25%;">${s.key}</th><td style="padding:12px; border-bottom:1px solid #ddd;">${s.val}</td></tr>`;
-                        });
+                    const specContainer = document.getElementById('dynamicSpecContainer');
+                    const specStyle = data.specStyle || 'type-a';
+                    
+                    if(specContainer) {
+                        specContainer.innerHTML = '';
+                        const div = document.createElement('div');
+                        div.className = `spec-container ${specStyle}`;
+                        
+                        if(specStyle === 'type-a') {
+                            let html = '<table class="spec-table"><tbody>';
+                            data.specs.forEach(s => {
+                                html += `<tr><th>${s.key}</th><td>${s.val}</td></tr>`;
+                            });
+                            html += '</tbody></table>';
+                            div.innerHTML = html;
+                        } else {
+                            data.specs.forEach(s => {
+                                div.innerHTML += `
+                                    <div class="spec-item">
+                                        <span class="spec-key">${s.key}</span>
+                                        <span class="spec-val">${s.val}</span>
+                                    </div>
+                                `;
+                            });
+                        }
+                        specContainer.appendChild(div);
                     }
                 }
                 
-                // 제품 특징 (DETAIL VIEW) 리스트
+                // 제품 특징 (DETAIL VIEW) 렌더링
                 if(data.features && data.features.length > 0) {
                     const featureContainer = document.getElementById('dynamicFeatures');
+                    const featureStyle = data.featureStyle || 'type-a';
+                    
                     if(featureContainer) {
                         featureContainer.innerHTML = '';
+                        featureContainer.className = `feature-container ${featureStyle}`;
+                        
                         data.features.forEach((feat, i) => {
-                            const isLast = (i === data.features.length - 1) ? 'style="border-bottom: none;"' : '';
                             const num = (i + 1).toString().padStart(2, '0');
-                            featureContainer.innerHTML += `
-                                <div class="feature-item" ${isLast}>
-                                    <h5 style="font-size:1.1rem; color:#222; margin-bottom:10px; display:flex; align-items:center;">
-                                        <span style="display:inline-block; background:#8ec342; color:#fff; width:24px; height:24px; line-height:24px; text-align:center; border-radius:50%; margin-right:10px; font-size:0.8rem;">${num}</span>
-                                        ${feat.title}
-                                    </h5>
-                                    <p style="color:#666; line-height:1.6; padding-left:34px;">${feat.desc.replace(/\n/g, '<br>')}</p>
-                                </div>
-                            `;
+                            if(featureStyle === 'type-a') {
+                                featureContainer.innerHTML += `
+                                    <div class="feature-item">
+                                        <h5 style="font-size:1.1rem; color:#222; margin-bottom:10px; display:flex; align-items:center;">
+                                            <span class="feature-num">${num}</span>
+                                            ${feat.title}
+                                        </h5>
+                                        <p style="color:#666; line-height:1.6; padding-left:34px;">${feat.desc.replace(/\n/g, '<br>')}</p>
+                                    </div>
+                                `;
+                            } else if(featureStyle === 'type-b') {
+                                featureContainer.innerHTML += `
+                                    <div class="feature-item">
+                                        <h5><i class="fa-solid fa-circle-check"></i> ${feat.title}</h5>
+                                        <p>${feat.desc.replace(/\n/g, '<br>')}</p>
+                                    </div>
+                                `;
+                            } else if(featureStyle === 'type-c') {
+                                featureContainer.innerHTML += `
+                                    <div class="feature-item">
+                                        <div class="feature-title-box">
+                                            <h5>${feat.title}</h5>
+                                        </div>
+                                        <div class="feature-desc-box">
+                                            <p>${feat.desc.replace(/\n/g, '<br>')}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            }
                         });
                     }
                 }
