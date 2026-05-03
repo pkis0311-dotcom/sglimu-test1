@@ -852,7 +852,7 @@ button {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background-color: #fff; /* 흰색 배경으로 더 깔끔하게 */
+    background-color: #fff; /* ?�색 배경?�로 ??깔끔?�게 */
     transition: transform 0.5s ease;
 }
 
@@ -1255,36 +1255,31 @@ button {
 .spec-container.type-c {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    max-width: 800px;
-    margin: 0 auto 30px;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto;
+    border-top: 2px solid #111;
 }
 .spec-container.type-c .spec-item {
     display: flex;
-    align-items: center;
-    padding: 20px 0;
-    border-bottom: 1px solid #f0f0f0;
+    align-items: flex-start;
+    padding: 25px 0;
+    border-bottom: 1px solid #eee;
 }
 .spec-container.type-c .spec-key {
-    width: 140px;
+    width: 200px;
     font-weight: 700;
-    color: var(--color-accent);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.spec-container.type-c .spec-key::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    background: var(--color-accent);
-    border-radius: 50%;
+    color: #111;
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 .spec-container.type-c .spec-val {
     flex: 1;
-    font-weight: 500;
-    color: #333;
+    font-weight: 400;
+    color: #555;
     font-size: 1.1rem;
+    line-height: 1.5;
 }
 
 /* 5. Feature (DETAIL VIEW) Styles */
@@ -1363,71 +1358,47 @@ button {
 .feature-container.type-c {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 100px;
+    padding: 40px 0;
 }
 .feature-container.type-c .feature-item {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: stretch;
-    border-top: 1px solid #f0f0f0;
-}
-.feature-container.type-c .feature-item:nth-child(even) {
-    direction: rtl;
-}
-.feature-container.type-c .feature-item:nth-child(even) > * {
-    direction: ltr;
-}
-.feature-container.type-c .feature-title-box {
-    background: #fafafa;
-    padding: 60px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 30px;
+    border-left: 2px solid #111;
+    padding-left: 40px;
+    position: relative;
+}
+.feature-container.type-c .feature-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -2px;
+    width: 2px;
+    height: 0;
+    background: var(--color-accent);
+    transition: height 0.5s ease;
+}
+.feature-container.type-c .feature-item:hover::before {
+    height: 100%;
 }
 .feature-container.type-c .feature-title-box h5 {
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: 800;
-    color: #000;
-    line-height: 1.1;
-    letter-spacing: -1px;
-}
-.feature-container.type-c .feature-desc-box {
-    background: #fff;
-    padding: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    color: #111;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin: 0;
 }
 .feature-container.type-c .feature-desc-box p {
-    font-size: 1.15rem;
-    color: #444;
+    font-size: 1.25rem;
+    color: #555;
     line-height: 1.8;
+    max-width: 800px;
 }
 
-@media (max-width: 992px) {
-    .feature-container.type-c .feature-item {
-        grid-template-columns: 1fr;
-    }
-    .feature-container.type-c .feature-item:nth-child(even) {
-        direction: ltr;
-    }
-    .feature-container.type-c .feature-title-box,
-    .feature-container.type-c .feature-desc-box {
-        padding: 40px;
-    }
+@media (max-width: 768px) {
+    .feature-container.type-c { gap: 60px; }
+    .feature-container.type-c .feature-item { padding-left: 25px; }
+    .feature-container.type-c .feature-title-box h5 { font-size: 2rem; }
 }
-
-/* REFINED STYLES FOR VISUAL DISTINCTION */
-.spec-container.type-a table th { background: #f8f9fa; border: 1px solid #dee2e6; }
-.spec-container.type-a table td { border: 1px solid #dee2e6; }
-
-.spec-container.type-b .spec-item { background: #eef2f3; border-left: 5px solid var(--color-accent); padding: 20px; }
-.spec-container.type-b .spec-key { color: #555; }
-
-.spec-container.type-c .spec-item { border-bottom: 2px dashed #ccc; padding: 10px 0; }
-
-.feature-container.type-a { background: #f9f9f9; padding: 20px; border-radius: 10px; }
-.feature-container.type-b .feature-item { border: 2px solid #eee; background: #fff; }
-.feature-container.type-c .feature-title-box { background: #333; color: #fff; }
-.feature-container.type-c .feature-title-box h5 { color: #fff; }
-
