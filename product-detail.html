@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -217,7 +217,7 @@
     </aside>
     <div class="chat-widget"><button class="chat-fab" id="chatFab"><i class="fa-solid fa-comment-dots"></i></button></div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
     <script>
         // Product Detail Page Specific JS
         const basePrice = 235000;
@@ -268,10 +268,7 @@
     <script src="cart.js"></script>
     <script type="module" src="inquiry.js"></script>
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        import { supabase } from './supabase-client.js';
 
         // 1. URL?먯꽌 ID 異붿텧
         const urlParams = new URLSearchParams(window.location.search);

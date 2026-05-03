@@ -1,8 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 기본 슬라이드 데이터 (Supabase 연결 실패나 데이터 없을 때 폴백용)

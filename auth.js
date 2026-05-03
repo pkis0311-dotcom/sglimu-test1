@@ -1,20 +1,4 @@
-// auth.js
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-// ==========================================
-// 🚨 Supabase Configuration (Sync with admin.js)
-// ==========================================
-const SUPABASE_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9';
-
-// 세션 영속성 설정을 위해 옵션 추가
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-    }
-});
+import { supabase } from './supabase-client.js';
 
 // ==========================================
 // 📱 Kakao SDK Initialization
