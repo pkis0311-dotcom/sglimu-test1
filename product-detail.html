@@ -12,6 +12,62 @@
     <link rel="stylesheet" href="auth.css">
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .product-detail-page { padding: 120px 5% 100px; max-width: 1400px; margin: 0 auto; }
+        .breadcrumb { margin-bottom: 30px; font-size: 0.9rem; color: #999; }
+        .breadcrumb a { color: #999; text-decoration: none; }
+        .breadcrumb strong { color: #333; font-weight: 600; }
+        
+        .product-detail-top { display: flex; gap: 60px; margin-bottom: 80px; }
+        .gallery-wrapper { flex: 1; position: sticky; top: 120px; height: fit-content; }
+        .info-wrapper { flex: 1; }
+        
+        .main-image-container { width: 100%; border-radius: 12px; overflow: hidden; background: #f9f9f9; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border: 1px solid #eee; }
+        .main-image-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .thumbnail-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .thumb-item { width: 80px; height: 80px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; overflow: hidden; background: #fff; flex-shrink: 0; }
+        .thumb-item.active { border-color: var(--color-primary); }
+        .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .product-title { font-size: 2.2rem; font-weight: 800; color: #111; margin-bottom: 15px; line-height: 1.2; }
+        .product-price { font-size: 1.8rem; font-weight: 700; color: var(--color-primary); margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 25px; }
+        .product-price span { font-size: 1.2rem; margin-left: 5px; }
+        
+        .option-group { margin-bottom: 25px; }
+        .option-group label { display: block; font-size: 0.95rem; font-weight: 600; color: #555; margin-bottom: 10px; }
+        .option-select { width: 100%; height: 50px; padding: 0 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; background: #fff; cursor: pointer; }
+        
+        .quantity-control { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; width: fit-content; overflow: hidden; }
+        .qty-btn { width: 40px; height: 40px; background: #f5f5f5; border: none; cursor: pointer; font-size: 1rem; color: #666; transition: background 0.2s; }
+        .qty-btn:hover { background: #eee; }
+        .qty-input { width: 50px; height: 40px; text-align: center; border: none; border-left: 1px solid #ddd; border-right: 1px solid #ddd; font-weight: 600; font-size: 1.1rem; }
+        
+        .total-price-box { margin-top: 40px; padding: 25px; background: #f8fafc; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .total-price-box .label { font-size: 1.1rem; font-weight: 600; color: #333; }
+        .total-price-box .total { font-size: 1.8rem; font-weight: 800; color: var(--color-primary); }
+        
+        .buy-btn-group { display: flex; gap: 15px; margin-top: 40px; }
+        .btn-large { flex: 1; height: 60px; border-radius: 30px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; border: none; }
+        .btn-cart { background: #fff; border: 2px solid var(--color-primary); color: var(--color-primary); }
+        .btn-cart:hover { background: #f0fdf4; }
+        .btn-buy { background: var(--color-primary); color: #fff; }
+        .btn-buy:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        .detail-tabs-nav { display: flex; border-bottom: 1px solid #eee; margin-top: 100px; position: sticky; top: 80px; background: #fff; z-index: 100; }
+        .detail-tab-btn { flex: 1; padding: 20px; text-align: center; font-weight: 600; color: #999; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; }
+        .detail-tab-btn.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+        
+        .detail-tab-content { display: none; padding: 60px 0; }
+        .detail-tab-content.active { display: block; }
+        
+        .spec-table th { background: #f9f9f9; width: 25%; text-align: left; padding: 15px; border: 1px solid #eee; font-weight: 600; }
+        .spec-table td { padding: 15px; border: 1px solid #eee; color: #666; }
+        
+        @media (max-width: 1024px) {
+            .product-detail-top { flex-direction: column; gap: 40px; }
+            .gallery-wrapper { position: static; }
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -19,16 +75,14 @@
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
-                    <li class="has-submenu">
-                        <a href="#">도서관리 시스템</a>
+                    <li class="has-submenu"><a href="#">도서관리 시스템</a>
                         <ul class="submenu">
                             <li><a href="rfid.html">RFID시스템</a></li>
                             <li><a href="em.html">EM시스템</a></li>
                             <li><a href="access.html">출입통제시스템</a></li>
                         </ul>
                     </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 용품</a>
+                    <li class="has-submenu"><a href="#">도서관 용품</a>
                         <ul class="submenu">
                             <li><a href="supplies-arrange.html">도서정리 용품</a></li>
                             <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
@@ -36,104 +90,63 @@
                             <li><a href="sterilizer.html">책소독기</a></li>
                         </ul>
                     </li>
-                    <li class="has-submenu">
-                        <a href="#">도서관 가구</a>
-                        <ul class="submenu">
-                            <li><a href="furniture-koas.html">코아스</a></li>
-                            <li><a href="furniture-fomus.html">포머스</a></li>
-                            <li><a href="furniture-fursys.html">퍼시스</a></li>
-                            <li><a href="furniture-custom.html">제작가구</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">사인물</a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
-                            <li><a href="sign-board.html">게시판/이용안내</a></li>
-                            <li><a href="sign-date.html">대출반납일력표</a></li>
-                            <li><a href="sign-custom.html">제작사인물</a></li>
-                        </ul>
-                    </li>
                     <li><a href="discount.html">할인상품</a></li>
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
-                </div>
-                <div id="userAuthWrap">
-                    <button class="login-trigger-btn" id="loginTriggerBtn">
-                        <i class="fa-regular fa-user"></i>
-                        <span>로그인</span>
-                    </button>
-                </div>
-                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+                <a href="#" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+                <a href="#" class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></a>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle"><i class="fa-solid fa-bars"></i></button>
+            </div>
+        </div>
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+            <div class="mobile-menu-box">
+                <div class="mobile-menu-header"><div class="mobile-logo">SG LIMU</div><button class="mobile-menu-close" id="mobileMenuClose">&times;</button></div>
+                <nav class="mobile-nav"><ul id="mobileNavList"></ul></nav>
             </div>
         </div>
     </header>
 
     <main class="product-detail-page">
         <div class="breadcrumb">
-            <a href="index.html">Home</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
-            <a href="#">도서관 가구</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
+            <a href="index.html">Home</a> <i class="fa-solid fa-chevron-right" style="font-size:0.7rem; margin:0 10px;"></i>
             <strong id="breadcrumbCurrent">제품명</strong>
         </div>
 
         <div class="product-detail-top">
             <div class="gallery-wrapper">
-                <div class="main-image-container">
-                    <img src="assets/no-image.png" alt="제품 이미지" id="mainImage">
-                </div>
-                <div class="thumbnail-list">
-                    <!-- Thumbnails generated by JS -->
-                </div>
+                <div class="main-image-container"><img id="mainImage" src="" alt="제품 이미지"></div>
+                <div class="thumbnail-list"></div>
             </div>
-
             <div class="info-wrapper">
-                <div class="product-badges">
-                    <span class="badge badge-new">NEW</span>
-                    <span class="badge badge-best">BEST</span>
-                </div>
-                <h2 class="product-title">제품 로딩 중...</h2>
-                <p class="product-desc" id="dynamicDesc"></p>
+                <h2 class="product-title">로딩 중...</h2>
+                <div class="product-price">0원</div>
                 
-                <div class="product-price">
-                    0<span>원</span>
-                </div>
-
                 <div class="purchase-options">
-                    <div class="option-group" id="colorOptionGroup">
-                        <label for="colorOption">색상 선택</label>
-                        <select id="colorOption" class="option-select">
-                            <option value="">색상을 선택하세요</option>
-                        </select>
+                    <div class="option-group" id="colorOptionGroup" style="display:none;">
+                        <label>색상 선택</label>
+                        <select id="colorOption" class="option-select"></select>
                     </div>
-
-                    <div class="option-group" id="sizeOptionGroup" style="margin-top: 15px;">
-                        <label for="sizeOption">사이즈 선택</label>
-                        <select id="sizeOption" class="option-select">
-                            <option value="">사이즈를 선택하세요</option>
-                        </select>
+                    <div class="option-group" id="sizeOptionGroup" style="display:none;">
+                        <label>사이즈 선택</label>
+                        <select id="sizeOption" class="option-select"></select>
                     </div>
-                    
-                    <div class="option-group" style="margin-top: 20px;">
+                    <div class="option-group">
                         <label>수량</label>
                         <div class="quantity-control">
-                            <button class="qty-btn" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
-                            <input type="text" class="qty-input" id="qtyInput" value="1" readonly>
-                            <button class="qty-btn" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
+                            <button class="qty-btn" id="qtyMinus"><i class="fa-solid fa-minus"></i></button>
+                            <input type="text" id="qtyInput" class="qty-input" value="1" readonly>
+                            <button class="qty-btn" id="qtyPlus"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="total-price-box">
                     <span class="label">총 상품금액</span>
-                    <div class="total"><span id="totalPrice">0</span><span style="font-size:1.2rem;font-weight:500;margin-left:5px;">원</span></div>
+                    <div class="total"><span id="totalPrice">0</span>원</div>
                 </div>
 
-                <div class="buy-btn-group" style="margin-top:30px;">
-                    <button class="btn-icon-large" title="관심상품"><i class="fa-regular fa-heart"></i></button>
+                <div class="buy-btn-group">
                     <button class="btn-large btn-cart">장바구니</button>
                     <button class="btn-large btn-buy">바로구매</button>
                 </div>
@@ -142,367 +155,138 @@
 
         <div class="product-detail-bottom">
             <div class="detail-tabs-nav">
-                <div class="detail-tab-btn active" onclick="switchTab(0, this)">상세정보</div>
-                <div class="detail-tab-btn" onclick="switchTab(1, this)">구매안내</div>
-                <div class="detail-tab-btn" onclick="switchTab(2, this)">상품후기</div>
-                <div class="detail-tab-btn" onclick="switchTab(3, this)">Q&A</div>
+                <div class="detail-tab-btn active" data-tab="tab0">상세정보</div>
+                <div class="detail-tab-btn" data-tab="tab1">구매안내</div>
             </div>
-
             <div class="detail-tab-content active" id="tab0">
-                <div class="spec-image-container" id="detailImagesContainer" style="text-align:center; margin-bottom:40px;">
-                    <img src="" id="dynamicDetailImg" alt="제품 상세 이미지" style="max-width:100%;">
-                </div>
-                
-                <div class="info-text-box">
-                    <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 25px;">DETAIL VIEW</h4>
-                    <div id="dynamicFeatures">
-                        <p style="color: #999;">제품 특징을 불러오는 중입니다...</p>
-                    </div>
-                </div>
-
-                <div class="info-text-box">
-                    <h4 id="specTitle" style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 50px;">DIMENSION (제품 사양)</h4>
-                    <div id="dynamicSpecContainer">
-                        <table class="spec-table" style="width:100%; border-collapse:collapse;">
-                            <tbody id="dynamicSpecTable">
-                                <!-- Specs generated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
+                <div id="detailImagesContainer" style="text-align:center; margin-bottom:50px;"></div>
+                <div id="dynamicDesc" style="line-height:1.8; color:#444; font-size:1.1rem;"></div>
+                <div id="dynamicFeatures" style="margin-top:50px;"></div>
+                <div style="margin-top:80px;">
+                    <h4 style="border-bottom:2px solid #111; padding-bottom:10px; margin-bottom:20px;">제품 사양</h4>
+                    <table class="spec-table" style="width:100%; border-collapse:collapse;"><tbody id="dynamicSpecTable"></tbody></table>
                 </div>
             </div>
-            
             <div class="detail-tab-content" id="tab1">
-                <div class="info-text-box">
-                    <h4>배송/교환/반품 안내</h4>
-                    <p>
-                        <strong>배송안내</strong><br>
-                        - 결제 완료 후 3~5일 이내에 출고됩니다. (주말/공휴일 제외)<br>
-                        - 제주 및 도서 산간 지역은 추가 배송비가 발생할 수 있습니다.<br><br>
-                        
-                        <strong>교환/반품 안내</strong><br>
-                        - 상품 수령 후 7일 이내에 고객센터를 통해 접수해 주셔야 합니다.<br>
-                        - 단순 변심으로 인한 반품 시 왕복 택배비는 고객님 부담입니다.<br>
-                        - 조립/설치 후에는 제품 하자를 제외하고 교환/반품이 불가능합니다.
-                    </p>
-                </div>
-            </div>
-
-            <div class="detail-tab-content" id="tab2">
-                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
-                    <i class="fa-regular fa-comment-dots" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
-                    <h3 style="color: #666;">등록된 상품후기가 없습니다.</h3>
-                    <p style="color: #999;">첫 번째 리뷰를 남겨주세요!</p>
-                </div>
-            </div>
-
-            <div class="detail-tab-content" id="tab3">
-                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
-                    <i class="fa-regular fa-circle-question" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
-                    <h3 style="color: #666;">등록된 Q&A가 없습니다.</h3>
-                    <p style="color: #999;">상품에 대한 궁금증을 남겨주시면 빠르게 답변 드리겠습니다.</p>
+                <div style="padding:40px; background:#f9f9f9; border-radius:12px; line-height:2;">
+                    <strong>배송 안내</strong><br>결제 완료 후 2~5일 이내 출고됩니다.<br><br>
+                    <strong>교환/반품 안내</strong><br>상품 수령 후 7일 이내에 고객센터로 접수해 주세요.
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-info">
-                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
-                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
+    <footer class="footer" style="background:#f1f1f1; padding:60px 5%; margin-top:100px;">
+        <div style="max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <div class="footer-logo" style="font-weight:800; font-size:1.5rem;">SG LIMU</div>
+            <div class="footer-info" style="font-size:0.9rem; color:#666; text-align:right;">
+                <p>(주)에스지라이뮤 | Tel: 1544-5703 | 팩스: 051-518-5985</p>
+                <p>Copyright © 2023 SG LIMU. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <aside class="right-fixed-banner">
-        <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검색</span></a></li>
-            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
-            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
-            <li><a href="#" class="banner-btn" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
-            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i><span class="tooltip">네이버톡톡</span></a></li>
-            <li class="scroll-btns">
-                <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
-            </li>
-        </ul>
-    </aside>
-
-    <div class="chat-widget">
-        <button class="chat-fab" id="chatFab">
-            <i class="fa-solid fa-comment-dots"></i>
-        </button>
-    </div>
-
-    <script type="module" src="script.js"></script>
-    <script>
-        // UI Logic
-        function changeImage(src, element) {
-            document.getElementById('mainImage').src = src;
-            document.querySelectorAll('.thumb-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        function updateQty(change) {
-            const input = document.getElementById('qtyInput');
-            let current = parseInt(input.value);
-            let newVal = current + change;
-            if (newVal < 1) newVal = 1;
-            input.value = newVal;
-            
-            calculateTotal();
-        }
-
-        function calculateTotal() {
-            let optPrice = 0;
-            const colorSelect = document.getElementById('colorOption');
-            // Basic logic for hardcoded colors if needed, but usually from DB
-            
-            const sizeSelect = document.getElementById('sizeOption');
-            if(sizeSelect && sizeSelect.value) {
-                const parts = sizeSelect.value.split('|');
-                optPrice += parseInt(parts[0]) || 0;
-            }
-            
-            const qty = parseInt(document.getElementById('qtyInput').value);
-            const total = (window.basePrice || 0 + optPrice) * qty;
-            const totalPriceElem = document.getElementById('totalPrice');
-            if (totalPriceElem) totalPriceElem.innerText = total.toLocaleString();
-        }
-
-        document.getElementById('colorOption')?.addEventListener('change', calculateTotal);
-        document.getElementById('sizeOption')?.addEventListener('change', calculateTotal);
-
-        function switchTab(index, element) {
-            document.querySelectorAll('.detail-tab-btn').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.detail-tab-content').forEach(el => el.classList.remove('active'));
-            
-            element.classList.add('active');
-            document.getElementById('tab' + index).classList.add('active');
-        }
-    </script>
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
-    <script type="module" src="auth.js"></script>
     <script type="module">
         import { supabase } from './supabase-client.js';
 
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
+        let basePrice = 0;
+        let optionPrice = 0;
 
-        async function initProductDetail() {
-            if(!productId) {
-                console.warn("Product ID missing in URL.");
-                return;
-            }
+        async function init() {
+            if(!productId) return;
+            const { data: p, error } = await supabase.from('products').select('*').eq('id', productId).single();
+            if(error || !p) return;
 
-            const { data: product, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('id', productId)
-                .single();
-
-            if (error || !product) {
-                console.error("Product fetch error:", error);
-                return;
-            }
-
-            // Update Basic Info
-            document.title = product.name + " - 에스지라이뮤";
-            document.querySelector('.product-title').innerText = product.name;
-            const priceElem = document.querySelector('.product-price');
-            if (product.price === '전화문의' || !product.price) {
-                priceElem.innerHTML = '전화문의';
-                window.basePrice = 0;
-            } else {
-                priceElem.innerHTML = Number(product.price).toLocaleString() + '<span>원</span>';
-                window.basePrice = Number(product.price);
-            }
+            document.title = `${p.name} - 에스지라이뮤`;
+            document.querySelector('.product-title').innerText = p.name;
+            document.getElementById('breadcrumbCurrent').innerText = p.name;
             
-            document.getElementById('breadcrumbCurrent').innerText = product.name;
+            basePrice = p.price === '전화문의' ? 0 : Number(p.price);
+            document.querySelector('.product-price').innerText = basePrice > 0 ? basePrice.toLocaleString() + '원' : '전화문의';
 
-            // Main Image & Thumbnails
-            const mainImgElem = document.getElementById('mainImage');
-            if(product.image_url && mainImgElem) {
-                mainImgElem.src = product.image_url;
-                const thumbList = document.querySelector('.thumbnail-list');
-                if(thumbList) {
-                    thumbList.innerHTML = `
-                        <div class="thumb-item active" onclick="changeImage('${product.image_url}', this)">
-                            <img src="${product.image_url}" alt="메인 이미지">
-                        </div>
-                    `;
-                }
-            }
-            
-            // Options Logic
-            const colorOption = document.getElementById('colorOption');
-            if(colorOption) {
-                let colorList = [];
-                if(product.colors) colorList = product.colors.split(',').map(c => c.trim());
-                if(colorList.length > 0) {
-                    colorOption.innerHTML = '<option value="">색상을 선택하세요</option>';
-                    colorList.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c; opt.innerText = c;
-                        colorOption.appendChild(opt);
-                    });
-                    document.getElementById('colorOptionGroup').style.display = 'block';
-                } else {
-                    document.getElementById('colorOptionGroup').style.display = 'none';
-                }
+            if(p.image_url) {
+                document.getElementById('mainImage').src = p.image_url;
+                document.querySelector('.thumbnail-list').innerHTML = `<div class="thumb-item active"><img src="${p.image_url}"></div>`;
             }
 
-            const sizeOption = document.getElementById('sizeOption');
-            if(sizeOption) {
-                let sizeList = [];
-                if(product.sizes) sizeList = product.sizes.split(',').map(s => s.trim());
-                if(sizeList.length > 0) {
-                    sizeOption.innerHTML = '<option value="0|">사이즈를 선택하세요</option>';
-                    sizeList.forEach(s => {
-                        const parts = s.split(':');
-                        const name = parts[0];
-                        const price = parseInt(parts[1]) || 0;
-                        const opt = document.createElement('option');
-                        opt.value = `${price}|${name}`;
-                        opt.innerText = price > 0 ? `${name} (+${price.toLocaleString()}원)` : name;
-                        sizeOption.appendChild(opt);
+            // Clean weird placeholders from description/features
+            const cleanText = (txt) => txt ? txt.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>') : '';
+
+            if(p.description) {
+                document.getElementById('dynamicDesc').innerHTML = cleanText(p.description);
+            }
+
+            // Options
+            if(p.colors) {
+                const colors = p.colors.split(',').map(c => c.trim());
+                const select = document.getElementById('colorOption');
+                select.innerHTML = '<option value="">색상을 선택하세요</option>';
+                colors.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+                document.getElementById('colorOptionGroup').style.display = 'block';
+            }
+
+            if(p.sizes) {
+                const sizes = p.sizes.split(',').map(s => s.trim());
+                const select = document.getElementById('sizeOption');
+                select.innerHTML = '<option value="0">사이즈를 선택하세요</option>';
+                sizes.forEach(s => {
+                    const [name, price] = s.split(':');
+                    select.innerHTML += `<option value="${price || 0}">${name} ${price ? '(+' + Number(price).toLocaleString() + '원)' : ''}</option>`;
+                });
+                document.getElementById('sizeOptionGroup').style.display = 'block';
+                select.onchange = () => { optionPrice = Number(select.value); updateTotal(); };
+            }
+
+            // Detailed Data from config
+            const { data: cfg } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
+            if(cfg && cfg.value) {
+                const d = cfg.value;
+                if(d.detailImages) {
+                    const container = document.getElementById('detailImagesContainer');
+                    d.detailImages.forEach(src => container.innerHTML += `<img src="${src}" style="max-width:100%; margin-bottom:10px;">`);
+                }
+                if(d.specs) {
+                    const table = document.getElementById('dynamicSpecTable');
+                    d.specs.forEach(s => table.innerHTML += `<tr><th>${s.key}</th><td>${s.val}</td></tr>`);
+                }
+                if(d.features) {
+                    const featBox = document.getElementById('dynamicFeatures');
+                    d.features.forEach((f, i) => {
+                        featBox.innerHTML += `<div style="margin-bottom:30px;">
+                            <h5 style="font-size:1.2rem; color:#111; margin-bottom:10px;">${i+1}. ${f.title}</h5>
+                            <p style="color:#666; line-height:1.6;">${cleanText(f.desc)}</p>
+                        </div>`;
                     });
-                    document.getElementById('sizeOptionGroup').style.display = 'block';
-                } else {
-                    document.getElementById('sizeOptionGroup').style.display = 'none';
                 }
             }
 
-            // Description
-            const descElem = document.getElementById('dynamicDesc');
-            if(descElem && product.description) {
-                descElem.innerHTML = product.description.replace(/\n/g, '<br>').trim();
-            }
-
-            // Page Data from site_configs
-            const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
-            const data = configData ? configData.value : null;
-            
-            if(data) {
-                // Additional Main Images
-                if(data.mainImages && data.mainImages.length > 0) {
-                    const thumbList = document.querySelector('.thumbnail-list');
-                    if(thumbList) {
-                        data.mainImages.forEach((src, idx) => {
-                            if(src === product.image_url) return;
-                            thumbList.innerHTML += `
-                                <div class="thumb-item" onclick="changeImage('${src}', this)">
-                                    <img src="${src}" alt="제품 이미지 ${idx+1}">
-                                </div>
-                            `;
-                        });
-                    }
-                }
-                
-                // Detail Images
-                const detailContainer = document.getElementById('detailImagesContainer');
-                if(detailContainer && (data.detailImages || data.detailImage)) {
-                    detailContainer.innerHTML = '';
-                    const imgs = data.detailImages || [data.detailImage];
-                    imgs.forEach(src => {
-                        if(!src) return;
-                        const img = document.createElement('img');
-                        img.src = src;
-                        img.style.cssText = "max-width:100%; display:block; margin: 0 auto 10px auto;";
-                        detailContainer.appendChild(img);
-                    });
-                }
-                
-                // Specs
-                const specTable = document.getElementById('dynamicSpecTable');
-                if(specTable && data.specs && data.specs.length > 0) {
-                    specTable.innerHTML = '';
-                    data.specs.forEach(s => {
-                        specTable.innerHTML += `<tr><th style="padding:15px; text-align:left; background:#f9f9f9; width:25%; border:1px solid #ddd;">${s.key}</th><td style="padding:15px; border:1px solid #ddd;">${s.val}</td></tr>`;
-                    });
-                }
-                
-                // Features
-                const featureContainer = document.getElementById('dynamicFeatures');
-                if(featureContainer && data.features && data.features.length > 0) {
-                    featureContainer.innerHTML = '';
-                    data.features.forEach((feat, i) => {
-                        const num = (i + 1).toString().padStart(2, '0');
-                        featureContainer.innerHTML += `
-                            <div class="feature-item" style="margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:15px;">
-                                <h5 style="font-size:1.1rem; color:#222; margin-bottom:8px; display:flex; align-items:center;">
-                                    <span style="display:inline-block; background:var(--color-primary); color:#fff; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; margin-right:10px; font-size:0.75rem;">${num}</span>
-                                    ${feat.title}
-                                </h5>
-                                <p style="color:#666; line-height:1.6; padding-left:32px;">${feat.desc.replace(/\n/g, '<br>')}</p>
-                            </div>
-                        `;
-                    });
-                }
-            }
-            
-            calculateTotal();
+            updateTotal();
         }
 
-        window.addEventListener('DOMContentLoaded', initProductDetail);
+        function updateTotal() {
+            const qty = Number(document.getElementById('qtyInput').value);
+            const total = (basePrice + optionPrice) * qty;
+            document.getElementById('totalPrice').innerText = total > 0 ? total.toLocaleString() : '전화문의';
+        }
+
+        document.getElementById('qtyPlus').onclick = () => { document.getElementById('qtyInput').value++; updateTotal(); };
+        document.getElementById('qtyMinus').onclick = () => { if(document.getElementById('qtyInput').value > 1) document.getElementById('qtyInput').value--; updateTotal(); };
+
+        // Tab Switching
+        document.querySelectorAll('.detail-tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.detail-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+                window.scrollTo({ top: document.querySelector('.detail-tabs-nav').offsetTop - 80, behavior: 'smooth' });
+            };
+        });
+
+        init();
     </script>
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <div class="auth-close" id="authClose">&times;</div>
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">로그인</div>
-                <div class="auth-tab" data-target="signupPane">회원가입</div>
-            </div>
-            <div class="auth-content">
-                <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>환영합니다!</h2><p>간편로그인으로 빠르게 시작하세요.</p></div>
-                    <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
-                    </div>
-                    <div class="auth-divider"><span>또는</span></div>
-                    <form id="loginForm">
-                        <div class="auth-form-group"><label>이메일</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>비밀번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비밀번호를 입력하세요" required></div>
-                        <button type="submit" class="auth-submit-btn">로그인</button>
-                    </form>
-                    <div id="loginMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
-                    <form id="signupForm">
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
-                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        </div>
-                        <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
-                            <div class="auth-form-group"><label>비밀번호 확인 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required></div>
-                        </div>
-                        <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예) 한국대학교 도서관"></div>
-                        <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
-                        <button type="submit" class="auth-submit-btn">가입하기</button>
-                    </form>
-                    <div id="signupMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header"><h2>추가 정보 입력</h2><p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p></div>
-                    <form id="completeProfileForm">
-                        <div class="highlight-box">
-                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                            <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명 *</label><input type="text" id="completeOrg" class="auth-input" placeholder="예) 한국대학교 도서관" required></div>
-                            <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
-                        </div>
-                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
-                    </form>
-                    <div id="completeMsg" class="auth-message"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
