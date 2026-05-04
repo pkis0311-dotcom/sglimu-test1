@@ -852,7 +852,7 @@ button {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background-color: #fff; /* ?域� 諻國祭?潺� ??篧竾�?瞘� */
+    background-color: #fff; /* ??�� 諻國�?潺� ??篧竾�??�� */
     transition: transform 0.5s ease;
 }
 
@@ -1402,4 +1402,6 @@ button {
     .feature-container.type-c .feature-item { padding-left: 25px; }
     .feature-container.type-c .feature-title-box h5 { font-size: 2rem; }
 }
+
+
 $mobileStyles
