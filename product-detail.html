@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제품 상세 정보 - 에스지라이뮤</title>
+    <title>?쒗뭹 ?곸꽭 ?뺣낫 - ?먯뒪吏?쇱씠裕?/title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,55 +20,72 @@
             <nav class="gnb">
                 <ul>
                     <li class="has-submenu">
-                        <a href="#">도서관리 시스템</a>
+                        <a href="#">?꾩꽌愿由??쒖뒪??/a>
                         <ul class="submenu">
-                            <li><a href="rfid.html">RFID시스템</a></li>
-                            <li><a href="em.html">EM시스템</a></li>
-                            <li><a href="access.html">출입통제시스템</a></li>
+                            <li><a href="rfid.html">RFID?쒖뒪??/a></li>
+                            <li><a href="em.html">EM?쒖뒪??/a></li>
+                            <li><a href="access.html">異쒖엯?듭젣?쒖뒪??/a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
-                        <a href="#">도서관 용품</a>
+                        <a href="#">?꾩꽌愿 ?⑺뭹</a>
                         <ul class="submenu">
-                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
-                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
-                            <li><a href="supplies-lend.html">대출용품</a></li>
-                            <li><a href="sterilizer.html">책소독기</a></li>
+                            <li><a href="supplies-arrange.html">?꾩꽌?뺣━ ?⑺뭹</a></li>
+                            <li><a href="supplies-protect.html">?꾩꽌蹂댄샇, 蹂댁닔?⑺뭹</a></li>
+                            <li><a href="supplies-lend.html">?異쒖슜??/a></li>
+                            <li><a href="sterilizer.html">梨낆냼?낃린</a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
-                        <a href="#">도서관 가구</a>
+                        <a href="#">?꾩꽌愿 媛援?/a>
                         <ul class="submenu">
-                            <li><a href="furniture-koas.html">코아스</a></li>
-                            <li><a href="furniture-fomus.html">포머스</a></li>
-                            <li><a href="furniture-fursys.html">퍼시스</a></li>
-                            <li><a href="furniture-custom.html">제작가구</a></li>
+                            <li><a href="furniture-koas.html">肄붿븘??/a></li>
+                            <li><a href="furniture-fomus.html">?щ㉧??/a></li>
+                            <li><a href="furniture-fursys.html">?쇱떆??/a></li>
+                            <li><a href="furniture-custom.html">?쒖옉媛援?/a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
-                        <a href="#">사인물</a>
+                        <a href="#">?ъ씤臾?/a>
                         <ul class="submenu">
-                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
-                            <li><a href="sign-board.html">게시판/이용안내</a></li>
-                            <li><a href="sign-date.html">대출반납일력표</a></li>
-                            <li><a href="sign-custom.html">제작사인물</a></li>
+                            <li><a href="sign-class.html">?쒓뎅??쭊遺꾨쪟/?遺꾨쪟?쒖???/a></li>
+                            <li><a href="sign-board.html">寃뚯떆???댁슜?덈궡</a></li>
+                            <li><a href="sign-date.html">?異쒕컲?⑹씪?ν몴</a></li>
+                            <li><a href="sign-custom.html">?쒖옉?ъ씤臾?/a></li>
                         </ul>
                     </li>
-                    <li><a href="discount.html">할인상품</a></li>
+                    <li><a href="discount.html">?좎씤?곹뭹</a></li>
                 </ul>
             </nav>
             <div class="header-utils">
                 <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <input type="text" class="search-input" placeholder="寃?됱뼱瑜??낅젰?섏꽭??>
                     <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
                 <div id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
                         <i class="fa-regular fa-user"></i>
-                        <span>로그인</span>
+                        <span>濡쒓렇??/span>
                     </button>
                 </div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+            </div>
+        </div>
+            <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+            <div class="mobile-menu-box">
+                <div class="mobile-menu-header">
+                    <div class="mobile-logo">SG LIMU</div>
+                    <button class="mobile-menu-close" id="mobileMenuClose">&times;</button>
+                </div>
+                <div class="mobile-user-status" id="mobileUserStatus"></div>
+                <nav class="mobile-nav">
+                    <ul id="mobileNavList"></ul>
+                </nav>
+                <div class="mobile-menu-footer">
+                    <a href="discount.html" class="mobile-footer-link"><i class="fa-solid fa-tag"></i> 할인상품</a>
+                    <a href="#" class="mobile-footer-link"><i class="fa-solid fa-cart-shopping"></i> 장바구니</a>
+                </div>
             </div>
         </div>
     </header>
@@ -76,14 +93,14 @@
     <main class="product-detail-page">
         <div class="breadcrumb">
             <a href="index.html">Home</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
-            <a href="#">도서관 가구</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
-            <strong id="breadcrumbCurrent">제품명</strong>
+            <a href="#">?꾩꽌愿 媛援?/a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
+            <strong id="breadcrumbCurrent">?쒗뭹紐?/strong>
         </div>
 
         <div class="product-detail-top">
             <div class="gallery-wrapper">
                 <div class="main-image-container">
-                    <img src="assets/no-image.png" alt="제품 이미지" id="mainImage">
+                    <img src="assets/no-image.png" alt="?쒗뭹 ?대?吏" id="mainImage">
                 </div>
                 <div class="thumbnail-list">
                     <!-- Thumbnails generated by JS -->
@@ -95,30 +112,30 @@
                     <span class="badge badge-new">NEW</span>
                     <span class="badge badge-best">BEST</span>
                 </div>
-                <h2 class="product-title">제품 로딩 중...</h2>
+                <h2 class="product-title">?쒗뭹 濡쒕뵫 以?..</h2>
                 <p class="product-desc" id="dynamicDesc"></p>
                 
                 <div class="product-price">
-                    0<span>원</span>
+                    0<span>??/span>
                 </div>
 
                 <div class="purchase-options">
                     <div class="option-group" id="colorOptionGroup">
-                        <label for="colorOption">색상 선택</label>
+                        <label for="colorOption">?됱긽 ?좏깮</label>
                         <select id="colorOption" class="option-select">
-                            <option value="">색상을 선택하세요</option>
+                            <option value="">?됱긽???좏깮?섏꽭??/option>
                         </select>
                     </div>
 
                     <div class="option-group" id="sizeOptionGroup" style="margin-top: 15px;">
-                        <label for="sizeOption">사이즈 선택</label>
+                        <label for="sizeOption">?ъ씠利??좏깮</label>
                         <select id="sizeOption" class="option-select">
-                            <option value="">사이즈를 선택하세요</option>
+                            <option value="">?ъ씠利덈? ?좏깮?섏꽭??/option>
                         </select>
                     </div>
                     
                     <div class="option-group" style="margin-top: 20px;">
-                        <label>수량</label>
+                        <label>?섎웾</label>
                         <div class="quantity-control">
                             <button class="qty-btn" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
                             <input type="text" class="qty-input" id="qtyInput" value="1" readonly>
@@ -128,40 +145,40 @@
                 </div>
 
                 <div class="total-price-box">
-                    <span class="label">총 상품금액</span>
-                    <div class="total"><span id="totalPrice">0</span><span style="font-size:1.2rem;font-weight:500;margin-left:5px;">원</span></div>
+                    <span class="label">珥??곹뭹湲덉븸</span>
+                    <div class="total"><span id="totalPrice">0</span><span style="font-size:1.2rem;font-weight:500;margin-left:5px;">??/span></div>
                 </div>
 
                 <div class="buy-btn-group" style="margin-top:30px;">
-                    <button class="btn-icon-large" title="관심상품"><i class="fa-regular fa-heart"></i></button>
-                    <button class="btn-large btn-cart">장바구니</button>
-                    <button class="btn-large btn-buy">바로구매</button>
+                    <button class="btn-icon-large" title="愿?ъ긽??><i class="fa-regular fa-heart"></i></button>
+                    <button class="btn-large btn-cart">?λ컮援щ땲</button>
+                    <button class="btn-large btn-buy">諛붾줈援щℓ</button>
                 </div>
             </div>
         </div>
 
         <div class="product-detail-bottom">
             <div class="detail-tabs-nav">
-                <div class="detail-tab-btn active" onclick="switchTab(0, this)">상세정보</div>
-                <div class="detail-tab-btn" onclick="switchTab(1, this)">구매안내</div>
-                <div class="detail-tab-btn" onclick="switchTab(2, this)">상품후기</div>
+                <div class="detail-tab-btn active" onclick="switchTab(0, this)">?곸꽭?뺣낫</div>
+                <div class="detail-tab-btn" onclick="switchTab(1, this)">援щℓ?덈궡</div>
+                <div class="detail-tab-btn" onclick="switchTab(2, this)">?곹뭹?꾧린</div>
                 <div class="detail-tab-btn" onclick="switchTab(3, this)">Q&A</div>
             </div>
 
             <div class="detail-tab-content active" id="tab0">
                 <div class="spec-image-container" id="detailImagesContainer" style="text-align:center; margin-bottom:40px;">
-                    <img src="" id="dynamicDetailImg" alt="제품 상세 이미지" style="max-width:100%;">
+                    <img src="" id="dynamicDetailImg" alt="?쒗뭹 ?곸꽭 ?대?吏" style="max-width:100%;">
                 </div>
                 
                 <div class="info-text-box">
                     <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 25px;">DETAIL VIEW</h4>
                     <div id="dynamicFeatures">
-                        <p style="color: #999;">제품 특징을 불러오는 중입니다...</p>
+                        <p style="color: #999;">?쒗뭹 ?뱀쭠??遺덈윭?ㅻ뒗 以묒엯?덈떎...</p>
                     </div>
                 </div>
 
                 <div class="info-text-box">
-                    <h4 id="specTitle" style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 50px;">DIMENSION (제품 사양)</h4>
+                    <h4 id="specTitle" style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 50px;">DIMENSION (?쒗뭹 ?ъ뼇)</h4>
                     <div id="dynamicSpecContainer">
                         <table class="spec-table" style="width:100%; border-collapse:collapse;">
                             <tbody id="dynamicSpecTable">
@@ -174,16 +191,16 @@
             
             <div class="detail-tab-content" id="tab1">
                 <div class="info-text-box">
-                    <h4>배송/교환/반품 안내</h4>
+                    <h4>諛곗넚/援먰솚/諛섑뭹 ?덈궡</h4>
                     <p>
-                        <strong>배송안내</strong><br>
-                        - 결제 완료 후 3~5일 이내에 출고됩니다. (주말/공휴일 제외)<br>
-                        - 제주 및 도서 산간 지역은 추가 배송비가 발생할 수 있습니다.<br><br>
+                        <strong>諛곗넚?덈궡</strong><br>
+                        - 寃곗젣 ?꾨즺 ??3~5???대궡??異쒓퀬?⑸땲?? (二쇰쭚/怨듯쑕???쒖쇅)<br>
+                        - ?쒖＜ 諛??꾩꽌 ?곌컙 吏??? 異붽? 諛곗넚鍮꾧? 諛쒖깮?????덉뒿?덈떎.<br><br>
                         
-                        <strong>교환/반품 안내</strong><br>
-                        - 상품 수령 후 7일 이내에 고객센터를 통해 접수해 주셔야 합니다.<br>
-                        - 단순 변심으로 인한 반품 시 왕복 택배비는 고객님 부담입니다.<br>
-                        - 조립/설치 후에는 제품 하자를 제외하고 교환/반품이 불가능합니다.
+                        <strong>援먰솚/諛섑뭹 ?덈궡</strong><br>
+                        - ?곹뭹 ?섎졊 ??7???대궡??怨좉컼?쇳꽣瑜??듯빐 ?묒닔??二쇱뀛???⑸땲??<br>
+                        - ?⑥닚 蹂?ъ쑝濡??명븳 諛섑뭹 ???뺣났 ?앸같鍮꾨뒗 怨좉컼??遺?댁엯?덈떎.<br>
+                        - 議곕┰/?ㅼ튂 ?꾩뿉???쒗뭹 ?섏옄瑜??쒖쇅?섍퀬 援먰솚/諛섑뭹??遺덇??ν빀?덈떎.
                     </p>
                 </div>
             </div>
@@ -191,16 +208,16 @@
             <div class="detail-tab-content" id="tab2">
                 <div class="info-text-box" style="text-align:center; padding: 100px 0;">
                     <i class="fa-regular fa-comment-dots" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
-                    <h3 style="color: #666;">등록된 상품후기가 없습니다.</h3>
-                    <p style="color: #999;">첫 번째 리뷰를 남겨주세요!</p>
+                    <h3 style="color: #666;">?깅줉???곹뭹?꾧린媛 ?놁뒿?덈떎.</h3>
+                    <p style="color: #999;">泥?踰덉㎏ 由щ럭瑜??④꺼二쇱꽭??</p>
                 </div>
             </div>
 
             <div class="detail-tab-content" id="tab3">
                 <div class="info-text-box" style="text-align:center; padding: 100px 0;">
                     <i class="fa-regular fa-circle-question" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
-                    <h3 style="color: #666;">등록된 Q&A가 없습니다.</h3>
-                    <p style="color: #999;">상품에 대한 궁금증을 남겨주시면 빠르게 답변 드리겠습니다.</p>
+                    <h3 style="color: #666;">?깅줉??Q&A媛 ?놁뒿?덈떎.</h3>
+                    <p style="color: #999;">?곹뭹?????沅곴툑利앹쓣 ?④꺼二쇱떆硫?鍮좊Ⅴ寃??듬? ?쒕━寃좎뒿?덈떎.</p>
                 </div>
             </div>
         </div>
@@ -209,7 +226,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p><strong>(二??먯뒪吏?쇱씠裕?/strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; ?⑹뒪 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
@@ -217,14 +234,14 @@
 
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검색</span></a></li>
-            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
-            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
-            <li><a href="#" class="banner-btn" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
-            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i><span class="tooltip">네이버톡톡</span></a></li>
+            <li><a href="#" class="banner-btn search-btn-aside" title="寃??><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">寃??/span></a></li>
+            <li><a href="#" class="banner-btn" title="二쇰Ц諛곗넚"><i class="fa-solid fa-truck"></i><span class="tooltip">二쇰Ц諛곗넚</span></a></li>
+            <li><a href="#" class="banner-btn" title="?λ컮援щ땲"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">?λ컮援щ땲</span></a></li>
+            <li><a href="#" class="banner-btn" title="愿?ъ긽??><i class="fa-regular fa-heart"></i><span class="tooltip">愿?ъ긽??/span></a></li>
+            <li><a href="#" class="banner-btn naver-talk" title="?ㅼ씠踰꾪넚??><i class="fa-solid fa-comment-dots"></i><span class="tooltip">?ㅼ씠踰꾪넚??/span></a></li>
             <li class="scroll-btns">
-                <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="?꾨줈"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="?꾨옒濡?><i class="fa-solid fa-chevron-down"></i></button>
             </li>
         </ul>
     </aside>
@@ -309,14 +326,14 @@
             }
 
             // Update Basic Info
-            document.title = product.name + " - 에스지라이뮤";
+            document.title = product.name + " - ?먯뒪吏?쇱씠裕?;
             document.querySelector('.product-title').innerText = product.name;
             const priceElem = document.querySelector('.product-price');
-            if (product.price === '전화문의' || !product.price) {
-                priceElem.innerHTML = '전화문의';
+            if (product.price === '?꾪솕臾몄쓽' || !product.price) {
+                priceElem.innerHTML = '?꾪솕臾몄쓽';
                 window.basePrice = 0;
             } else {
-                priceElem.innerHTML = Number(product.price).toLocaleString() + '<span>원</span>';
+                priceElem.innerHTML = Number(product.price).toLocaleString() + '<span>??/span>';
                 window.basePrice = Number(product.price);
             }
             
@@ -330,7 +347,7 @@
                 if(thumbList) {
                     thumbList.innerHTML = `
                         <div class="thumb-item active" onclick="changeImage('${product.image_url}', this)">
-                            <img src="${product.image_url}" alt="메인 이미지">
+                            <img src="${product.image_url}" alt="硫붿씤 ?대?吏">
                         </div>
                     `;
                 }
@@ -342,7 +359,7 @@
                 let colorList = [];
                 if(product.colors) colorList = product.colors.split(',').map(c => c.trim());
                 if(colorList.length > 0) {
-                    colorOption.innerHTML = '<option value="">색상을 선택하세요</option>';
+                    colorOption.innerHTML = '<option value="">?됱긽???좏깮?섏꽭??/option>';
                     colorList.forEach(c => {
                         const opt = document.createElement('option');
                         opt.value = c; opt.innerText = c;
@@ -359,14 +376,14 @@
                 let sizeList = [];
                 if(product.sizes) sizeList = product.sizes.split(',').map(s => s.trim());
                 if(sizeList.length > 0) {
-                    sizeOption.innerHTML = '<option value="0|">사이즈를 선택하세요</option>';
+                    sizeOption.innerHTML = '<option value="0|">?ъ씠利덈? ?좏깮?섏꽭??/option>';
                     sizeList.forEach(s => {
                         const parts = s.split(':');
                         const name = parts[0];
                         const price = parseInt(parts[1]) || 0;
                         const opt = document.createElement('option');
                         opt.value = `${price}|${name}`;
-                        opt.innerText = price > 0 ? `${name} (+${price.toLocaleString()}원)` : name;
+                        opt.innerText = price > 0 ? `${name} (+${price.toLocaleString()}??` : name;
                         sizeOption.appendChild(opt);
                     });
                     document.getElementById('sizeOptionGroup').style.display = 'block';
@@ -394,7 +411,7 @@
                             if(src === product.image_url) return;
                             thumbList.innerHTML += `
                                 <div class="thumb-item" onclick="changeImage('${src}', this)">
-                                    <img src="${src}" alt="제품 이미지 ${idx+1}">
+                                    <img src="${src}" alt="?쒗뭹 ?대?吏 ${idx+1}">
                                 </div>
                             `;
                         });
@@ -452,52 +469,52 @@
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>
             <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">로그인</div>
-                <div class="auth-tab" data-target="signupPane">회원가입</div>
+                <div class="auth-tab active" data-target="loginPane">濡쒓렇??/div>
+                <div class="auth-tab" data-target="signupPane">?뚯썝媛??/div>
             </div>
             <div class="auth-content">
                 <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>환영합니다!</h2><p>간편로그인으로 빠르게 시작하세요.</p></div>
+                    <div class="auth-header"><h2>?섏쁺?⑸땲??</h2><p>媛꾪렪濡쒓렇?몄쑝濡?鍮좊Ⅴ寃??쒖옉?섏꽭??</p></div>
                     <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
+                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 移댁뭅??濡쒓렇??/button>
+                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰?濡쒓렇??/button>
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 濡쒓렇??/button>
                     </div>
-                    <div class="auth-divider"><span>또는</span></div>
+                    <div class="auth-divider"><span>?먮뒗</span></div>
                     <form id="loginForm">
-                        <div class="auth-form-group"><label>이메일</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>비밀번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비밀번호를 입력하세요" required></div>
-                        <button type="submit" class="auth-submit-btn">로그인</button>
+                        <div class="auth-form-group"><label>?대찓??/label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>鍮꾨?踰덊샇</label><input type="password" id="loginPassword" class="auth-input" placeholder="鍮꾨?踰덊샇瑜??낅젰?섏꽭?? required></div>
+                        <button type="submit" class="auth-submit-btn">濡쒓렇??/button>
                     </form>
                     <div id="loginMsg" class="auth-message"></div>
                 </div>
                 <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
+                    <div class="auth-header"><h2>?뚯썝媛??/h2><p>媛꾨떒???뺣낫 ?낅젰?쇰줈 ??留롮? ?쒗깮???꾨━?몄슂.</p></div>
                     <form id="signupForm">
                         <div class="auth-row">
-                            <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
-                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                            <div class="auth-form-group"><label>?대쫫 *</label><input type="text" id="signupName" class="auth-input" placeholder="?띻만?? required></div>
+                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
                         </div>
-                        <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>?대찓??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
                         <div class="auth-row">
-                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
-                            <div class="auth-form-group"><label>비밀번호 확인 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required></div>
+                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???댁긽 ?낅젰" minlength="6" required></div>
+                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 ?뺤씤 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="??踰????낅젰" required></div>
                         </div>
-                        <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예) 한국대학교 도서관"></div>
-                        <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
-                        <button type="submit" class="auth-submit-btn">가입하기</button>
+                        <div class="auth-form-group"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿"></div>
+                        <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="signupAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
+                        <button type="submit" class="auth-submit-btn">媛?낇븯湲?/button>
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
                 </div>
                 <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header"><h2>추가 정보 입력</h2><p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p></div>
+                    <div class="auth-header"><h2>異붽? ?뺣낫 ?낅젰</h2><p>?먰솢???쒕퉬???댁슜???꾪빐 ?꾩닔 ?뺣낫瑜??낅젰??二쇱꽭??</p></div>
                     <form id="completeProfileForm">
                         <div class="highlight-box">
-                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                            <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명 *</label><input type="text" id="completeOrg" class="auth-input" placeholder="예) 한국대학교 도서관" required></div>
-                            <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
+                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                            <div class="auth-form-group"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?*</label><input type="text" id="completeOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿" required></div>
+                            <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="completeAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
                         </div>
-                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
+                        <button type="submit" class="auth-submit-btn">?뺣낫 ???諛??쒖옉?섍린</button>
                     </form>
                     <div id="completeMsg" class="auth-message"></div>
                 </div>

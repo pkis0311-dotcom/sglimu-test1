@@ -56,7 +56,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 2. Slider Logic (Home Page Only)
+    // 2. Mobile Menu Logic
+    // ---------------------------------------------------------
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
+    const mobileNavList = document.getElementById('mobileNavList');
+    const desktopGnb = document.querySelector('.gnb > ul');
+
+    if (mobileMenuToggle && mobileMenuOverlay && mobileMenuClose && mobileNavList && desktopGnb) {
+        // Clone desktop menu to mobile menu
+        mobileNavList.innerHTML = desktopGnb.innerHTML;
+
+        // Toggle mobile menu
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        });
+
+        mobileMenuClose.addEventListener('click', () => {
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        mobileMenuOverlay.addEventListener('click', (e) => {
+            if (e.target === mobileMenuOverlay) {
+                mobileMenuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Handle submenus in mobile menu
+        const mobileNavItems = mobileNavList.querySelectorAll('.has-submenu');
+        mobileNavItems.forEach(item => {
+            const link = item.querySelector('a');
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-chevron-down';
+            icon.style.transition = 'transform 0.3s';
+            link.appendChild(icon);
+
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                item.classList.toggle('open');
+                icon.style.transform = item.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+        });
+    }
+
+    // ---------------------------------------------------------
+    // 3. Slider Logic (Home Page Only)
     // ---------------------------------------------------------
     const sliderContainer = document.getElementById('sliderContainer');
     const dotsContainer = document.getElementById('sliderDots');
@@ -232,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Cookie functions (outside of if block if needed elsewhere, but kept here for scope)
+    // Cookie functions
     function getCookie(name) {
         const matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -247,7 +295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 3. Scroll Logic (Global)
+    // 4. Scroll Logic (Global)
     // ---------------------------------------------------------
     const scrollTopBtn = document.getElementById('scrollTopBtn');
     const scrollBottomBtn = document.getElementById('scrollBottomBtn');
@@ -278,7 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ---------------------------------------------------------
-    // 4. Product Tabs Logic (Home Page Only)
+    // 5. Product Tabs Logic (Home Page Only)
     // ---------------------------------------------------------
     const tabItems = document.querySelectorAll('.tab-item');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -306,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 5. Live Chat Widget Logic (Global)
+    // 6. Live Chat Widget Logic (Global)
     // ---------------------------------------------------------
     const chatFab = document.getElementById('chatFab');
     const chatWindow = document.getElementById('chatWindow');
@@ -358,7 +406,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 6. Scroll Reveal Animation Logic (Global)
+    // 7. Scroll Reveal Animation Logic (Global)
     // ---------------------------------------------------------
     const revealElements = document.querySelectorAll('.section-title, .product-tabs, .product-card');
     if (revealElements.length > 0) {
