@@ -1,7 +1,7 @@
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Slider Logic (Home Page Only)
+    // 1. 슬라이드 로직 (메인 페이지 전용)
     const fallbackSlides = [
         { title: "프리미엄 북엔드 시리즈", desc: "흔들림 없는 독서의 완성", imgUrl: "assets/hero_slide_1.png", link: "#" },
         { title: "모던 도서관 공간", desc: "공간을 가치있게 만드는 디자인", imgUrl: "assets/hero_slide_2.png", link: "#" },
@@ -20,12 +20,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     let slidesData = [];
     let popupsData = [];
 
-    // Search Logic (Global)
+    // 검색 로직 (전역)
     const headerSearchBtn = document.getElementById('headerSearchBtn');
     const searchInput = document.querySelector('.search-input');
     const asideSearchBtn = document.querySelector('.search-btn-aside');
 
-    // Pre-fill search input if on search page
+    // 검색 페이지일 경우 입력창 미리 채우기
     const urlParams = new URLSearchParams(window.location.search);
     const q = urlParams.get('q');
     if (q && searchInput && window.location.pathname.includes('search.html')) {
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Banner & Popup Data Loading
+    // 배너 및 팝업 데이터 로딩
     try {
         const { data, error } = await supabase.from('banners').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('created_at', { ascending: false });
         if (!error && data && data.length > 0) {
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         sliderContainer.addEventListener('mouseleave', startSlideShow);
     }
 
-    // Scroll Logic
+    // 스크롤 로직
     const scrollTopBtn = document.getElementById('scrollTopBtn');
     const scrollBottomBtn = document.getElementById('scrollBottomBtn');
     if (scrollTopBtn) {
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Popups
+    // 팝업 로직
     function getCookie(name) {
         const matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)" ));
         return matches ? decodeURIComponent(matches[1]) : undefined;
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Product Tabs
+    // 탭 로직
     const tabItems = document.querySelectorAll('.tab-item');
     const tabContents = document.querySelectorAll('.tab-content');
     tabItems.forEach(tab => {
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Chat Widget
+    // 채팅 위젯
     const chatFab = document.getElementById('chatFab');
     const chatWindow = document.getElementById('chatWindow');
     const chatCloseBtn = document.getElementById('chatCloseBtn');
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMsg(); });
     }
 
-    // Scroll Reveal
+    // 스크롤 감지 애니메이션
     const revealElements = document.querySelectorAll('.section-title, .product-tabs, .product-card');
     revealElements.forEach(el => el.classList.add('reveal-up'));
     const revealObserver = new IntersectionObserver((entries) => {
