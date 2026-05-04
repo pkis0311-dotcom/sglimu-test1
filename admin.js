@@ -479,8 +479,8 @@ saveProductBtn.addEventListener('click', async () => {
     const id = productIdInput.value;
     
     // [폴백 로직] 컬럼이 없을 경우를 대비해 description에도 색상/사이즈 정보 포함 (기존 마커 제거 후 새로 추가)
-    const colorTag = `[[C:${payload.colors}]]`;
-    const sizeTag = `[[S:${payload.sizes}]]`;
+    const colorTag = payload.colors ? `[[C:${payload.colors}]]` : '';
+    const sizeTag = payload.sizes ? `[[S:${payload.sizes}]]` : '';
     let cleanDesc = payload.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
     const payloadWithDescFallback = { ...payload, description: (cleanDesc + "\n\n" + colorTag + "\n" + sizeTag).trim() };
 
