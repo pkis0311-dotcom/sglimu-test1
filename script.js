@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 3. Product Loading & Tab Logic (Home Page Only)
+    // 3. Product Loading Logic (Reusable)
     // ---------------------------------------------------------
     async function loadCategoryProducts(category, containerId) {
         const container = document.getElementById(containerId);
@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 products.forEach(p => {
                     const card = document.createElement('div');
                     card.className = 'product-card visible';
+                    card.setAttribute('data-id', p.id);
                     card.style.cursor = 'pointer';
-                    card.onclick = () => window.location.href = `product-detail.html?id=${p.id}`;
                     
                     const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                     
@@ -130,6 +130,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <p style="color: var(--color-primary); font-weight: bold;">${priceStr}</p>
                         </div>
                     `;
+                    
+                    // Direct click listener
+                    card.addEventListener('click', (e) => {
+                        window.location.href = `product-detail.html?id=${p.id}`;
+                    });
+                    
                     container.appendChild(card);
                 });
             } else {
@@ -140,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Handle Tabs
     const tabItems = document.querySelectorAll('.tab-item');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -155,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Initial load
+        // Initial load for home page
         loadCategoryProducts('rfid', 'grid-rfid');
         loadCategoryProducts('supplies', 'grid-supplies');
         loadCategoryProducts('furniture', 'grid-furniture');
@@ -163,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 4. Hero Slider Logic (Home Page Only)
+    // 4. Hero Slider Logic
     // ---------------------------------------------------------
     const sliderContainer = document.getElementById('sliderContainer');
     const dotsContainer = document.getElementById('sliderDots');
@@ -214,6 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         function goToSlide(index) {
             const slides = document.querySelectorAll('.slide');
             const dots = document.querySelectorAll('.dot');
+            if (slides.length === 0) return;
             slides[currentSlide].classList.remove('active');
             dots[currentSlide].classList.remove('active');
             currentSlide = (index + slides.length) % slides.length;
@@ -246,6 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const chatWindow = document.getElementById('chatWindow');
     if (chatFab && chatWindow) {
         chatFab.onclick = () => chatWindow.classList.toggle('active');
-        document.getElementById('chatCloseBtn').onclick = () => chatWindow.classList.remove('active');
+        const closeBtn = document.getElementById('chatCloseBtn');
+        if (closeBtn) closeBtn.onclick = () => chatWindow.classList.remove('active');
     }
 });
