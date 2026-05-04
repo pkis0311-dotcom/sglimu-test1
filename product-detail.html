@@ -340,13 +340,7 @@
             const colorOption = document.getElementById('colorOption');
             if(colorOption) {
                 let colorList = [];
-                if(product.colors) {
-                    colorList = product.colors.split(',').map(c => c.trim());
-                } else if(product.description) {
-                    const match = product.description.match(/\[\[C:(.*?)\]\]/);
-                    if(match && match[1]) colorList = match[1].split(',').map(c => c.trim());
-                }
-
+                if(product.colors) colorList = product.colors.split(',').map(c => c.trim());
                 if(colorList.length > 0) {
                     colorOption.innerHTML = '<option value="">색상을 선택하세요</option>';
                     colorList.forEach(c => {
@@ -363,13 +357,7 @@
             const sizeOption = document.getElementById('sizeOption');
             if(sizeOption) {
                 let sizeList = [];
-                if(product.sizes) {
-                    sizeList = product.sizes.split(',').map(s => s.trim());
-                } else if(product.description) {
-                    const match = product.description.match(/\[\[S:(.*?)\]\]/);
-                    if(match && match[1]) sizeList = match[1].split(',').map(s => s.trim());
-                }
-
+                if(product.sizes) sizeList = product.sizes.split(',').map(s => s.trim());
                 if(sizeList.length > 0) {
                     sizeOption.innerHTML = '<option value="0|">사이즈를 선택하세요</option>';
                     sizeList.forEach(s => {
@@ -390,8 +378,7 @@
             // Description
             const descElem = document.getElementById('dynamicDesc');
             if(descElem && product.description) {
-                let cleanDesc = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
-                descElem.innerHTML = cleanDesc.replace(/\n/g, '<br>').trim();
+                descElem.innerHTML = product.description.replace(/\n/g, '<br>').trim();
             }
 
             // Page Data from site_configs

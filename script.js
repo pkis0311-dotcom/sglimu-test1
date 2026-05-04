@@ -255,55 +255,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // 4. Search Logic
+    // 4. Search Focus Logic
     const headerSearchBtn = document.getElementById('headerSearchBtn');
     const searchInput = document.querySelector('.search-input');
     const asideSearchBtn = document.querySelector('.search-btn-aside');
 
-    // Pre-fill search input if on search page
-    const urlParams = new URLSearchParams(window.location.search);
-    const q = urlParams.get('q');
-    if (q && searchInput && window.location.pathname.includes('search.html')) {
-        searchInput.value = q;
-    }
-
-    function performSearch() {
-        const query = searchInput.value.trim();
-        if (query) {
-            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-        } else {
-            searchInput.focus();
-        }
-    }
-
-    if (headerSearchBtn && searchInput) {
+    if (headerSearchBtn) {
         headerSearchBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            performSearch();
-        });
-
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
+            searchInput.focus();
         });
     }
     
     if (asideSearchBtn) {
         asideSearchBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            // If already on top, focus search input. If not, scroll and focus.
-            if (window.scrollY < 100) {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            setTimeout(() => {
                 searchInput.focus();
-            } else {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-                setTimeout(() => {
-                    searchInput.focus();
-                }, 500);
-            }
+            }, 500);
         });
     }
 
