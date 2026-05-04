@@ -12,14 +12,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="cart.css">
     <link rel="stylesheet" href="inquiry.css">
-    <link rel="stylesheet" href="auth.css">
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <header class="header">
         <div class="header-container">
-            <h1 class="logo"><a href="#">SG LIMU</a></h1>
+            <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
                     <li class="has-submenu">
@@ -57,7 +55,6 @@
                             <li><a href="sign-custom.html">제작사인물</a></li>
                         </ul>
                     </li>
-                
                     <li><a href="discount.html">할인상품</a></li>
                 </ul>
             </nav>
@@ -98,85 +95,48 @@
 
         <section class="best-products-section">
             <h3 class="section-title">Best Products</h3>
-            
-            <ul class="product-tabs" id="productTabs">
-                <li class="tab-item active" data-tab="tab-system">도서관 시스템</li>
-                <li class="tab-item" data-tab="tab-tape">태그/감응테이프</li>
-                <li class="tab-item" data-tab="tab-supplies">도서관 용품</li>
-                <li class="tab-item" data-tab="tab-cases">설치사례</li>
-            </ul>
-
-            <div class="tab-content active" id="tab-system">
-                <div class="product-grid">
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/rfid_equipment.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>RFID 장비</h4>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/em_equipment.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>EM 장비</h4>
-                        </div>
-                    </div>
-                </div>
+            <div class="product-tabs">
+                <button class="tab-item active" data-tab="tab-rfid">RFID 시스템</button>
+                <button class="tab-item" data-tab="tab-supplies">도서관 용품</button>
+                <button class="tab-item" data-tab="tab-furniture">도서관 가구</button>
+                <button class="tab-item" data-tab="tab-sign">사인물</button>
             </div>
 
-            <div class="tab-content" id="tab-tape">
-                <div class="product-grid">
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/rfid_tag.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>RFID 태그</h4>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/em_tape.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>감응테이프</h4>
-                        </div>
-                    </div>
+            <div id="tab-rfid" class="tab-content active">
+                <div class="product-grid" id="grid-rfid">
+                    <!-- Products will be loaded here -->
                 </div>
             </div>
-
-            <div class="tab-content" id="tab-supplies">
-                <div class="product-grid">
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/card_printer.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>카드프린터</h4>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/security_keeper.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>키퍼</h4>
-                        </div>
-                    </div>
+            <div id="tab-supplies" class="tab-content">
+                <div class="product-grid" id="grid-supplies">
+                    <!-- Products will be loaded here -->
                 </div>
             </div>
+            <div id="tab-furniture" class="tab-content">
+                <div class="product-grid" id="grid-furniture">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+            <div id="tab-sign" class="tab-content">
+                <div class="product-grid" id="grid-sign">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+        </section>
 
-            <div class="tab-content" id="tab-cases">
-                <div class="product-grid">
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>공공도서관</h4>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/large_library.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>대학도서관</h4>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="product-img" style="background-image: url('assets/gov_library.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #eee;"></div>
-                        <div class="product-info">
-                            <h4>관공서</h4>
-                        </div>
-                    </div>
+        <section class="bottom-banners">
+            <div class="banner-item" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')">
+                <div class="banner-text">
+                    <h4>도서관 공간 컨설팅</h4>
+                    <p>전문가가 제안하는 최적의 독서 환경</p>
+                    <a href="#" class="btn-outline">상담 신청하기</a>
+                </div>
+            </div>
+            <div class="banner-item" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')">
+                <div class="banner-text">
+                    <h4>대량 구매 혜택</h4>
+                    <p>기관 및 학교 대상 특별 할인 적용</p>
+                    <a href="#" class="btn-outline">혜택 확인하기</a>
                 </div>
             </div>
         </section>
@@ -185,25 +145,8 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p>
-                    <strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; 
-                    Tel : 1544-5703 &nbsp;|&nbsp; 
-                    팩스 : 051-518-5985 &nbsp;|&nbsp; 
-                    점심시간 (12:00~13:00) &nbsp;|&nbsp; 
-                    E-Mail : limu101@nate.com
-                </p>
-                <p>
-                    Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)
-                </p>
-                <p>
-                    대표자명 : 강인숙 &nbsp;|&nbsp; 
-                    개인정보취급담당자 : 강인숙 &nbsp;|&nbsp; 
-                    사업자번호 : 621-81-42086 &nbsp;|&nbsp; 
-                    통신판매업신고번호 : 제 2018-부산금정-0045호
-                </p>
-                <p class="copyright">
-                    Copyright(c)2023 www.sgperzoom.com. All right Reserved.
-                </p>
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
@@ -222,39 +165,39 @@
         </ul>
     </aside>
 
-    <!-- Chat Widget -->
-    <div class="chat-widget">
-        <button class="chat-fab" id="chatFab">
-            <i class="fa-solid fa-comment-dots"></i>
-        </button>
-        
-        <div class="chat-window" id="chatWindow">
-            <div class="chat-header">
-                <h5>실시간 상담</h5>
-                <button id="chatCloseBtn"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="chat-body" id="chatBody">
-                <div class="message system-msg">
-                    안녕하세요! 에스지라이뮤입니다.<br>무엇을 도와드릴까요?
-                </div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
-                <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
+    <!-- Floating Action Button for Chat -->
+    <div class="chat-fab" id="chatFab">
+        <i class="fa-solid fa-comments"></i>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h4>실시간 문의</h4>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message system-msg">안녕하세요! 무엇을 도와드릴까요?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
+
+    <script type="module" src="script.js"></script>
+    <script src="cart.js"></script>
+    <script type="module" src="inquiry.js"></script>
+    <script type="module" src="auth.js"></script>
 
     <!-- Auth Modal Overlay -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>
-            
             <div class="auth-tabs">
                 <div class="auth-tab active" data-target="loginPane">로그인</div>
                 <div class="auth-tab" data-target="signupPane">회원가입</div>
             </div>
-
             <div class="auth-content">
                 <!-- Login Pane -->
                 <div class="auth-pane active" id="loginPane">
@@ -262,21 +205,12 @@
                         <h2>환영합니다!</h2>
                         <p>간편로그인으로 빠르게 시작하세요.</p>
                     </div>
-
                     <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn">
-                            <i class="fa-solid fa-comment"></i> 카카오 로그인
-                        </button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn">
-                            <i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인
-                        </button>
-                        <button class="social-btn btn-google" id="googleLoginBtn">
-                            <i class="fa-brands fa-google"></i> Google 로그인
-                        </button>
+                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
+                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
                     </div>
-
                     <div class="auth-divider"><span>또는</span></div>
-
                     <form id="loginForm">
                         <div class="auth-form-group">
                             <label>이메일</label>
@@ -297,29 +231,19 @@
                         <h2>회원가입</h2>
                         <p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p>
                     </div>
-
                     <div class="auth-social-signup">
                         <div class="auth-social-signup-header"><span>간편 회원가입</span></div>
                         <div class="social-login-grid">
-                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao">
-                                <i class="fa-solid fa-comment"></i> 카카오로 시작
-                            </button>
-                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver">
-                                <i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작
-                            </button>
-                            <button class="social-btn btn-google social-signup-btn" data-provider="google">
-                                <i class="fa-brands fa-google"></i> Google로 시작
-                            </button>
+                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 카카오로 시작</button>
+                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작</button>
+                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google로 시작</button>
                         </div>
                     </div>
-
                     <div class="auth-divider"><span>또는 이메일로 가입</span></div>
-
                     <div class="auth-type-selector" id="userTypeSelector">
                         <div class="auth-type-btn active" data-type="individual">개인 회원</div>
                         <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
                     </div>
-
                     <form id="signupForm">
                         <div class="auth-row">
                             <div class="auth-form-group">
@@ -332,143 +256,25 @@
                             </div>
                         </div>
                         <div class="auth-form-group">
-                            <label>이메일 *</label>
+                            <label>이메일 계정 *</label>
                             <input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required>
                         </div>
-                        <div class="auth-row">
-                            <div class="auth-form-group">
-                                <label>비밀번호 *</label>
-                                <input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label>비밀번호 확인 *</label>
-                                <input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required>
-                            </div>
-                        </div>
-                        <div class="auth-form-group" id="orgGroup">
-                            <label>소속기관 / 학교 / 도서관명</label>
-                            <input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관">
-                        </div>
-                        <div class="auth-form-group" id="bizGroup" style="display: none;">
-                            <label>사업자 등록번호</label>
-                            <input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000">
-                        </div>
                         <div class="auth-form-group">
-                            <label>배송/방문용 주소</label>
-                            <input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요">
+                            <label>비밀번호 *</label>
+                            <input type="password" id="signupPassword" class="auth-input" placeholder="8자 이상 입력" required>
                         </div>
-                        
-                        <button type="submit" class="auth-submit-btn">가입하기</button>
+                        <div id="businessFields" style="display:none;">
+                            <div class="auth-form-group">
+                                <label>기관/사업자명 *</label>
+                                <input type="text" id="signupBusinessName" class="auth-input" placeholder="기관명을 입력하세요">
+                            </div>
+                        </div>
+                        <button type="submit" class="auth-submit-btn">회원가입 신청</button>
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
-                </div>
-
-                <!-- Profile Completion Pane -->
-                <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header">
-                        <h2>추가 정보 입력</h2>
-                        <p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p>
-                    </div>
-
-                    <form id="completeProfileForm">
-                        <div class="highlight-box">
-                            <div class="auth-form-group">
-                                <label>전화번호 *</label>
-                                <input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label>소속기관 / 학교 / 도서관명 *</label>
-                                <input type="text" id="completeOrg" class="auth-input" placeholder="예: 한국대학교 도서관" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label>배송/방문용 주소</label>
-                                <input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요">
-                            </div>
-                        </div>
-                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
-                    </form>
-                    <div id="completeMsg" class="auth-message"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script type="module" src="script.js"></script>
-    <!-- SG LIMU Global Scripts -->
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
-    <script type="module" src="auth.js"></script>
-    <!-- Auth Modal Overlay -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <div class="auth-close" id="authClose">&times;</div>
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">濡쒓렇??/div>
-                <div class="auth-tab" data-target="signupPane">?뚯썝媛??/div>
-            </div>
-            <div class="auth-content">
-                <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>환영합니다!</h2><p>간편로그인으로 빠르게 시작하세요.</p></div>
-                    <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
-                    </div>
-                    <div class="auth-divider"><span>또는</span></div>
-                    <form id="loginForm">
-                        <div class="auth-form-group"><label>이메일</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>비밀번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비밀번호를 입력하세요" required></div>
-                        <button type="submit" class="auth-submit-btn">로그인</button>
-                    </form>
-                    <div id="loginMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>?뚯썝媛??/h2><p>媛꾨떒???뺣낫 ?낅젰?쇰줈 ??留롮? ?쒗깮???꾨━?몄슂.</p></div>
-                    <div class="auth-social-signup">
-                        <div class="auth-social-signup-header"><span>媛꾪렪 ?뚯썝媛??/span></div>
-                        <div class="social-login-grid">
-                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 移댁뭅?ㅻ줈 ?쒖옉</button>
-                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰꾨줈 ?쒖옉</button>
-                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google濡??쒖옉</button>
-                        </div>
-                    </div>
-                    <div class="auth-divider"><span>?먮뒗 ?대찓?쇰줈 媛??/span></div>
-                    <div class="auth-type-selector" id="userTypeSelector">
-                        <div class="auth-type-btn active" data-type="individual">媛쒖씤 ?뚯썝</div>
-                        <div class="auth-type-btn" data-type="business">湲곌? / ?ъ뾽??/div>
-                    </div>
-                    <form id="signupForm">
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>?대쫫 *</label><input type="text" id="signupName" class="auth-input" placeholder="?띻만?? required></div>
-                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        </div>
-                        <div class="auth-form-group"><label>?대찓??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???댁긽" minlength="6" required></div>
-                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 ?뺤씤 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="??踰????낅젰" required></div>
-                        </div>
-                        <div class="auth-form-group" id="orgGroup"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿"></div>
-                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>?ъ뾽???깅줉踰덊샇</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
-                        <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="signupAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
-                        <button type="submit" class="auth-submit-btn">媛?낇븯湲?/button>
-                    </form>
-                    <div id="signupMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header"><h2>異붽? ?뺣낫 ?낅젰</h2><p>?먰솢???쒕퉬???댁슜???꾪빐 ?꾩닔 ?뺣낫瑜??낅젰??二쇱꽭??</p></div>
-                    <form id="completeProfileForm">
-                        <div class="highlight-box">
-                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                            <div class="auth-form-group"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?*</label><input type="text" id="completeOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿" required></div>
-                            <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="completeAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
-                        </div>
-                        <button type="submit" class="auth-submit-btn">?뺣낫 ???諛??쒖옉?섍린</button>
-                    </form>
-                    <div id="completeMsg" class="auth-message"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script type="module" src="auth.js"></script>
 </body>
 </html>

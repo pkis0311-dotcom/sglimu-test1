@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 결과 - 에스지라이뮤</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="cart.css">
+    <link rel="stylesheet" href="inquiry.css">
+    <style>
+        .search-page {
+            padding: 120px 0 100px;
+            min-height: 80vh;
+        }
+        .search-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .search-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .search-query {
+            color: var(--color-accent);
+            font-weight: 700;
+        }
+        .result-count {
+            color: var(--color-text-light);
+            font-size: 1.1rem;
+        }
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 5%;
+        }
+        .no-results {
+            text-align: center;
+            padding: 100px 20px;
+        }
+        .no-results i {
+            font-size: 4rem;
+            color: #eee;
+            margin-bottom: 25px;
+        }
+        .no-results h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--color-text);
+        }
+        .no-results p {
+            color: var(--color-text-light);
+            margin-bottom: 30px;
+        }
+        .btn-home {
+            display: inline-block;
+            padding: 12px 35px;
+            background: var(--color-primary);
+            color: #fff;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+        }
+        .btn-home:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
+            <nav class="gnb">
+                <ul>
+                    <li class="has-submenu">
+                        <a href="#">도서관리 시스템</a>
+                        <ul class="submenu">
+                            <li><a href="rfid.html">RFID시스템</a></li>
+                            <li><a href="em.html">EM시스템</a></li>
+                            <li><a href="access.html">출입통제시스템</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-submenu">
+                        <a href="#">도서관 용품</a>
+                        <ul class="submenu">
+                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
+                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
+                            <li><a href="supplies-lend.html">대출용품</a></li>
+                            <li><a href="sterilizer.html">책소독기</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-submenu">
+                        <a href="#">도서관 가구</a>
+                        <ul class="submenu">
+                            <li><a href="furniture-koas.html">코아스</a></li>
+                            <li><a href="furniture-fomus.html">포머스</a></li>
+                            <li><a href="furniture-fursys.html">퍼시스</a></li>
+                            <li><a href="furniture-custom.html">제작가구</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-submenu">
+                        <a href="#">사인물</a>
+                        <ul class="submenu">
+                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
+                            <li><a href="sign-board.html">게시판/이용안내</a></li>
+                            <li><a href="sign-date.html">대출반납일력표</a></li>
+                            <li><a href="sign-custom.html">제작사인물</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="discount.html">할인상품</a></li>
+                </ul>
+            </nav>
+            <div class="header-utils">
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+                </div>
+                <div class="user-auth-wrap" id="userAuthWrap">
+                    <button class="login-trigger-btn" id="loginTriggerBtn">
+                        <i class="fa-regular fa-user"></i>
+                        <span>로그인</span>
+                    </button>
+                </div>
+                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="search-page">
+        <div class="search-header">
+            <h2 class="search-title">검색 결과</h2>
+            <p class="result-count" id="resultCount">검색 중입니다...</p>
+        </div>
+
+        <div id="searchResults" class="product-list">
+            <!-- Results will be injected here -->
+        </div>
+
+        <div id="noResults" class="no-results" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>검색 결과가 없습니다</h3>
+            <p>입력하신 검색어와 일치하는 상품을 찾을 수 없습니다.<br>검색어를 확인하거나 다른 단어로 검색해 보세요.</p>
+            <a href="index.html" class="btn-home">홈으로 돌아가기</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <aside class="right-fixed-banner">
+        <ul class="banner-menu">
+            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검색</span></a></li>
+            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
+            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
+            <li><a href="#" class="banner-btn" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
+            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i><span class="tooltip">네이버톡톡</span></a></li>
+            <li class="scroll-btns">
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
+            </li>
+        </ul>
+    </aside>
+
+    <script type="module" src="script.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module">
+        import { supabase } from './supabase-client.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            const resultCountElem = document.getElementById('resultCount');
+            const resultsContainer = document.getElementById('searchResults');
+            const noResultsElem = document.getElementById('noResults');
+
+            if (!query || query.trim() === '') {
+                resultCountElem.innerText = '검색어를 입력해주세요.';
+                noResultsElem.style.display = 'block';
+                return;
+            }
+
+            resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대한 검색 결과입니다.`;
+
+            try {
+                const { data: products, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!products || products.length === 0) {
+                    noResultsElem.style.display = 'block';
+                    resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대한 결과가 없습니다.`;
+                } else {
+                    resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대해 총 <strong>${products.length}</strong>개의 상품이 검색되었습니다.`;
+                    
+                    products.forEach(p => {
+                        const card = document.createElement('div');
+                        card.className = 'product-card visible';
+                        card.style.cursor = 'pointer';
+                        card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
+                        
+                        const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+                        
+                        card.innerHTML = `
+                            <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                            <div class="product-info" style="text-align:center; padding:15px;">
+                                <h4 style="margin-bottom:8px; font-size:1.1rem;">${p.name}</h4>
+                                <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>
+                            </div>
+                        `;
+                        resultsContainer.appendChild(card);
+                    });
+                }
+            } catch (err) {
+                console.error('Search error:', err);
+                resultCountElem.innerText = '검색 중 오류가 발생했습니다.';
+            }
+        });
+    </script>
+</body>
+</html>
