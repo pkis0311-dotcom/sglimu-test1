@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>寃??寃곌낵 - ?먯뒪吏?쇱씠裕?/title>
+    <title>검색 결과 - 에스지라이뮤</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -64,52 +64,52 @@
             <nav class="gnb">
                 <ul>
                     <li class="has-submenu">
-                        <a href="#">?꾩꽌愿由??쒖뒪??/a>
+                        <a href="#">도서관리 시스템</a>
                         <ul class="submenu">
-                            <li><a href="rfid.html">RFID?쒖뒪??/a></li>
-                            <li><a href="em.html">EM?쒖뒪??/a></li>
-                            <li><a href="access.html">異쒖엯?듭젣?쒖뒪??/a></li>
+                            <li><a href="rfid.html">RFID시스템</a></li>
+                            <li><a href="em.html">EM시스템</a></li>
+                            <li><a href="access.html">출입통제시스템</a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
-                        <a href="#">?꾩꽌愿 ?⑺뭹</a>
+                        <a href="#">도서관 용품</a>
                         <ul class="submenu">
-                            <li><a href="supplies-arrange.html">?꾩꽌?뺣━ ?⑺뭹</a></li>
-                            <li><a href="supplies-protect.html">?꾩꽌蹂댄샇, 蹂댁닔?⑺뭹</a></li>
-                            <li><a href="supplies-lend.html">?異쒖슜??/a></li>
-                            <li><a href="sterilizer.html">梨낆냼?낃린</a></li>
+                            <li><a href="supplies-arrange.html">도서정리 용품</a></li>
+                            <li><a href="supplies-protect.html">도서보호, 보수용품</a></li>
+                            <li><a href="supplies-lend.html">대출용품</a></li>
+                            <li><a href="sterilizer.html">책소독기</a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
-                        <a href="#">?꾩꽌愿 媛援?/a>
+                        <a href="#">도서관 가구</a>
                         <ul class="submenu">
-                            <li><a href="furniture-koas.html">肄붿븘??/a></li>
-                            <li><a href="furniture-fomus.html">?щ㉧??/a></li>
-                            <li><a href="furniture-fursys.html">?쇱떆??/a></li>
-                            <li><a href="furniture-custom.html">?쒖옉媛援?/a></li>
+                            <li><a href="furniture-koas.html">코아스</a></li>
+                            <li><a href="furniture-fomus.html">포머스</a></li>
+                            <li><a href="furniture-fursys.html">퍼시스</a></li>
+                            <li><a href="furniture-custom.html">제작가구</a></li>
                         </ul>
                     </li>
                     <li class="has-submenu">
-                        <a href="#">?ъ씤臾?/a>
+                        <a href="#">사인물</a>
                         <ul class="submenu">
-                            <li><a href="sign-class.html">?쒓뎅??쭊遺꾨쪟/?遺꾨쪟?쒖???/a></li>
-                            <li><a href="sign-board.html">寃뚯떆???댁슜?덈궡</a></li>
-                            <li><a href="sign-date.html">?異쒕컲?⑹씪?ν몴</a></li>
-                            <li><a href="sign-custom.html">?쒖옉?ъ씤臾?/a></li>
+                            <li><a href="sign-class.html">한국십진분류/대분류표지판</a></li>
+                            <li><a href="sign-board.html">게시판/이용안내</a></li>
+                            <li><a href="sign-date.html">대출반납일력표</a></li>
+                            <li><a href="sign-custom.html">제작사인물</a></li>
                         </ul>
                     </li>
-                    <li><a href="discount.html">?좎씤?곹뭹</a></li>
+                    <li><a href="discount.html">할인상품</a></li>
                 </ul>
             </nav>
             <div class="header-utils">
                 <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="寃?됱뼱瑜??낅젰?섏꽭??>
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
                     <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
                 <div id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
                         <i class="fa-regular fa-user"></i>
-                        <span>濡쒓렇??/span>
+                        <span>로그인</span>
                     </button>
                 </div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
@@ -119,8 +119,8 @@
 
     <main class="search-results-page">
         <div class="results-header">
-            <h2 class="results-title">'<span id="displayQuery" class="query-highlight"></span>' 寃??寃곌낵</h2>
-            <p><span id="resultCount">0</span>媛쒖쓽 ?곹뭹??寃?됰릺?덉뒿?덈떎.</p>
+            <h2 class="results-title">'<span id="displayQuery" class="query-highlight"></span>' 검색 결과</h2>
+            <p><span id="resultCount">0</span>개의 상품이 검색되었습니다.</p>
         </div>
 
         <div class="results-container">
@@ -128,7 +128,7 @@
                 <!-- Results generated by JS -->
                 <div class="empty-results" id="loadingState">
                     <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p>寃??寃곌낵瑜?遺덈윭?ㅻ뒗 以묒엯?덈떎...</p>
+                    <p>검색 결과를 불러오는 중입니다...</p>
                 </div>
             </div>
         </div>
@@ -137,7 +137,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(二??먯뒪吏?쇱씠裕?/strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; ?⑹뒪 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
@@ -145,14 +145,14 @@
 
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="寃??><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">寃??/span></a></li>
-            <li><a href="#" class="banner-btn" title="二쇰Ц諛곗넚"><i class="fa-solid fa-truck"></i><span class="tooltip">二쇰Ц諛곗넚</span></a></li>
-            <li><a href="#" class="banner-btn" title="?λ컮援щ땲"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">?λ컮援щ땲</span></a></li>
-            <li><a href="#" class="banner-btn" title="愿?ъ긽??><i class="fa-regular fa-heart"></i><span class="tooltip">愿?ъ긽??/span></a></li>
-            <li><a href="#" class="banner-btn naver-talk" title="?ㅼ씠踰꾪넚??><i class="fa-solid fa-comment-dots"></i><span class="tooltip">?ㅼ씠踰꾪넚??/span></a></li>
+            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검색</span></a></li>
+            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
+            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
+            <li><a href="#" class="banner-btn" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
+            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i><span class="tooltip">네이버톡톡</span></a></li>
             <li class="scroll-btns">
-                <button class="banner-btn scroll-top" id="scrollTopBtn" title="?꾨줈"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="?꾨옒濡?><i class="fa-solid fa-chevron-down"></i></button>
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
             </li>
         </ul>
     </aside>
@@ -171,8 +171,8 @@
 
         async function initSearch() {
             if (!query) {
-                displayQueryElem.innerText = "?꾩껜 ?곹뭹";
-                loadingState.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><p>寃?됱뼱瑜??낅젰??二쇱꽭??</p>';
+                displayQueryElem.innerText = "전체 상품";
+                loadingState.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><p>검색어를 입력해 주세요.</p>';
                 return;
             }
 
@@ -195,8 +195,8 @@
                     resultsGrid.innerHTML = `
                         <div class="empty-results">
                             <i class="fa-regular fa-face-frown"></i>
-                            <p>'${query}'?????寃??寃곌낵媛 ?놁뒿?덈떎.</p>
-                            <a href="index.html" class="btn-primary" style="display:inline-block; margin-top:20px; padding:10px 20px; text-decoration:none; border-radius:5px;">?덉쑝濡?媛湲?/a>
+                            <p>'${query}'에 대한 검색 결과가 없습니다.</p>
+                            <a href="index.html" class="btn-primary" style="display:inline-block; margin-top:20px; padding:10px 20px; text-decoration:none; border-radius:5px;">홈으로 가기</a>
                         </div>
                     `;
                     return;
@@ -208,7 +208,7 @@
                     card.style.cursor = 'pointer';
                     card.onclick = () => window.location.href = `product-detail.html?id=${p.id}`;
                     
-                    const priceStr = (!p.price || p.price === '?꾪솕臾몄쓽') ? '?꾪솕臾몄쓽' : Number(p.price).toLocaleString() + '??;
+                    const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                     
                     card.innerHTML = `
                         <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat: no-repeat; background-position: center; height: 250px; border-bottom: 1px solid #eee;"></div>
@@ -222,7 +222,7 @@
 
             } catch (err) {
                 console.error("Search error:", err);
-                loadingState.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i><p>寃??以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.</p>';
+                loadingState.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i><p>검색 중 오류가 발생했습니다.</p>';
             }
         }
 
