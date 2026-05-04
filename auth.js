@@ -121,21 +121,8 @@ if (signupForm) {
         const phone = document.getElementById('signupPhone').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
-        const passwordConfirm = document.getElementById('signupPasswordConfirm')?.value;
-        const organization = document.getElementById('signupOrg')?.value;
-        const bizNumber = document.getElementById('signupBizNumber')?.value;
-        const address = document.getElementById('signupAddress')?.value;
 
         if (signupMsg) signupMsg.className = 'auth-message';
-        
-        if (passwordConfirm && password !== passwordConfirm) {
-            if (signupMsg) {
-                signupMsg.textContent = '비밀번호가 일치하지 않습니다.';
-                signupMsg.classList.add('error');
-            }
-            return;
-        }
-
         if (signupMsg) signupMsg.textContent = '가입 처리 중...';
 
         const { data, error } = await supabase.auth.signUp({
@@ -145,10 +132,7 @@ if (signupForm) {
                 data: {
                     full_name: name,
                     phone: phone,
-                    organization: organization,
-                    address: address,
-                    user_type: selectedUserType,
-                    biz_number: bizNumber
+                    user_type: selectedUserType
                 }
             }
         });

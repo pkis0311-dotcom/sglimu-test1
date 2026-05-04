@@ -255,7 +255,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // 4. Search Focus Logic
+    // 4. Search Logic
+    function performSearch() {
+        const input = document.querySelector('.search-input');
+        if (!input) return;
+        const query = input.value.trim();
+        if (query) {
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        } else {
+            input.focus();
+        }
+    }
+
     const headerSearchBtn = document.getElementById('headerSearchBtn');
     const searchInput = document.querySelector('.search-input');
     const asideSearchBtn = document.querySelector('.search-btn-aside');
@@ -263,20 +274,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (headerSearchBtn) {
         headerSearchBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            searchInput.focus();
+            performSearch();
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
         });
     }
     
     if (asideSearchBtn) {
         asideSearchBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-            setTimeout(() => {
-                searchInput.focus();
-            }, 500);
+            const input = document.querySelector('.search-input');
+            if (!input) return;
+
+            if (window.scrollY < 100) {
+                input.focus();
+            } else {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                setTimeout(() => {
+                    input.focus();
+                }, 500);
+            }
         });
     }
 
