@@ -469,4 +469,201 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     initDynamicNav();
+
+    initDynamicNav();
+
+    // ---------------------------------------------------------
+    // 8. Global Product Loading Logic
+    // ---------------------------------------------------------
+    window.loadDisplayProducts = async function(containerId, displayKey) {
+        const container = document.querySelector(`#${containerId} .product-list`) || document.getElementById(containerId);
+        if(!container) return;
+
+        try {
+            const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
+            const selectedIds = configData ? configData.value : [];
+
+            if (!selectedIds || selectedIds.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">등록된 전시 상품이 없습니다.</div>';
+                return;
+            }
+
+            const { data: products, error } = await supabase.from('products').select('*').in('id', selectedIds);
+            if (error) throw error;
+
+            container.innerHTML = '';
+            // 정렬 순서 유지
+            const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
+            
+            sortedProducts.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card visible';
+                card.style.cursor = 'pointer';
+                card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
+                
+                const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+                card.innerHTML = `
+                    <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                    <div class="product-info" style="text-align:center; padding:15px;">
+                        <h4 style="margin-bottom:5px;">${p.name}</h4>
+                        <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error("Load Products Error:", err);
+        }
+    };
+
+    // ---------------------------------------------------------
+    // 9. Dynamic Sub-Category Tabs (Category Pages)
+    // ---------------------------------------------------------
+    async function initDynamicSubNav() {
+        const subNav = document.getElementById('subCategoryNav');
+        if (!subNav) return;
+
+        // CURRENT_PAGE_ID는 각 html의 스크립트에서 전역 변수로 정의되어 있어야 합니다.
+        if (typeof window.CURRENT_PAGE_ID === 'undefined') {
+            console.warn("Dynamic SubNav: window.CURRENT_PAGE_ID not defined.");
+            return;
+        }
+
+        const pageId = window.CURRENT_PAGE_ID;
+
+        try {
+            const { data: catData } = await supabase.from('site_configs').select('value').eq('key', 'site_categories').single();
+            if (!catData) return;
+            const siteCategories = catData.value;
+
+            // 현재 페이지(중간분류) 찾기
+            let currentMiddle = null;
+            for (const mKey in siteCategories) {
+                if (siteCategories[mKey].middles && siteCategories[mKey].middles[pageId]) {
+                    currentMiddle = siteCategories[mKey].middles[pageId];
+                    break;
+                }
+            }
+
+            if (!currentMiddle || !currentMiddle.subs) return;
+
+            // 탭 초기화
+            subNav.innerHTML = '';
+            
+            const detailSection = document.querySelector('.dynamic-detail-section');
+            const sortedSubs = [...currentMiddle.subs].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            for (const [index, sub] of sortedSubs.entries()) {
+                // 탭 생성
+                const li = document.createElement('li');
+                li.className = `subcategory-item ${index === 0 ? 'active' : ''}`;
+                li.setAttribute('data-target', sub.id);
+                li.textContent = sub.label;
+                li.onclick = () => {
+                    document.querySelectorAll('.subcategory-item').forEach(n => n.classList.remove('active'));
+                    document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+
+                    li.classList.add('active');
+                    const targetContent = document.getElementById(sub.id);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                        targetContent.querySelectorAll('.product-card').forEach((card, i) => {
+                            card.classList.remove('visible');
+                            setTimeout(() => card.classList.add('visible'), 50 + (i * 100));
+                        });
+                    }
+                };
+                subNav.appendChild(li);
+
+                // 컨텐츠 영역 생성 (없을 경우만)
+                let contentDiv = document.getElementById(sub.id);
+                if (!contentDiv) {
+                    contentDiv = document.createElement('div');
+                    contentDiv.id = sub.id;
+                    contentDiv.className = `sub-content ${index === 0 ? 'active' : ''}`;
+                    contentDiv.innerHTML = '<div class="product-list"></div>';
+                    if (detailSection) {
+                        detailSection.parentElement.insertBefore(contentDiv, detailSection);
+                    } else {
+                        // subNav의 부모(container)에 추가
+                        subNav.parentElement.appendChild(contentDiv);
+                    }
+                } else {
+                    contentDiv.classList.toggle('active', index === 0);
+                }
+
+                // 상품 로드
+                await window.loadDisplayProducts(sub.id, pageId + '-' + sub.id);
+            }
+
+        } catch (err) {
+            console.error("SubNav Load Error:", err);
+        }
+    }
+
+    initDynamicSubNav();
+
+    // ---------------------------------------------------------
+    // 10. Dynamic Page Content (Description, Features, Specs)
+    // ---------------------------------------------------------
+    async function initDynamicPageContent() {
+        if (typeof window.CURRENT_PAGE_ID === 'undefined') return;
+        const pageId = window.CURRENT_PAGE_ID;
+
+        try {
+            const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + pageId).single();
+            if (!configData) return;
+            const data = configData.value;
+
+            // Description
+            const descElem = document.getElementById('dynamicDesc');
+            if (descElem && data.description) {
+                descElem.innerHTML = data.description.replace(/\n/g, '<br>');
+            }
+
+            // Main Image
+            const mainImgElem = document.getElementById('mainImage');
+            if (mainImgElem && data.mainImages && data.mainImages.length > 0) {
+                mainImgElem.src = data.mainImages[0];
+            }
+
+            // Detail Image
+            const detailImgElem = document.getElementById('dynamicDetailImg');
+            if (detailImgElem && (data.detailImage || (data.detailImages && data.detailImages[0]))) {
+                detailImgElem.src = data.detailImage || data.detailImages[0];
+            }
+
+            // Specs
+            const specBody = document.getElementById('dynamicSpecTable');
+            if (specBody && data.specs && data.specs.length > 0) {
+                specBody.innerHTML = '';
+                data.specs.forEach(s => {
+                    specBody.innerHTML += `<tr><th style="background:#f9f9f9; width:25%; padding:12px; border:1px solid #ddd; text-align:left;">${s.key}</th><td style="padding:12px; border:1px solid #ddd;">${s.val}</td></tr>`;
+                });
+            }
+
+            // Features
+            const featureContainer = document.getElementById('dynamicFeatures');
+            if (featureContainer && data.features && data.features.length > 0) {
+                featureContainer.innerHTML = '';
+                data.features.forEach((feat, i) => {
+                    const num = (i + 1).toString().padStart(2, '0');
+                    featureContainer.innerHTML += `
+                        <div class="feature-item" style="margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:15px;">
+                            <h5 style="font-size:1.1rem; color:#222; margin-bottom:8px; display:flex; align-items:center;">
+                                <span style="display:inline-block; background:var(--color-primary); color:#fff; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; margin-right:10px; font-size:0.75rem;">${num}</span>
+                                ${feat.title}
+                            </h5>
+                            <p style="color:#666; line-height:1.6; padding-left:32px;">${feat.desc.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    `;
+                });
+            }
+
+        } catch (err) {
+            console.error("Page Content Load Error:", err);
+        }
+    }
+
+    initDynamicPageContent();
 });
