@@ -1313,9 +1313,10 @@ function initCategoryDisplayTab() {
 
             middle.subs.forEach(sub => {
                 const displayName = `${middle.label} > ${sub.label}`;
+                const combinedId = `${midKey}-${sub.id}`;
                 html += `
-                    <button class="minor-btn ${currentSelectedSection === sub.id ? 'active' : ''}" 
-                            onclick="selectMinorCategory('${sub.id}', '${displayName}')">
+                    <button class="minor-btn ${currentSelectedSection === combinedId ? 'active' : ''}" 
+                            onclick="selectMinorCategory('${combinedId}', '${displayName}')">
                         ${displayName}
                     </button>
                 `;
@@ -1326,12 +1327,12 @@ function initCategoryDisplayTab() {
     }
 
     // 3. 소분류 선택 함수 (전역 window 객체에 연결하여 onclick 대응)
-    window.selectMinorCategory = (id, name) => {
-        currentSelectedSection = id;
+    window.selectMinorCategory = (combinedId, name) => {
+        currentSelectedSection = combinedId;
         
         // 버튼 스타일 업데이트
         document.querySelectorAll('.minor-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText.trim() === name);
+            btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${combinedId}'`));
         });
 
         // 상태창 업데이트
@@ -1339,7 +1340,7 @@ function initCategoryDisplayTab() {
         selectionName.innerText = name;
 
         // 체크박스 데이터 로드
-        loadCategoryDisplay(id);
+        loadCategoryDisplay(combinedId);
     };
 
     // 4. 저장 버튼
