@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카테고리 - 에스지라이뮤</title>
+    <meta name="description" content="에스지라이뮤 카테고리 페이지">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .category-page {
+            padding: 80px 0 100px;
+            min-height: 800px;
+        }
+        .category-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 5%;
+        }
+        .category-header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 60px 5%;
+            background-color: var(--color-surface);
+            width: 100%;
+        }
+        .category-title {
+            font-size: 2.5rem;
+            color: var(--color-text);
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .subcategory-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+        .subcategory-item {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text-light);
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .subcategory-item:hover, .subcategory-item.active {
+            color: #fff;
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .sub-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .sub-content.active {
+            display: block;
+        }
+    </style>
+    <link rel="stylesheet" href="cart.css">
+    <link rel="stylesheet" href="inquiry.css">
+    <link rel="stylesheet" href="auth.css">
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
+            <nav class="gnb">
+                <ul>
+                    <!-- GNB will be rendered dynamically -->
+                </ul>
+            </nav>
+            <div class="header-utils">
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+                </div>
+                <div class="user-auth-wrap" id="userAuthWrap">
+                    <button class="login-trigger-btn" id="loginTriggerBtn">
+                        <i class="fa-regular fa-user"></i>
+                        <span>로그인</span>
+                    </button>
+                </div>
+                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="category-page">
+        <div class="category-header">
+            <h2 class="category-title">로딩 중...</h2>
+            <p>카테고리 정보를 불러오고 있습니다.</p>
+        </div>
+
+        <div class="category-container">
+            <ul class="subcategory-nav" id="subCategoryNav"></ul>
+            
+            <section class="dynamic-detail-section" style="margin-top: 80px; border-top: 1px solid #eee; padding-top: 60px;">
+                <div class="category-header" style="margin-bottom: 40px; background: none; padding: 0;">
+                    <h2 class="category-title" style="font-size: 2rem;">상세 정보</h2>
+                    <p id="dynamicDesc">상세 정보를 불러오고 있습니다.</p>
+                </div>
+
+                <div class="detail-content-wrapper" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="main-image-container" style="text-align: center; margin-bottom: 50px;">
+                        <img src="" id="mainImage" alt="대표 이미지" style="max-width: 400px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: none;">
+                    </div>
+
+                    <div class="info-text-box" style="background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <h4 style="border-bottom: 2px solid var(--color-primary); padding-bottom: 10px; margin-bottom: 30px; font-size: 1.3rem;">FEATURES</h4>
+                        <div class="detail-features" id="dynamicFeatures">
+                            <p style="color: #999;">등록된 제품 특징이 없습니다.</p>
+                        </div>
+
+                        <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 60px; font-size: 1.3rem;">SPECIFICATIONS</h4>
+                        <table class="spec-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                            <tbody id="dynamicSpecTable">
+                                <tr>
+                                    <th style="background: #f9f9f9; width: 25%; padding: 12px; border: 1px solid #ddd; text-align: left;">항목</th>
+                                    <td style="padding: 12px; border: 1px solid #ddd;">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="detail-image-full" style="margin-top: 50px; text-align: center;">
+                            <img src="" id="dynamicDetailImg" style="max-width: 100%; border-radius: 5px;">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="script.js"></script>
+    <script type="module" src="auth.js"></script>
+</body>
+</html>

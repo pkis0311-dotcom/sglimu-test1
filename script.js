@@ -429,21 +429,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const middle = middles[midKey];
                         
                         // 기존 페이지 매핑 로직 (ID 기반)
+                        // [수정] 카테고리 링크 결정 로직 고도화
                         let link = '#';
-                        if (midKey === 'rfid') link = 'rfid.html';
-                        else if (midKey === 'em') link = 'em.html';
-                        else if (midKey.includes('arrange')) link = 'supplies-arrange.html';
-                        else if (midKey.includes('protect')) link = 'supplies-protect.html';
-                        else if (midKey.includes('lend')) link = 'supplies-lend.html';
-                        else if (midKey === 'sterilizer') link = 'sterilizer.html';
-                        else if (midKey === 'koas') link = 'furniture-koas.html';
-                        else if (midKey === 'fomus') link = 'furniture-fomus.html';
-                        else if (midKey === 'fursys') link = 'furniture-fursys.html';
-                        else if (midKey === 'custom') link = 'furniture-custom.html';
-                        else if (midKey === 'sign' || midKey.includes('class')) link = 'sign-class.html';
-                        else if (midKey.includes('board')) link = 'sign-board.html';
-                        else if (midKey.includes('date')) link = 'sign-date.html';
-                        else if (midKey.includes('custom_sign')) link = 'sign-custom.html';
+                        const lowerKey = midKey.toLowerCase();
+                        
+                        if (lowerKey === 'rfid') link = 'rfid.html';
+                        else if (lowerKey === 'em') link = 'em.html';
+                        else if (lowerKey.includes('arrange')) link = 'supplies-arrange.html';
+                        else if (lowerKey.includes('protect')) link = 'supplies-protect.html';
+                        else if (lowerKey.includes('lend')) link = 'supplies-lend.html';
+                        else if (lowerKey === 'sterilizer' || lowerKey.includes('etc')) link = 'sterilizer.html';
+                        else if (lowerKey === 'koas') link = 'furniture-koas.html';
+                        else if (lowerKey === 'fomus') link = 'furniture-fomus.html';
+                        else if (lowerKey === 'fursys') link = 'furniture-fursys.html';
+                        else if (lowerKey === 'custom') link = 'furniture-custom.html';
+                        else if (lowerKey === 'sign' || lowerKey.includes('class')) link = 'sign-class.html';
+                        else if (lowerKey.includes('board')) link = 'sign-board.html';
+                        else if (lowerKey.includes('date')) link = 'sign-date.html';
+                        else if (lowerKey.includes('custom_sign')) link = 'sign-custom.html';
+                        else {
+                            // 등록되지 않은 새로운 카테고리인 경우 동적 페이지로 연결
+                            link = `category.html?id=${midKey}`; 
+                        }
                         
                         middlesHtml += `<li><a href="${link}">${middle.label}</a></li>`;
                     }
@@ -524,12 +531,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!subNav) return;
 
         // CURRENT_PAGE_ID는 각 html의 스크립트에서 전역 변수로 정의되어 있어야 합니다.
-        if (typeof window.CURRENT_PAGE_ID === 'undefined') {
-            console.warn("Dynamic SubNav: window.CURRENT_PAGE_ID not defined.");
+        // [수정] URL 파라미터가 있으면 우선 사용, 없으면 전역 변수 사용
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageId = urlParams.get('id') || window.CURRENT_PAGE_ID;
+        
+        if (!pageId) {
+            console.warn("Dynamic SubNav: pageId not found.");
             return;
         }
-
-        const pageId = window.CURRENT_PAGE_ID;
 
         try {
             const { data: catData } = await supabase.from('site_configs').select('value').eq('key', 'site_categories').single();
@@ -546,6 +555,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (!currentMiddle || !currentMiddle.subs) return;
+            
+            // [추가] 헤더 타이틀 동적 변경
+            const titleElem = document.querySelector('.category-title');
+            if (titleElem && currentMiddle.label) {
+                titleElem.textContent = currentMiddle.label;
+            }
+            const headerDescElem = document.querySelector('.category-header p');
+            if (headerDescElem && currentMiddle.label) {
+                headerDescElem.textContent = `${currentMiddle.label} 관련 정보를 확인하실 수 있습니다.`;
+            }
 
             // 탭 초기화
             subNav.innerHTML = '';
@@ -607,8 +626,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 10. Dynamic Page Content (Description, Features, Specs)
     // ---------------------------------------------------------
     async function initDynamicPageContent() {
-        if (typeof window.CURRENT_PAGE_ID === 'undefined') return;
-        const pageId = window.CURRENT_PAGE_ID;
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageId = urlParams.get('id') || window.CURRENT_PAGE_ID;
+        if (!pageId) return;
 
         try {
             const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + pageId).single();
