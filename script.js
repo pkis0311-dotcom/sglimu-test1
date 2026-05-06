@@ -1,14 +1,290 @@
 import { supabase } from './supabase-client.js';
 
+let SITE_CATEGORIES = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     // ---------------------------------------------------------
-    // 1. Search Logic (Should run first to be robust)
+    // 0. Fetch Categories (Required for dynamic GNB and sub-nav)
+    // ---------------------------------------------------------
+    async function fetchSiteCategories() {
+        try {
+            const { data, error } = await supabase
+                .from('site_configs')
+                .select('value')
+                .eq('key', 'site_categories')
+                .single();
+            
+            if (!error && data) {
+                SITE_CATEGORIES = data.value;
+            }
+        } catch (err) {
+            console.error("Error fetching categories:", err);
+        }
+    }
+
+    await fetchSiteCategories();
+
+    // ---------------------------------------------------------
+    // 1. Dynamic GNB Rendering
+    // ---------------------------------------------------------
+    function renderDynamicGNB() {
+        const gnbContainer = document.querySelector('.gnb');
+        if (!gnbContainer || !SITE_CATEGORIES) return;
+
+        const ul = document.createElement('ul');
+        
+        // Link Mapping (based on existing structure)
+        const linkMap = {
+            'rfid': 'rfid.html',
+            'em': 'em.html',
+            'access': 'access.html',
+            'arrange': 'supplies-arrange.html',
+            'protect': 'supplies-protect.html',
+            'lend': 'supplies-lend.html',
+            'etc': 'sterilizer.html',
+            'koas': 'furniture-koas.html',
+            'fomus': 'furniture-fomus.html',
+            'fursys': 'furniture-fursys.html',
+            'custom': 'furniture-custom.html',
+            'sign': 'sign-class.html'
+        };
+
+        for (const mKey in SITE_CATEGORIES) {
+            if (mKey === 'discount') continue;
+
+            const major = SITE_CATEGORIES[mKey];
+            const li = document.createElement('li');
+            
+            const hasMiddles = major.middles && Object.keys(major.middles).length > 0;
+            if (hasMiddles) {
+                li.className = 'has-submenu';
+                li.innerHTML = `<a href="#">${major.label}</a>`;
+                
+                const submenuUl = document.createElement('ul');
+                submenuUl.className = 'submenu';
+                
+                for (const midKey in major.middles) {
+                    const middle = major.middles[midKey];
+                    const subLi = document.createElement('li');
+                    
+                    if (mKey === 'signage' && midKey === 'sign') {
+                        middle.subs.forEach(sub => {
+                            const ssLi = document.createElement('li');
+                            let subLink = '#';
+                            if (sub.id.includes('class')) subLink = 'sign-class.html';
+                            else if (sub.id.includes('board')) subLink = 'sign-board.html';
+                            else if (sub.id.includes('date')) subLink = 'sign-date.html';
+                            else if (sub.id.includes('custom')) subLink = 'sign-custom.html';
+                            
+                            ssLi.innerHTML = `<a href="${subLink}">${sub.label}</a>`;
+                            submenuUl.appendChild(ssLi);
+                        });
+                        continue;
+                    }
+
+                    let link = linkMap[midKey] || `${mKey}-${midKey}.html`;
+                    subLi.innerHTML = `<a href="${link}">${middle.label}</a>`;
+                    submenuUl.appendChild(subLi);
+                }
+                li.appendChild(submenuUl);
+            } else {
+                li.innerHTML = `<a href="${mKey}.html">${major.label}</a>`;
+            }
+            ul.appendChild(li);
+        }
+
+        if (SITE_CATEGORIES['discount']) {
+            const discLi = document.createElement('li');
+            discLi.innerHTML = `<a href="discount.html">${SITE_CATEGORIES['discount'].label}</a>`;
+            ul.appendChild(discLi);
+        }
+
+        gnbContainer.innerHTML = '';
+        gnbContainer.appendChild(ul);
+    }
+
+    renderDynamicGNB();
+
+    // ---------------------------------------------------------
+    // 1.5. Product Display Logic (Shared)
+    // ---------------------------------------------------------
+    async function loadDisplayProducts(containerId, displayKey) {
+        const container = document.querySelector(`#${containerId} .product-list`);
+        if(!container) return;
+
+        const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
+        const selectedIds = configData ? configData.value : [];
+
+        if (!selectedIds || selectedIds.length === 0) {
+            container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">등록된 전시 상품이 없습니다. 관리자 사이트에서 배치해주세요.</div>';
+            return;
+        }
+
+        const { data: products, error } = await supabase.from('products').select('*').in('id', selectedIds);
+        if (error) return;
+
+        container.innerHTML = '';
+        const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
+        
+        sortedProducts.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card visible';
+            card.style.cursor = 'pointer';
+            card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
+            
+            const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+            card.innerHTML = `
+                <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                <div class="product-info" style="text-align:center; padding:15px;">
+                    <h4 style="margin-bottom:5px;">${p.name}</h4>
+                    <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Expose to window for page-specific scripts if needed
+    window.loadDisplayProducts = loadDisplayProducts;
+
+    // ---------------------------------------------------------
+    // 2. Dynamic Sub-Category Nav (for Category Pages)
+    // ---------------------------------------------------------
+    function renderDynamicSubNav() {
+        const subNav = document.getElementById('subCategoryNav');
+        if (!subNav || !SITE_CATEGORIES) return;
+
+        const currentPageId = window.CURRENT_PAGE_ID;
+        if (!currentPageId) return;
+
+        let currentMiddle = null;
+        for (const mKey in SITE_CATEGORIES) {
+            if (SITE_CATEGORIES[mKey].middles && SITE_CATEGORIES[mKey].middles[currentPageId]) {
+                currentMiddle = SITE_CATEGORIES[mKey].middles[currentPageId];
+                break;
+            }
+        }
+
+        if (currentMiddle && currentMiddle.subs) {
+            subNav.innerHTML = '';
+            
+            // Container to hold sub-contents if they are to be dynamic
+            let subContentsWrapper = document.querySelector('.category-container');
+            if (!subContentsWrapper) subContentsWrapper = document.querySelector('main');
+
+            currentMiddle.subs.forEach(async (sub, index) => {
+                const li = document.createElement('li');
+                li.className = `subcategory-item ${index === 0 ? 'active' : ''}`;
+                li.setAttribute('data-target', sub.id);
+                li.textContent = sub.label;
+                
+                // Create sub-content div if it doesn't exist
+                let targetContent = document.getElementById(sub.id);
+                if (!targetContent) {
+                    targetContent = document.createElement('div');
+                    targetContent.id = sub.id;
+                    targetContent.className = `sub-content ${index === 0 ? 'active' : ''}`;
+                    targetContent.innerHTML = '<div class="product-list"></div>';
+                    subContentsWrapper.appendChild(targetContent);
+                }
+
+                // Initial load for products
+                const displayKey = currentPageId + '-' + sub.id;
+                await loadDisplayProducts(sub.id, displayKey);
+
+                li.addEventListener('click', () => {
+                    document.querySelectorAll('.subcategory-item').forEach(n => n.classList.remove('active'));
+                    document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+
+                    li.classList.add('active');
+                    const targetContent = document.getElementById(sub.id);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                        const cards = targetContent.querySelectorAll('.product-card');
+                        cards.forEach((card, i) => {
+                            card.classList.remove('visible');
+                            setTimeout(() => card.classList.add('visible'), 50 + (i * 100));
+                        });
+                    }
+                });
+                subNav.appendChild(li);
+            });
+        }
+    }
+
+    renderDynamicSubNav();
+
+    // ---------------------------------------------------------
+    // 2.5. Dynamic Category Page Data (for Category Pages)
+    // ---------------------------------------------------------
+    async function renderCategoryPageData() {
+        const currentPageId = window.CURRENT_PAGE_ID;
+        if (!currentPageId) return;
+
+        try {
+            const { data: configData } = await supabase
+                .from('site_configs')
+                .select('value')
+                .eq('key', 'pageData_' + currentPageId)
+                .single();
+            
+            const data = configData ? configData.value : null;
+
+            if (data) {
+                if (data.description) {
+                    const descElem = document.getElementById('dynamicDesc');
+                    if (descElem) descElem.innerHTML = data.description.replace(/\n/g, '<br>');
+                }
+                if (data.mainImages && data.mainImages.length > 0) {
+                    const mainImgElem = document.getElementById('mainImage');
+                    if (mainImgElem) mainImgElem.src = data.mainImages[0];
+                }
+                if (data.detailImage || (data.detailImages && data.detailImages[0])) {
+                    const detailImgElem = document.getElementById('dynamicDetailImg');
+                    if (detailImgElem) detailImgElem.src = data.detailImage || data.detailImages[0];
+                }
+                if (data.specs && data.specs.length > 0) {
+                    const specBody = document.getElementById('dynamicSpecTable');
+                    if (specBody) {
+                        specBody.innerHTML = '';
+                        data.specs.forEach(s => {
+                            specBody.innerHTML += `<tr><th style="background:#f9f9f9; width:25%; padding:12px; border:1px solid #ddd; text-align:left;">${s.key}</th><td style="padding:12px; border:1px solid #ddd;">${s.val}</td></tr>`;
+                        });
+                    }
+                }
+                if (data.features && data.features.length > 0) {
+                    const featureContainer = document.getElementById('dynamicFeatures');
+                    if (featureContainer) {
+                        featureContainer.innerHTML = '';
+                        data.features.forEach((feat, i) => {
+                            const num = (i + 1).toString().padStart(2, '0');
+                            featureContainer.innerHTML += `
+                                <div class="feature-item" style="margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:15px;">
+                                    <h5 style="font-size:1.1rem; color:#222; margin-bottom:8px; display:flex; align-items:center;">
+                                        <span style="display:inline-block; background:var(--color-primary); color:#fff; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; margin-right:10px; font-size:0.75rem;">${num}</span>
+                                        ${feat.title}
+                                    </h5>
+                                    <p style="color:#666; line-height:1.6; padding-left:32px;">${feat.desc.replace(/\n/g, '<br>')}</p>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Supabase load error for " + currentPageId, e);
+        }
+    }
+
+    renderCategoryPageData();
+
+    // ---------------------------------------------------------
+    // 3. Search Logic
     // ---------------------------------------------------------
     const headerSearchBtn = document.getElementById('headerSearchBtn');
     const searchInput = document.querySelector('.search-input');
     const asideSearchBtn = document.querySelector('.search-btn-aside');
 
-    // Pre-fill search input if on search page
     const urlParams = new URLSearchParams(window.location.search);
     const currentQuery = urlParams.get('q');
     if (currentQuery && searchInput) {
@@ -56,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 2. Slider Logic (Home Page Only)
+    // 4. Slider Logic (Home Page Only)
     // ---------------------------------------------------------
     const sliderContainer = document.getElementById('sliderContainer');
     const dotsContainer = document.getElementById('sliderDots');
@@ -171,13 +447,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearInterval(slideInterval);
         }
 
-        prevBtn.addEventListener('click', () => {
+        if (prevBtn) prevBtn.addEventListener('click', () => {
             stopSlideShow();
             prevSlide();
             startSlideShow();
         });
 
-        nextBtn.addEventListener('click', () => {
+        if (nextBtn) nextBtn.addEventListener('click', () => {
             stopSlideShow();
             nextSlide();
             startSlideShow();
@@ -232,7 +508,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Cookie functions (outside of if block if needed elsewhere, but kept here for scope)
     function getCookie(name) {
         const matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -247,7 +522,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 3. Scroll Logic (Global)
+    // 5. Scroll Logic
     // ---------------------------------------------------------
     const scrollTopBtn = document.getElementById('scrollTopBtn');
     const scrollBottomBtn = document.getElementById('scrollBottomBtn');
@@ -278,7 +553,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ---------------------------------------------------------
-    // 4. Product Tabs Logic (Home Page Only)
+    // 6. Product Tabs Logic (Home Page Only)
     // ---------------------------------------------------------
     const tabItems = document.querySelectorAll('.tab-item');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -306,7 +581,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 5. Live Chat Widget Logic (Global)
+    // 7. Live Chat Widget Logic
     // ---------------------------------------------------------
     const chatFab = document.getElementById('chatFab');
     const chatWindow = document.getElementById('chatWindow');
@@ -358,7 +633,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 6. Scroll Reveal Animation Logic (Global)
+    // 8. Scroll Reveal Animation Logic
     // ---------------------------------------------------------
     const revealElements = document.querySelectorAll('.section-title, .product-tabs, .product-card');
     if (revealElements.length > 0) {
@@ -386,3 +661,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 100);
     }
 });
+
