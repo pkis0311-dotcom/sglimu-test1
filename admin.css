@@ -714,3 +714,44 @@ td {
     color: var(--admin-primary);
     background: #f0f7f0;
 }
+
+/* Reorder Buttons */
+.reorder-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.reorder-btn {
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #999;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s;
+}
+
+.reorder-btn:hover {
+    background: #f8f9fa;
+    color: var(--admin-primary);
+    border-color: var(--admin-primary);
+}
+
+.reorder-mini {
+    display: flex;
+    flex-direction: column;
+    margin-right: 2px;
+}
+
+.reorder-mini i {
+    font-size: 0.6rem;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.reorder-mini i:hover {
+    color: var(--admin-primary) !important;
+}
