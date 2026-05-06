@@ -385,4 +385,88 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }, 100);
     }
+
+    // ---------------------------------------------------------
+    // 7. Dynamic Category Navigation (GNB)
+    // ---------------------------------------------------------
+    async function initDynamicNav() {
+        const gnbUl = document.querySelector('.gnb > ul');
+        if (!gnbUl) return;
+
+        try {
+            // site_configs 테이블에서 카테고리 정보 로드
+            const { data, error } = await supabase.from('site_configs').select('value').eq('key', 'site_categories').single();
+            if (error || !data) {
+                console.warn("Dynamic Nav: site_categories not found, using static menu.");
+                return;
+            }
+
+            const categories = data.value;
+            gnbUl.innerHTML = '';
+
+            // 대분류 정렬 (order 기준)
+            const sortedMajors = Object.keys(categories).sort((a, b) => 
+                (categories[a].order || 0) - (categories[b].order || 0)
+            );
+
+            for (const mKey of sortedMajors) {
+                const major = categories[mKey];
+                const li = document.createElement('li');
+                
+                const middles = major.middles || {};
+                const middleKeys = Object.keys(middles);
+                
+                if (middleKeys.length > 0) {
+                    li.className = 'has-submenu';
+                    
+                    // 중간분류 정렬
+                    const sortedMiddles = middleKeys.sort((a, b) => 
+                        (middles[a].order || 0) - (middles[b].order || 0)
+                    );
+
+                    let middlesHtml = '';
+                    for (const midKey of sortedMiddles) {
+                        const middle = middles[midKey];
+                        
+                        // 기존 페이지 매핑 로직 (ID 기반)
+                        let link = '#';
+                        if (midKey === 'rfid') link = 'rfid.html';
+                        else if (midKey === 'em') link = 'em.html';
+                        else if (midKey.includes('arrange')) link = 'supplies-arrange.html';
+                        else if (midKey.includes('protect')) link = 'supplies-protect.html';
+                        else if (midKey.includes('lend')) link = 'supplies-lend.html';
+                        else if (midKey === 'sterilizer') link = 'sterilizer.html';
+                        else if (midKey === 'koas') link = 'furniture-koas.html';
+                        else if (midKey === 'fomus') link = 'furniture-fomus.html';
+                        else if (midKey === 'fursys') link = 'furniture-fursys.html';
+                        else if (midKey === 'custom') link = 'furniture-custom.html';
+                        else if (midKey === 'sign' || midKey.includes('class')) link = 'sign-class.html';
+                        else if (midKey.includes('board')) link = 'sign-board.html';
+                        else if (midKey.includes('date')) link = 'sign-date.html';
+                        else if (midKey.includes('custom_sign')) link = 'sign-custom.html';
+                        
+                        middlesHtml += `<li><a href="${link}">${middle.label}</a></li>`;
+                    }
+
+                    li.innerHTML = `
+                        <a href="#">${major.label}</a>
+                        <ul class="submenu">
+                            ${middlesHtml}
+                        </ul>
+                    `;
+                } else {
+                    li.innerHTML = `<a href="#">${major.label}</a>`;
+                }
+                gnbUl.appendChild(li);
+            }
+            
+            // 할인상품 메뉴 (고정)
+            gnbUl.innerHTML += `<li><a href="discount.html">할인상품</a></li>`;
+
+        } catch (err) {
+            console.error("GNB Load Error:", err);
+        }
+    }
+
+    initDynamicNav();
 });
