@@ -1466,26 +1466,18 @@ function renderCategoryManagement() {
     }
 
     container.innerHTML = '';
-    const mKeys = Object.keys(SITE_CATEGORIES);
-
-    mKeys.forEach((mKey, mIdx) => {
+    for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
         const card = document.createElement('div');
         card.className = 'major-card';
         
         let middlesHtml = '';
-        const midKeys = Object.keys(major.middles);
-
-        midKeys.forEach((midKey, midIdx) => {
+        for (const midKey in major.middles) {
             const middle = major.middles[midKey];
-            if (!middle || !Array.isArray(middle.subs)) return;
+            if (!middle || !Array.isArray(middle.subs)) continue;
 
-            let subsHtml = middle.subs.map((sub, subIdx) => `
+            let subsHtml = middle.subs.map(sub => `
                 <span class="sub-badge">
-                    <div class="reorder-mini">
-                        <i class="fa-solid fa-caret-up" onclick="reorderSub('${mKey}', '${midKey}', '${sub.id}', 'up')" title="위로"></i>
-                        <i class="fa-solid fa-caret-down" onclick="reorderSub('${mKey}', '${midKey}', '${sub.id}', 'down')" title="아래로"></i>
-                    </div>
                     <span class="sub-label" onclick="editSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="이름 수정" style="cursor:pointer;">${sub.label}</span>
                     <i class="fa-solid fa-xmark" onclick="deleteSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="삭제"></i>
                 </span>
@@ -1494,13 +1486,7 @@ function renderCategoryManagement() {
             middlesHtml += `
                 <div class="middle-item">
                     <div class="middle-header">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="reorder-btns">
-                                <button class="reorder-btn" onclick="reorderMiddle('${mKey}', '${midKey}', 'up')" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
-                                <button class="reorder-btn" onclick="reorderMiddle('${mKey}', '${midKey}', 'down')" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
-                            </div>
-                            <h4><i class="fa-solid fa-chevron-right"></i> ${middle.label}</h4>
-                        </div>
+                        <h4><i class="fa-solid fa-chevron-right"></i> ${middle.label}</h4>
                         <div style="display:flex; gap:5px;">
                             <button class="add-mini-btn" onclick="addSubCategory('${mKey}', '${midKey}')"><i class="fa-solid fa-plus"></i> 추가</button>
                             <button class="action-btn edit" style="font-size:0.8rem; margin:0; color:var(--primary);" onclick="editMiddleCategory('${mKey}', '${midKey}')" title="이름 수정"><i class="fa-solid fa-pen"></i></button>
@@ -1513,17 +1499,11 @@ function renderCategoryManagement() {
                     </div>
                 </div>
             `;
-        });
+        }
 
         card.innerHTML = `
             <div class="major-card-header">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div class="reorder-btns">
-                        <button class="reorder-btn" onclick="reorderMajor('${mKey}', 'up')" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
-                        <button class="reorder-btn" onclick="reorderMajor('${mKey}', 'down')" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
-                    </div>
-                    <h3><i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}</h3>
-                </div>
+                <h3><i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}</h3>
                 <div style="display:flex; gap:5px;">
                     <button class="add-mini-btn" style="color:var(--admin-primary); border-color:var(--admin-primary);" onclick="addMiddleCategory('${mKey}')"><i class="fa-solid fa-plus"></i> 중간분류 추가</button>
                     <button class="action-btn edit" style="margin:0; color:var(--primary);" onclick="editMajorCategory('${mKey}')" title="이름 수정"><i class="fa-solid fa-pen"></i></button>
@@ -1536,7 +1516,7 @@ function renderCategoryManagement() {
             </div>
         `;
         container.appendChild(card);
-    });
+    }
 }
 
 // 9-5. 관리 기능 함수들 (전역 window 객체에 연결)
@@ -1608,43 +1588,6 @@ window.editSubCategory = (mKey, midKey, subId) => {
         sub.label = newLabel;
         renderCategoryManagement();
     }
-};
-
-// 9-6. 순서 조정 기능
-function reorderObject(obj, targetKey, direction) {
-    const keys = Object.keys(obj);
-    const index = keys.indexOf(targetKey);
-    if (direction === 'up' && index > 0) {
-        [keys[index - 1], keys[index]] = [keys[index], keys[index - 1]];
-    } else if (direction === 'down' && index < keys.length - 1) {
-        [keys[index + 1], keys[index]] = [keys[index], keys[index + 1]];
-    } else {
-        return obj;
-    }
-    const newObj = {};
-    keys.forEach(k => newObj[k] = obj[k]);
-    return newObj;
-}
-
-window.reorderMajor = (mKey, direction) => {
-    SITE_CATEGORIES = reorderObject(SITE_CATEGORIES, mKey, direction);
-    renderCategoryManagement();
-};
-
-window.reorderMiddle = (mKey, midKey, direction) => {
-    SITE_CATEGORIES[mKey].middles = reorderObject(SITE_CATEGORIES[mKey].middles, midKey, direction);
-    renderCategoryManagement();
-};
-
-window.reorderSub = (mKey, midKey, subId, direction) => {
-    const subs = SITE_CATEGORIES[mKey].middles[midKey].subs;
-    const index = subs.findIndex(s => s.id === subId);
-    if (direction === 'up' && index > 0) {
-        [subs[index - 1], subs[index]] = [subs[index], subs[index - 1]];
-    } else if (direction === 'down' && index < subs.length - 1) {
-        [subs[index + 1], subs[index]] = [subs[index], subs[index + 1]];
-    }
-    renderCategoryManagement();
 };
 
 // 시스템 초기화는 상단의 DOMContentLoaded 리스너에서 수행됩니다.
