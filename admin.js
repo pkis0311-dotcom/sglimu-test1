@@ -131,6 +131,21 @@ const bannerImageUrl = document.getElementById('bannerImageUrl');
 const bannerImagePreview = document.getElementById('bannerImagePreview');
 const bannerDisplayOrderInput = document.getElementById('bannerDisplayOrder');
 
+// Category Management Modal Elements
+const categoryModal = document.getElementById('categoryModal');
+const closeCategoryModalBtn = document.getElementById('closeCategoryModalBtn');
+const cancelCategoryModalBtn = document.getElementById('cancelCategoryModalBtn');
+const saveCategoryEditBtn = document.getElementById('saveCategoryEditBtn');
+const editCatTarget = document.getElementById('editCatTarget');
+const editCatMKey = document.getElementById('editCatMKey');
+const editCatMidKey = document.getElementById('editCatMidKey');
+const editCatSubId = document.getElementById('editCatSubId');
+const editCatLabel = document.getElementById('editCatLabel');
+const editCatOrder = document.getElementById('editCatOrder');
+const editCatIcon = document.getElementById('editCatIcon');
+const majorIconGroup = document.getElementById('majorIconGroup');
+const categoryModalTitle = document.getElementById('categoryModalTitle');
+
 // ==========================================
 // 1. 로그인 / 세션 관리
 // ==========================================
@@ -1442,16 +1457,95 @@ function initCategoryManageTab() {
 
     if (addMajorBtn && !addMajorBtn.dataset.init) {
         addMajorBtn.onclick = () => {
-            const label = prompt("새 대분류 명칭을 입력하세요:");
-            if (label) {
-                const key = 'cat_' + Date.now();
-                SITE_CATEGORIES[key] = { label: label, icon: 'fa-folder', middles: {} };
-                renderCategoryManagement();
-            }
+            openCategoryModal('major', null, null, null, '새 대분류', 0, 'fa-folder');
         };
         addMajorBtn.dataset.init = "true";
     }
 
+    // 모달 닫기 이벤트
+    if (closeCategoryModalBtn) closeCategoryModalBtn.onclick = () => categoryModal.style.display = 'none';
+    if (cancelCategoryModalBtn) cancelCategoryModalBtn.onclick = () => categoryModal.style.display = 'none';
+    if (saveCategoryEditBtn) saveCategoryEditBtn.onclick = saveCategoryEdit;
+
+    renderCategoryManagement();
+}
+
+// 9-3-1. 카테고리 모달 열기
+function openCategoryModal(target, mKey, midKey, subId, label, order, icon = '') {
+    editCatTarget.value = target;
+    editCatMKey.value = mKey || '';
+    editCatMidKey.value = midKey || '';
+    editCatSubId.value = subId || '';
+    editCatLabel.value = label || '';
+    editCatOrder.value = order || 0;
+    
+    if (target === 'major') {
+        majorIconGroup.style.display = 'block';
+        editCatIcon.value = icon || 'fa-folder';
+        categoryModalTitle.textContent = mKey ? '대분류 수정' : '새 대분류 추가';
+    } else if (target === 'middle') {
+        majorIconGroup.style.display = 'none';
+        categoryModalTitle.textContent = midKey ? '중간분류 수정' : '새 중간분류 추가';
+    } else {
+        majorIconGroup.style.display = 'none';
+        categoryModalTitle.textContent = subId ? '소분류 수정' : '새 소분류 추가';
+    }
+    
+    categoryModal.style.display = 'flex';
+}
+
+// 9-3-2. 카테고리 모달 저장
+function saveCategoryEdit() {
+    const target = editCatTarget.value;
+    const mKey = editCatMKey.value;
+    const midKey = editCatMidKey.value;
+    const subId = editCatSubId.value;
+    const label = editCatLabel.value.trim();
+    const order = parseInt(editCatOrder.value) || 0;
+    const icon = editCatIcon.value.trim();
+
+    if (!label) {
+        alert('명칭을 입력해주세요.');
+        return;
+    }
+
+    if (target === 'major') {
+        if (mKey) {
+            // 수정
+            SITE_CATEGORIES[mKey].label = label;
+            SITE_CATEGORIES[mKey].order = order;
+            SITE_CATEGORIES[mKey].icon = icon;
+        } else {
+            // 신규
+            const newKey = 'cat_' + Date.now();
+            SITE_CATEGORIES[newKey] = { label: label, order: order, icon: icon, middles: {} };
+        }
+    } else if (target === 'middle') {
+        if (midKey) {
+            // 수정
+            SITE_CATEGORIES[mKey].middles[midKey].label = label;
+            SITE_CATEGORIES[mKey].middles[midKey].order = order;
+        } else {
+            // 신규
+            const newMidKey = 'mid_' + Date.now();
+            SITE_CATEGORIES[mKey].middles[newMidKey] = { label: label, order: order, subs: [] };
+        }
+    } else if (target === 'sub') {
+        if (subId) {
+            // 수정
+            const sub = SITE_CATEGORIES[mKey].middles[midKey].subs.find(s => s.id === subId);
+            if (sub) {
+                sub.label = label;
+                sub.order = order;
+            }
+        } else {
+            // 신규
+            const newSubId = 'sub_' + Date.now();
+            SITE_CATEGORIES[mKey].middles[midKey].subs.push({ id: newSubId, label: label, order: order });
+        }
+    }
+
+    categoryModal.style.display = 'none';
     renderCategoryManagement();
 }
 
@@ -1466,19 +1560,37 @@ function renderCategoryManagement() {
     }
 
     container.innerHTML = '';
-    for (const mKey in SITE_CATEGORIES) {
+    
+    // 대분류 정렬 및 렌더링
+    const sortedMajors = Object.keys(SITE_CATEGORIES).sort((a, b) => 
+        (SITE_CATEGORIES[a].order || 0) - (SITE_CATEGORIES[b].order || 0)
+    );
+
+    for (const mKey of sortedMajors) {
         const major = SITE_CATEGORIES[mKey];
         const card = document.createElement('div');
         card.className = 'major-card';
         
         let middlesHtml = '';
-        for (const midKey in major.middles) {
+        
+        // 중간분류 정렬
+        const sortedMiddles = Object.keys(major.middles).sort((a, b) => 
+            (major.middles[a].order || 0) - (major.middles[b].order || 0)
+        );
+
+        for (const midKey of sortedMiddles) {
             const middle = major.middles[midKey];
             if (!middle || !Array.isArray(middle.subs)) continue;
 
-            let subsHtml = middle.subs.map(sub => `
+            // 소분류 정렬
+            const sortedSubs = [...middle.subs].sort((a, b) => 
+                (a.order || 0) - (b.order || 0)
+            );
+
+            let subsHtml = sortedSubs.map(sub => `
                 <span class="sub-badge">
-                    <span class="sub-label" onclick="editSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="이름 수정" style="cursor:pointer;">${sub.label}</span>
+                    <span class="cat-order-badge">${sub.order || 0}</span>
+                    <span class="sub-label" onclick="editSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="수정" style="cursor:pointer;">${sub.label}</span>
                     <i class="fa-solid fa-xmark" onclick="deleteSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="삭제"></i>
                 </span>
             `).join('');
@@ -1486,16 +1598,16 @@ function renderCategoryManagement() {
             middlesHtml += `
                 <div class="middle-item">
                     <div class="middle-header">
-                        <h4><i class="fa-solid fa-chevron-right"></i> ${middle.label}</h4>
-                        <div style="display:flex; gap:5px;">
-                            <button class="add-mini-btn" onclick="addSubCategory('${mKey}', '${midKey}')"><i class="fa-solid fa-plus"></i> 추가</button>
-                            <button class="action-btn edit" style="font-size:0.8rem; margin:0; color:var(--primary);" onclick="editMiddleCategory('${mKey}', '${midKey}')" title="이름 수정"><i class="fa-solid fa-pen"></i></button>
-                            <button class="action-btn delete" style="font-size:0.8rem; margin:0;" onclick="deleteMiddleCategory('${mKey}', '${midKey}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
+                        <h4><span class="cat-order-badge">${middle.order || 0}</span> <i class="fa-solid fa-chevron-right" style="font-size:0.8rem; opacity:0.5;"></i> ${middle.label}</h4>
+                        <div style="display:flex; gap:8px;">
+                            <button class="add-mini-btn" onclick="addSubCategory('${mKey}', '${midKey}')"><i class="fa-solid fa-plus"></i> 소분류 추가</button>
+                            <button class="action-btn edit" style="font-size:0.85rem; margin:0; color:#3498db;" onclick="editMiddleCategory('${mKey}', '${midKey}')" title="중간분류 수정"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn delete" style="font-size:0.85rem; margin:0;" onclick="deleteMiddleCategory('${mKey}', '${midKey}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                     <div class="sub-list">
                         ${subsHtml}
-                        ${middle.subs.length === 0 ? '<span style="color:#ccc; font-size:0.8rem;">소분류 없음</span>' : ''}
+                        ${middle.subs.length === 0 ? '<span style="color:#ccc; font-size:0.85rem; padding: 5px;">소분류 없음</span>' : ''}
                     </div>
                 </div>
             `;
@@ -1503,16 +1615,16 @@ function renderCategoryManagement() {
 
         card.innerHTML = `
             <div class="major-card-header">
-                <h3><i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}</h3>
-                <div style="display:flex; gap:5px;">
+                <h3><span class="cat-order-badge" style="background:var(--admin-primary); color:#fff;">${major.order || 0}</span> <i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}</h3>
+                <div style="display:flex; gap:8px;">
                     <button class="add-mini-btn" style="color:var(--admin-primary); border-color:var(--admin-primary);" onclick="addMiddleCategory('${mKey}')"><i class="fa-solid fa-plus"></i> 중간분류 추가</button>
-                    <button class="action-btn edit" style="margin:0; color:var(--primary);" onclick="editMajorCategory('${mKey}')" title="이름 수정"><i class="fa-solid fa-pen"></i></button>
+                    <button class="action-btn edit" style="margin:0; color:#3498db;" onclick="editMajorCategory('${mKey}')" title="대분류 수정"><i class="fa-solid fa-pen"></i></button>
                     <button class="action-btn delete" style="margin:0;" onclick="deleteMajorCategory('${mKey}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
             <div class="major-card-body">
                 ${middlesHtml}
-                ${Object.keys(major.middles).length === 0 ? '<div style="color:#ccc; text-align:center; padding:20px;">중간분류를 추가해주세요.</div>' : ''}
+                ${Object.keys(major.middles).length === 0 ? '<div style="color:#ccc; text-align:center; padding:30px; font-size:0.9rem;">중간분류가 없습니다.<br>상단의 버튼을 눌러 추가하세요.</div>' : ''}
             </div>
         `;
         container.appendChild(card);
@@ -1521,12 +1633,7 @@ function renderCategoryManagement() {
 
 // 9-5. 관리 기능 함수들 (전역 window 객체에 연결)
 window.addMiddleCategory = (mKey) => {
-    const label = prompt(`[${SITE_CATEGORIES[mKey].label}] 하위에 추가할 중간분류 명칭:`);
-    if (label) {
-        const midKey = 'mid_' + Date.now();
-        SITE_CATEGORIES[mKey].middles[midKey] = { label: label, subs: [] };
-        renderCategoryManagement();
-    }
+    openCategoryModal('middle', mKey, null, null, '', 0);
 };
 
 window.deleteMiddleCategory = (mKey, midKey) => {
@@ -1537,12 +1644,7 @@ window.deleteMiddleCategory = (mKey, midKey) => {
 };
 
 window.addSubCategory = (mKey, midKey) => {
-    const label = prompt(`[${SITE_CATEGORIES[mKey].middles[midKey].label}] 하위에 추가할 소분류 명칭:`);
-    if (label) {
-        const subId = 'sub_' + Date.now();
-        SITE_CATEGORIES[mKey].middles[midKey].subs.push({ id: subId, label: label });
-        renderCategoryManagement();
-    }
+    openCategoryModal('sub', mKey, midKey, null, '', 0);
 };
 
 window.deleteSubCategory = (mKey, midKey, subId) => {
@@ -1562,32 +1664,18 @@ window.deleteMajorCategory = (mKey) => {
 };
 
 window.editMajorCategory = (mKey) => {
-    const oldLabel = SITE_CATEGORIES[mKey].label;
-    const newLabel = prompt("대분류 명칭 수정:", oldLabel);
-    if (newLabel && newLabel !== oldLabel) {
-        SITE_CATEGORIES[mKey].label = newLabel;
-        renderCategoryManagement();
-    }
+    const major = SITE_CATEGORIES[mKey];
+    openCategoryModal('major', mKey, null, null, major.label, major.order || 0, major.icon || 'fa-folder');
 };
 
 window.editMiddleCategory = (mKey, midKey) => {
-    const oldLabel = SITE_CATEGORIES[mKey].middles[midKey].label;
-    const newLabel = prompt("중간분류 명칭 수정:", oldLabel);
-    if (newLabel && newLabel !== oldLabel) {
-        SITE_CATEGORIES[mKey].middles[midKey].label = newLabel;
-        renderCategoryManagement();
-    }
+    const middle = SITE_CATEGORIES[mKey].middles[midKey];
+    openCategoryModal('middle', mKey, midKey, null, middle.label, middle.order || 0);
 };
 
 window.editSubCategory = (mKey, midKey, subId) => {
-    const middle = SITE_CATEGORIES[mKey].middles[midKey];
-    const sub = middle.subs.find(s => s.id === subId);
-    const oldLabel = sub.label;
-    const newLabel = prompt("소분류 명칭 수정:", oldLabel);
-    if (newLabel && newLabel !== oldLabel) {
-        sub.label = newLabel;
-        renderCategoryManagement();
-    }
+    const sub = SITE_CATEGORIES[mKey].middles[midKey].subs.find(s => s.id === subId);
+    openCategoryModal('sub', mKey, midKey, subId, sub.label, sub.order || 0);
 };
 
 // 시스템 초기화는 상단의 DOMContentLoaded 리스너에서 수행됩니다.

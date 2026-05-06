@@ -598,28 +598,35 @@ td {
 }
 
 /* -------------------------------------
-   CATEGORY MANAGEMENT UI (NEW)
+   CATEGORY MANAGEMENT UI (Premium Redesign)
 -------------------------------------- */
 .category-manage-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 30px;
 }
 
 .major-card {
     background: #fff;
-    border-radius: 12px;
-    border: 1px solid var(--admin-border);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.major-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
 }
 
 .major-card-header {
-    padding: 15px 20px;
-    background: #f8f9fa;
-    border-bottom: 1px solid var(--admin-border);
+    padding: 20px 25px;
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -627,71 +634,93 @@ td {
 
 .major-card-header h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     color: var(--admin-sidebar);
+    font-weight: 700;
+}
+
+.major-card-header h3 i {
+    color: var(--admin-primary);
+    background: rgba(142, 195, 66, 0.1);
+    padding: 8px;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .major-card-body {
-    padding: 20px;
+    padding: 25px;
     flex-grow: 1;
+    background: #fff;
 }
 
 .middle-item {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px dashed #eee;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #fcfdfe;
+    border-radius: 12px;
+    border: 1px solid #f0f3f6;
 }
 
 .middle-item:last-child {
-    border-bottom: none;
     margin-bottom: 0;
-    padding-bottom: 0;
 }
 
 .middle-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .middle-header h4 {
     margin: 0;
-    font-size: 0.95rem;
-    color: #444;
+    font-size: 1rem;
+    color: #2c3e50;
+    font-weight: 600;
 }
 
 .sub-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
+    gap: 10px;
 }
 
 .sub-badge {
-    background: #eaf2f8;
+    background: #fff;
     color: #2980b9;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
-    gap: 5px;
-    border: 1px solid #d4e6f1;
+    gap: 8px;
+    border: 1px solid #dce4ec;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: all 0.2s;
 }
 
-.sub-label:hover {
-    text-decoration: underline;
-    color: #1a5276;
+.sub-badge:hover {
+    border-color: #2980b9;
+    background: #f0f7ff;
+    transform: translateY(-2px);
+}
+
+.sub-label {
+    font-weight: 500;
 }
 
 .sub-badge i {
     cursor: pointer;
-    font-size: 0.75rem;
-    color: #999;
+    font-size: 0.8rem;
+    color: #95a5a6;
+    padding: 2px;
 }
 
 .sub-badge i:hover {
@@ -699,18 +728,33 @@ td {
 }
 
 .add-mini-btn {
-    background: transparent;
-    border: 1px dashed #ccc;
-    color: #999;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    background: #fff;
+    border: 1px solid #e0e6ed;
+    color: #7f8c8d;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .add-mini-btn:hover {
     border-color: var(--admin-primary);
     color: var(--admin-primary);
-    background: #f0f7f0;
+    background: #f9fdf5;
+    box-shadow: 0 2px 8px rgba(142, 195, 66, 0.15);
+}
+
+.cat-order-badge {
+    font-size: 0.75rem;
+    background: #f1f4f8;
+    color: #7f8c8d;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-right: 5px;
 }
