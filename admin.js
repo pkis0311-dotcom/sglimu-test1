@@ -154,6 +154,23 @@ const bannerImageFile = document.getElementById('bannerImageFile');
 const bannerImageUrl = document.getElementById('bannerImageUrl');
 const bannerImagePreview = document.getElementById('bannerImagePreview');
 const bannerDisplayOrderInput = document.getElementById('bannerDisplayOrder');
+ 
+// User Management Modal Elements
+const userModal = document.getElementById('userModal');
+const closeUserModalBtn = document.getElementById('closeUserModalBtn');
+const cancelUserModalBtn = document.getElementById('cancelUserModalBtn');
+const saveUserBtn = document.getElementById('saveUserBtn');
+const saveUserMsg = document.getElementById('saveUserMsg');
+const userModalTitle = document.getElementById('userModalTitle');
+const addUserBtn = document.getElementById('addUserBtn');
+
+const editUserIdInput = document.getElementById('editUserId');
+const userInstitutionInput = document.getElementById('userInstitution');
+const userManagerInput = document.getElementById('userManager');
+const userPhoneInput = document.getElementById('userPhone');
+const userEmailInput = document.getElementById('userEmail');
+const userDiscountInput = document.getElementById('userDiscount');
+const userMemoInput = document.getElementById('userMemo');
 
 // Category Management Modal Elements
 const categoryModal = document.getElementById('categoryModal');
@@ -1345,9 +1362,137 @@ async function loadPageData() {
 
 async function fetchUsers() {
     const tBody = document.getElementById('userTableBody');
-    const { data, error } = await db.from('users').select('*').limit(10);
-    if(error) { tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;">데이터베이스에 'users' 테이블을 먼저 생성해주세요.</td></tr>`; }
+    if (!tBody) return;
+
+    tBody.innerHTML = '<tr><td colspan="7" class="empty-state">회원 정보를 불러오는 중입니다...</td></tr>';
+
+    const { data: users, error } = await db.from('users').select('*').order('created_at', { ascending: false });
+
+    if (error) {
+        console.warn('Users Table 에러:', error.message);
+        tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:var(--danger)">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;margin-bottom:10px;"></i><br>
+            <b>'users'</b> 테이블을 불러올 수 없습니다. (${error.message})<br>
+            <div style="font-size:0.8rem; background:#f9f9f9; padding:10px; margin-top:10px; text-align:left; border-radius:4px;">
+                SQL Editor에서 다음을 실행하세요:<br>
+                <code>CREATE TABLE users (id uuid PRIMARY KEY DEFAULT uuid_generate_v4(), institution_name text, manager_name text, phone text, email text, discount_rate int DEFAULT 0, memo text, created_at timestamp with time zone DEFAULT now());</code>
+            </div>
+        </td></tr>`;
+        return;
+    }
+
+    if (!users || users.length === 0) {
+        tBody.innerHTML = '<tr><td colspan="7" class="empty-state">등록된 관리 회원이 없습니다.</td></tr>';
+        return;
+    }
+
+    tBody.innerHTML = '';
+    users.forEach(u => {
+        const tr = document.createElement('tr');
+        const dateStr = u.created_at ? new Date(u.created_at).toLocaleDateString('ko-KR') : 'N/A';
+        
+        tr.innerHTML = `
+            <td>${u.id.substring(0, 8)}</td>
+            <td style="font-weight:600;">${u.institution_name || '미입력'}</td>
+            <td>${u.manager_name || '-'}</td>
+            <td>${u.phone || '-'}</td>
+            <td style="color:var(--primary); font-weight:bold;">${u.discount_rate || 0}%</td>
+            <td style="font-size:0.9rem; color:#666;">${dateStr}</td>
+            <td>
+                <button class="action-btn" onclick="editUser('${u.id}')" title="수정"><i class="fa-solid fa-pen"></i></button>
+                <button class="action-btn delete" onclick="deleteUser('${u.id}', '${u.institution_name}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tBody.appendChild(tr);
+    });
 }
+
+// User Modal Logic
+function openUserModal(isEdit = false) {
+    if (!isEdit) {
+        userModalTitle.textContent = '새 회원 등록';
+        editUserIdInput.value = '';
+        userInstitutionInput.value = '';
+        userManagerInput.value = '';
+        userPhoneInput.value = '';
+        userEmailInput.value = '';
+        userDiscountInput.value = '0';
+        userMemoInput.value = '';
+    } else {
+        userModalTitle.textContent = '회원 정보 수정';
+    }
+    saveUserMsg.textContent = '';
+    saveUserBtn.disabled = false;
+    saveUserBtn.textContent = '저장하기';
+    userModal.style.display = 'flex';
+}
+
+function closeUserModal() { userModal.style.display = 'none'; }
+
+if (addUserBtn) addUserBtn.addEventListener('click', () => openUserModal(false));
+if (closeUserModalBtn) closeUserModalBtn.addEventListener('click', closeUserModal);
+if (cancelUserModalBtn) cancelUserModalBtn.addEventListener('click', closeUserModal);
+
+saveUserBtn.addEventListener('click', async () => {
+    const payload = {
+        institution_name: userInstitutionInput.value.trim(),
+        manager_name: userManagerInput.value.trim(),
+        phone: userPhoneInput.value.trim(),
+        email: userEmailInput.value.trim(),
+        discount_rate: parseInt(userDiscountInput.value) || 0,
+        memo: userMemoInput.value.trim()
+    };
+
+    if (!payload.institution_name) {
+        saveUserMsg.textContent = '기관명은 필수입니다.';
+        return;
+    }
+
+    saveUserBtn.disabled = true;
+    saveUserBtn.textContent = '저장 중...';
+
+    const id = editUserIdInput.value;
+    let error;
+
+    if (id) {
+        const { error: updateError } = await db.from('users').update(payload).eq('id', id);
+        error = updateError;
+    } else {
+        const { error: insertError } = await db.from('users').insert([payload]);
+        error = insertError;
+    }
+
+    if (error) {
+        saveUserMsg.textContent = '저장 실패: ' + error.message;
+        saveUserBtn.disabled = false;
+        saveUserBtn.textContent = '저장하기';
+    } else {
+        closeUserModal();
+        fetchUsers();
+    }
+});
+
+window.editUser = async (id) => {
+    const { data: u, error } = await db.from('users').select('*').eq('id', id).single();
+    if (error) { alert("데이터 불러오기 실패"); return; }
+    
+    openUserModal(true);
+    editUserIdInput.value = u.id;
+    userInstitutionInput.value = u.institution_name || '';
+    userManagerInput.value = u.manager_name || '';
+    userPhoneInput.value = u.phone || '';
+    userEmailInput.value = u.email || '';
+    userDiscountInput.value = u.discount_rate || 0;
+    userMemoInput.value = u.memo || '';
+};
+
+window.deleteUser = async (id, name) => {
+    if (confirm(`"${name}" 회원을 삭제하시겠습니까?`)) {
+        const { error } = await db.from('users').delete().eq('id', id);
+        if (error) alert('삭제 실패: ' + error.message);
+        else fetchUsers();
+    }
+};
 
 // 8. [개선] 카테고리 전시 관리 (전체 카테고리 대응 및 UI 고도화)
 // ------------------------------------------

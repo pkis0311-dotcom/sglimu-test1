@@ -236,7 +236,7 @@
         <div id="tab-users" class="tab-pane">
             <div class="page-header">
                 <h1 class="page-title">회원 (도서관/파트너) 관리</h1>
-                <button class="btn-secondary" onclick="alert('새 회원 등록창 오픈')"><i class="fa-solid fa-user-plus"></i> 기관 추가등록</button>
+                <button class="btn-secondary" id="addUserBtn"><i class="fa-solid fa-user-plus"></i> 기관 추가등록</button>
             </div>
             <div class="table-card">
                 <table>
@@ -482,6 +482,50 @@
                 <button type="button" class="btn-secondary" id="cancelModalBtn">취소</button>
                 <button type="button" class="btn-primary" id="saveProductBtn">저장하기</button>
                 <div id="saveMsg" style="color:var(--danger); margin-top:10px; text-align:right; font-size:0.9rem;"></div>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- 회원 등록/수정 팝업(모달) -->
+    <div id="userModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="userModalTitle">새 회원 등록</h3>
+                <button class="close-modal" id="closeUserModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>기관명 (학교/관공서/업체명) *</label>
+                        <input type="text" id="userInstitution" class="form-control" placeholder="예: 시립대학교 도서관">
+                    </div>
+                    <div class="form-group">
+                        <label>담당자 성함</label>
+                        <input type="text" id="userManager" class="form-control" placeholder="홍길동">
+                    </div>
+                    <div class="form-group">
+                        <label>연락처</label>
+                        <input type="text" id="userPhone" class="form-control" placeholder="010-0000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label>이메일 (계정)</label>
+                        <input type="email" id="userEmail" class="form-control" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>B2B 할인율 (%)</label>
+                        <input type="number" id="userDiscount" class="form-control" placeholder="0" value="0" min="0" max="100">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>메모 (내부 관리용)</label>
+                        <textarea id="userMemo" class="form-control" rows="2" placeholder="특이사항 입력"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelUserModalBtn">취소</button>
+                <button type="button" class="btn-primary" id="saveUserBtn">저장하기</button>
+                <div id="saveUserMsg" style="color:var(--danger); margin-top:10px; text-align:right; font-size:0.9rem;"></div>
             </div>
         </div>
     </div>
