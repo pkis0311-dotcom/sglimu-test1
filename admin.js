@@ -23,24 +23,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // 시스템 초기화
     checkSession();
 
-    // 제품 검색 기능 추가
+    // 제품 검색 및 필터 기능
     const productSearchInput = document.getElementById('productSearchInput');
-    if (productSearchInput) {
-        productSearchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            if (!query) {
-                renderProductTable(globalProducts);
-                return;
-            }
+    const categoryFilter = document.getElementById('categoryFilter');
 
-            const filtered = globalProducts.filter(p => {
-                const nameMatch = p.name.toLowerCase().includes(query);
-                const categoryMatch = (p.category || '').toLowerCase().includes(query);
-                return nameMatch || categoryMatch;
-            });
-            renderProductTable(filtered);
+    function applyProductFilters() {
+        const query = productSearchInput ? productSearchInput.value.toLowerCase().trim() : '';
+        const catValue = categoryFilter ? categoryFilter.value : 'all';
+
+        const filtered = globalProducts.filter(p => {
+            const nameMatch = p.name.toLowerCase().includes(query);
+            // 검색어에 카테고리 ID가 포함된 경우도 인정
+            const categoryMatch = (p.category || '').toLowerCase().includes(query);
+            
+            // 드롭다운 필터 적용
+            const catFilterMatch = (catValue === 'all' || p.category === catValue);
+            
+            return (nameMatch || categoryMatch) && catFilterMatch;
         });
+        renderProductTable(filtered);
     }
+
+    if (productSearchInput) productSearchInput.addEventListener('input', applyProductFilters);
+    if (categoryFilter) categoryFilter.addEventListener('change', applyProductFilters);
 });
 
 // ==========================================
@@ -1439,6 +1444,33 @@ async function fetchCategories() {
     if (!SITE_CATEGORIES || typeof SITE_CATEGORIES !== 'object') {
         SITE_CATEGORIES = DEFAULT_CATEGORIES;
     }
+    
+    // [신규] 카테고리 필터 드롭다운 채우기
+    populateCategoryFilter();
+}
+
+// 제품 관리 탭의 카테고리 필터 드롭다운 동적 생성
+function populateCategoryFilter() {
+    const filter = document.getElementById('categoryFilter');
+    if (!filter) return;
+
+    let html = '<option value="all">전체 카테고리</option>';
+    html += '<option value="best_product">★ 베스트 상품</option>';
+
+    for (const mKey in SITE_CATEGORIES) {
+        const major = SITE_CATEGORIES[mKey];
+        if (!major || !major.middles) continue;
+
+        for (const midKey in major.middles) {
+            const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
+
+            middle.subs.forEach(sub => {
+                html += `<option value="${sub.id}">${major.label} > ${middle.label} > ${sub.label}</option>`;
+            });
+        }
+    }
+    filter.innerHTML = html;
 }
 
 // 9-2. 제품 등록 모달의 카테고리 드롭다운 갱신

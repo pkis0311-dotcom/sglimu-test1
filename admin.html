@@ -64,10 +64,13 @@
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1 class="page-title">제품 관리</h1>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <div class="search-box" style="position: relative; margin-right: 10px;">
+                    <div class="search-box" style="position: relative; margin-right: 5px;">
                         <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
-                        <input type="text" id="productSearchInput" class="form-control" placeholder="제품명 또는 카테고리 검색..." style="padding-left: 35px; width: 300px; height: 40px;">
+                        <input type="text" id="productSearchInput" class="form-control" placeholder="제품명 검색..." style="padding-left: 35px; width: 220px; height: 40px;">
                     </div>
+                    <select id="categoryFilter" class="form-control" style="width: 180px; height: 40px; margin-right: 5px; font-size: 0.9rem;">
+                        <option value="all">전체 카테고리</option>
+                    </select>
                     <button id="downloadProductExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71; height: 40px;">
                         <i class="fa-solid fa-file-excel"></i> 엑셀 다운
                     </button>
