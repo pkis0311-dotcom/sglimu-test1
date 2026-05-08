@@ -1631,6 +1631,7 @@ function renderCategoryManagement() {
         const major = SITE_CATEGORIES[mKey];
         const card = document.createElement('div');
         card.className = 'major-card';
+        card.setAttribute('data-mkey', mKey);
         
         let middlesHtml = '';
         
@@ -1649,24 +1650,29 @@ function renderCategoryManagement() {
             );
 
             let subsHtml = sortedSubs.map(sub => `
-                <span class="sub-badge">
+                <span class="sub-badge" data-subid="${sub.id}">
+                    <i class="fa-solid fa-grip-vertical drag-handle"></i>
                     <span class="cat-order-badge">${sub.order || 0}</span>
                     <span class="sub-label" onclick="editSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="수정" style="cursor:pointer;">${sub.label}</span>
-                    <i class="fa-solid fa-xmark" onclick="deleteSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="삭제"></i>
+                    <i class="fa-solid fa-xmark" onclick="deleteSubCategory('${mKey}', '${midKey}', '${sub.id}')" title="삭제" style="margin-left:8px; cursor:pointer; color:#999;"></i>
                 </span>
             `).join('');
 
             middlesHtml += `
-                <div class="middle-item">
+                <div class="middle-item" data-midkey="${midKey}">
                     <div class="middle-header">
-                        <h4><span class="cat-order-badge">${middle.order || 0}</span> <i class="fa-solid fa-chevron-right" style="font-size:0.8rem; opacity:0.5;"></i> ${middle.label}</h4>
+                        <h4>
+                            <i class="fa-solid fa-grip-vertical drag-handle"></i>
+                            <span class="cat-order-badge">${middle.order || 0}</span> 
+                            <i class="fa-solid fa-chevron-right" style="font-size:0.8rem; opacity:0.5;"></i> ${middle.label}
+                        </h4>
                         <div style="display:flex; gap:8px;">
                             <button class="add-mini-btn" onclick="addSubCategory('${mKey}', '${midKey}')"><i class="fa-solid fa-plus"></i> 소분류 추가</button>
                             <button class="action-btn edit" style="font-size:0.85rem; margin:0; color:#3498db;" onclick="editMiddleCategory('${mKey}', '${midKey}')" title="중간분류 수정"><i class="fa-solid fa-pen"></i></button>
                             <button class="action-btn delete" style="font-size:0.85rem; margin:0;" onclick="deleteMiddleCategory('${mKey}', '${midKey}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
-                    <div class="sub-list">
+                    <div class="sub-list" data-mkey="${mKey}" data-midkey="${midKey}">
                         ${subsHtml}
                         ${middle.subs.length === 0 ? '<span style="color:#ccc; font-size:0.85rem; padding: 5px;">소분류 없음</span>' : ''}
                     </div>
@@ -1676,20 +1682,98 @@ function renderCategoryManagement() {
 
         card.innerHTML = `
             <div class="major-card-header">
-                <h3><span class="cat-order-badge" style="background:var(--admin-primary); color:#fff;">${major.order || 0}</span> <i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}</h3>
+                <h3>
+                    <i class="fa-solid fa-grip-vertical drag-handle"></i>
+                    <span class="cat-order-badge" style="background:var(--admin-primary); color:#fff;">${major.order || 0}</span> 
+                    <i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}
+                </h3>
                 <div style="display:flex; gap:8px;">
                     <button class="add-mini-btn" style="color:var(--admin-primary); border-color:var(--admin-primary);" onclick="addMiddleCategory('${mKey}')"><i class="fa-solid fa-plus"></i> 중간분류 추가</button>
                     <button class="action-btn edit" style="margin:0; color:#3498db;" onclick="editMajorCategory('${mKey}')" title="대분류 수정"><i class="fa-solid fa-pen"></i></button>
                     <button class="action-btn delete" style="margin:0;" onclick="deleteMajorCategory('${mKey}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
-            <div class="major-card-body">
+            <div class="major-card-body" data-mkey="${mKey}">
                 ${middlesHtml}
                 ${Object.keys(major.middles).length === 0 ? '<div style="color:#ccc; text-align:center; padding:30px; font-size:0.9rem;">중간분류가 없습니다.<br>상단의 버튼을 눌러 추가하세요.</div>' : ''}
             </div>
         `;
         container.appendChild(card);
     }
+
+    // Sortable 초기화
+    initSortableFeatures();
+}
+
+// SortableJS 바인딩 함수
+function initSortableFeatures() {
+    const container = document.getElementById('categoryManageContainer');
+    if (!container || typeof Sortable === 'undefined') return;
+
+    // 1. 대분류 드래그 앤 드롭
+    new Sortable(container, {
+        handle: '.major-card-header .drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function() {
+            const cards = container.querySelectorAll('.major-card');
+            cards.forEach((card, index) => {
+                const mKey = card.getAttribute('data-mkey');
+                if (SITE_CATEGORIES[mKey]) {
+                    SITE_CATEGORIES[mKey].order = index * 10;
+                    card.querySelector('.major-card-header .cat-order-badge').textContent = index * 10;
+                }
+            });
+        }
+    });
+
+    // 2. 중간분류 드래그 앤 드롭
+    container.querySelectorAll('.major-card-body').forEach(body => {
+        new Sortable(body, {
+            handle: '.middle-header .drag-handle',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            onEnd: function() {
+                const mKey = body.getAttribute('data-mkey');
+                const items = body.querySelectorAll('.middle-item');
+                items.forEach((item, index) => {
+                    const midKey = item.getAttribute('data-midkey');
+                    if (SITE_CATEGORIES[mKey].middles[midKey]) {
+                        SITE_CATEGORIES[mKey].middles[midKey].order = index * 10;
+                        item.querySelector('.middle-header .cat-order-badge').textContent = index * 10;
+                    }
+                });
+            }
+        });
+    });
+
+    // 3. 소분류 드래그 앤 드롭
+    container.querySelectorAll('.sub-list').forEach(list => {
+        new Sortable(list, {
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            onEnd: function() {
+                const mKey = list.getAttribute('data-mkey');
+                const midKey = list.getAttribute('data-midkey');
+                const badges = list.querySelectorAll('.sub-badge');
+                
+                const currentSubs = SITE_CATEGORIES[mKey].middles[midKey].subs;
+                const newSubs = [];
+                
+                badges.forEach((badge, index) => {
+                    const subId = badge.getAttribute('data-subid');
+                    const sub = currentSubs.find(s => s.id === subId);
+                    if (sub) {
+                        sub.order = index * 10;
+                        badge.querySelector('.cat-order-badge').textContent = index * 10;
+                        newSubs.push(sub);
+                    }
+                });
+                SITE_CATEGORIES[mKey].middles[midKey].subs = newSubs;
+            }
+        });
+    });
 }
 
 // 9-5. 관리 기능 함수들 (전역 window 객체에 연결)

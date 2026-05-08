@@ -758,3 +758,55 @@ td {
     font-weight: 700;
     margin-right: 5px;
 }
+
+/* -------------------------------------
+   DRAG & DROP REORDERING (SortableJS)
+-------------------------------------- */
+.drag-handle {
+    cursor: grab;
+    color: #ccc;
+    margin-right: 10px;
+    transition: color 0.2s;
+}
+
+.drag-handle:hover {
+    color: var(--admin-primary);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* SortableJS Ghost Element (드래그 중인 원본 요소의 잔상) */
+.sortable-ghost {
+    opacity: 0.4 !important;
+    background: #eef2f7 !important;
+    border: 2px dashed var(--admin-primary) !important;
+}
+
+/* SortableJS Chosen Element (선택된 요소) */
+.sortable-chosen {
+    background: #fff !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* SortableJS Drag Element (움직이는 요소) */
+.sortable-drag {
+    opacity: 0.9 !important;
+}
+
+/* 대분류 카드 내 드래그 핸들 배치 조정 */
+.major-card-header .drag-handle {
+    font-size: 1.2rem;
+}
+
+/* 중간분류 드래그 핸들 */
+.middle-header .drag-handle {
+    font-size: 1rem;
+}
+
+/* 소분류 드래그 핸들 */
+.sub-badge .drag-handle {
+    margin-right: 5px;
+    font-size: 0.8rem;
+}
