@@ -413,6 +413,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const major = categories[mKey];
                 const li = document.createElement('li');
                 
+                // 할인상품(discount)은 대분류 자체를 링크로 처리 (서브메뉴 생략)
+                if (mKey === 'discount') {
+                    li.innerHTML = `<a href="category.html?id=discount">${major.label}</a>`;
+                    gnbUl.appendChild(li);
+                    continue;
+                }
+                
                 const middles = major.middles || {};
                 const middleKeys = Object.keys(middles);
                 
@@ -467,15 +474,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gnbUl.appendChild(li);
             }
             
-            // 할인상품 메뉴 (고정)
-            gnbUl.innerHTML += `<li><a href="discount.html">할인상품</a></li>`;
+            // 할인상품 메뉴는 상단 루프에서 mKey === 'discount' 조건으로 처리됨
 
         } catch (err) {
             console.error("GNB Load Error:", err);
         }
     }
-
-    initDynamicNav();
 
     initDynamicNav();
 
