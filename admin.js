@@ -352,7 +352,57 @@ function renderProductTable(products) {
 
 // 제품 데이터와 연동된 기타 UI 요소들 업데이트
 function updateProductRelatedUI(products) {
-    // [신규] '상세페이지 관리' 탭의 Select 옵션을 동적으로 업데이트
+    // [개선] 상세페이지 관리 탭의 초기화 및 필터 상태 반영
+    renderPageManageProducts();
+}
+
+function renderPageManageProducts() {
+    const targetSelect = document.getElementById('targetPageId');
+    if (!targetSelect) return;
+
+    const majorVal = document.getElementById('pageMajorFilter')?.value || 'all';
+    const middleVal = document.getElementById('pageMiddleFilter')?.value || 'all';
+    const subVal = document.getElementById('pageSubFilter')?.value || 'all';
+
+    let filtered = globalProducts;
+
+    if (majorVal !== 'all' || middleVal !== 'all' || subVal !== 'all') {
+        filtered = globalProducts.filter(p => {
+            const pCat = p.category || '';
+            if (subVal !== 'all') return pCat === subVal;
+            if (middleVal !== 'all') {
+                for (const mKey in SITE_CATEGORIES) {
+                    const middle = SITE_CATEGORIES[mKey].middles[middleVal];
+                    if (middle && middle.subs.some(s => s.id === pCat)) return true;
+                }
+                return false;
+            }
+            if (majorVal !== 'all') {
+                const major = SITE_CATEGORIES[majorVal];
+                if (major) {
+                    for (const midKey in major.middles) {
+                        if (major.middles[midKey].subs.some(s => s.id === pCat)) return true;
+                    }
+                }
+                return false;
+            }
+            return true;
+        });
+    }
+
+    if (filtered.length > 0) {
+        targetSelect.innerHTML = filtered.map(p => 
+            `<option value="${p.id}">${p.name} (${p.category})</option>`
+        ).join('');
+        if (document.getElementById('tab-page-manage').classList.contains('active')) {
+            targetSelect.dispatchEvent(new Event('change'));
+        }
+    } else {
+        targetSelect.innerHTML = '<option value="">조건에 맞는 제품이 없습니다.</option>';
+    }
+}
+
+function old_updateProductRelatedUI(products) {
     const targetSelect = document.getElementById('targetPageId');
     if (targetSelect) {
         if (products.length > 0) {
@@ -1107,6 +1157,54 @@ let currentPageDataKey = ''; // 기본값 비워둠 (targetPageId 값이 없을 
 
 function initPageManageTab() {
     const targetSelect = document.getElementById('targetPageId');
+    const majorFilter = document.getElementById('pageMajorFilter');
+    const middleFilter = document.getElementById('pageMiddleFilter');
+    const subFilter = document.getElementById('pageSubFilter');
+    
+    // 카테고리 필터 초기화
+    if (majorFilter && !majorFilter.dataset.init) {
+        // 대분류 채우기
+        const sortedMajors = Object.keys(SITE_CATEGORIES).sort((a, b) => (SITE_CATEGORIES[a].order || 0) - (SITE_CATEGORIES[b].order || 0));
+        majorFilter.innerHTML = '<option value="all">전체 대분류</option>' + 
+            sortedMajors.map(key => `<option value="${key}">${SITE_CATEGORIES[key].label}</option>`).join('');
+
+        majorFilter.addEventListener('change', () => {
+            const mKey = majorFilter.value;
+            // 중분류 업데이트
+            if (mKey === 'all') {
+                middleFilter.innerHTML = '<option value="all">전체 중분류</option>';
+            } else {
+                const major = SITE_CATEGORIES[mKey];
+                const sortedMiddles = Object.keys(major.middles).sort((a, b) => (major.middles[a].order || 0) - (major.middles[b].order || 0));
+                middleFilter.innerHTML = '<option value="all">전체 중분류</option>' + 
+                    sortedMiddles.map(key => `<option value="${key}">${major.middles[key].label}</option>`).join('');
+            }
+            subFilter.innerHTML = '<option value="all">전체 소분류</option>';
+            renderPageManageProducts();
+        });
+
+        middleFilter.addEventListener('change', () => {
+            const mKey = majorFilter.value;
+            const midKey = middleFilter.value;
+            // 소분류 업데이트
+            if (midKey === 'all') {
+                subFilter.innerHTML = '<option value="all">전체 소분류</option>';
+            } else {
+                const middle = SITE_CATEGORIES[mKey].middles[midKey];
+                const sortedSubs = [...middle.subs].sort((a, b) => (a.order || 0) - (b.order || 0));
+                subFilter.innerHTML = '<option value="all">전체 소분류</option>' + 
+                    sortedSubs.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+            }
+            renderPageManageProducts();
+        });
+
+        subFilter.addEventListener('change', () => {
+            renderPageManageProducts();
+        });
+
+        majorFilter.dataset.init = "true";
+    }
+
     const savePageBtn = document.getElementById('savePageBtn');
     const addSpecBtn = document.getElementById('addSpecBtn');
     const specContainer = document.getElementById('specContainer');
@@ -1121,6 +1219,11 @@ function initPageManageTab() {
 
     // 1. 제품 선택 변경 시 로드
     targetSelect.addEventListener('change', (e) => {
+        if (!e.target.value) {
+            currentPageDataKey = '';
+            clearPageManageUI();
+            return;
+        }
         currentPageDataKey = 'pageData_' + e.target.value;
         loadPageData();
     });
@@ -1312,28 +1415,26 @@ function createFeatureBlock(title, desc) {
 }
 
 async function loadPageData() {
-    if(!currentPageDataKey) return;
+    if(!currentPageDataKey) {
+        clearPageManageUI();
+        return;
+    }
 
     // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
     const { data: configData, error } = await db.from('site_configs').select('value').eq('key', currentPageDataKey).single();
     const rawData = configData ? configData.value : null;
+    
+    clearPageManageUI();
+
+    if(!rawData) return;
+    const data = rawData;
+    
     const specContainer = document.getElementById('specContainer');
     const featureContainer = document.getElementById('featureContainer');
     const pageMainImagePreview = document.getElementById('pageMainImagePreview');
     const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
     const pageDescription = document.getElementById('pageDescription');
 
-    specContainer.innerHTML = '';
-    featureContainer.innerHTML = '';
-    pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
-    pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
-    pageDescription.value = '';
-    document.getElementById('specStyle').value = 'type-a';
-    document.getElementById('featureStyle').value = 'type-a';
-
-    if(!rawData) return;
-    const data = rawData;
-    
     if(data.mainImages && data.mainImages.length > 0) {
         pageMainImagePreview.innerHTML = '';
         data.mainImages.forEach(src => {
@@ -1358,6 +1459,26 @@ async function loadPageData() {
     if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
     if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
     if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
+}
+
+function clearPageManageUI() {
+    const specContainer = document.getElementById('specContainer');
+    const featureContainer = document.getElementById('featureContainer');
+    const pageMainImagePreview = document.getElementById('pageMainImagePreview');
+    const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
+    const pageDescription = document.getElementById('pageDescription');
+
+    if (specContainer) specContainer.innerHTML = '';
+    if (featureContainer) featureContainer.innerHTML = '';
+    if (pageMainImagePreview) pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
+    if (pageDetailImagePreview) pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+    if (pageDescription) pageDescription.value = '';
+    if (document.getElementById('specStyle')) document.getElementById('specStyle').value = 'type-a';
+    if (document.getElementById('featureStyle')) document.getElementById('featureStyle').value = 'type-a';
+    
+    // 파일 인풋도 초기화
+    if (document.getElementById('pageMainImage')) document.getElementById('pageMainImage').value = '';
+    if (document.getElementById('pageDetailImage')) document.getElementById('pageDetailImage').value = '';
 }
 
 async function fetchUsers() {

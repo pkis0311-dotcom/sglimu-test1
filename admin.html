@@ -312,12 +312,30 @@
             
             <div class="table-card" style="padding: 20px;">
                 <!-- 0. 대상 제품 선택 -->
-                <div class="form-group full-width" style="margin-bottom: 30px; background: #f0f7ff; padding: 20px; border-radius: 8px; border: 1px solid #d0e3f7;">
-                    <label style="font-weight: 700; color: #2980b9; font-size: 1.1rem;"><i class="fa-solid fa-hand-pointer"></i> 수정할 대상 상세페이지(제품)를 먼저 선택하세요</label>
-                    <select id="targetPageId" class="form-control" style="font-size: 1.1rem; border-color: #2980b9; height: 50px; margin-top: 10px;">
+                <div class="form-group full-width" style="margin-bottom: 30px; background: #f0f7ff; padding: 25px; border-radius: 12px; border: 1px solid #d0e3f7;">
+                    <label style="font-weight: 700; color: #2980b9; font-size: 1.1rem; margin-bottom: 15px; display: block;">
+                        <i class="fa-solid fa-hand-pointer"></i> 수정할 대상 상세페이지(제품)를 선택하세요
+                    </label>
+                    
+                    <!-- 카테고리 필터 영역 -->
+                    <div class="page-category-filter" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <select id="pageMajorFilter" class="form-control" style="flex: 1; height: 40px; font-size: 0.95rem;">
+                            <option value="all">전체 대분류</option>
+                        </select>
+                        <select id="pageMiddleFilter" class="form-control" style="flex: 1; height: 40px; font-size: 0.95rem;">
+                            <option value="all">전체 중분류</option>
+                        </select>
+                        <select id="pageSubFilter" class="form-control" style="flex: 1; height: 40px; font-size: 0.95rem;">
+                            <option value="all">전체 소분류</option>
+                        </select>
+                    </div>
+
+                    <select id="targetPageId" class="form-control" style="font-size: 1.1rem; border-color: #2980b9; height: 50px; font-weight: 600;">
                         <option value="">제품 목록을 불러오는 중입니다...</option>
                     </select>
-                    <p style="font-size: 0.85rem; color: #666; margin-top: 8px;">* 제품을 변경하면 이전에 저장된 해당 제품의 상세 정보가 자동으로 로드됩니다.</p>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 12px;">
+                        <i class="fa-solid fa-circle-info"></i> 카테고리를 선택하면 해당 분류의 제품만 목록에 표시됩니다.
+                    </p>
                 </div>
 
                 <div class="form-grid">
