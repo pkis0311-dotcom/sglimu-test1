@@ -231,12 +231,19 @@ if (completeProfileForm) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { error } = await supabase.from('profiles').update({
+        const profileData = {
+            id: user.id,
+            full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+            email: user.email,
             phone: phone,
             organization: org,
             address: address,
-            user_type: userType
-        }).eq('id', user.id);
+            user_type: userType,
+            updated_at: new Date().toISOString()
+        };
+
+        // update 대신 upsert를 사용하여 데이터가 없을 경우 생성하도록 수정
+        const { error } = await supabase.from('profiles').upsert(profileData);
 
         if (error) {
             if (completeMsg) {
@@ -248,6 +255,9 @@ if (completeProfileForm) {
                 completeMsg.textContent = '저장 완료! 환영합니다.';
                 completeMsg.classList.add('success');
             }
+            // 세션 체크 완료 플래그 설정
+            sessionStorage.setItem('profile_check_done', 'true');
+            
             setTimeout(() => {
                 closeAuthModal();
                 window.location.reload();
