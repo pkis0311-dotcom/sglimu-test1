@@ -253,6 +253,12 @@ if (completeProfileForm) {
 async function checkProfileCompletion(user) {
     if (!user) return;
     
+    // 세션당 한 번만 체크하여 자동 팝업 방지
+    if (sessionStorage.getItem('profile_check_done')) {
+        console.log('Profile already checked in this session.');
+        return;
+    }
+
     console.log('Checking profile completion for:', user.email);
     const { data: profile, error } = await supabase
         .from('profiles')
@@ -267,9 +273,18 @@ async function checkProfileCompletion(user) {
 
     if (!profile || !profile.phone || !profile.organization) {
         console.log('Profile incomplete, opening completion pane.');
-        openAuthModal('completeProfilePane');
+        // 유저가 다른 작업을 하고 있을 수 있으므로 약간의 지연 후 띄우기
+        setTimeout(() => {
+            // 현재 모달이 닫혀있는 상태일 때만 자동 팝업
+            const overlay = document.getElementById('authOverlay');
+            if (overlay && overlay.style.display !== 'flex') {
+                openAuthModal('completeProfilePane');
+                sessionStorage.setItem('profile_check_done', 'true');
+            }
+        }, 1500);
     } else {
         console.log('Profile complete.');
+        sessionStorage.setItem('profile_check_done', 'true');
     }
 }
 
@@ -303,10 +318,8 @@ function updateAuthUI(user) {
             });
         }
         
-        // 프로필 미완성 시에만 팝업 (이미 모달이 열려있지 않을 때만)
-        if (authOverlay && authOverlay.style.display !== 'flex') {
-            checkProfileCompletion(user);
-        }
+        // 프로필 미완성 시 체크 (sessionStorage 활용)
+        checkProfileCompletion(user);
     } else {
         console.log('Updating UI for guest user.');
         wrap.innerHTML = `
