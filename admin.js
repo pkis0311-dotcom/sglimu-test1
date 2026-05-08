@@ -257,6 +257,12 @@ navItems.forEach(item => {
 function initDashboard() {
     // 최초 접속 시 제품 관리 탭 로드
     document.querySelector('.nav-item[data-target="tab-products"]').click();
+    
+    // [신규] 새로운 문의사항이 있는지 미리 확인하여 뱃지 표시
+    checkNewInquiries();
+
+    // [신규] 실시간 리스너 설정
+    setupRealtimeListeners();
 }
 
 // ==========================================
@@ -831,6 +837,10 @@ async function fetchInquiries() {
         tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i> 테이블 구조 불일치 또는 미생성 에러입니다.<br>${error.message}</td></tr>`;
         return;
     }
+    
+    // [신규] 문의 로드 시 뱃지 업데이트
+    const openCount = inquiries.filter(inq => inq.status === 'open').length;
+    updateInquiryBadge(openCount);
 
     if(inquiries.length === 0) {
         tBody.innerHTML = `<tr><td colspan="7" class="empty-state">접수된 견적/상담 문의 내역이 없습니다. (고객의 연락을 기다리는 중)</td></tr>`;
@@ -873,9 +883,54 @@ window.updateInquiryStatus = async function(id, newStatus) {
     if (error) {
         alert('상태 변경 중 오류: ' + error.message);
     } else {
-        fetchInquiries(); // 화면 자동 재로딩
+        fetchInquiries(); // 화면 자동 재로딩 (뱃지 업데이트도 포함됨)
     }
 }
+
+// [신규] 사이드바 문의 알림 뱃지 업데이트 함수
+function updateInquiryBadge(count) {
+    const badge = document.getElementById('inquiryBadge');
+    if (!badge) return;
+    
+    if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// [신규] 초기 로드 시 또는 주기적으로 새 문의 확인
+async function checkNewInquiries() {
+    try {
+        const { data, error } = await db.from('inquiries').select('id').eq('status', 'open');
+        if (!error && data) {
+            updateInquiryBadge(data.length);
+        }
+    } catch (e) {
+        console.warn("New inquiry check failed:", e);
+    }
+}
+// [신규] 실시간 DB 변경 감시 (문의사항 자동 갱신)
+function setupRealtimeListeners() {
+    if (!db) return;
+
+    // inquiries 테이블의 변경사항을 실시간 감시
+    db.channel('inquiries-realtime')
+      .on('postgres_changes', { event: '*', table: 'inquiries', schema: 'public' }, (payload) => {
+          console.log('Realtime Inquiry Update:', payload);
+          // 변경 발생 시 뱃지 자동 갱신
+          checkNewInquiries();
+          
+          // 현재 문의 탭을 보고 있다면 리스트도 자동 갱신
+          const activeTab = document.querySelector('.nav-item.active');
+          if (activeTab && activeTab.getAttribute('data-target') === 'tab-inquiries') {
+              fetchInquiries();
+          }
+      })
+      .subscribe();
+}
+
 async function fetchBanners() {
     // banners 테이블에서 데이터 가져오기 (순서 필드 기준 오름차순)
     const { data: banners, error } = await db.from('banners').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: false });
