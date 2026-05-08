@@ -351,3 +351,51 @@
     background: #ccc;
     border-radius: 10px;
 }
+
+/* Logged-in User Nav Styles */
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #f8fafc;
+    padding: 5px 5px 5px 15px;
+    border-radius: 30px;
+    border: 1px solid #e2e8f0;
+}
+
+.user-info-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--auth-primary);
+}
+
+.user-info-badge i {
+    color: var(--auth-accent);
+    font-size: 1.1rem;
+}
+
+.user-name b {
+    font-weight: 700;
+}
+
+.logout-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fecaca;
+}

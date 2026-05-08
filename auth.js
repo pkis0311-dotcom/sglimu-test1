@@ -274,32 +274,42 @@ async function checkProfileCompletion(user) {
 }
 
 function updateAuthUI(user) {
-    if (!userAuthWrap) {
-        console.warn('userAuthWrap element not found!');
+    const wrap = document.getElementById('userAuthWrap');
+    if (!wrap) {
+        console.warn('userAuthWrap element not found in DOM!');
         return;
     }
 
     if (user) {
         console.log('Updating UI for logged-in user:', user.email);
-        const userName = user.user_metadata.full_name || user.email.split('@')[0];
-        userAuthWrap.innerHTML = `
+        const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+        wrap.innerHTML = `
             <div class="user-profile-nav">
-                <span class="user-name"><b>${userName}</b> 님</span>
-                <button class="logout-btn" id="logoutBtn">로그아웃</button>
+                <div class="user-info-badge">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span class="user-name"><b>${userName}</b> 님</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn" title="로그아웃">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
             </div>
         `;
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
-                await supabase.auth.signOut();
+                const { error } = await supabase.auth.signOut();
+                if (error) console.error('Logout error:', error);
                 window.location.reload();
             });
         }
         
-        checkProfileCompletion(user);
+        // 프로필 미완성 시에만 팝업 (이미 모달이 열려있지 않을 때만)
+        if (authOverlay && authOverlay.style.display !== 'flex') {
+            checkProfileCompletion(user);
+        }
     } else {
         console.log('Updating UI for guest user.');
-        userAuthWrap.innerHTML = `
+        wrap.innerHTML = `
             <button class="login-trigger-btn" id="loginTriggerBtn">
                 <i class="fa-regular fa-user"></i>
                 <span>로그인</span>
