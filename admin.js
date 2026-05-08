@@ -1720,8 +1720,8 @@ function initSortableFeatures() {
             cards.forEach((card, index) => {
                 const mKey = card.getAttribute('data-mkey');
                 if (SITE_CATEGORIES[mKey]) {
-                    SITE_CATEGORIES[mKey].order = index * 10;
-                    card.querySelector('.major-card-header .cat-order-badge').textContent = index * 10;
+                    SITE_CATEGORIES[mKey].order = index;
+                    card.querySelector('.major-card-header .cat-order-badge').textContent = index;
                 }
             });
         }
@@ -1739,8 +1739,8 @@ function initSortableFeatures() {
                 items.forEach((item, index) => {
                     const midKey = item.getAttribute('data-midkey');
                     if (SITE_CATEGORIES[mKey].middles[midKey]) {
-                        SITE_CATEGORIES[mKey].middles[midKey].order = index * 10;
-                        item.querySelector('.middle-header .cat-order-badge').textContent = index * 10;
+                        SITE_CATEGORIES[mKey].middles[midKey].order = index;
+                        item.querySelector('.middle-header .cat-order-badge').textContent = index;
                     }
                 });
             }
@@ -1765,8 +1765,8 @@ function initSortableFeatures() {
                     const subId = badge.getAttribute('data-subid');
                     const sub = currentSubs.find(s => s.id === subId);
                     if (sub) {
-                        sub.order = index * 10;
-                        badge.querySelector('.cat-order-badge').textContent = index * 10;
+                        sub.order = index;
+                        badge.querySelector('.cat-order-badge').textContent = index;
                         newSubs.push(sub);
                     }
                 });
