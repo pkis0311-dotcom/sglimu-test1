@@ -260,7 +260,7 @@ navItems.forEach(item => {
         } else if(targetId === 'tab-banners') {
             fetchBanners();
         } else if(targetId === 'tab-users') {
-            fetchUsers();
+            switchUserSubTab('institution'); // 기본 서브탭 활성화
         } else if(targetId === 'tab-page-manage') {
             initPageManageTab();
         } else if(targetId === 'tab-category-display') {
@@ -2021,6 +2021,72 @@ window.editMiddleCategory = (mKey, midKey) => {
 window.editSubCategory = (mKey, midKey, subId) => {
     const sub = SITE_CATEGORIES[mKey].middles[midKey].subs.find(s => s.id === subId);
     openCategoryModal('sub', mKey, midKey, subId, sub.label, sub.order || 0);
+};
+
+// User Management - Sub Tab Switching
+window.switchUserSubTab = function(type) {
+    // 탭 버튼 스타일 업데이트
+    document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+    });
+    
+    // 섹션 표시 업데이트
+    document.querySelectorAll('.user-subtab-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.id === `user-subtab-${type}`);
+    });
+
+    // 데이터 로드
+    if (type === 'institution') fetchUsers();
+    else if (type === 'profile') fetchProfiles();
+}
+
+async function fetchProfiles() {
+    const tBody = document.getElementById('profileTableBody');
+    if (!tBody) return;
+
+    tBody.innerHTML = '<tr><td colspan="7" class="empty-state">회원 정보를 불러오는 중입니다...</td></tr>';
+
+    // profiles 테이블에서 데이터 가져오기
+    const { data: profiles, error } = await db.from('profiles').select('*').order('updated_at', { ascending: false });
+
+    if (error) {
+        console.warn('Profiles Table 에러:', error.message);
+        tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:var(--danger)">데이터를 불러올 수 없습니다. (${error.message})</td></tr>`;
+        return;
+    }
+
+    if (!profiles || profiles.length === 0) {
+        tBody.innerHTML = '<tr><td colspan="7" class="empty-state">가입된 회원이 없습니다.</td></tr>';
+        return;
+    }
+
+    tBody.innerHTML = '';
+    profiles.forEach(p => {
+        const tr = document.createElement('tr');
+        const dateStr = p.updated_at ? new Date(p.updated_at).toLocaleDateString('ko-KR') : '-';
+        
+        tr.innerHTML = `
+            <td style="font-size:0.8rem; color:#999;">${p.id.substring(0, 8)}</td>
+            <td style="font-weight:600;">${p.full_name || '회원'}</td>
+            <td>${p.phone || '-'}</td>
+            <td>${p.organization || '-'}</td>
+            <td><span class="status-badge ${p.user_type === 'business' ? 'process' : ''}">${p.user_type === 'business' ? '기업/기관' : '개인'}</span></td>
+            <td style="font-size:0.85rem; color:#666;">${dateStr}</td>
+            <td>
+                <button class="action-btn" onclick="alert('프로필 상세 보기/수정 기능 준비 중')"><i class="fa-solid fa-eye"></i></button>
+                <button class="action-btn delete" onclick="deleteProfile('${p.id}', '${p.full_name}')" title="삭제"><i class="fa-solid fa-user-slash"></i></button>
+            </td>
+        `;
+        tBody.appendChild(tr);
+    });
+}
+
+window.deleteProfile = async (id, name) => {
+    if (confirm(`"${name}" 회원을 관리 목록에서 제외(삭제)하시겠습니까?\n* 주의: Auth 계정 자체가 삭제되지는 않습니다.`)) {
+        const { error } = await db.from('profiles').delete().eq('id', id);
+        if (error) alert('삭제 실패: ' + error.message);
+        else fetchProfiles();
+    }
 };
 
 // 시스템 초기화는 상단의 DOMContentLoaded 리스너에서 수행됩니다.

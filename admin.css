@@ -829,3 +829,38 @@ td {
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
+ 
+/* 서브 탭 스타일 */
+.sub-tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+}
+
+.sub-tab-btn i {
+    margin-right: 6px;
+}
+
+.sub-tab-btn:hover {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.sub-tab-btn.active {
+    background: var(--admin-primary);
+    color: white;
+}
+
+.user-subtab-pane {
+    display: none;
+}
+
+.user-subtab-pane.active {
+    display: block;
+}
