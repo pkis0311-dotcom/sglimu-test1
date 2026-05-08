@@ -273,6 +273,32 @@
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
                 </div>
+
+                <!-- Complete Profile Pane -->
+                <div class="auth-pane" id="completeProfilePane">
+                    <div class="auth-header">
+                        <h2>추가 정보 입력</h2>
+                        <p>원활한 서비스 이용을 위해 소속 기관 정보를 입력해주세요.</p>
+                    </div>
+                    <div class="highlight-box">
+                        <form id="completeProfileForm">
+                            <div class="auth-form-group">
+                                <label>연락처 (핸드폰/직통)</label>
+                                <input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required>
+                            </div>
+                            <div class="auth-form-group">
+                                <label>소속 기관 / 학교명</label>
+                                <input type="text" id="completeOrg" class="auth-input" placeholder="예: 시립도서관" required>
+                            </div>
+                            <div class="auth-form-group">
+                                <label>주소 (또는 기관 주소)</label>
+                                <input type="text" id="completeAddress" class="auth-input" placeholder="주소를 입력하세요" required>
+                            </div>
+                            <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
+                        </form>
+                        <div id="completeMsg" class="auth-message"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

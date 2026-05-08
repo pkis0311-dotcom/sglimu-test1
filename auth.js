@@ -33,8 +33,18 @@ const socialSignupBtns = document.querySelectorAll('.social-signup-btn');
 // 1. Modal & Tab Logic
 // ==========================================
 function openAuthModal(tab = 'loginPane') {
-    if (!authOverlay) return;
+    if (!authOverlay) {
+        console.error('authOverlay not found in DOM!');
+        return;
+    }
     authOverlay.style.display = 'flex';
+    
+    // 추가 정보 입력창인 경우 상단 탭 숨김
+    const tabs = document.querySelector('.auth-tabs');
+    if (tabs) {
+        tabs.style.display = (tab === 'completeProfilePane') ? 'none' : 'flex';
+    }
+    
     switchTab(tab);
 }
 
@@ -278,6 +288,7 @@ async function checkProfileCompletion(user) {
             // 현재 모달이 닫혀있는 상태일 때만 자동 팝업
             const overlay = document.getElementById('authOverlay');
             if (overlay && overlay.style.display !== 'flex') {
+                console.log('Opening Profile Completion Modal');
                 openAuthModal('completeProfilePane');
                 sessionStorage.setItem('profile_check_done', 'true');
             }
