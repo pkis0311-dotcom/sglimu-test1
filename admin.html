@@ -63,11 +63,15 @@
         <div id="tab-products" class="tab-pane active">
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1 class="page-title">제품 관리</h1>
-                <div style="display: flex; gap: 10px;">
-                    <button id="downloadProductExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71;">
-                        <i class="fa-solid fa-file-excel"></i> 재고관리 엑셀 다운로드
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="search-box" style="position: relative; margin-right: 10px;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                        <input type="text" id="productSearchInput" class="form-control" placeholder="제품명 또는 카테고리 검색..." style="padding-left: 35px; width: 300px; height: 40px;">
+                    </div>
+                    <button id="downloadProductExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71; height: 40px;">
+                        <i class="fa-solid fa-file-excel"></i> 엑셀 다운
                     </button>
-                    <button id="addProductBtn" class="btn-primary">
+                    <button id="addProductBtn" class="btn-primary" style="height: 40px;">
                         <i class="fa-solid fa-plus"></i> 새 제품 등록
                     </button>
                 </div>

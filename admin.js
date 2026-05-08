@@ -22,6 +22,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 시스템 초기화
     checkSession();
+
+    // 제품 검색 기능 추가
+    const productSearchInput = document.getElementById('productSearchInput');
+    if (productSearchInput) {
+        productSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+                renderProductTable(globalProducts);
+                return;
+            }
+
+            const filtered = globalProducts.filter(p => {
+                const nameMatch = p.name.toLowerCase().includes(query);
+                const categoryMatch = (p.category || '').toLowerCase().includes(query);
+                return nameMatch || categoryMatch;
+            });
+            renderProductTable(filtered);
+        });
+    }
 });
 
 // ==========================================
@@ -242,16 +261,22 @@ async function fetchProducts() {
     productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
     
     const { data: products, error } = await db.from('products').select('*').order('created_at', { ascending: false });
-    globalProducts = products || [];
-
+    
     if (error) {
         console.error('Error fetching products:', error);
         productTableBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:red"><i class="fa-solid fa-triangle-exclamation"></i> 오류: ${error.message}</td></tr>`;
         return;
     }
 
+    globalProducts = products || [];
+    renderProductTable(globalProducts);
+    updateProductRelatedUI(globalProducts);
+}
+
+// 제품 테이블 렌더링 함수 (검색 필터링 대응)
+function renderProductTable(products) {
     if (products.length === 0) {
-        productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">등록된 제품이 없습니다. 새 제품 등록 버튼을 눌러주세요.</td></tr>';
+        productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">등록된 제품이 없거나 검색 결과가 없습니다.</td></tr>';
         return;
     }
 
@@ -295,7 +320,10 @@ async function fetchProducts() {
         `;
         productTableBody.appendChild(tr);
     });
+}
 
+// 제품 데이터와 연동된 기타 UI 요소들 업데이트
+function updateProductRelatedUI(products) {
     // [신규] '상세페이지 관리' 탭의 Select 옵션을 동적으로 업데이트
     const targetSelect = document.getElementById('targetPageId');
     if (targetSelect) {
