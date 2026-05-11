@@ -292,7 +292,7 @@ async function syncProfile(user, additionalData = {}) {
     const baseData = {
         id: user.id,
         // email 컬럼이 테이블에 없을 수 있으므로 제외 (필요 시 DB에 추가해야 함)
-        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '유저',
         updated_at: new Date().toISOString()
     };
 
@@ -300,11 +300,12 @@ async function syncProfile(user, additionalData = {}) {
     const profileData = { ...baseData, ...additionalData };
 
     // profiles 테이블에 upsert (id가 같으면 업데이트, 없으면 생성)
-    const { data, error } = await supabase.from('profiles').upsert(profileData).select().single();
+    // .select().single() 제거하여 더 견고하게 처리
+    const { data, error } = await supabase.from('profiles').upsert(profileData);
     
     if (error) {
         console.error('Profile Upsert Error:', error);
-        throw error;
+        // 에러를 던지지 않고 콘솔에만 기록하여 전체 흐름 방해 금지
     }
     return data;
 }
@@ -349,47 +350,49 @@ async function checkProfileCompletion(user) {
 }
 
 function updateAuthUI(user) {
-    const wrap = document.getElementById('userAuthWrap');
-    if (!wrap) {
-        console.warn('userAuthWrap element not found in DOM!');
-        return;
-    }
+    try {
+        const wrap = document.getElementById('userAuthWrap');
+        if (!wrap) return;
 
-    if (user) {
-        console.log('Updating UI for logged-in user:', user.email);
-        const userName = user.user_metadata?.full_name || user.email.split('@')[0];
-        wrap.innerHTML = `
-            <div class="user-profile-nav">
-                <div class="user-info-badge">
-                    <i class="fa-solid fa-circle-user"></i>
-                    <span class="user-name"><b>${userName}</b> 님</span>
+        if (user) {
+            console.log('Updating UI for logged-in user:', user.email);
+            // user.email이 null일 경우를 대비해 옵셔널 체이닝 및 기본값 설정
+            const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '유저';
+            wrap.innerHTML = `
+                <div class="user-profile-nav">
+                    <div class="user-info-badge">
+                        <i class="fa-solid fa-circle-user"></i>
+                        <span class="user-name"><b>${userName}</b> 님</span>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn" title="로그아웃">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
-                <button class="logout-btn" id="logoutBtn" title="로그아웃">
-                    <i class="fa-solid fa-right-from-bracket"></i>
+            `;
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    const { error } = await supabase.auth.signOut();
+                    if (error) console.error('Logout error:', error);
+                    window.location.reload();
+                });
+            }
+            
+            // 프로필 미완성 시 체크 (sessionStorage 활용)
+            checkProfileCompletion(user);
+        } else {
+            console.log('Updating UI for guest user.');
+            wrap.innerHTML = `
+                <button class="login-trigger-btn" id="loginTriggerBtn">
+                    <i class="fa-regular fa-user"></i>
+                    <span>로그인</span>
                 </button>
-            </div>
-        `;
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-                const { error } = await supabase.auth.signOut();
-                if (error) console.error('Logout error:', error);
-                window.location.reload();
-            });
+            `;
+            const btn = document.getElementById('loginTriggerBtn');
+            if (btn) btn.addEventListener('click', () => openAuthModal());
         }
-        
-        // 프로필 미완성 시 체크 (sessionStorage 활용)
-        checkProfileCompletion(user);
-    } else {
-        console.log('Updating UI for guest user.');
-        wrap.innerHTML = `
-            <button class="login-trigger-btn" id="loginTriggerBtn">
-                <i class="fa-regular fa-user"></i>
-                <span>로그인</span>
-            </button>
-        `;
-        const btn = document.getElementById('loginTriggerBtn');
-        if (btn) btn.addEventListener('click', () => openAuthModal());
+    } catch (err) {
+        console.error('updateAuthUI Error:', err);
     }
 }
 
