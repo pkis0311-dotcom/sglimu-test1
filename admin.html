@@ -54,6 +54,7 @@
             <li class="nav-item" data-target="tab-users"><i class="fa-solid fa-users"></i> 회원(기관) 관리</li>
         </ul>
         <div class="sidebar-footer">
+            <button class="chat-trigger-admin" id="adminChatTrigger"><i class="fa-solid fa-comments"></i> 실시간 채팅</button>
             <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</button>
         </div>
     </aside>
@@ -753,6 +754,22 @@
                 <button class="btn-secondary" onclick="closeBestSectionModal()">취소</button>
                 <button class="btn-primary" id="saveBestSectionBtn" onclick="saveBestSectionConfig()">설정 저장</button>
             </div>
+        </div>
+    </div>
+
+
+    <!-- Chat Window for Admin -->
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h4>실시간 문의 관리</h4>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message system-msg">관리자님 안녕하세요! 고객 문의에 실시간으로 응대하실 수 있습니다.</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 

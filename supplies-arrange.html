@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ë„ì„œì •ë¦¬ ìš©í’ˆ - ì—ìŠ¤ì§€ë¼ì´ë®¤</title>
-    <meta name="description" content="ë„ì„œì •ë¦¬ ìš©í’ˆ, ë„ì„œê´€ìš©í’ˆ, ë„ì„œê´€ë¬¼í’ˆ">
+    <title>?„ì„œ?•ë¦¬ ?©í’ˆ - ?ìŠ¤ì§€?¼ì´ë®?/title>
+    <meta name="description" content="?„ì„œ?•ë¦¬ ?©í’ˆ, ?„ì„œê´€?©í’ˆ, ?„ì„œê´€ë¬¼í’ˆ">
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -83,13 +83,13 @@
             </nav>
             <div class="header-utils">
                 <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="ê²€ìƒ‰ì–´ë¥¼ ì…ë ¥í•˜ì„¸ìš”">
+                    <input type="text" class="search-input" placeholder="ê²€?‰ì–´ë¥??…ë ¥?˜ì„¸??>
                     <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
                 <div class="user-auth-wrap" id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
                         <i class="fa-regular fa-user"></i>
-                        <span>ë¡œê·¸ì¸</span>
+                        <span>ë¡œê·¸??/span>
                     </button>
                 </div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
@@ -99,8 +99,8 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">ë„ì„œì •ë¦¬ ìš©í’ˆ</h2>
-            <p>ë„ì„œê´€ì˜ ì²´ê³„ì ì¸ ì •ë¦¬ë¥¼ ìœ„í•œ í•„ìˆ˜ ìš©í’ˆì…ë‹ˆë‹¤.</p>
+            <h2 class="category-title">?„ì„œ?•ë¦¬ ?©í’ˆ</h2>
+            <p>?„ì„œê´€??ì²´ê³„?ì¸ ?•ë¦¬ë¥??„í•œ ?„ìˆ˜ ?©í’ˆ?…ë‹ˆ??</p>
         </div>
 
         <div class="category-container">
@@ -115,7 +115,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(ì£¼)ì—ìŠ¤ì§€ë¼ì´ë®¤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; íŒ©ìŠ¤ : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p><strong>(ì£??ìŠ¤ì§€?¼ì´ë®?/strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; ?©ìŠ¤ : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
@@ -127,5 +127,20 @@
     </script>
     <script type="module" src="script.js"></script>
     <script type="module" src="auth.js"></script>
+
+    <!-- chat-fab Á¦°ÅµÊ -->
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h4>½Ç½Ã°£ ¹®ÀÇ</h4>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message system-msg">¾È³çÇÏ¼¼¿ä! ¹«¾ùÀ» µµ¿Íµå¸±±î¿ä?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="¸Ş½ÃÁö¸¦ ÀÔ·ÂÇÏ¼¼¿ä...">
+            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 </body>
 </html>

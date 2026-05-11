@@ -362,9 +362,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    if (chatFab && chatCloseBtn) {
-        chatFab.addEventListener('click', toggleChat);
-        chatCloseBtn.addEventListener('click', toggleChat);
+    // 채팅 트리거 설정 (기존 FAB 및 새로운 사이드바 버튼 모두 대응)
+    const chatTriggers = document.querySelectorAll('#chatFab, #chatTriggerBtn, .chat-trigger');
+    chatTriggers.forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleChat();
+        });
+    });
+
+    if (chatCloseBtn) {
+        chatCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleChat();
+        });
     }
 
     function sendChatMessage() {

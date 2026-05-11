@@ -46,6 +46,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (productSearchInput) productSearchInput.addEventListener('input', applyProductFilters);
     if (categoryFilter) categoryFilter.addEventListener('change', applyProductFilters);
+
+    // 실시간 채팅 로직 (관리자용)
+    const adminChatTrigger = document.getElementById('adminChatTrigger');
+    const chatWindow = document.getElementById('chatWindow');
+    const chatCloseBtn = document.getElementById('chatCloseBtn');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatBody = document.getElementById('chatBody');
+
+    if (adminChatTrigger && chatWindow) {
+        adminChatTrigger.addEventListener('click', () => {
+            chatWindow.classList.toggle('active');
+            if (chatWindow.classList.contains('active') && chatInput) {
+                setTimeout(() => chatInput.focus(), 300);
+            }
+        });
+    }
+
+    if (chatCloseBtn && chatWindow) {
+        chatCloseBtn.addEventListener('click', () => {
+            chatWindow.classList.remove('active');
+        });
+    }
+
+    function sendAdminMessage() {
+        if (!chatInput || !chatBody) return;
+        const text = chatInput.value.trim();
+        if (text === '') return;
+
+        const adminMsg = document.createElement('div');
+        adminMsg.className = 'message user-msg';
+        adminMsg.textContent = text;
+        chatBody.appendChild(adminMsg);
+
+        chatInput.value = '';
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    if (chatSendBtn) chatSendBtn.addEventListener('click', sendAdminMessage);
+    if (chatInput) chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendAdminMessage();
+    });
 });
 
 // ==========================================
