@@ -169,22 +169,6 @@ if (signupForm) {
                 signupMsg.classList.add('error');
             }
         } else {
-            // [추가] 가입 성공 시 profiles 테이블에 기본 정보 즉시 연동
-            if (data.user) {
-                try {
-                    await syncProfile(data.user, {
-                        full_name: name,
-                        phone: phone,
-                        organization: organization,
-                        address: address,
-                        user_type: selectedUserType,
-                        biz_number: bizNumber
-                    });
-                } catch (syncErr) {
-                    console.error('Profile Sync Error during signup:', syncErr);
-                }
-            }
-
             if (signupMsg) {
                 signupMsg.textContent = '가입 성공! 이메일을 확인하거나 로그인해 주세요.';
                 signupMsg.classList.add('success');
@@ -247,15 +231,26 @@ if (completeProfileForm) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // [수정] syncProfile 공통 함수를 사용하여 profiles 테이블 연동
-        try {
-            const result = await syncProfile(user, {
-                phone: phone,
-                organization: org,
-                address: address,
-                user_type: userType
-            });
+        const profileData = {
+            id: user.id,
+            full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+            email: user.email,
+            phone: phone,
+            organization: org,
+            address: address,
+            user_type: userType,
+            updated_at: new Date().toISOString()
+        };
 
+        // update 대신 upsert를 사용하여 데이터가 없을 경우 생성하도록 수정
+        const { error } = await supabase.from('profiles').upsert(profileData);
+
+        if (error) {
+            if (completeMsg) {
+                completeMsg.textContent = '저장 실패: ' + error.message;
+                completeMsg.classList.add('error');
+            }
+        } else {
             if (completeMsg) {
                 completeMsg.textContent = '저장 완료! 환영합니다.';
                 completeMsg.classList.add('success');
@@ -267,48 +262,13 @@ if (completeProfileForm) {
                 closeAuthModal();
                 window.location.reload();
             }, 1000);
-        } catch (error) {
-            if (completeMsg) {
-                completeMsg.textContent = '저장 실패: ' + error.message;
-                completeMsg.classList.add('error');
-            }
         }
     });
 }
 
 // ==========================================
-// 4. Sync & UI State Management
+// 4. UI State Management
 // ==========================================
-
-/**
- * auth.users의 정보와 추가 입력 정보를 profiles 테이블에 동기화합니다.
- */
-async function syncProfile(user, additionalData = {}) {
-    if (!user) return null;
-
-    console.log('Syncing profile for:', user.id);
-
-    // 기본 데이터 구성 (유저 메타데이터 및 이메일 기반)
-    const baseData = {
-        id: user.id,
-        // email 컬럼이 테이블에 없을 수 있으므로 제외 (필요 시 DB에 추가해야 함)
-        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '유저',
-        updated_at: new Date().toISOString()
-    };
-
-    // 추가 데이터 병합 (입력 폼에서 넘어온 데이터 등)
-    const profileData = { ...baseData, ...additionalData };
-
-    // profiles 테이블에 upsert (id가 같으면 업데이트, 없으면 생성)
-    // .select().single() 제거하여 더 견고하게 처리
-    const { data, error } = await supabase.from('profiles').upsert(profileData);
-    
-    if (error) {
-        console.error('Profile Upsert Error:', error);
-        // 에러를 던지지 않고 콘솔에만 기록하여 전체 흐름 방해 금지
-    }
-    return data;
-}
 
 async function checkProfileCompletion(user) {
     if (!user) return;
@@ -350,62 +310,54 @@ async function checkProfileCompletion(user) {
 }
 
 function updateAuthUI(user) {
-    try {
-        const wrap = document.getElementById('userAuthWrap');
-        if (!wrap) return;
+    const wrap = document.getElementById('userAuthWrap');
+    if (!wrap) {
+        console.warn('userAuthWrap element not found in DOM!');
+        return;
+    }
 
-        if (user) {
-            console.log('Updating UI for logged-in user:', user.email);
-            // user.email이 null일 경우를 대비해 옵셔널 체이닝 및 기본값 설정
-            const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '유저';
-            wrap.innerHTML = `
-                <div class="user-profile-nav">
-                    <div class="user-info-badge">
-                        <i class="fa-solid fa-circle-user"></i>
-                        <span class="user-name"><b>${userName}</b> 님</span>
-                    </div>
-                    <button class="logout-btn" id="logoutBtn" title="로그아웃">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </button>
+    if (user) {
+        console.log('Updating UI for logged-in user:', user.email);
+        const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+        wrap.innerHTML = `
+            <div class="user-profile-nav">
+                <div class="user-info-badge">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span class="user-name"><b>${userName}</b> 님</span>
                 </div>
-            `;
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async () => {
-                    const { error } = await supabase.auth.signOut();
-                    if (error) console.error('Logout error:', error);
-                    window.location.reload();
-                });
-            }
-            
-            // 프로필 미완성 시 체크 (sessionStorage 활용)
-            checkProfileCompletion(user);
-        } else {
-            console.log('Updating UI for guest user.');
-            wrap.innerHTML = `
-                <button class="login-trigger-btn" id="loginTriggerBtn">
-                    <i class="fa-regular fa-user"></i>
-                    <span>로그인</span>
+                <button class="logout-btn" id="logoutBtn" title="로그아웃">
+                    <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
-            `;
-            const btn = document.getElementById('loginTriggerBtn');
-            if (btn) btn.addEventListener('click', () => openAuthModal());
+            </div>
+        `;
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                const { error } = await supabase.auth.signOut();
+                if (error) console.error('Logout error:', error);
+                window.location.reload();
+            });
         }
-    } catch (err) {
-        console.error('updateAuthUI Error:', err);
+        
+        // 프로필 미완성 시 체크 (sessionStorage 활용)
+        checkProfileCompletion(user);
+    } else {
+        console.log('Updating UI for guest user.');
+        wrap.innerHTML = `
+            <button class="login-trigger-btn" id="loginTriggerBtn">
+                <i class="fa-regular fa-user"></i>
+                <span>로그인</span>
+            </button>
+        `;
+        const btn = document.getElementById('loginTriggerBtn');
+        if (btn) btn.addEventListener('click', () => openAuthModal());
     }
 }
 
 // 초기 세션 확인 및 리스너 등록
-supabase.auth.onAuthStateChange(async (event, session) => {
+supabase.auth.onAuthStateChange((event, session) => {
     console.log('Auth State Changed:', event, session);
     if (session) {
-        // [추가] 세션 변경 시(로그인 등) 프로필 동기화 시도
-        try {
-            await syncProfile(session.user);
-        } catch (err) {
-            console.error('Auto sync failed:', err);
-        }
         updateAuthUI(session.user);
     } else {
         updateAuthUI(null);

@@ -92,28 +92,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         let slidesData = [];
         let popupsData = [];
         try {
-            console.log("Fetching banners from Supabase...");
             const { data, error } = await supabase.from('banners').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('created_at', { ascending: false });
-            
-            if (error) {
-                console.warn("Supabase banner fetch error (falling back):", error.message);
-            } else if (data && data.length > 0) {
+            if (!error && data && data.length > 0) {
                 slidesData = data.filter(b => b.type === 'slide').map(b => ({
                     imgUrl: b.image_url,
-                    link: b.link_url || '#',
-                    title: b.title || '',
-                    desc: b.description || ''
+                    link: b.link_url || '#'
                 }));
                 popupsData = data.filter(b => b.type === 'popup');
-                console.log(`Loaded ${slidesData.length} slides and ${popupsData.length} popups.`);
             }
         } catch (err) {
-            console.error("Critical banner fetch error (falling back):", err);
+            console.error("Banner fetch error", err);
         }
 
-        // 데이터가 없으면 폴백 사용
         if (slidesData.length === 0) {
-            console.log("Using fallback slides.");
             slidesData = fallbackSlides;
         }
 
