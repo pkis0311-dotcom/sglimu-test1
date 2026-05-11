@@ -857,10 +857,10 @@ td {
     color: white;
 }
 
-.user-subtab-pane {
+.user-subtab-pane, .banner-subtab-pane {
     display: none;
 }
 
-.user-subtab-pane.active {
+.user-subtab-pane.active, .banner-subtab-pane.active {
     display: block;
 }

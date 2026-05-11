@@ -258,7 +258,7 @@ navItems.forEach(item => {
         } else if(targetId === 'tab-inquiries') {
             fetchInquiries();
         } else if(targetId === 'tab-banners') {
-            fetchBanners();
+            switchBannerSubTab('banner');
         } else if(targetId === 'tab-users') {
             switchUserSubTab('institution'); // 기본 서브탭 활성화
         } else if(targetId === 'tab-page-manage') {
@@ -1151,7 +1151,122 @@ saveBannerBtn.addEventListener('click', async () => {
     }
 });
 // ------------------------------------------
-// 7. [신규] 상세페이지 관리 로직 (멀티 제품 대응)
+// 7. [신규] 배너/팝업 관리 내 서브 탭 및 베스트 상품 관리
+// ------------------------------------------
+window.switchBannerSubTab = function(type) {
+    // 탭 버튼 스타일 업데이트
+    document.querySelectorAll('#tab-banners .sub-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+    });
+    
+    // 섹션 표시 업데이트
+    document.querySelectorAll('.banner-subtab-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.id === `banner-subtab-${type}`);
+    });
+
+    // 데이터 로드
+    if (type === 'banner') fetchBanners();
+    else if (type === 'best') initBestProductManage();
+}
+
+let currentBestSection = 'home_best_rfid';
+
+function initBestProductManage() {
+    // 상품 목록 체크박스 렌더링
+    if (globalProducts.length === 0) {
+        fetchProducts().then(() => renderBestProductCheckboxes());
+    } else {
+        renderBestProductCheckboxes();
+    }
+
+    // 저장 버튼 이벤트
+    const saveBtn = document.getElementById('saveBestDisplayBtn');
+    if (saveBtn && !saveBtn.dataset.init) {
+        saveBtn.onclick = saveBestProductDisplay;
+        saveBtn.dataset.init = "true";
+    }
+
+    // 초기 섹션 로드
+    loadBestProductDisplay(currentBestSection);
+}
+
+function renderBestProductCheckboxes() {
+    const grid = document.getElementById('bestProductCheckboxGrid');
+    if (!grid) return;
+
+    if (globalProducts.length === 0) {
+        grid.innerHTML = '<div style="color:#999; text-align:center; width:100%;">등록된 제품이 없습니다.</div>';
+        return;
+    }
+
+    grid.innerHTML = globalProducts.map(p => `
+        <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
+            <input type="checkbox" class="best-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
+            <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
+                <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${p.category}]</span><br>
+                ${p.name}
+            </div>
+        </label>
+    `).join('');
+    
+    // 현재 섹션의 데이터로 체크 상태 복구
+    loadBestProductDisplay(currentBestSection);
+}
+
+window.selectBestSection = function(sectionId, sectionName) {
+    currentBestSection = sectionId;
+    
+    // 버튼 스타일 업데이트
+    document.querySelectorAll('#bestSectionGrid .minor-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${sectionId}'` || sectionId));
+    });
+
+    // 상태창 업데이트
+    document.getElementById('currentBestSelectionName').innerText = sectionName;
+
+    // 데이터 로드
+    loadBestProductDisplay(sectionId);
+}
+
+async function loadBestProductDisplay(sectionId) {
+    const { data: configData } = await db.from('site_configs').select('value').eq('key', 'display_' + sectionId).single();
+    const selectedIds = configData ? configData.value : [];
+    
+    const checkboxes = document.querySelectorAll('.best-item-cb');
+    checkboxes.forEach(cb => {
+        cb.checked = selectedIds.includes(cb.value);
+    });
+}
+
+async function saveBestProductDisplay() {
+    if (!currentBestSection) return;
+    
+    const saveBtn = document.getElementById('saveBestDisplayBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+
+    const checkboxes = document.querySelectorAll('.best-item-cb');
+    const selectedIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+
+    const { error } = await db.from('site_configs').upsert({
+        key: 'display_' + currentBestSection,
+        value: selectedIds
+    });
+
+    if (error) {
+        alert('저장 실패: ' + error.message);
+    } else {
+        const sectionName = document.getElementById('currentBestSelectionName').innerText;
+        alert(`[${sectionName}] 베스트 상품 설정이 저장되었습니다.`);
+    }
+
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = originalText;
+}
+
+// ------------------------------------------
+// 8. [신규] 상세페이지 관리 로직 (멀티 제품 대응)
 // ------------------------------------------
 let currentPageDataKey = ''; // 기본값 비워둠 (targetPageId 값이 없을 수 있음)
 

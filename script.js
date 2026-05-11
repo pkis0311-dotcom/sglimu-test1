@@ -303,6 +303,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+
+        // [신규] 메인 홈페이지 베스트 상품 동적 로드
+        if (document.getElementById('grid-rfid')) {
+            window.loadDisplayProducts('grid-rfid', 'home_best_rfid');
+            window.loadDisplayProducts('grid-supplies', 'home_best_supplies');
+            window.loadDisplayProducts('grid-furniture', 'home_best_furniture');
+            window.loadDisplayProducts('grid-sign', 'home_best_sign');
+        }
     }
 
     // ---------------------------------------------------------
