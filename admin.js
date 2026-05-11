@@ -47,19 +47,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (productSearchInput) productSearchInput.addEventListener('input', applyProductFilters);
     if (categoryFilter) categoryFilter.addEventListener('change', applyProductFilters);
 
-    // 실시간 채팅 로직 (관리자용)
+    // ---------------------------------------------------------
+    // 실시간 채팅 로직 (관리자용 고도화)
+    // ---------------------------------------------------------
     const adminChatTrigger = document.getElementById('adminChatTrigger');
     const chatWindow = document.getElementById('chatWindow');
     const chatCloseBtn = document.getElementById('chatCloseBtn');
     const chatInput = document.getElementById('chatInput');
     const chatSendBtn = document.getElementById('chatSendBtn');
     const chatBody = document.getElementById('chatBody');
+    const chatHeaderTitle = chatWindow ? chatWindow.querySelector('.chat-header h4') : null;
 
+    let currentRoomId = null; // 현재 대화 중인 고객의 Room ID
+    let chatRooms = []; // 활성 채팅방 목록
+
+    // 1) 채팅창 토글 및 초기화
     if (adminChatTrigger && chatWindow) {
-        adminChatTrigger.addEventListener('click', () => {
-            chatWindow.classList.toggle('active');
-            if (chatWindow.classList.contains('active') && chatInput) {
-                setTimeout(() => chatInput.focus(), 300);
+        adminChatTrigger.addEventListener('click', async () => {
+            const isActive = chatWindow.classList.toggle('active');
+            if (isActive) {
+                await loadChatRooms();
+                subscribeToAllChats();
+                renderRoomList();
             }
         });
     }
@@ -67,21 +76,165 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatCloseBtn && chatWindow) {
         chatCloseBtn.addEventListener('click', () => {
             chatWindow.classList.remove('active');
+            currentRoomId = null;
         });
     }
 
-    function sendAdminMessage() {
-        if (!chatInput || !chatBody) return;
+    // 2) 채팅방 목록 불러오기 (최근 메시지 기준)
+    async function loadChatRooms() {
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('room_id, sender_name, message, created_at')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('채팅방 목록 로드 실패:', error);
+            return;
+        }
+
+        // 중복 제거하여 최신 채팅방 목록 생성
+        const seen = new Set();
+        chatRooms = [];
+        data.forEach(msg => {
+            if (!seen.has(msg.room_id)) {
+                seen.add(msg.room_id);
+                chatRooms.push({
+                    room_id: msg.room_id,
+                    sender_name: msg.sender_name || 'Guest',
+                    last_message: msg.message,
+                    last_time: msg.created_at
+                });
+            }
+        });
+    }
+
+    // 3) 채팅방 목록 렌더링
+    function renderRoomList() {
+        if (!chatBody) return;
+        currentRoomId = null;
+        if (chatHeaderTitle) chatHeaderTitle.textContent = '실시간 문의 목록';
+        
+        // 입력창 숨기기 (목록 뷰에서는 필요 없음)
+        if (chatInput) chatInput.parentElement.style.display = 'none';
+
+        chatBody.innerHTML = '';
+        if (chatRooms.length === 0) {
+            chatBody.innerHTML = '<div style="text-align:center; padding:50px; color:#999;">진행 중인 문의가 없습니다.</div>';
+            return;
+        }
+
+        chatRooms.forEach(room => {
+            const roomDiv = document.createElement('div');
+            roomDiv.className = 'chat-room-item';
+            roomDiv.innerHTML = `
+                <div class="room-name">
+                    <span>${room.sender_name}</span>
+                    <span style="font-size:0.7rem; color:#aaa; font-weight:400;">#${room.room_id.substring(room.room_id.length - 4)}</span>
+                </div>
+                <div class="room-msg">${room.last_message}</div>
+                <div class="room-time">${new Date(room.last_time).toLocaleString()}</div>
+            `;
+            roomDiv.onclick = () => openChatRoom(room.room_id, room.sender_name);
+            chatBody.appendChild(roomDiv);
+        });
+    }
+
+    // 4) 특정 채팅방 열기
+    async function openChatRoom(roomId, senderName) {
+        currentRoomId = roomId;
+        if (chatHeaderTitle) {
+            chatHeaderTitle.innerHTML = `<button id="chatBackBtn" style="background:none; border:none; color:#fff; cursor:pointer; margin-right:10px;"><i class="fa-solid fa-arrow-left"></i></button> ${senderName}`;
+            setTimeout(() => {
+                document.getElementById('chatBackBtn')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    renderRoomList();
+                });
+            }, 0);
+        }
+
+        if (chatInput) {
+            chatInput.parentElement.style.display = 'flex';
+            setTimeout(() => chatInput.focus(), 300);
+        }
+
+        chatBody.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">대화 내역을 불러오는 중...</div>';
+
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('*')
+            .eq('room_id', roomId)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('대화 내역 로드 실패:', error);
+            return;
+        }
+
+        chatBody.innerHTML = '';
+        data.forEach(msg => {
+            renderAdminMessage(msg.message, msg.sender_role === 'admin' ? 'user' : 'system');
+        });
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // 5) 메시지 렌더링 (관리자 채팅창용)
+    function renderAdminMessage(text, type) {
+        if (!chatBody) return;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type === 'user' ? 'user-msg' : 'system-msg'}`;
+        msgDiv.textContent = text;
+        chatBody.appendChild(msgDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // 6) 실시간 모든 메시지 감시
+    let adminChatChannel = null;
+    function subscribeToAllChats() {
+        if (adminChatChannel) return;
+        adminChatChannel = supabase
+            .channel('admin_chat_all')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'chat_messages'
+            }, (payload) => {
+                const newMsg = payload.new;
+                
+                // 1. 현재 열려있는 채팅방의 메시지인 경우 즉시 렌더링
+                if (currentRoomId === newMsg.room_id) {
+                    if (newMsg.sender_role === 'customer') {
+                        renderAdminMessage(newMsg.message, 'system');
+                    }
+                } 
+                
+                // 2. 전체 목록 갱신 (비동기)
+                loadChatRooms().then(() => {
+                    if (!currentRoomId) renderRoomList();
+                });
+            })
+            .subscribe();
+    }
+
+    // 7) 관리자 메시지 전송
+    async function sendAdminMessage() {
+        if (!chatInput || !chatBody || !currentRoomId) return;
         const text = chatInput.value.trim();
         if (text === '') return;
 
-        const adminMsg = document.createElement('div');
-        adminMsg.className = 'message user-msg';
-        adminMsg.textContent = text;
-        chatBody.appendChild(adminMsg);
-
+        // 화면 즉시 표시
+        renderAdminMessage(text, 'user');
         chatInput.value = '';
-        chatBody.scrollTop = chatBody.scrollHeight;
+
+        const { error } = await supabase
+            .from('chat_messages')
+            .insert([{
+                room_id: currentRoomId,
+                sender_role: 'admin',
+                sender_name: '관리자',
+                message: text
+            }]);
+
+        if (error) console.error('관리자 메시지 전송 실패:', error);
     }
 
     if (chatSendBtn) chatSendBtn.addEventListener('click', sendAdminMessage);

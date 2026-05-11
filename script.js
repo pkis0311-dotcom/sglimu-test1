@@ -345,25 +345,123 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------------------------------------------------------
-    // 5. Live Chat Widget Logic (Global)
+    // 5. Live Chat Widget Logic (Global & Real-time)
     // ---------------------------------------------------------
-    const chatFab = document.getElementById('chatFab');
     const chatWindow = document.getElementById('chatWindow');
     const chatCloseBtn = document.getElementById('chatCloseBtn');
     const chatInput = document.getElementById('chatInput');
     const chatSendBtn = document.getElementById('chatSendBtn');
     const chatBody = document.getElementById('chatBody');
 
-    function toggleChat() {
+    // 1) 채팅 세션(Room ID) 관리
+    let chatSessionId = localStorage.getItem('chat_session_id');
+    if (!chatSessionId) {
+        chatSessionId = 'guest_' + Math.random().toString(36).substring(2, 11);
+        localStorage.setItem('chat_session_id', chatSessionId);
+    }
+
+    // 2) 채팅창 토글 및 내역 로드
+    async function toggleChat() {
         if (!chatWindow) return;
-        chatWindow.classList.toggle('active');
-        if (chatWindow.classList.contains('active') && chatInput) {
-            setTimeout(() => chatInput.focus(), 300);
+        const isActive = chatWindow.classList.toggle('active');
+        
+        if (isActive) {
+            if (chatInput) setTimeout(() => chatInput.focus(), 300);
+            await loadChatHistory();
+            subscribeToChat();
+        } else {
+            unsubscribeFromChat();
         }
     }
 
-    // 채팅 트리거 설정 (기존 FAB 및 새로운 사이드바 버튼 모두 대응)
-    const chatTriggers = document.querySelectorAll('#chatFab, #chatTriggerBtn, .chat-trigger');
+    // 3) 대화 내역 불러오기
+    async function loadChatHistory() {
+        if (!chatBody) return;
+        
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('*')
+            .eq('room_id', chatSessionId)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('채팅 내역 로드 실패:', error);
+            return;
+        }
+
+        chatBody.innerHTML = '<div class="message system-msg">안녕하세요! 무엇을 도와드릴까요?</div>';
+        data.forEach(msg => {
+            renderMessage(msg.message, msg.sender_role === 'customer' ? 'user' : 'system');
+        });
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // 4) 메시지 렌더링 함수
+    function renderMessage(text, type) {
+        if (!chatBody) return;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type === 'user' ? 'user-msg' : 'system-msg'}`;
+        msgDiv.textContent = text;
+        chatBody.appendChild(msgDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // 5) 실시간 메시지 구독
+    let chatChannel = null;
+    function subscribeToChat() {
+        if (chatChannel) return;
+        chatChannel = supabase
+            .channel('chat_realtime')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'chat_messages',
+                filter: `room_id=eq.${chatSessionId}`
+            }, (payload) => {
+                const newMsg = payload.new;
+                // 관리자가 보낸 메시지만 렌더링 (본인이 보낸 것은 이미 렌더링됨)
+                if (newMsg.sender_role === 'admin') {
+                    renderMessage(newMsg.message, 'system');
+                }
+            })
+            .subscribe();
+    }
+
+    function unsubscribeFromChat() {
+        if (chatChannel) {
+            supabase.removeChannel(chatChannel);
+            chatChannel = null;
+        }
+    }
+
+    // 6) 메시지 전송
+    async function sendChatMessage() {
+        if (!chatInput || !chatBody) return;
+        const text = chatInput.value.trim();
+        if (text === '') return;
+
+        // 화면에 즉시 표시
+        renderMessage(text, 'user');
+        chatInput.value = '';
+
+        // DB 저장
+        const { error } = await supabase
+            .from('chat_messages')
+            .insert([{
+                room_id: chatSessionId,
+                sender_role: 'customer',
+                sender_name: 'Guest',
+                message: text
+            }]);
+
+        if (error) {
+            console.error('메시지 전송 실패:', error);
+            // 실패 시 안내 (옵션)
+        }
+    }
+
+    // 트리거 설정
+    const chatTriggers = document.querySelectorAll('.chat-trigger, #chatTriggerBtn');
     chatTriggers.forEach(trigger => {
         trigger.addEventListener('click', (e) => {
             e.preventDefault();
@@ -376,28 +474,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             toggleChat();
         });
-    }
-
-    function sendChatMessage() {
-        if (!chatInput || !chatBody) return;
-        const text = chatInput.value.trim();
-        if (text === '') return;
-
-        const userMsg = document.createElement('div');
-        userMsg.className = 'message user-msg';
-        userMsg.textContent = text;
-        chatBody.appendChild(userMsg);
-
-        chatInput.value = '';
-        chatBody.scrollTop = chatBody.scrollHeight;
-
-        setTimeout(() => {
-            const sysMsg = document.createElement('div');
-            sysMsg.className = 'message system-msg';
-            sysMsg.innerHTML = "안녕하세요!<br>문의를 담당자에게 전달했습니다.<br>빠른 시일 내에 답변 드리겠습니다.";
-            chatBody.appendChild(sysMsg);
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }, 1000);
     }
 
     if (chatSendBtn && chatInput) {

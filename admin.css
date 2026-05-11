@@ -886,6 +886,42 @@ td {
     border: 1px solid #eee;
 }
 
+.chat-room-item {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.chat-room-item:hover {
+    background: #f8faff;
+    border-left-color: var(--admin-primary);
+}
+
+.chat-room-item .room-name {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-room-item .room-msg {
+    font-size: 0.88rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-room-item .room-time {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 6px;
+}
+
 .chat-window.active {
     opacity: 1;
     pointer-events: auto;
