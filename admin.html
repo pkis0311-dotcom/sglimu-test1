@@ -250,7 +250,10 @@
             <div id="banner-subtab-best" class="banner-subtab-pane">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                     <h3 style="margin:0; font-size:1.2rem; color:#444;"><i class="fa-solid fa-star"></i> 메인화면 베스트 상품 설정</h3>
-                    <button class="btn-primary" id="saveBestDisplayBtn"><i class="fa-solid fa-save"></i> 설정 저장</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-secondary" onclick="openBestSectionModal()"><i class="fa-solid fa-gear"></i> 섹션 종류 관리</button>
+                        <button class="btn-primary" id="saveBestDisplayBtn"><i class="fa-solid fa-save"></i> 설정 저장</button>
+                    </div>
                 </div>
 
                 <div class="table-card" style="padding: 24px;">
@@ -259,10 +262,8 @@
                             <i class="fa-solid fa-layer-group"></i> 1. 관리할 섹션을 선택하세요
                         </label>
                         <div id="bestSectionGrid" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
-                            <button class="minor-btn active" data-section="home_best_rfid" onclick="selectBestSection('home_best_rfid', 'RFID 시스템')">RFID 시스템</button>
-                            <button class="minor-btn" data-section="home_best_supplies" onclick="selectBestSection('home_best_supplies', '도서관 용품')">도서관 용품</button>
-                            <button class="minor-btn" data-section="home_best_furniture" onclick="selectBestSection('home_best_furniture', '도서관 가구')">도서관 가구</button>
-                            <button class="minor-btn" data-section="home_best_sign" onclick="selectBestSection('home_best_sign', '사인물')">사인물</button>
+                            <!-- JS에서 동적으로 생성됨 -->
+                            <div style="color:#999; text-align:center; width:100%;">섹션 정보를 불러오는 중...</div>
                         </div>
                     </div>
 
@@ -730,6 +731,30 @@
 
     <!-- 스크립트 연동 (모듈 방식에서 일반 방식으로 변경하여 로컬 접근성 향상) -->
     <script src="admin.js"></script>
+
+    <!-- ======================= -->
+    <!-- 베스트 상품 섹션 관리 모달 -->
+    <!-- ======================= -->
+    <div id="bestSectionModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>베스트 상품 섹션 관리</h3>
+                <button class="close-modal" onclick="closeBestSectionModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">메인 페이지의 베스트 상품 탭 메뉴를 구성합니다.</p>
+                <div id="bestSectionListContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                    <!-- JS에서 렌더링 -->
+                </div>
+                <button class="btn-secondary" style="width:100%;" onclick="addBestSectionRow()"><i class="fa-solid fa-plus"></i> 새 섹션 추가</button>
+            </div>
+            <div class="modal-footer">
+                <p id="saveBestSectionMsg" style="color:var(--danger); font-size:0.9rem; margin-right:15px; display:inline-block;"></p>
+                <button class="btn-secondary" onclick="closeBestSectionModal()">취소</button>
+                <button class="btn-primary" id="saveBestSectionBtn" onclick="saveBestSectionConfig()">설정 저장</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

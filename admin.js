@@ -1170,8 +1170,33 @@ window.switchBannerSubTab = function(type) {
 }
 
 let currentBestSection = 'home_best_rfid';
+let SITE_BEST_SECTIONS = [];
+const DEFAULT_BEST_SECTIONS = [
+    { id: 'home_best_rfid', label: 'RFID 시스템' },
+    { id: 'home_best_supplies', label: '도서관 용품' },
+    { id: 'home_best_furniture', label: '도서관 가구' },
+    { id: 'home_best_sign', label: '사인물' }
+];
 
-function initBestProductManage() {
+async function fetchBestSections() {
+    try {
+        const { data, error } = await db.from('site_configs').select('value').eq('key', 'site_best_sections').single();
+        if (error || !data) {
+            SITE_BEST_SECTIONS = DEFAULT_BEST_SECTIONS;
+            if (!data) await db.from('site_configs').upsert({ key: 'site_best_sections', value: DEFAULT_BEST_SECTIONS });
+        } else {
+            SITE_BEST_SECTIONS = data.value;
+        }
+    } catch (e) {
+        SITE_BEST_SECTIONS = DEFAULT_BEST_SECTIONS;
+    }
+}
+
+async function initBestProductManage() {
+    // 섹션 정보 먼저 로드
+    await fetchBestSections();
+    renderBestSectionButtons();
+
     // 상품 목록 체크박스 렌더링
     if (globalProducts.length === 0) {
         fetchProducts().then(() => renderBestProductCheckboxes());
@@ -1187,7 +1212,99 @@ function initBestProductManage() {
     }
 
     // 초기 섹션 로드
-    loadBestProductDisplay(currentBestSection);
+    if (SITE_BEST_SECTIONS.length > 0) {
+        if (!SITE_BEST_SECTIONS.find(s => s.id === currentBestSection)) {
+            currentBestSection = SITE_BEST_SECTIONS[0].id;
+        }
+        selectBestSection(currentBestSection, SITE_BEST_SECTIONS.find(s => s.id === currentBestSection).label);
+    }
+}
+
+function renderBestSectionButtons() {
+    const grid = document.getElementById('bestSectionGrid');
+    if (!grid) return;
+
+    grid.innerHTML = SITE_BEST_SECTIONS.map(s => `
+        <button class="minor-btn ${currentBestSection === s.id ? 'active' : ''}" 
+                onclick="selectBestSection('${s.id}', '${s.label}')">
+            ${s.label}
+        </button>
+    `).join('');
+}
+
+// 섹션 관리 모달 기능
+window.openBestSectionModal = function() {
+    renderBestSectionRows();
+    document.getElementById('bestSectionModal').style.display = 'flex';
+}
+
+window.closeBestSectionModal = function() {
+    document.getElementById('bestSectionModal').style.display = 'none';
+}
+
+function renderBestSectionRows() {
+    const container = document.getElementById('bestSectionListContainer');
+    if (!container) return;
+    
+    container.innerHTML = SITE_BEST_SECTIONS.map((s, index) => `
+        <div class="best-section-row" style="display:flex; gap:10px; align-items:center;">
+            <input type="text" class="form-control" placeholder="섹션 ID (영문)" value="${s.id}" style="flex:1;">
+            <input type="text" class="form-control" placeholder="섹션명 (한글)" value="${s.label}" style="flex:2;">
+            <button class="action-btn delete" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    `).join('');
+}
+
+window.addBestSectionRow = function() {
+    const container = document.getElementById('bestSectionListContainer');
+    const div = document.createElement('div');
+    div.className = 'best-section-row';
+    div.style.cssText = "display:flex; gap:10px; align-items:center;";
+    div.innerHTML = `
+        <input type="text" class="form-control" placeholder="섹션 ID (영문)" style="flex:1;">
+        <input type="text" class="form-control" placeholder="섹션명 (한글)" style="flex:2;">
+        <button class="action-btn delete" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+    `;
+    container.appendChild(div);
+}
+
+window.saveBestSectionConfig = async function() {
+    const rows = document.querySelectorAll('.best-section-row');
+    const newSections = [];
+    let hasEmpty = false;
+
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const id = inputs[0].value.trim();
+        const label = inputs[1].value.trim();
+        if (!id || !label) hasEmpty = true;
+        newSections.push({ id, label });
+    });
+
+    if (hasEmpty) {
+        alert('모든 필드를 채워주세요.');
+        return;
+    }
+
+    const saveBtn = document.getElementById('saveBestSectionBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerText = '저장 중...';
+
+    const { error } = await db.from('site_configs').upsert({
+        key: 'site_best_sections',
+        value: newSections
+    });
+
+    if (error) {
+        alert('저장 실패: ' + error.message);
+    } else {
+        SITE_BEST_SECTIONS = newSections;
+        renderBestSectionButtons();
+        alert('섹션 구성이 저장되었습니다. 메인 페이지에도 반영됩니다.');
+        closeBestSectionModal();
+    }
+    saveBtn.disabled = false;
+    saveBtn.innerText = '설정 저장';
 }
 
 function renderBestProductCheckboxes() {

@@ -304,13 +304,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // [신규] 메인 홈페이지 베스트 상품 동적 로드
-        if (document.getElementById('grid-rfid')) {
-            window.loadDisplayProducts('grid-rfid', 'home_best_rfid');
-            window.loadDisplayProducts('grid-supplies', 'home_best_supplies');
-            window.loadDisplayProducts('grid-furniture', 'home_best_furniture');
-            window.loadDisplayProducts('grid-sign', 'home_best_sign');
+        // [신규] 메인 홈페이지 베스트 상품 동적 구성 및 로드
+        async function initDynamicBestProducts() {
+            const tabContainer = document.getElementById('dynamic-best-tabs');
+            const contentContainer = document.getElementById('dynamic-best-contents');
+            if (!tabContainer || !contentContainer) return;
+
+            // 1. 섹션 정보 가져오기
+            const { data: configData } = await db.from('site_configs').select('value').eq('key', 'site_best_sections').single();
+            const sections = configData ? configData.value : [
+                { id: 'home_best_rfid', label: 'RFID 시스템' },
+                { id: 'home_best_supplies', label: '도서관 용품' },
+                { id: 'home_best_furniture', label: '도서관 가구' },
+                { id: 'home_best_sign', label: '사인물' }
+            ];
+
+            // 2. 탭 및 그리드 생성
+            tabContainer.innerHTML = '';
+            contentContainer.innerHTML = '';
+
+            sections.forEach((s, index) => {
+                // 탭 버튼
+                const btn = document.createElement('button');
+                btn.className = `tab-item ${index === 0 ? 'active' : ''}`;
+                btn.setAttribute('data-tab', `tab-${s.id}`);
+                btn.textContent = s.label;
+                btn.onclick = () => {
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    const target = document.getElementById(`tab-${s.id}`);
+                    if (target) {
+                        target.classList.add('active');
+                        target.querySelectorAll('.product-card').forEach((card, idx) => {
+                            card.classList.remove('visible');
+                            setTimeout(() => card.classList.add('visible'), 50 + (idx * 100));
+                        });
+                    }
+                };
+                tabContainer.appendChild(btn);
+
+                // 컨텐츠 (그리드)
+                const content = document.createElement('div');
+                content.id = `tab-${s.id}`;
+                content.className = `tab-content ${index === 0 ? 'active' : ''}`;
+                content.innerHTML = `<div class="product-grid" id="grid-${s.id}"><!-- Products will be loaded here --></div>`;
+                contentContainer.appendChild(content);
+
+                // 데이터 로드
+                window.loadDisplayProducts(`grid-${s.id}`, s.id);
+            });
         }
+
+        initDynamicBestProducts();
     }
 
     // ---------------------------------------------------------
