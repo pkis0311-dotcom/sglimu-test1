@@ -291,8 +291,8 @@ async function syncProfile(user, additionalData = {}) {
     // 기본 데이터 구성 (유저 메타데이터 및 이메일 기반)
     const baseData = {
         id: user.id,
-        email: user.email,
-        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0],
+        // email 컬럼이 테이블에 없을 수 있으므로 제외 (필요 시 DB에 추가해야 함)
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
         updated_at: new Date().toISOString()
     };
 
