@@ -66,7 +66,18 @@ function switchTab(targetId) {
 
 if (loginTriggerBtn) loginTriggerBtn.addEventListener('click', () => openAuthModal());
 if (authClose) authClose.addEventListener('click', closeAuthModal);
-if (authOverlay) authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuthModal(); });
+if (authOverlay) {
+    let isMouseDownOnOverlay = false;
+    authOverlay.addEventListener('mousedown', (e) => {
+        isMouseDownOnOverlay = (e.target === authOverlay);
+    });
+    authOverlay.addEventListener('mouseup', (e) => {
+        if (isMouseDownOnOverlay && e.target === authOverlay) {
+            closeAuthModal();
+        }
+        isMouseDownOnOverlay = false;
+    });
+}
 
 authTabs.forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.target));
