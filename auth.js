@@ -39,10 +39,10 @@ function openAuthModal(tab = 'loginPane') {
     }
     authOverlay.style.display = 'flex';
     
-    // 추가 정보 입력창인 경우 상단 탭 숨김
+    // 추가 정보 입력창 또는 내 정보 관리창인 경우 상단 탭 숨김
     const tabs = document.querySelector('.auth-tabs');
     if (tabs) {
-        tabs.style.display = (tab === 'completeProfilePane') ? 'none' : 'flex';
+        tabs.style.display = (tab === 'completeProfilePane' || tab === 'myProfilePane') ? 'none' : 'flex';
     }
     
     switchTab(tab);
@@ -283,7 +283,93 @@ if (completeProfileForm) {
 }
 
 // ==========================================
-// 4. UI State Management
+// 4. My Profile Management
+// ==========================================
+const myProfileForm = document.getElementById('myProfileForm');
+const myProfileMsg = document.getElementById('myProfileMsg');
+
+async function openMyProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+
+    if (myProfileMsg) myProfileMsg.textContent = '정보 불러오는 중...';
+    openAuthModal('myProfilePane');
+
+    try {
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (error) throw error;
+
+        if (profile) {
+            if (document.getElementById('myProfileName')) document.getElementById('myProfileName').value = profile.full_name || '';
+            if (document.getElementById('myProfilePhone')) document.getElementById('myProfilePhone').value = profile.phone || '';
+            if (document.getElementById('myProfileOrg')) document.getElementById('myProfileOrg').value = profile.organization || '';
+            if (document.getElementById('myProfileAddress')) document.getElementById('myProfileAddress').value = profile.address || '';
+        }
+        if (myProfileMsg) myProfileMsg.textContent = '';
+    } catch (err) {
+        console.error('Profile fetch error:', err);
+        if (myProfileMsg) {
+            myProfileMsg.textContent = '정보를 불러오지 못했습니다.';
+            myProfileMsg.classList.add('error');
+        }
+    }
+}
+
+if (myProfileForm) {
+    myProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('myProfileName').value;
+        const phone = document.getElementById('myProfilePhone').value;
+        const org = document.getElementById('myProfileOrg').value;
+        const address = document.getElementById('myProfileAddress').value;
+
+        if (myProfileMsg) {
+            myProfileMsg.className = 'auth-message';
+            myProfileMsg.textContent = '정보 수정 중...';
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const updateData = {
+            id: user.id,
+            full_name: name,
+            phone: phone,
+            organization: org,
+            address: address,
+            updated_at: new Date().toISOString()
+        };
+
+        const { error } = await supabase.from('profiles').upsert(updateData);
+
+        if (error) {
+            if (myProfileMsg) {
+                myProfileMsg.textContent = '수정 실패: ' + error.message;
+                myProfileMsg.classList.add('error');
+            }
+        } else {
+            if (myProfileMsg) {
+                myProfileMsg.textContent = '성공적으로 수정되었습니다!';
+                myProfileMsg.classList.add('success');
+            }
+            setTimeout(() => {
+                closeAuthModal();
+                window.location.reload();
+            }, 1000);
+        }
+    });
+}
+
+// ==========================================
+// 5. UI State Management
 // ==========================================
 
 async function checkProfileCompletion(user) {
@@ -341,9 +427,14 @@ function updateAuthUI(user) {
                     <i class="fa-solid fa-circle-user"></i>
                     <span class="user-name"><b>${userName}</b> 님</span>
                 </div>
-                <button class="logout-btn" id="logoutBtn" title="로그아웃">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
+                <div class="user-nav-actions">
+                    <button class="nav-icon-btn" id="myProfileBtn" title="내 정보 관리">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                    <button class="logout-btn" id="logoutBtn" title="로그아웃">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
             </div>
         `;
         const logoutBtn = document.getElementById('logoutBtn');
@@ -353,6 +444,11 @@ function updateAuthUI(user) {
                 if (error) console.error('Logout error:', error);
                 window.location.reload();
             });
+        }
+
+        const myProfileBtn = document.getElementById('myProfileBtn');
+        if (myProfileBtn) {
+            myProfileBtn.addEventListener('click', () => openMyProfile());
         }
         
         // 프로필 미완성 시 체크 (sessionStorage 활용)

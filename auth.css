@@ -399,3 +399,29 @@
     color: #ef4444;
     border-color: #fecaca;
 }
+
+/* User Nav Actions */
+.user-nav-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.nav-icon-btn:hover {
+    background: #f1f5f9;
+    color: var(--auth-primary);
+    border-color: #cbd5e1;
+}
