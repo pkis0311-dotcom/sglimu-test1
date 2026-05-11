@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>분류/?�분류 ?��???- ?�스지?�이�?/title>
-    <meta name="description" content="?�국??��분류 ?��??? ?�서관?�품, ?�서관물품">
+    <title>분류/세분류 안내판 - 에스지라이뮤</title>
+    <meta name="description" content="한국십진분류표, 도서관안내판, 도서관사인물">
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -83,13 +83,13 @@
             </nav>
             <div class="header-utils">
                 <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검?�어�??�력?�세??>
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
                     <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
                 <div class="user-auth-wrap" id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
                         <i class="fa-regular fa-user"></i>
-                        <span>로그??/span>
+                        <span>로그인</span>
                     </button>
                 </div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
@@ -99,27 +99,56 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">분류/?�분류 ?��???/h2>
-            <p>?�서관???�보�??�눈???�아�????�는 고품�??�인물입?�다.</p>
+            <h2 class="category-title">분류/세분류 안내판</h2>
+            <p>도서관의 정보를 한눈에 알아볼 수 있는 고품질 사인물입니다.</p>
         </div>
 
         <div class="category-container">
             <ul class="subcategory-nav" id="subCategoryNav">
                 <!-- Sub-categories will be rendered dynamically by script.js -->
             </ul>
-
-
+            <div class="product-list" id="productGrid">
+                <!-- Products will be rendered dynamically by script.js -->
+            </div>
         </div>
     </main>
 
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(�??�스지?�이�?/strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; ?�스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
+
+    <aside class="right-fixed-banner">
+        <ul class="banner-menu">
+            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검색</span></a></li>
+            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
+            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
+            <li><a href="#" class="banner-btn" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
+            <li><a href="#" class="banner-btn chat-trigger" id="chatTriggerBtn" title="실시간 채팅"><i class="fa-solid fa-comments"></i><span class="tooltip">실시간 채팅</span></a></li>
+            <li class="scroll-btns">
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h4>실시간 문의</h4>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message system-msg">안녕하세요! 무엇을 도와드릴까요?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -127,20 +156,5 @@
     </script>
     <script type="module" src="script.js"></script>
     <script type="module" src="auth.js"></script>
-
-    <!-- chat-fab ���ŵ� -->
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <h4>�ǽð� ����</h4>
-            <button class="chat-close" id="chatCloseBtn">&times;</button>
-        </div>
-        <div class="chat-body" id="chatBody">
-            <div class="message system-msg">�ȳ��ϼ���! ������ ���͵帱���?</div>
-        </div>
-        <div class="chat-footer">
-            <input type="text" id="chatInput" placeholder="�޽����� �Է��ϼ���...">
-            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
 </body>
 </html>

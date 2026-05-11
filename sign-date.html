@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>´ëÃâ¹İ³³ÀÏ·ÂÇ¥ - ¿¡½ºÁö¶óÀÌ¹Â</title>
-    <meta name="description" content="RFID½Ã½ºÅÛ, µµ¼­°ü¿ëÇ°, µµ¼­°ü¹°Ç°">
+    <title>ëŒ€ì¶œë°˜ë‚©ì¼ë ¥í‘œ - ì—ìŠ¤ì§€ë¼ì´ë®¤</title>
+    <meta name="description" content="ëŒ€ì¶œë°˜ë‚©ì¼ë ¥í‘œ, ë„ì„œê´€ì•ˆë‚´íŒ, ë„ì„œê´€ì‚¬ì¸ë¬¼">
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .category-page {
-            padding: 120px 5% 100px;
+            padding: 80px 0 100px;
+            min-height: 800px;
+        }
+        .category-container {
             max-width: 1400px;
             margin: 0 auto;
-            min-height: 800px;
+            padding: 0 5%;
         }
         .category-header {
             text-align: center;
             margin-bottom: 60px;
+            padding: 60px 5%;
+            background-color: var(--color-surface);
+            width: 100%;
         }
         .category-title {
             font-size: 2.5rem;
@@ -64,9 +70,7 @@
     <link rel="stylesheet" href="cart.css">
     <link rel="stylesheet" href="inquiry.css">
     <link rel="stylesheet" href="auth.css">
-    <link rel="stylesheet" href="auth.css">
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <header class="header">
@@ -74,51 +78,20 @@
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
-                    <li class="has-submenu">
-                        <a href="#">µµ¼­°ü¸® ½Ã½ºÅÛ</a>
-                        <ul class="submenu">
-                            <li><a href="rfid.html">RFID½Ã½ºÅÛ</a></li>
-                            <li><a href="em.html">EM½Ã½ºÅÛ</a></li>
-                            <li><a href="access.html">ÃâÀÔÅëÁ¦½Ã½ºÅÛ</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">µµ¼­°ü ¿ëÇ°</a>
-                        <ul class="submenu">
-                            <li><a href="supplies-arrange.html">µµ¼­Á¤¸® ¿ëÇ°</a></li>
-                            <li><a href="supplies-protect.html">µµ¼­º¸È£, º¸¼ö¿ëÇ°</a></li>
-                            <li><a href="supplies-lend.html">´ëÃâ¿ëÇ°</a></li>
-                            <li><a href="sterilizer.html">Ã¥¼Òµ¶±â</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">µµ¼­°ü °¡±¸</a>
-                        <ul class="submenu">
-                            <li><a href="furniture-koas.html">ÄÚ¾Æ½º</a></li>
-                            <li><a href="furniture-fomus.html">Æ÷¸Ó½º</a></li>
-                            <li><a href="furniture-fursys.html">ÆÛ½Ã½º</a></li>
-                            <li><a href="furniture-custom.html">Á¦ÀÛ°¡±¸</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">»çÀÎ¹°</a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">ÇÑ±¹½ÊÁøºĞ·ù/´ëºĞ·ùÇ¥ÁöÆÇ</a></li>
-                            <li><a href="sign-board.html">°Ô½ÃÆÇ/ÀÌ¿ë¾È³»</a></li>
-                            <li><a href="sign-date.html">´ëÃâ¹İ³³ÀÏ·ÂÇ¥</a></li>
-                            <li><a href="sign-custom.html">Á¦ÀÛ»çÀÎ¹°</a></li>
-                        </ul>
-                    </li>
-                
-                    <li><a href="discount.html">ÇÒÀÎ»óÇ°</a></li>
+                    <!-- GNB will be rendered dynamically by script.js -->
                 </ul>
             </nav>
             <div class="header-utils">
                 <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="°Ë»ö¾î¸¦ ÀÔ·ÂÇÏ¼¼¿ä">
+                    <input type="text" class="search-input" placeholder="ê²€ìƒ‰ì–´ë¥¼ ì…ë ¥í•˜ì„¸ìš”">
                     <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
-                <a href="#"><i class="fa-regular fa-user"></i></a>
+                <div class="user-auth-wrap" id="userAuthWrap">
+                    <button class="login-trigger-btn" id="loginTriggerBtn">
+                        <i class="fa-regular fa-user"></i>
+                        <span>ë¡œê·¸ì¸</span>
+                    </button>
+                </div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
         </div>
@@ -126,337 +99,62 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">´ëÃâ¹İ³³ÀÏ·ÂÇ¥</h2>
-            <p>¿À´ÃÀÇ ´ëÃâ ¹× ¹İ³³ ±âÇÑÀ» ½Ã°¢ÀûÀ¸·Î ¾È³»ÇÏ´Â ÀÏ·ÂÇ¥ÀÔ´Ï´Ù.</p>
+            <h2 class="category-title">ëŒ€ì¶œë°˜ë‚©ì¼ë ¥í‘œ</h2>
+            <p>ë„ì„œê´€ì˜ ëŒ€ì¶œ ë° ë°˜ë‚© ì˜ˆì •ì¼ì„ í¸ë¦¬í•˜ê²Œ ì•ˆë‚´í•˜ëŠ” ê³ í’ˆì§ˆ ì‚¬ì¸ë¬¼ì…ë‹ˆë‹¤.</p>
         </div>
 
-        <ul class="subcategory-nav" id="subCategoryNav">
-            <li class="subcategory-item active" data-target="cat-0">ÀÏ·ÂÇ¥ ÀüÃ¼</li>
-        </ul>
-
-        <div id="cat-0" class="sub-content active">
-            <div class="product-list">
-                <div class="product-card visible">
-                    <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
-                    <div class="product-info">
-                        <h4>»çÀÎ¹° »ùÇÃ»óÇ°</h4>
-                    </div>
-                </div>
+        <div class="category-container">
+            <ul class="subcategory-nav" id="subCategoryNav">
+                <!-- Sub-categories will be rendered dynamically by script.js -->
+            </ul>
+            <div class="product-list" id="productGrid">
+                <!-- Products will be rendered dynamically by script.js -->
             </div>
         </div>
-
     </main>
 
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p>
-                    <strong>(ÁÖ)¿¡½ºÁö¶óÀÌ¹Â</strong> &nbsp;|&nbsp; 
-                    Tel : 1544-5703 &nbsp;|&nbsp; 
-                    ÆÑ½º : 051-518-5985 &nbsp;|&nbsp; 
-                    Á¡½É½Ã°£ (12:00~13:00) &nbsp;|&nbsp; 
-                    E-Mail : limu101@nate.com
-                </p>
-                <p>
-                    Address : ºÎ»ê±¤¿ª½Ã ±İÁ¤±¸ ³îÀÌ¸¶´ç·Î 29-1 (Ã»·æµ¿)
-                </p>
-                <p>
-                    ´ëÇ¥ÀÚ¸í : °­ÀÎ¼÷ &nbsp;|&nbsp; 
-                    °³ÀÎÁ¤º¸Ãë±Ş´ã´çÀÚ : °­ÀÎ¼÷ &nbsp;|&nbsp; 
-                    »ç¾÷ÀÚ¹øÈ£ : 621-81-42086 &nbsp;|&nbsp; 
-                    Åë½ÅÆÇ¸Å¾÷½Å°í¹øÈ£ : Á¦ 2018-ºÎ»ê±İÁ¤-0045È£
-                </p>
-                <p class="copyright">
-                    Copyright(c)2023 www.sgperzoom.com. All right Reserved.
-                </p>
+                <p><strong>(ì£¼)ì—ìŠ¤ì§€ë¼ì´ë®¤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; íŒ©ìŠ¤ : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
 
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="°Ë»ö"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">°Ë»ö</span></a></li>
-            <li><a href="#" class="banner-btn" title="ÁÖ¹®¹è¼Û"><i class="fa-solid fa-truck"></i><span class="tooltip">ÁÖ¹®¹è¼Û</span></a></li>
-            <li><a href="#" class="banner-btn" title="Àå¹Ù±¸´Ï"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">Àå¹Ù±¸´Ï</span></a></li>
-            <li><a href="#" class="banner-btn" title="°ü½É»óÇ°"><i class="fa-regular fa-heart"></i><span class="tooltip">°ü½É»óÇ°</span></a></li>
-            <li><a href="#" class="banner-btn chat-trigger" id="chatTriggerBtn" title="½Ç½Ã°£ Ã¤ÆÃ"><i class="fa-solid fa-comments"></i><span class="tooltip">³×ÀÌ¹öÅåÅå</span></a></li>
+            <li><a href="#" class="banner-btn search-btn-aside" title="ê²€ìƒ‰"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">ê²€ìƒ‰</span></a></li>
+            <li><a href="#" class="banner-btn" title="ì£¼ë¬¸ë°°ì†¡"><i class="fa-solid fa-truck"></i><span class="tooltip">ì£¼ë¬¸ë°°ì†¡</span></a></li>
+            <li><a href="#" class="banner-btn" title="ì¥ë°”êµ¬ë‹ˆ"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">ì¥ë°”êµ¬ë‹ˆ</span></a></li>
+            <li><a href="#" class="banner-btn" title="ê´€ì‹¬ìƒí’ˆ"><i class="fa-regular fa-heart"></i><span class="tooltip">ê´€ì‹¬ìƒí’ˆ</span></a></li>
+            <li><a href="#" class="banner-btn chat-trigger" id="chatTriggerBtn" title="ì‹¤ì‹œê°„ ì±„íŒ…"><i class="fa-solid fa-comments"></i><span class="tooltip">ì‹¤ì‹œê°„ ì±„íŒ…</span></a></li>
             <li class="scroll-btns">
-                <button class="banner-btn scroll-top" id="scrollTopBtn" title="À§·Î"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="¾Æ·¡·Î"><i class="fa-solid fa-chevron-down"></i></button>
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="ìœ„ë¡œ"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="ì•„ë˜ë¡œ"><i class="fa-solid fa-chevron-down"></i></button>
             </li>
         </ul>
     </aside>
 
-    <!-- Chat Widget -->
-    <div class="chat-widget">
-        <button class="chat-fab" id="chatFab">
-            <i class="fa-solid fa-comment-dots"></i>
-        </button>
-        
-        <div class="chat-window" id="chatWindow">
-            <div class="chat-header">
-                <h5>½Ç½Ã°£ »ó´ã</h5>
-                <button id="chatCloseBtn"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="chat-body" id="chatBody">
-                <div class="message system-msg">
-                    ¾È³çÇÏ¼¼¿ä! ¿¡½ºÁö¶óÀÌ¹ÂÀÔ´Ï´Ù.<br>¹«¾ùÀ» µµ¿Íµå¸±±î¿ä?
-                </div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="¸Ş½ÃÁö¸¦ ÀÔ·ÂÇÏ¼¼¿ä...">
-                <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h4>ì‹¤ì‹œê°„ ë¬¸ì˜</h4>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message system-msg">ì•ˆë…•í•˜ì„¸ìš”! ë¬´ì—‡ì„ ë„ì™€ë“œë¦´ê¹Œìš”?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="ë©”ì‹œì§€ë¥¼ ì…ë ¥í•˜ì„¸ìš”...">
+            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="script.js"></script>
     <script>
-        const { createClient } = supabase;
-        const db = createClient('https://xxvfgnoffomrhtxitqkj.supabase.co', 'sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9');
-
-        const CURRENT_PAGE_ID = 'sign-date'; 
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            // --- UI Interaction Logic ---
-            const subNavItems = document.querySelectorAll('.subcategory-item');
-            const subContents = document.querySelectorAll('.sub-content');
-
-            subNavItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    subNavItems.forEach(n => n.classList.remove('active'));
-                    subContents.forEach(c => c.classList.remove('active'));
-
-                    item.classList.add('active');
-                    const targetId = item.getAttribute('data-target');
-                    const targetContent = document.getElementById(targetId);
-                    if(targetContent) {
-                        targetContent.classList.add('active');
-                        const cards = targetContent.querySelectorAll('.product-card');
-                        cards.forEach((card, i) => {
-                            card.classList.remove('visible');
-                            setTimeout(() => {
-                                card.classList.add('visible');
-                            }, 50 + (i * 100));
-                        });
-                    }
-                });
-            });
-
-            // --- Product Display Logic (Supabase) ---
-            async function loadDisplayProducts(containerId, displayKey) {
-                const container = document.querySelector(`#${containerId} .product-list`);
-                if(!container) return;
-
-                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
-                const selectedIds = configData ? configData.value : [];
-
-                if (selectedIds.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">µî·ÏµÈ Àü½Ã »óÇ°ÀÌ ¾ø½À´Ï´Ù. °ü¸®ÀÚ »çÀÌÆ®¿¡¼­ ¹èÄ¡ÇØÁÖ¼¼¿ä.</div>';
-                    return;
-                }
-
-                const { data: products, error } = await db.from('products').select('*').in('id', selectedIds);
-                if (error) return;
-
-                container.innerHTML = '';
-                const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
-                
-                sortedProducts.forEach(p => {
-                    const card = document.createElement('div');
-                    card.className = 'product-card visible';
-                    card.style.cursor = 'pointer';
-                    card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
-                    
-                    const priceStr = (!p.price || p.price === 'ÀüÈ­¹®ÀÇ') ? 'ÀüÈ­¹®ÀÇ' : Number(p.price).toLocaleString() + '¿ø';
-                    card.innerHTML = `
-                        <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
-                        <div class="product-info" style="text-align:center; padding:15px;">
-                            <h4 style="margin-bottom:5px;">${p.name}</h4>
-                            <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            }
-
-            // Automatically load products for each subcategory
-            const subItems = document.querySelectorAll('.subcategory-item');
-            for (const item of subItems) {
-                const targetId = item.getAttribute('data-target');
-                const displayKey = CURRENT_PAGE_ID + '-' + targetId;
-                await loadDisplayProducts(targetId, displayKey);
-            }
-
-            // --- Page Content Logic (Supabase) ---
-            try {
-                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'pageData_' + CURRENT_PAGE_ID).single();
-                const data = configData ? configData.value : null;
-
-                if(data) {
-                    if(data.description) {
-                        const descElem = document.getElementById('dynamicDesc');
-                        if(descElem) descElem.innerHTML = data.description.replace(/\n/g, '<br>');
-                    }
-                    if(data.mainImages && data.mainImages.length > 0) {
-                        const mainImgElem = document.getElementById('mainImage');
-                        if(mainImgElem) mainImgElem.src = data.mainImages[0];
-                    }
-                    if(data.detailImage || (data.detailImages && data.detailImages[0])) {
-                        const detailImgElem = document.getElementById('dynamicDetailImg');
-                        if(detailImgElem) detailImgElem.src = data.detailImage || data.detailImages[0];
-                    }
-                    if(data.specs && data.specs.length > 0) {
-                        const specBody = document.getElementById('dynamicSpecTable');
-                        if(specBody) {
-                            specBody.innerHTML = '';
-                            data.specs.forEach(s => {
-                                specBody.innerHTML += `<tr><th style="background:#f9f9f9; width:25%; padding:12px; border:1px solid #ddd; text-align:left;">${s.key}</th><td style="padding:12px; border:1px solid #ddd;">${s.val}</td></tr>`;
-                            });
-                        }
-                    }
-                    if(data.features && data.features.length > 0) {
-                        const featureContainer = document.getElementById('dynamicFeatures');
-                        if(featureContainer) {
-                            featureContainer.innerHTML = '';
-                            data.features.forEach((feat, i) => {
-                                const num = (i + 1).toString().padStart(2, '0');
-                                featureContainer.innerHTML += `
-                                    <div class="feature-item" style="margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:15px;">
-                                        <h5 style="font-size:1.1rem; color:#222; margin-bottom:8px; display:flex; align-items:center;">
-                                            <span style="display:inline-block; background:var(--color-primary); color:#fff; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; margin-right:10px; font-size:0.75rem;">${num}</span>
-                                            ${feat.title}
-                                        </h5>
-                                        <p style="color:#666; line-height:1.6; padding-left:32px;">${feat.desc.replace(/\n/g, '<br>')}</p>
-                                    </div>
-                                `;
-                            });
-                        }
-                    }
-                }
-            } catch(e) {
-                console.error("Supabase load error for " + CURRENT_PAGE_ID, e);
-            }
-        });
+        window.CURRENT_PAGE_ID = 'sign';
     </script>
-    <!-- SG LIMU Global Scripts -->
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
-    <!-- Auth Modal Overlay -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <div class="auth-close" id="authClose">&times;</div>
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">·Î±×ÀÎ</div>
-                <div class="auth-tab" data-target="signupPane">È¸¿ø°¡ÀÔ</div>
-            </div>
-            <div class="auth-content">
-                <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>È¯¿µÇÕ´Ï´Ù!</h2><p>°£Æí·Î±×ÀÎÀ¸·Î ºü¸£°Ô ½ÃÀÛÇÏ¼¼¿ä.</p></div>
-                    <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> Ä«Ä«¿À ·Î±×ÀÎ</button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ³×ÀÌ¹ö ·Î±×ÀÎ</button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google ·Î±×ÀÎ</button>
-                    </div>
-                    <div class="auth-divider"><span>¶Ç´Â</span></div>
-                    <form id="loginForm">
-                        <div class="auth-form-group"><label>ÀÌ¸ŞÀÏ</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>ºñ¹Ğ¹øÈ£</label><input type="password" id="loginPassword" class="auth-input" placeholder="ºñ¹Ğ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä" required></div>
-                        <button type="submit" class="auth-submit-btn">·Î±×ÀÎ</button>
-                    </form>
-                    <div id="loginMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>È¸¿ø°¡ÀÔ</h2><p>°£´ÜÇÑ Á¤º¸ ÀÔ·ÂÀ¸·Î ´õ ¸¹Àº ÇıÅÃÀ» ´©¸®¼¼¿ä.</p></div>
-                    <form id="signupForm">
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>ÀÌ¸§ *</label><input type="text" id="signupName" class="auth-input" placeholder="È«±æµ¿" required></div>
-                            <div class="auth-form-group"><label>ÀüÈ­¹øÈ£ *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        </div>
-                        <div class="auth-form-group"><label>ÀÌ¸ŞÀÏ *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>ºñ¹Ğ¹øÈ£ *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6ÀÚ ÀÌ»ó ÀÔ·Â" minlength="6" required></div>
-                        <div class="auth-form-group"><label>¼Ò¼Ó±â°ü / ÇĞ±³ / µµ¼­°ü¸í</label><input type="text" id="signupOrg" class="auth-input" placeholder="¿¹) ÇÑ±¹´ëÇĞ±³ µµ¼­°ü"></div>
-                        <div class="auth-form-group"><label>¹è¼Û/¹æ¹®¿ë ÁÖ¼Ò</label><input type="text" id="signupAddress" class="auth-input" placeholder="ÀüÃ¼ ÁÖ¼Ò¸¦ ÀÔ·ÂÇÏ¼¼¿ä"></div>
-                        <button type="submit" class="auth-submit-btn">°¡ÀÔÇÏ±â</button>
-                    </form>
-                    <div id="signupMsg" class="auth-message"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script type="module" src="auth.js"></script>
-    <!-- Auth Modal Overlay -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <div class="auth-close" id="authClose">&times;</div>
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">ë¡œê·¸??/div>
-                <div class="auth-tab" data-target="signupPane">?Œì›ê°€??/div>
-            </div>
-            <div class="auth-content">
-                <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>?˜ì˜?©ë‹ˆ??</h2><p>ê°„í¸ë¡œê·¸?¸ìœ¼ë¡?ë¹ ë¥´ê²??œì‘?˜ì„¸??</p></div>
-                    <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> ì¹´ì¹´??ë¡œê·¸??/button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?¤ì´ë²?ë¡œê·¸??/button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google ë¡œê·¸??/button>
-                    </div>
-                    <div class="auth-divider"><span>?ëŠ”</span></div>
-                    <form id="loginForm">
-                        <div class="auth-form-group"><label>?´ë©”??/label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>ë¹„ë?ë²ˆí˜¸</label><input type="password" id="loginPassword" class="auth-input" placeholder="ë¹„ë?ë²ˆí˜¸ë¥??…ë ¥?˜ì„¸?? required></div>
-                        <button type="submit" class="auth-submit-btn">ë¡œê·¸??/button>
-                    </form>
-                    <div id="loginMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>?Œì›ê°€??/h2><p>ê°„ë‹¨???•ë³´ ?…ë ¥?¼ë¡œ ??ë§ì? ?œíƒ???„ë¦¬?¸ìš”.</p></div>
-                    <div class="auth-social-signup">
-                        <div class="auth-social-signup-header"><span>ê°„í¸ ?Œì›ê°€??/span></div>
-                        <div class="social-login-grid">
-                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> ì¹´ì¹´?¤ë¡œ ?œì‘</button>
-                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?¤ì´ë²„ë¡œ ?œì‘</button>
-                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Googleë¡??œì‘</button>
-                        </div>
-                    </div>
-                    <div class="auth-divider"><span>?ëŠ” ?´ë©”?¼ë¡œ ê°€??/span></div>
-                    <div class="auth-type-selector" id="userTypeSelector">
-                        <div class="auth-type-btn active" data-type="individual">ê°œì¸ ?Œì›</div>
-                        <div class="auth-type-btn" data-type="business">ê¸°ê? / ?¬ì—…??/div>
-                    </div>
-                    <form id="signupForm">
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>?´ë¦„ *</label><input type="text" id="signupName" class="auth-input" placeholder="?ê¸¸?? required></div>
-                            <div class="auth-form-group"><label>?„í™”ë²ˆí˜¸ *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        </div>
-                        <div class="auth-form-group"><label>?´ë©”??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>ë¹„ë?ë²ˆí˜¸ *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???´ìƒ" minlength="6" required></div>
-                            <div class="auth-form-group"><label>ë¹„ë?ë²ˆí˜¸ ?•ì¸ *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="??ë²????…ë ¥" required></div>
-                        </div>
-                        <div class="auth-form-group" id="orgGroup"><label>?Œì†ê¸°ê? / ?™êµ / ?„ì„œê´€ëª?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?œêµ­?€?™êµ ?„ì„œê´€"></div>
-                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>?¬ì—…???±ë¡ë²ˆí˜¸</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
-                        <div class="auth-form-group"><label>ë°°ì†¡/ë°©ë¬¸??ì£¼ì†Œ</label><input type="text" id="signupAddress" class="auth-input" placeholder="?„ì²´ ì£¼ì†Œë¥??…ë ¥?˜ì„¸??></div>
-                        <button type="submit" class="auth-submit-btn">ê°€?…í•˜ê¸?/button>
-                    </form>
-                    <div id="signupMsg" class="auth-message"></div>
-                </div>
-                <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header"><h2>ì¶”ê? ?•ë³´ ?…ë ¥</h2><p>?í™œ???œë¹„???´ìš©???„í•´ ?„ìˆ˜ ?•ë³´ë¥??…ë ¥??ì£¼ì„¸??</p></div>
-                    <form id="completeProfileForm">
-                        <div class="highlight-box">
-                            <div class="auth-form-group"><label>?„í™”ë²ˆí˜¸ *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                            <div class="auth-form-group"><label>?Œì†ê¸°ê? / ?™êµ / ?„ì„œê´€ëª?*</label><input type="text" id="completeOrg" class="auth-input" placeholder="?? ?œêµ­?€?™êµ ?„ì„œê´€" required></div>
-                            <div class="auth-form-group"><label>ë°°ì†¡/ë°©ë¬¸??ì£¼ì†Œ</label><input type="text" id="completeAddress" class="auth-input" placeholder="?„ì²´ ì£¼ì†Œë¥??…ë ¥?˜ì„¸??></div>
-                        </div>
-                        <button type="submit" class="auth-submit-btn">?•ë³´ ?€??ë°??œì‘?˜ê¸°</button>
-                    </form>
-                    <div id="completeMsg" class="auth-message"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script type="module" src="script.js"></script>
     <script type="module" src="auth.js"></script>
 </body>
 </html>
