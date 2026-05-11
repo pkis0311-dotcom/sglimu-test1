@@ -169,6 +169,22 @@ if (signupForm) {
                 signupMsg.classList.add('error');
             }
         } else {
+            // [추가] 가입 성공 시 profiles 테이블에 기본 레코드 생성 시도
+            if (data.user) {
+                const initialProfile = {
+                    id: data.user.id,
+                    full_name: name,
+                    phone: phone,
+                    organization: organization,
+                    address: address,
+                    user_type: selectedUserType,
+                    updated_at: new Date().toISOString()
+                };
+                supabase.from('profiles').upsert(initialProfile).then(({ error }) => {
+                    if (error) console.error('Initial profile creation error:', error);
+                });
+            }
+
             if (signupMsg) {
                 signupMsg.textContent = '가입 성공! 이메일을 확인하거나 로그인해 주세요.';
                 signupMsg.classList.add('success');
@@ -233,8 +249,8 @@ if (completeProfileForm) {
 
         const profileData = {
             id: user.id,
-            full_name: user.user_metadata?.full_name || user.email.split('@')[0],
-            email: user.email,
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || '유저',
+            // email 컬럼이 테이블에 없을 경우를 대비해 제외
             phone: phone,
             organization: org,
             address: address,
@@ -318,7 +334,7 @@ function updateAuthUI(user) {
 
     if (user) {
         console.log('Updating UI for logged-in user:', user.email);
-        const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+        const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '유저';
         wrap.innerHTML = `
             <div class="user-profile-nav">
                 <div class="user-info-badge">
