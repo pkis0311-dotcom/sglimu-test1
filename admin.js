@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2) 채팅방 목록 불러오기 (최근 메시지 기준)
     async function loadChatRooms() {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('chat_messages')
             .select('room_id, sender_name, message, created_at')
             .order('created_at', { ascending: false });
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         chatBody.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">대화 내역을 불러오는 중...</div>';
 
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('chat_messages')
             .select('*')
             .eq('room_id', roomId)
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let adminChatChannel = null;
     function subscribeToAllChats() {
         if (adminChatChannel) return;
-        adminChatChannel = supabase
+        adminChatChannel = db
             .channel('admin_chat_all')
             .on('postgres_changes', {
                 event: 'INSERT',
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAdminMessage(text, 'user');
         chatInput.value = '';
 
-        const { error } = await supabase
+        const { error } = await db
             .from('chat_messages')
             .insert([{
                 room_id: currentRoomId,
