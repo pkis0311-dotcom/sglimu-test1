@@ -169,6 +169,22 @@ if (signupForm) {
                 signupMsg.classList.add('error');
             }
         } else {
+            // [추가] 가입 성공 시 profiles 테이블에 기본 정보 즉시 연동
+            if (data.user) {
+                try {
+                    await syncProfile(data.user, {
+                        full_name: name,
+                        phone: phone,
+                        organization: organization,
+                        address: address,
+                        user_type: selectedUserType,
+                        biz_number: bizNumber
+                    });
+                } catch (syncErr) {
+                    console.error('Profile Sync Error during signup:', syncErr);
+                }
+            }
+
             if (signupMsg) {
                 signupMsg.textContent = '가입 성공! 이메일을 확인하거나 로그인해 주세요.';
                 signupMsg.classList.add('success');
@@ -231,26 +247,15 @@ if (completeProfileForm) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const profileData = {
-            id: user.id,
-            full_name: user.user_metadata?.full_name || user.email.split('@')[0],
-            email: user.email,
-            phone: phone,
-            organization: org,
-            address: address,
-            user_type: userType,
-            updated_at: new Date().toISOString()
-        };
+        // [수정] syncProfile 공통 함수를 사용하여 profiles 테이블 연동
+        try {
+            const result = await syncProfile(user, {
+                phone: phone,
+                organization: org,
+                address: address,
+                user_type: userType
+            });
 
-        // update 대신 upsert를 사용하여 데이터가 없을 경우 생성하도록 수정
-        const { error } = await supabase.from('profiles').upsert(profileData);
-
-        if (error) {
-            if (completeMsg) {
-                completeMsg.textContent = '저장 실패: ' + error.message;
-                completeMsg.classList.add('error');
-            }
-        } else {
             if (completeMsg) {
                 completeMsg.textContent = '저장 완료! 환영합니다.';
                 completeMsg.classList.add('success');
@@ -262,13 +267,47 @@ if (completeProfileForm) {
                 closeAuthModal();
                 window.location.reload();
             }, 1000);
+        } catch (error) {
+            if (completeMsg) {
+                completeMsg.textContent = '저장 실패: ' + error.message;
+                completeMsg.classList.add('error');
+            }
         }
     });
 }
 
 // ==========================================
-// 4. UI State Management
+// 4. Sync & UI State Management
 // ==========================================
+
+/**
+ * auth.users의 정보와 추가 입력 정보를 profiles 테이블에 동기화합니다.
+ */
+async function syncProfile(user, additionalData = {}) {
+    if (!user) return null;
+
+    console.log('Syncing profile for:', user.id);
+
+    // 기본 데이터 구성 (유저 메타데이터 및 이메일 기반)
+    const baseData = {
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0],
+        updated_at: new Date().toISOString()
+    };
+
+    // 추가 데이터 병합 (입력 폼에서 넘어온 데이터 등)
+    const profileData = { ...baseData, ...additionalData };
+
+    // profiles 테이블에 upsert (id가 같으면 업데이트, 없으면 생성)
+    const { data, error } = await supabase.from('profiles').upsert(profileData).select().single();
+    
+    if (error) {
+        console.error('Profile Upsert Error:', error);
+        throw error;
+    }
+    return data;
+}
 
 async function checkProfileCompletion(user) {
     if (!user) return;
@@ -355,9 +394,15 @@ function updateAuthUI(user) {
 }
 
 // 초기 세션 확인 및 리스너 등록
-supabase.auth.onAuthStateChange((event, session) => {
+supabase.auth.onAuthStateChange(async (event, session) => {
     console.log('Auth State Changed:', event, session);
     if (session) {
+        // [추가] 세션 변경 시(로그인 등) 프로필 동기화 시도
+        try {
+            await syncProfile(session.user);
+        } catch (err) {
+            console.error('Auto sync failed:', err);
+        }
         updateAuthUI(session.user);
     } else {
         updateAuthUI(null);
