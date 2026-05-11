@@ -280,39 +280,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------------------------------------------------
     // 4. Product Tabs Logic (Home Page Only)
     // ---------------------------------------------------------
-    const tabItems = document.querySelectorAll('.tab-item');
-    const tabContents = document.querySelectorAll('.tab-content');
 
-    if (tabItems.length > 0) {
-        tabItems.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabItems.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
+    // [신규] 메인 홈페이지 베스트 상품 동적 구성 및 로드
+    async function initDynamicBestProducts() {
+        const tabContainer = document.getElementById('dynamic-best-tabs');
+        const contentContainer = document.getElementById('dynamic-best-contents');
+        if (!tabContainer || !contentContainer) return;
 
-                tab.classList.add('active');
-                const targetId = tab.getAttribute('data-tab');
-                const targetContent = document.getElementById(targetId);
-                if (targetContent) {
-                    targetContent.classList.add('active');
-                    targetContent.querySelectorAll('.product-card').forEach((card, index) => {
-                        card.classList.remove('visible');
-                        setTimeout(() => {
-                            card.classList.add('visible');
-                        }, 50 + (index * 100));
-                    });
-                }
-            });
-        });
-
-        // [신규] 메인 홈페이지 베스트 상품 동적 구성 및 로드
-        async function initDynamicBestProducts() {
-            const tabContainer = document.getElementById('dynamic-best-tabs');
-            const contentContainer = document.getElementById('dynamic-best-contents');
-            if (!tabContainer || !contentContainer) return;
-
+        try {
             // 1. 섹션 정보 가져오기
-            const { data: configData } = await db.from('site_configs').select('value').eq('key', 'site_best_sections').single();
-            const sections = configData ? configData.value : [
+            const { data: configData, error } = await supabase.from('site_configs').select('value').eq('key', 'site_best_sections').single();
+            const sections = (configData && configData.value) ? configData.value : [
                 { id: 'home_best_rfid', label: 'RFID 시스템' },
                 { id: 'home_best_supplies', label: '도서관 용품' },
                 { id: 'home_best_furniture', label: '도서관 가구' },
@@ -323,6 +301,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             tabContainer.innerHTML = '';
             contentContainer.innerHTML = '';
 
+            if (!Array.isArray(sections) || sections.length === 0) {
+                tabContainer.innerHTML = '<div style="color:#999; font-size:0.9rem;">설정된 섹션이 없습니다.</div>';
+                return;
+            }
+
             sections.forEach((s, index) => {
                 // 탭 버튼
                 const btn = document.createElement('button');
@@ -330,8 +313,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.setAttribute('data-tab', `tab-${s.id}`);
                 btn.textContent = s.label;
                 btn.onclick = () => {
-                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('#dynamic-best-tabs .tab-item').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('#dynamic-best-contents .tab-content').forEach(c => c.classList.remove('active'));
                     btn.classList.add('active');
                     const target = document.getElementById(`tab-${s.id}`);
                     if (target) {
@@ -352,11 +335,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 contentContainer.appendChild(content);
 
                 // 데이터 로드
-                window.loadDisplayProducts(`grid-${s.id}`, s.id);
+                if (window.loadDisplayProducts) {
+                    window.loadDisplayProducts(`grid-${s.id}`, s.id);
+                }
             });
+        } catch (err) {
+            console.error("initDynamicBestProducts Error:", err);
         }
-
-        initDynamicBestProducts();
     }
 
     // ---------------------------------------------------------
@@ -740,4 +725,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     initDynamicPageContent();
+
+    // 베스트 상품 초기화 (전역 함수들이 모두 정의된 후 실행)
+    if (typeof initDynamicBestProducts === 'function') {
+        initDynamicBestProducts();
+    }
 });
