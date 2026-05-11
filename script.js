@@ -353,12 +353,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     const chatSendBtn = document.getElementById('chatSendBtn');
     const chatBody = document.getElementById('chatBody');
 
-    // 1) 채팅 세션(Room ID) 관리
-    let chatSessionId = localStorage.getItem('chat_session_id');
-    if (!chatSessionId) {
-        chatSessionId = 'guest_' + Math.random().toString(36).substring(2, 11);
-        localStorage.setItem('chat_session_id', chatSessionId);
+    // 1) 채팅 세션 및 유저 정보 가져오기
+    async function getChatUserInfo() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+            const user = session.user;
+            // 우선 profiles 테이블에서 이름을 가져오고, 없으면 metadata에서 가져옴
+            const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+            const name = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || '회원';
+            return { id: user.id, name: name };
+        } else {
+            let guestId = localStorage.getItem('chat_session_id');
+            if (!guestId) {
+                guestId = 'guest_' + Math.random().toString(36).substring(2, 11);
+                localStorage.setItem('chat_session_id', guestId);
+            }
+            return { id: guestId, name: 'Guest' };
+        }
     }
+
+    // 전역 변수로 현재 세션 정보 유지
+    let currentChatUser = { id: '', name: 'Guest' };
 
     // 2) 채팅창 토글 및 내역 로드
     async function toggleChat() {
@@ -366,6 +381,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isActive = chatWindow.classList.toggle('active');
         
         if (isActive) {
+            currentChatUser = await getChatUserInfo();
             if (chatInput) setTimeout(() => chatInput.focus(), 300);
             await loadChatHistory();
             subscribeToChat();
@@ -381,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data, error } = await supabase
             .from('chat_messages')
             .select('*')
-            .eq('room_id', chatSessionId)
+            .eq('room_id', currentChatUser.id)
             .order('created_at', { ascending: true });
 
         if (error) {
@@ -389,7 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        chatBody.innerHTML = '<div class="message system-msg">안녕하세요! 무엇을 도와드릴까요?</div>';
+        chatBody.innerHTML = `<div class="message system-msg">안녕하세요 ${currentChatUser.name}님!<br>무엇을 도와드릴까요?</div>`;
         data.forEach(msg => {
             renderMessage(msg.message, msg.sender_role === 'customer' ? 'user' : 'system');
         });
@@ -416,10 +432,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 event: 'INSERT',
                 schema: 'public',
                 table: 'chat_messages',
-                filter: `room_id=eq.${chatSessionId}`
+                filter: `room_id=eq.${currentChatUser.id}`
             }, (payload) => {
                 const newMsg = payload.new;
-                // 관리자가 보낸 메시지만 렌더링 (본인이 보낸 것은 이미 렌더링됨)
                 if (newMsg.sender_role === 'admin') {
                     renderMessage(newMsg.message, 'system');
                 }
@@ -444,19 +459,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderMessage(text, 'user');
         chatInput.value = '';
 
-        // DB 저장
+        // DB 저장 (로그인 정보 반영)
         const { error } = await supabase
             .from('chat_messages')
             .insert([{
-                room_id: chatSessionId,
+                room_id: currentChatUser.id,
                 sender_role: 'customer',
-                sender_name: 'Guest',
+                sender_name: currentChatUser.name,
                 message: text
             }]);
 
         if (error) {
             console.error('메시지 전송 실패:', error);
-            // 실패 시 안내 (옵션)
         }
     }
 
