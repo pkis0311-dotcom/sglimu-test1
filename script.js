@@ -605,12 +605,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     contentDiv.id = sub.id;
                     contentDiv.className = `sub-content ${index === 0 ? 'active' : ''}`;
                     contentDiv.innerHTML = '<div class="product-list"></div>';
-                    if (detailSection) {
-                        detailSection.parentElement.insertBefore(contentDiv, detailSection);
-                    } else {
-                        // subNav의 부모(container)에 추가
-                        subNav.parentElement.appendChild(contentDiv);
-                    }
+                    // subNav의 부모(container)에 추가
+                    subNav.parentElement.appendChild(contentDiv);
                 } else {
                     contentDiv.classList.toggle('active', index === 0);
                 }
