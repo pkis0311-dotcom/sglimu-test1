@@ -137,21 +137,22 @@ async function signInWithSocial(provider) {
 }
 
 if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => signInWithSocial('kakao'));
-if (naverLoginBtn) {
-    naverLoginBtn.addEventListener('click', (e) => {
+// 2. 네이버 로그인 버튼 클릭 이벤트 연결 (로그인/회원가입 공통)
+const naverBtns = document.querySelectorAll('.btn-naver');
+naverBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
         e.preventDefault();
-        // SDK의 실제 로그인 버튼을 강제로 클릭하거나 authorize() 호출
+        localStorage.setItem('pending_user_type', selectedUserType);
         if (naverLogin) {
             const naverActualBtn = document.getElementById('naverIdLogin')?.firstChild;
             if (naverActualBtn) naverActualBtn.click();
             else {
-                // 버튼 요소를 찾지 못할 경우의 폴백
                 const url = `https://nid.naver.com/oauth2.0/authorize?response_type=token&client_id=${naverLogin.clientId}&redirect_uri=${encodeURIComponent(naverLogin.callbackUrl)}&state=${Math.random().toString(36).substr(2)}`;
                 window.location.href = url;
             }
         }
     });
-}
+});
 if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => signInWithSocial('google'));
 
 if (socialSignupBtns) {
@@ -544,39 +545,58 @@ document.addEventListener('DOMContentLoaded', async () => {
 // 네이버 정보를 이용한 프로필 연동 함수
 async function handleNaverSocialLogin(naverUser) {
     const { email, name, id } = naverUser;
+    const userType = localStorage.getItem('pending_user_type') || 'individual';
 
-    // 1. 기존 프로필 확인
+    console.log('네이버 유저 정보 저장 시도:', { id, email, name });
+
+    // 1. 기존 프로필 확인 (이메일로 확인)
     const { data: profile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', id)
-        .single();
+        .eq('email', email)
+        .maybeSingle();
+
+    let targetProfile = profile;
 
     if (!profile) {
-        // 2. 신규 유저인 경우 프로필 생성 (Upsert)
-        const { error: insertError } = await supabase
+        // 2. 신규 유저인 경우 프로필 생성
+        const { data: newProfile, error: insertError } = await supabase
             .from('profiles')
             .upsert({
-                id: id,
                 full_name: name || email?.split('@')[0],
+                email: email,
                 phone: naverUser.mobile || '',
-                user_type: localStorage.getItem('pending_user_type') || 'individual',
+                user_type: userType,
                 updated_at: new Date().toISOString()
-            });
-
-        if (insertError) console.error('네이버 프로필 동기화 실패:', insertError);
+            })
+            .select()
+            .single();
+            
+        if (insertError) {
+            console.error('네이버 프로필 동기화 실패:', insertError);
+        } else {
+            targetProfile = newProfile;
+        }
     }
 
     // 3. UI 업데이트 (강제 로그온 상태 UI 표시)
-    // 참고: 공식 Supabase Auth 세션은 아니므로, 나중에 DB 연동 시 id를 기준으로 쿼리해야 함
     const mockUser = {
-        id: id,
+        id: targetProfile?.id || id,
         email: email,
         user_metadata: { full_name: name }
     };
     updateAuthUI(mockUser);
+    
+    // 4. 추가 정보 입력창 띄우기 (연락처나 기관명이 없는 경우)
+    if (!targetProfile || !targetProfile.phone || !targetProfile.organization) {
+        setTimeout(() => {
+            openAuthModal('completeProfilePane');
+        }, 800);
+    } else {
+        alert(`${name}님, 반갑습니다!`);
+    }
 
-    // 알림 후 메인으로 (해시 제거)
+    // 5. 해시 제거 (URL 정리)
     if (window.location.hash) {
         window.history.replaceState(null, null, window.location.pathname);
     }
