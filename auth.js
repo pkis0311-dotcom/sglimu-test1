@@ -3,10 +3,25 @@ import { supabase } from './supabase-client.js';
 // ==========================================
 // 📱 Kakao SDK Initialization
 // ==========================================
-const KAKAO_JS_KEY = 'afd6cc8f3b753cd6907f9eeadeac2342'; 
+const KAKAO_JS_KEY = 'afd6cc8f3b753cd6907f9eeadeac2342';
 if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
     Kakao.init(KAKAO_JS_KEY);
     console.log('Kakao SDK Initialized:', Kakao.isInitialized());
+}
+
+// ==========================================
+// 📱 Naver SDK Initialization
+// ==========================================
+let naverLogin;
+if (typeof naver !== 'undefined') {
+    naverLogin = new naver.LoginWithNaverId({
+        clientId: "lBnHMycgXAwZ3xqyXLTp", // TODO: 실제 네이버 Client ID로 교체 필요
+        callbackUrl: window.location.origin + window.location.pathname,
+        isPopup: false,
+        loginButton: { color: "green", type: 3, height: 60 }
+    });
+    naverLogin.init();
+    console.log('Naver SDK Initialized');
 }
 
 // DOM Elements
@@ -38,13 +53,13 @@ function openAuthModal(tab = 'loginPane') {
         return;
     }
     authOverlay.style.display = 'flex';
-    
+
     // 추가 정보 입력창 또는 내 정보 관리창인 경우 상단 탭 숨김
     const tabs = document.querySelector('.auth-tabs');
     if (tabs) {
         tabs.style.display = (tab === 'completeProfilePane' || tab === 'myProfilePane') ? 'none' : 'flex';
     }
-    
+
     switchTab(tab);
 }
 
@@ -94,7 +109,7 @@ if (typeBtns) {
             typeBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             selectedUserType = btn.dataset.type;
-            
+
             if (bizGroup) {
                 bizGroup.style.display = (selectedUserType === 'business') ? 'block' : 'none';
             }
@@ -107,7 +122,7 @@ if (typeBtns) {
 // ==========================================
 async function signInWithSocial(provider) {
     localStorage.setItem('pending_user_type', selectedUserType);
-    
+
     console.log(`Starting login with ${provider}...`);
     const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
@@ -122,7 +137,21 @@ async function signInWithSocial(provider) {
 }
 
 if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => signInWithSocial('kakao'));
-if (naverLoginBtn) naverLoginBtn.addEventListener('click', () => signInWithSocial('naver'));
+if (naverLoginBtn) {
+    naverLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // SDK의 실제 로그인 버튼을 강제로 클릭하거나 authorize() 호출
+        if (naverLogin) {
+            const naverActualBtn = document.getElementById('naverIdLogin')?.firstChild;
+            if (naverActualBtn) naverActualBtn.click();
+            else {
+                // 버튼 요소를 찾지 못할 경우의 폴백
+                const url = `https://nid.naver.com/oauth2.0/authorize?response_type=token&client_id=${naverLogin.clientId}&redirect_uri=${encodeURIComponent(naverLogin.callbackUrl)}&state=${Math.random().toString(36).substr(2)}`;
+                window.location.href = url;
+            }
+        }
+    });
+}
 if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => signInWithSocial('google'));
 
 if (socialSignupBtns) {
@@ -148,7 +177,7 @@ if (signupForm) {
         const address = document.getElementById('signupAddress')?.value;
 
         if (signupMsg) signupMsg.className = 'auth-message';
-        
+
         if (passwordConfirm && password !== passwordConfirm) {
             if (signupMsg) {
                 signupMsg.textContent = '비밀번호가 일치하지 않습니다.';
@@ -284,7 +313,7 @@ if (completeProfileForm) {
             }
             // 세션 체크 완료 플래그 설정
             sessionStorage.setItem('profile_check_done', 'true');
-            
+
             setTimeout(() => {
                 closeAuthModal();
                 window.location.reload();
@@ -385,7 +414,7 @@ if (myProfileForm) {
 
 async function checkProfileCompletion(user) {
     if (!user) return;
-    
+
     // 세션당 한 번만 체크하여 자동 팝업 방지
     if (sessionStorage.getItem('profile_check_done')) {
         console.log('Profile already checked in this session.');
@@ -398,7 +427,7 @@ async function checkProfileCompletion(user) {
         .select('*')
         .eq('id', user.id)
         .single();
-    
+
     if (error && error.code !== 'PGRST116') {
         console.error('Profile fetch error:', error);
         return;
@@ -461,7 +490,7 @@ function updateAuthUI(user) {
         if (myProfileBtn) {
             myProfileBtn.addEventListener('click', () => openMyProfile());
         }
-        
+
         // 프로필 미완성 시 체크 (sessionStorage 활용)
         checkProfileCompletion(user);
     } else {
@@ -494,4 +523,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (session) {
         updateAuthUI(session.user);
     }
+
+    // [네이버 추가] 페이지 로드 시 로그인 상태 확인 (Callback 처리)
+    if (typeof naver !== 'undefined' && naverLogin) {
+        naverLogin.getLoginStatus(async (status) => {
+            if (status) {
+                const naverUser = naverLogin.user;
+                console.log('네이버 로그인 성공:', naverUser);
+
+                // Supabase 유저 세션이 없는 경우에만 프로필 연동
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    await handleNaverSocialLogin(naverUser);
+                }
+            }
+        });
+    }
 });
+
+// 네이버 정보를 이용한 프로필 연동 함수
+async function handleNaverSocialLogin(naverUser) {
+    const { email, name, id } = naverUser;
+
+    // 1. 기존 프로필 확인
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (!profile) {
+        // 2. 신규 유저인 경우 프로필 생성 (Upsert)
+        const { error: insertError } = await supabase
+            .from('profiles')
+            .upsert({
+                id: id,
+                full_name: name || email?.split('@')[0],
+                phone: naverUser.mobile || '',
+                user_type: localStorage.getItem('pending_user_type') || 'individual',
+                updated_at: new Date().toISOString()
+            });
+
+        if (insertError) console.error('네이버 프로필 동기화 실패:', insertError);
+    }
+
+    // 3. UI 업데이트 (강제 로그온 상태 UI 표시)
+    // 참고: 공식 Supabase Auth 세션은 아니므로, 나중에 DB 연동 시 id를 기준으로 쿼리해야 함
+    const mockUser = {
+        id: id,
+        email: email,
+        user_metadata: { full_name: name }
+    };
+    updateAuthUI(mockUser);
+
+    // 알림 후 메인으로 (해시 제거)
+    if (window.location.hash) {
+        window.history.replaceState(null, null, window.location.pathname);
+    }
+}
