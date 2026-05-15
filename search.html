@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>검??결과 - ?�스지?�이�?/title>
+    <title>검색결과 - 에스지라이뮤</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="auth.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="cart.css">
     <link rel="stylesheet" href="inquiry.css">
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6" crossorigin="anonymous"></script>
+    <script src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
     <style>
         .search-page {
             padding: 120px 0 100px;
@@ -38,7 +40,7 @@
             gap: 30px;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 5%;
+            padding: 0 40px;
         }
         .no-results {
             text-align: center;
@@ -76,103 +78,82 @@
 <body>
     <header class="header">
         <div class="header-container">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <button class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+            </div>
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
-            <nav class="gnb">
+            <nav class="gnb" id="mainGnb">
                 <ul>
-                    <li class="has-submenu">
-                        <a href="#">?�서관�??�스??/a>
-                        <ul class="submenu">
-                            <li><a href="rfid.html">RFID?�스??/a></li>
-                            <li><a href="em.html">EM?�스??/a></li>
-                            <li><a href="access.html">출입?�제?�스??/a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">?�서관 ?�품</a>
-                        <ul class="submenu">
-                            <li><a href="supplies-arrange.html">?�서?�리 ?�품</a></li>
-                            <li><a href="supplies-protect.html">?�서보호, 보수?�품</a></li>
-                            <li><a href="supplies-lend.html">?�출용??/a></li>
-                            <li><a href="sterilizer.html">책소?�기</a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">?�서관 가�?/a>
-                        <ul class="submenu">
-                            <li><a href="furniture-koas.html">코아??/a></li>
-                            <li><a href="furniture-fomus.html">?�머??/a></li>
-                            <li><a href="furniture-fursys.html">?�시??/a></li>
-                            <li><a href="furniture-custom.html">?�작가�?/a></li>
-                        </ul>
-                    </li>
-                    <li class="has-submenu">
-                        <a href="#">?�인�?/a>
-                        <ul class="submenu">
-                            <li><a href="sign-class.html">?�국??��분류/?�분류?��???/a></li>
-                            <li><a href="sign-board.html">게시???�용?�내</a></li>
-                            <li><a href="sign-date.html">?�출반?�일?�표</a></li>
-                            <li><a href="sign-custom.html">?�작?�인�?/a></li>
-                        </ul>
-                    </li>
-                    <li><a href="discount.html">?�인?�품</a></li>
+                    <!-- script.js에서 동적 생성 -->
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검?�어�??�력?�세??>
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+                <a href="cart.html" title="장바구니" style="display: none;"><i class="fa-solid fa-cart-shopping"></i></a>
+                <div id="userAuthWrap">
+                    <!-- auth.js에서 동적 생성 -->
                 </div>
-                <div class="user-auth-wrap" id="userAuthWrap">
-                    <button class="login-trigger-btn" id="loginTriggerBtn">
-                        <i class="fa-regular fa-user"></i>
-                        <span>로그??/span>
-                    </button>
-                </div>
-                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
         </div>
     </header>
 
     <main class="search-page">
         <div class="search-header">
-            <h2 class="search-title">검??결과</h2>
-            <p class="result-count" id="resultCount">검??중입?�다...</p>
+            <h2 class="search-title">검색 결과</h2>
+            <p class="result-count" id="resultCount">검색 중입니다...</p>
         </div>
 
         <div id="searchResults" class="product-list">
-            <!-- Results will be injected here -->
+            <!-- 결과가 여기에 들어갑니다 -->
         </div>
 
         <div id="noResults" class="no-results" style="display: none;">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <h3>검??결과가 ?�습?�다</h3>
-            <p>?�력?�신 검?�어?� ?�치?�는 ?�품??찾을 ???�습?�다.<br>검?�어�??�인?�거???�른 ?�어�?검?�해 보세??</p>
-            <a href="index.html" class="btn-home">?�으�??�아가�?/a>
+            <h3>검색 결과가 없습니다</h3>
+            <p>입력하신 검색어와 일치하는 상품을 찾을 수 없습니다.<br>검색어를 확인하거나 다른 단어로 검색해 보세요.</p>
+            <a href="index.html" class="btn-home">홈으로 돌아가기</a>
         </div>
     </main>
 
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(�??�스지?�이�?/strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; ?�스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
-                <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; Fax : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p class="copyright">Copyright(c) 2023 SG LIMU. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="검??><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검??/span></a></li>
-            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
-            <li><a href="#" class="banner-btn" title="?�바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">?�바구니</span></a></li>
-            <li><a href="#" class="banner-btn" title="관?�상??><i class="fa-regular fa-heart"></i><span class="tooltip">관?�상??/span></a></li>
-            <li><a href="#" class="banner-btn naver-talk" title="?�이버톡??><i class="fa-solid fa-comment-dots"></i><span class="tooltip">?�이버톡??/span></a></li>
+            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검색</span></a></li>
+            <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
+            <li><a href="#" class="banner-btn naver-talk" title="네이버톡톡"><i class="fa-solid fa-comment-dots"></i><span class="tooltip">네이버톡톡</span></a></li>
             <li class="scroll-btns">
-                <button class="banner-btn scroll-top" id="scrollTopBtn" title="?�로"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="?�래�?><i class="fa-solid fa-chevron-down"></i></button>
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
             </li>
         </ul>
     </aside>
+
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h4>실시간 문의</h4>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message system-msg">안녕하세요! 무엇을 도와드릴까요?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 
     <script type="module" src="script.js"></script>
     <script type="module" src="auth.js"></script>
@@ -187,12 +168,12 @@
             const noResultsElem = document.getElementById('noResults');
 
             if (!query || query.trim() === '') {
-                resultCountElem.innerText = '검?�어�??�력?�주?�요.';
+                resultCountElem.innerText = '검색어를 입력해 주세요.';
                 noResultsElem.style.display = 'block';
                 return;
             }
 
-            resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> ???�??검??결과?�니??`;
+            resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대한 검색 결과입니다.`;
 
             try {
                 const { data: products, error } = await supabase
@@ -205,9 +186,9 @@
 
                 if (!products || products.length === 0) {
                     noResultsElem.style.display = 'block';
-                    resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> ???�??결과가 ?�습?�다.`;
+                    resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대한 결과가 없습니다.`;
                 } else {
-                    resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> ???�??�?<strong>${products.length}</strong>개의 ?�품??검?�되?�습?�다.`;
+                    resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대한 총 <strong>${products.length}</strong>개의 상품이 검색되었습니다.`;
                     
                     products.forEach(p => {
                         const card = document.createElement('div');
@@ -215,7 +196,7 @@
                         card.style.cursor = 'pointer';
                         card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
                         
-                        const priceStr = (!p.price || p.price === '?�화문의') ? '?�화문의' : Number(p.price).toLocaleString() + '??;
+                        const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                         
                         card.innerHTML = `
                             <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
@@ -229,24 +210,9 @@
                 }
             } catch (err) {
                 console.error('Search error:', err);
-                resultCountElem.innerText = '검??�??�류가 발생?�습?�다.';
+                resultCountElem.innerText = '검색 중 오류가 발생했습니다.';
             }
         });
     </script>
-
-    <!-- chat-fab ���ŵ� -->
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <h4>�ǽð� ����</h4>
-            <button class="chat-close" id="chatCloseBtn">&times;</button>
-        </div>
-        <div class="chat-body" id="chatBody">
-            <div class="message system-msg">�ȳ��ϼ���! ������ ���͵帱���?</div>
-        </div>
-        <div class="chat-footer">
-            <input type="text" id="chatInput" placeholder="�޽����� �Է��ϼ���...">
-            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
 </body>
 </html>
