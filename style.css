@@ -1476,20 +1476,18 @@ button {
         white-space: nowrap;
     }
 
+    .header-utils > a {
+        display: none; /* 장바구니 숨김 */
+    }
+
     .header-utils {
         flex: 1;
         display: flex;
         justify-content: flex-end;
-        gap: 12px;
-        align-items: center;
     }
 
     .search-input {
         display: none;
-    }
-
-    .search-wrapper {
-        margin-right: 0;
     }
 
     .search-btn {
@@ -1497,39 +1495,35 @@ button {
         color: var(--color-primary);
     }
 
-    /* 회원정보창 모바일 최적화 (더 작게, 팝업 느낌) */
     .user-profile-nav {
         background: transparent;
         border: none;
         padding: 0;
-        gap: 8px;
+        gap: 0;
     }
 
     .user-info-badge {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
         background: var(--color-surface);
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
         border: 1px solid var(--color-border);
     }
 
-    .user-info-badge span, .user-name {
-        display: none; /* 텍스트 완전 제거 */
+    .user-info-badge span, 
+    .user-name,
+    .logout-btn, 
+    .nav-icon-btn {
+        display: none !important; /* 프로필 아이콘 외 모든 버튼 숨김 */
     }
 
     .user-info-badge i {
-        font-size: 1rem;
+        font-size: 1.1rem;
         margin: 0;
         color: var(--color-primary);
-    }
-
-    .logout-btn, .nav-icon-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 0.85rem;
     }
 
     .section-title {
