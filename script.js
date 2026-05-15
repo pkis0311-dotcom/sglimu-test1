@@ -16,30 +16,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function performSearch() {
-        if (!searchInput) return;
-        const query = searchInput.value.trim();
+        // 현재 화면에 있는 검색창 중 실제 값이 입력된 것을 찾거나 첫 번째를 사용
+        const input = document.querySelector('.search-input');
+        const query = input ? input.value.trim() : '';
+        
         if (query) {
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         } else {
-            // 모바일에서 입력창이 숨겨진 경우나 비어있는 경우 검색 페이지로 바로 이동
+            // 입력값이 없거나 모바일처럼 입력창이 숨겨진 상태라면 검색 페이지로 이동
             window.location.href = 'search.html';
         }
     }
 
-    if (headerSearchBtn) {
-        headerSearchBtn.addEventListener('click', (e) => {
+    // 모든 검색 버튼(헤더, 사이드바 등)에 이벤트 연결
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#headerSearchBtn, .search-btn, .search-btn-aside');
+        if (btn) {
             e.preventDefault();
             performSearch();
-        });
-    }
+        }
+    });
 
-    if (searchInput) {
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-    }
+    // 엔터키 지원
+    document.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && e.target.classList.contains('search-input')) {
+            performSearch();
+        }
+    });
     
     if (asideSearchBtn) {
         asideSearchBtn.addEventListener('click', (e) => {
