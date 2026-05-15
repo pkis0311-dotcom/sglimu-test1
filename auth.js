@@ -547,61 +547,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// 네이버 정보를 이용한 프로필 연동 함수
+// 네이버 정보를 이용한 프로필 연동 함수 (자동 가입/로그인 방식)
 async function handleNaverSocialLogin(naverUser) {
     const { email, name, id } = naverUser;
     const userType = localStorage.getItem('pending_user_type') || 'individual';
 
-    console.log('네이버 유저 정보 저장 시도:', { id, email, name });
+    console.log('네이버 유저 Supabase 공식 연동 시도...');
 
-    // 1. 기존 프로필 확인 (이메일로 확인)
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
-
-    let targetProfile = profile;
-
-    if (!profile) {
-        // 2. 신규 유저인 경우 프로필 생성
-        const { data: newProfile, error: insertError } = await supabase
-            .from('profiles')
-            .upsert({
-                full_name: name || email?.split('@')[0],
-                email: email,
-                phone: naverUser.mobile || '',
-                user_type: userType,
-                updated_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-            
-        if (insertError) {
-            console.error('네이버 프로필 동기화 실패:', insertError);
-        } else {
-            targetProfile = newProfile;
-        }
-    }
-
-    // 3. UI 업데이트 (강제 로그온 상태 UI 표시)
-    const mockUser = {
-        id: targetProfile?.id || id,
-        email: email,
-        user_metadata: { full_name: name }
-    };
-    updateAuthUI(mockUser);
+    // 1. 네이버 정보를 이용해 Supabase 로그인을 시도합니다.
+    const secretPassword = `Naver_Auth_${id}`; 
     
-    // 4. 추가 정보 입력창 띄우기 (연락처나 기관명이 없는 경우)
-    if (!targetProfile || !targetProfile.phone || !targetProfile.organization) {
-        setTimeout(() => {
-            openAuthModal('completeProfilePane');
-        }, 800);
-    } else {
-        alert(`${name}님, 반갑습니다!`);
+    let { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: secretPassword,
+    });
+
+    // 2. 신규 유저인 경우 자동으로 회원가입 진행
+    if (error) {
+        console.log('신규 네이버 유저 가입 진행 중...');
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: email,
+            password: secretPassword,
+            options: {
+                data: {
+                    full_name: name,
+                    user_type: userType
+                }
+            }
+        });
+
+        if (signUpError) {
+            console.error('네이버 자동 가입 실패:', signUpError.message);
+            // 만약 이미 가입된 이메일인데 비밀번호가 다른 경우 등에 대한 예외 처리
+            if (signUpError.message.includes('already registered')) {
+                alert('이미 다른 방식으로 가입된 이메일입니다. 일반 로그인을 이용해 주세요.');
+            } else {
+                alert('로그인 처리 중 오류가 발생했습니다: ' + signUpError.message);
+            }
+            return;
+        }
+        data = signUpData;
     }
 
-    // 5. 해시 제거 (URL 정리)
+    // 3. 세션 생성 성공 시 UI 업데이트 및 추가정보 확인
+    if (data.user) {
+        console.log('Supabase 세션 생성 성공!');
+        updateAuthUI(data.user);
+        
+        // 4. 추가 정보 입력창 띄우기 (연락처/기관 정보 체크)
+        await checkProfileCompletion(data.user);
+    }
+
+    // 5. 해시 제거
     if (window.location.hash) {
         window.history.replaceState(null, null, window.location.pathname);
     }
