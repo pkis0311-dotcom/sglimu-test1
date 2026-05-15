@@ -137,11 +137,12 @@ async function signInWithSocial(provider) {
 }
 
 if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => signInWithSocial('kakao'));
-// 2. 네이버 로그인 버튼 클릭 이벤트 연결 (로그인/회원가입 공통)
-const naverBtns = document.querySelectorAll('.btn-naver');
-naverBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
+// 2. 네이버 로그인 버튼 클릭 이벤트 연결 (이벤트 위임 방식)
+document.addEventListener('click', (e) => {
+    const naverBtn = e.target.closest('.btn-naver');
+    if (naverBtn) {
         e.preventDefault();
+        console.log('네이버 버튼 클릭됨');
         localStorage.setItem('pending_user_type', selectedUserType);
         if (naverLogin) {
             const naverActualBtn = document.getElementById('naverIdLogin')?.firstChild;
@@ -151,7 +152,7 @@ naverBtns.forEach(btn => {
                 window.location.href = url;
             }
         }
-    });
+    }
 });
 if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => signInWithSocial('google'));
 
@@ -286,12 +287,16 @@ if (completeProfileForm) {
         }
 
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        let targetId = user?.id;
+        if (!targetId && typeof naverLogin !== 'undefined' && naverLogin.user) {
+            targetId = naverLogin.user.id;
+        }
+        if (!targetId) return;
 
         const profileData = {
-            id: user.id,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || '유저',
-            // email 컬럼이 테이블에 없을 경우를 대비해 제외
+            id: targetId,
+            full_name: user?.user_metadata?.full_name || naverLogin?.user?.name || '유저',
+            email: user?.email || naverLogin?.user?.email,
             phone: phone,
             organization: org,
             address: address,
@@ -299,8 +304,8 @@ if (completeProfileForm) {
             updated_at: new Date().toISOString()
         };
 
-        // update 대신 upsert를 사용하여 데이터가 없을 경우 생성하도록 수정
-        const { error } = await supabase.from('profiles').upsert(profileData);
+        // 네이버 유저의 경우 ID가 UUID가 아니므로, email을 기준으로 upsert 처리
+        const { error } = await supabase.from('profiles').upsert(profileData, { onConflict: 'email' });
 
         if (error) {
             if (completeMsg) {
