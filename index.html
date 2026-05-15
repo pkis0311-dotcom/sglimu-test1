@@ -19,9 +19,15 @@
 <body>
     <header class="header">
         <div class="header-container">
-            <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+            <div class="header-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <button class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+            </div>
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb" id="mainGnb">
                 <ul>
@@ -64,17 +70,13 @@
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
-                </div>
-                <div class="user-auth-wrap" id="userAuthWrap">
+                <a href="cart.html" title="장바구니"><i class="fa-solid fa-cart-shopping"></i></a>
+                <div id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
                         <i class="fa-regular fa-user"></i>
                         <span>로그인</span>
                     </button>
                 </div>
-                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
         </div>
     </header>

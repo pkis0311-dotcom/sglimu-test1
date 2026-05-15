@@ -1449,53 +1449,87 @@ button {
     }
 
     .header-container {
-        padding: 0 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 15px;
+        position: relative;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
     }
 
     .logo {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        flex: 1;
+        text-align: center;
+        position: relative;
+        left: 0;
+        transform: none;
     }
 
     .logo a {
-        font-size: 1.15rem;
+        font-size: 1.1rem;
+        white-space: nowrap;
+    }
+
+    .header-utils {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        align-items: center;
     }
 
     .search-input {
-        display: none; /* 검색 입력창 숨김 */
+        display: none;
     }
 
     .search-wrapper {
         margin-right: 0;
     }
 
-    .header-utils {
-        gap: 12px;
+    .search-btn {
+        font-size: 1.2rem;
+        color: var(--color-primary);
     }
 
-    .header-utils a {
-        font-size: 1.15rem;
-    }
-
+    /* 회원정보창 모바일 최적화 (더 작게, 팝업 느낌) */
     .user-profile-nav {
-        background: none;
+        background: transparent;
         border: none;
         padding: 0;
-        gap: 5px;
-    }
-    
-    .user-info-badge span {
-        display: none; /* 'OOO님' 문구 숨김 */
-    }
-    
-    .user-info-badge i {
-        font-size: 1.2rem;
+        gap: 8px;
     }
 
-    .nav-icon-btn, .logout-btn {
-        width: 30px;
-        height: 30px;
+    .user-info-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--color-surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--color-border);
+    }
+
+    .user-info-badge span, .user-name {
+        display: none; /* 텍스트 완전 제거 */
+    }
+
+    .user-info-badge i {
+        font-size: 1rem;
+        margin: 0;
+        color: var(--color-primary);
+    }
+
+    .logout-btn, .nav-icon-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
     }
 
     .section-title {
