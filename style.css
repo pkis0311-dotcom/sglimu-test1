@@ -1448,13 +1448,54 @@ button {
         display: flex;
     }
 
-    .header-utils {
-        gap: 15px;
+    .header-container {
+        padding: 0 12px;
+    }
+
+    .logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .logo a {
+        font-size: 1.15rem;
     }
 
     .search-input {
-        width: 120px;
-        font-size: 0.85rem;
+        display: none; /* 검색 입력창 숨김 */
+    }
+
+    .search-wrapper {
+        margin-right: 0;
+    }
+
+    .header-utils {
+        gap: 12px;
+    }
+
+    .header-utils a {
+        font-size: 1.15rem;
+    }
+
+    .user-profile-nav {
+        background: none;
+        border: none;
+        padding: 0;
+        gap: 5px;
+    }
+    
+    .user-info-badge span {
+        display: none; /* 'OOO님' 문구 숨김 */
+    }
+    
+    .user-info-badge i {
+        font-size: 1.2rem;
+    }
+
+    .nav-icon-btn, .logout-btn {
+        width: 30px;
+        height: 30px;
     }
 
     .section-title {

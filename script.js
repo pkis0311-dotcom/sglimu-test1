@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (query) {
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         } else {
-            searchInput.focus();
+            // 모바일에서 입력창이 숨겨진 경우나 비어있는 경우 검색 페이지로 바로 이동
+            window.location.href = 'search.html';
         }
     }
 
