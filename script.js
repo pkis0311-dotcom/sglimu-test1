@@ -278,6 +278,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ---------------------------------------------------------
+    // 3-1. Mobile Menu Logic
+    // ---------------------------------------------------------
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mainGnb = document.getElementById('mainGnb');
+
+    if (mobileMenuToggle && mainGnb) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mainGnb.classList.toggle('active');
+            const icon = mobileMenuToggle.querySelector('i');
+            if (mainGnb.classList.contains('active')) {
+                icon.classList.replace('fa-bars', 'fa-xmark');
+            } else {
+                icon.classList.replace('fa-xmark', 'fa-bars');
+            }
+        });
+
+        // 모바일 서브메뉴 토글 (이벤트 위임)
+        mainGnb.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                const parentLi = e.target.closest('.has-submenu');
+                if (parentLi && e.target.tagName === 'A' && e.target.getAttribute('href') === '#') {
+                    e.preventDefault();
+                    parentLi.classList.toggle('active');
+                }
+            }
+        });
+    }
+
+    // ---------------------------------------------------------
     // 4. Product Tabs Logic (Home Page Only)
     // ---------------------------------------------------------
 

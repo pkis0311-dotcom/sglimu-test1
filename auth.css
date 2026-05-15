@@ -423,5 +423,45 @@
 .nav-icon-btn:hover {
     background: #f1f5f9;
     color: var(--auth-primary);
-    border-color: #cbd5e1;
+/* =========================================
+   Mobile Responsiveness (Auth Modal)
+   ========================================= */
+@media (max-width: 768px) {
+    .auth-modal {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+        position: fixed;
+        bottom: 0;
+        animation: slideUpMobile 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    
+    .auth-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .auth-content {
+        padding: 20px;
+        max-height: 85vh;
+    }
+
+    .auth-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    @keyframes slideUpMobile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .user-profile-nav {
+        padding: 5px 5px 5px 12px;
+        gap: 8px;
+    }
+
+    .user-name span {
+        display: none; /* 모바일에서 이름 생략 가능 (아이콘 위주) */
+    }
 }
