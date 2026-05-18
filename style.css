@@ -65,7 +65,7 @@ button {
 .header-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 40px;
@@ -81,6 +81,7 @@ button {
 
 .gnb {
     height: 100%;
+    margin-left: auto;
 }
 
 .gnb > ul {
@@ -180,6 +181,7 @@ button {
     display: flex;
     gap: 24px;
     align-items: center;
+    margin-left: 30px;
 }
 
 .search-wrapper {
@@ -1484,6 +1486,7 @@ button {
         flex: 1;
         display: flex;
         justify-content: flex-end;
+        margin-left: 0;
     }
 
     .search-input {
