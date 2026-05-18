@@ -63,18 +63,23 @@ button {
 }
 
 .header-container {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     width: 100%;
-    padding: 0 20px;
+    padding: 0 40px;
     height: 100%;
 }
 
 .logo {
+    position: absolute;
+    left: 40px;
+    top: 50%;
+    transform: translateY(-50%);
     margin: 0;
     padding: 0;
-    flex: 1;
+    z-index: 10;
 }
 
 .logo a {
@@ -86,7 +91,8 @@ button {
 
 .gnb {
     height: 100%;
-    margin: 0;
+    display: flex;
+    align-items: center;
 }
 
 .gnb > ul {
@@ -183,20 +189,21 @@ button {
 
 
 .header-utils {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     gap: 24px;
     align-items: center;
-    margin: 0;
-    flex: 1;
-    justify-content: flex-end;
+    z-index: 10;
 }
 
 .search-wrapper {
     position: relative;
     display: flex;
     align-items: center;
-    margin-right: auto;
-    margin-left: 30px;
+    margin-left: 35px;
 }
 
 .search-input {
@@ -1492,6 +1499,8 @@ button {
     }
 
     .header-utils {
+        position: static;
+        transform: none;
         flex: 1;
         display: flex;
         justify-content: flex-end;

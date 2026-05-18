@@ -656,6 +656,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initDynamicNav();
 
+    // [신규] 검색창을 GNB(메뉴) 바로 뒤로 동적 이동시켜 완벽한 중앙 배치를 실현하는 로직
+    (function moveSearchWrapper() {
+        const searchWrapper = document.querySelector('.search-wrapper');
+        const gnb = document.getElementById('mainGnb');
+        if (searchWrapper && gnb) {
+            gnb.parentNode.insertBefore(searchWrapper, gnb.nextSibling);
+        }
+    })();
+
     // ---------------------------------------------------------
     // 8. Global Product Loading Logic
     // ---------------------------------------------------------
