@@ -2290,7 +2290,8 @@ function updateProductModalDropdown() {
     const select = document.getElementById('productCategory');
     if (!select) return;
 
-    let html = '<option value="best_product">★ 메인화면 베스트 상품</option>';
+    let html = '<option value="" disabled selected>기본 소속 카테고리 선택</option>';
+    html += '<option value="best_product">★ 메인화면 베스트 상품</option>';
     
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
