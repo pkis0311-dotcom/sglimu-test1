@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>검색결과 - 에스지라이뮤</title>
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     <link rel="stylesheet" href="auth.css">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -78,15 +78,9 @@
 <body>
     <header class="header">
         <div class="header-container">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
-                    <button class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
-                </div>
-            </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb" id="mainGnb">
                 <ul>
@@ -94,6 +88,10 @@
                 </ul>
             </nav>
             <div class="header-utils">
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <button class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
                 <a href="cart.html" title="장바구니" style="display: none;"><i class="fa-solid fa-cart-shopping"></i></a>
                 <div id="userAuthWrap">
                     <!-- auth.js에서 동적 생성 -->
@@ -216,3 +214,4 @@
     </script>
 </body>
 </html>
+
