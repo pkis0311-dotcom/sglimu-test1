@@ -631,9 +631,28 @@ function renderPageManageProducts() {
     }
 
     if (filtered.length > 0) {
-        targetSelect.innerHTML = filtered.map(p => 
-            `<option value="${p.id}">${p.name} (${p.category})</option>`
-        ).join('');
+        targetSelect.innerHTML = filtered.map(p => {
+            let displayCategory = p.category;
+            for (const mKey in SITE_CATEGORIES) {
+                const major = SITE_CATEGORIES[mKey];
+                if (!major || !major.middles) continue;
+
+                for (const midKey in major.middles) {
+                    const middle = major.middles[midKey];
+                    if (!middle || !Array.isArray(middle.subs)) continue;
+
+                    const sub = middle.subs.find(s => s.id === p.category);
+                    if (sub) {
+                        displayCategory = `${major.label} > ${middle.label} > ${sub.label}`;
+                        break;
+                    }
+                }
+                if (displayCategory !== p.category) break;
+            }
+            if (p.category === 'best_product') displayCategory = '★ 베스트 상품';
+
+            return `<option value="${p.id}">${p.name} [${displayCategory}]</option>`;
+        }).join('');
         if (document.getElementById('tab-page-manage').classList.contains('active')) {
             targetSelect.dispatchEvent(new Event('change'));
         }
