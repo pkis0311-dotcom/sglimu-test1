@@ -66,10 +66,14 @@ button {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 40px;
+    width: 100%;
+    padding: 0 20px;
     height: 100%;
+}
+
+.logo {
+    margin: 0;
+    padding: 0;
 }
 
 .logo a {
