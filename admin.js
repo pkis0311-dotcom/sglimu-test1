@@ -549,6 +549,51 @@ function renderProductTable(products) {
 function updateProductRelatedUI(products) {
     // [개선] 상세페이지 관리 탭의 초기화 및 필터 상태 반영
     renderPageManageProducts();
+
+    // [복구] '카테고리 전시 관리' 탭의 체크박스 그리드 동적 업데이트
+    const displayCheckboxGrid = document.getElementById('productCheckboxGrid');
+    if (displayCheckboxGrid) {
+        if (products.length > 0) {
+            displayCheckboxGrid.innerHTML = products.map(p => {
+                // 카테고리 라벨 매핑 (3단계 대응)
+                let displayCategory = p.category;
+                for (const mKey in SITE_CATEGORIES) {
+                    const major = SITE_CATEGORIES[mKey];
+                    if (!major || !major.middles) continue;
+
+                    for (const midKey in major.middles) {
+                        const middle = major.middles[midKey];
+                        if (!middle || !Array.isArray(middle.subs)) continue;
+
+                        const sub = middle.subs.find(s => s.id === p.category);
+                        if (sub) {
+                            displayCategory = `${major.label} > ${middle.label} > ${sub.label}`;
+                            break;
+                        }
+                    }
+                    if (displayCategory !== p.category) break;
+                }
+                if (p.category === 'best_product') displayCategory = '★ 베스트 상품';
+
+                return `
+                <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
+                    <input type="checkbox" class="display-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
+                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
+                        <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${displayCategory}]</span><br>
+                        ${p.name}
+                    </div>
+                </label>
+                `;
+            }).join('');
+            
+            // 카테고리 전시 관리 탭이 활성화된 상태이고 현재 선택된 소분류가 있다면 체크박스 상태 갱신
+            if(document.getElementById('tab-category-display').classList.contains('active') && typeof currentSelectedSection !== 'undefined' && currentSelectedSection) {
+                loadCategoryDisplay(currentSelectedSection);
+            }
+        } else {
+            displayCheckboxGrid.innerHTML = '<div style="color:#999;">등록된 제품이 없습니다.</div>';
+        }
+    }
 }
 
 function renderPageManageProducts() {
