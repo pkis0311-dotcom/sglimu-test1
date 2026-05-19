@@ -1730,21 +1730,46 @@ function initPageManageTab() {
     }
 
     // 3. 이미지 미리보기 처리
+    if (pageMainImagePreview && typeof Sortable !== 'undefined') {
+        new Sortable(pageMainImagePreview, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            filter: 'button, i.fa-image',
+            preventOnFilter: false
+        });
+    }
+    if (pageDetailImagePreview && typeof Sortable !== 'undefined') {
+        new Sortable(pageDetailImagePreview, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            filter: 'button, i.fa-image',
+            preventOnFilter: false
+        });
+    }
+
     if(pageMainImage && !pageMainImage.dataset.init) {
         pageMainImage.addEventListener('change', (e) => {
-            pageMainImagePreview.innerHTML = '';
+            const placeholder = pageMainImagePreview.querySelector('i.fa-image');
+            if (placeholder) {
+                placeholder.remove();
+            }
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     const wrapper = document.createElement('div');
-                    wrapper.style.cssText = "position: relative; display: inline-block;";
+                    wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
                     const img = document.createElement('img');
                     img.src = ev.target.result;
                     img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                     delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
-                    delBtn.onclick = () => wrapper.remove();
+                    delBtn.onclick = () => {
+                        wrapper.remove();
+                        if (pageMainImagePreview.children.length === 0) {
+                            pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
+                        }
+                    };
                     wrapper.appendChild(img);
                     wrapper.appendChild(delBtn);
                     pageMainImagePreview.appendChild(wrapper);
@@ -1757,19 +1782,27 @@ function initPageManageTab() {
 
     if(pageDetailImage && !pageDetailImage.dataset.init) {
         pageDetailImage.addEventListener('change', (e) => {
-            pageDetailImagePreview.innerHTML = '';
+            const placeholder = pageDetailImagePreview.querySelector('i.fa-image');
+            if (placeholder) {
+                placeholder.remove();
+            }
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     const wrapper = document.createElement('div');
-                    wrapper.style.cssText = "position: relative; display: inline-block; max-width: 100%;";
+                    wrapper.style.cssText = "position: relative; display: inline-block; max-width: 100%; cursor: grab;";
                     const img = document.createElement('img');
                     img.src = ev.target.result;
                     img.style.cssText = "max-width:100%; border-radius:4px; border:1px solid #eee; display:block;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-trash"></i> 삭제';
                     delBtn.style.cssText = "position:absolute; top:10px; right:10px; background:rgba(255,0,0,0.8); color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index:1;";
-                    delBtn.onclick = () => wrapper.remove();
+                    delBtn.onclick = () => {
+                        wrapper.remove();
+                        if (pageDetailImagePreview.children.length === 0) {
+                            pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+                        }
+                    };
                     wrapper.appendChild(img);
                     wrapper.appendChild(delBtn);
                     pageDetailImagePreview.appendChild(wrapper);
@@ -1946,13 +1979,18 @@ async function loadPageData() {
         pageMainImagePreview.innerHTML = '';
         data.mainImages.forEach(src => {
             const wrapper = document.createElement('div');
-            wrapper.style.cssText = "position: relative; display: inline-block;";
+            wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
             const img = document.createElement('img');
             img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
             const delBtn = document.createElement('button');
             delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
             delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
-            delBtn.onclick = () => wrapper.remove();
+            delBtn.onclick = () => {
+                wrapper.remove();
+                if (pageMainImagePreview.children.length === 0) {
+                    pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
+                }
+            };
             wrapper.appendChild(img);
             wrapper.appendChild(delBtn);
             pageMainImagePreview.appendChild(wrapper);
@@ -1964,19 +2002,25 @@ async function loadPageData() {
         imgs.forEach(src => {
             if(!src) return;
             const wrapper = document.createElement('div');
-            wrapper.style.cssText = "position: relative; display: inline-block; max-width: 100%;";
+            wrapper.style.cssText = "position: relative; display: inline-block; max-width: 100%; cursor: grab;";
             const img = document.createElement('img');
             img.src = src;
             img.style.cssText = "max-width:100%; border-radius:4px; border:1px solid #eee; display:block;";
             const delBtn = document.createElement('button');
             delBtn.innerHTML = '<i class="fa-solid fa-trash"></i> 삭제';
             delBtn.style.cssText = "position:absolute; top:10px; right:10px; background:rgba(255,0,0,0.8); color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index:1;";
-            delBtn.onclick = () => wrapper.remove();
+            delBtn.onclick = () => {
+                wrapper.remove();
+                if (pageDetailImagePreview.children.length === 0) {
+                    pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+                }
+            };
             wrapper.appendChild(img);
             wrapper.appendChild(delBtn);
             pageDetailImagePreview.appendChild(wrapper);
         });
     }
+
     pageDescription.value = data.description || '';
     if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
     if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
