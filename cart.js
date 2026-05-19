@@ -283,7 +283,7 @@ async function generateQuotePDF() {
                         </tr>
                         <tr>
                             <td style="padding:5px; border-bottom:1px solid #000; border-right:1px solid #000; text-align:center; background:#f9f9f9;">업 태</td>
-                            <td style="padding:5px; border-bottom:1px solid #000; border-right:1px solid #000;">도소매, 제조</td>
+                            <td style="padding:5px; border-bottom:1px solid #000; border-right:1px solid #000;">도소매, 제조, 서비스</td>
                             <td style="padding:5px; border-bottom:1px solid #000; border-right:1px solid #000; text-align:center; background:#f9f9f9;">종 목</td>
                             <td style="padding:5px; border-bottom:1px solid #000;">도서관용품, 가구</td>
                         </tr>
@@ -322,7 +322,6 @@ async function generateQuotePDF() {
 
             <div style="margin-top:20px; border:1px solid #ddd; padding:15px; border-radius:5px; line-height:1.6; font-size:11px; color:#666;">
                 <p>● <strong>유효기간</strong>: ${validStr}</p>
-                <p>● <strong>납기기한</strong>: 발주 후 7~10일 이내 (사전협의 가)</p>
                 <p>● <strong>기타문의</strong>: 고객센터 1544-5703으로 연락주시기 바랍니다.</p>
                 <p>● <strong>결제계좌</strong>: (예금주:주식회사에스지라이뮤) 기업은행 010-1544-5703-00</p>
             </div>
