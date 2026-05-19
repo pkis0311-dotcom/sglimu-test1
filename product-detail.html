@@ -383,7 +383,7 @@
             // Description
             const descElem = document.getElementById('dynamicDesc');
             if(descElem && product.description) {
-                descElem.innerHTML = product.description.replace(/\n/g, '<br>').trim();
+                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
             }
 
             // Page Data from site_configs
@@ -394,6 +394,11 @@
             const featureSection = document.getElementById('dynamicFeatures')?.closest('.info-text-box');
 
             if(data) {
+                // Description Summary from Detail Page Config
+                if (data.description && descElem) {
+                    descElem.innerHTML = data.description.replace(/\n/g, '<br>').trim();
+                }
+
                 // Additional Main Images
                 if(data.mainImages && data.mainImages.length > 0) {
                     if (mainImgElem) {
