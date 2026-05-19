@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -253,12 +253,25 @@
                 const selectedIds = configData ? configData.value : [];
 
                 if (selectedIds.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">��ϵ� ���� ��ǰ�� �����ϴ�. ������ ����Ʈ���� ��ġ���ּ���.</div>';
+                    container.innerHTML = '<div style="grid-column: 1 / -1; padding: 50px; text-align: center; color: #999;">ϵ  ǰ ϴ.  Ʈ ġּ.</div>';
                     return;
                 }
 
                 const { data: products, error } = await db.from('products').select('*').in('id', selectedIds);
                 if (error) return;
+
+                // Fetch site_configs for page data (mainImages)
+                let configMap = {};
+                try {
+                    const { data: configs } = await db.from('site_configs').select('key, value').in('key', selectedIds.map(id => 'pageData_' + id));
+                    if (configs) {
+                        configs.forEach(c => {
+                            configMap[c.key] = c.value;
+                        });
+                    }
+                } catch (err) {
+                    console.error("Error loading site configs for products", err);
+                }
 
                 container.innerHTML = '';
                 const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
@@ -269,9 +282,12 @@
                     card.style.cursor = 'pointer';
                     card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
                     
-                    const priceStr = (!p.price || p.price === '��ȭ����') ? '��ȭ����' : Number(p.price).toLocaleString() + '��';
+                    const pData = configMap['pageData_' + p.id];
+                    const displayImg = (pData && pData.mainImages && pData.mainImages.length > 0) ? pData.mainImages[0] : 'assets/no-image.png';
+
+                    const priceStr = (!p.price || p.price === 'ȭ') ? 'ȭ' : Number(p.price).toLocaleString() + '';
                     card.innerHTML = `
-                        <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                        <div class="product-img" style="background-image: url('${displayImg}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
                         <div class="product-info" style="text-align:center; padding:15px;">
                             <h4 style="margin-bottom:5px;">${p.name}</h4>
                             <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>

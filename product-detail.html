@@ -333,16 +333,12 @@
 
             // Main Image & Thumbnails
             const mainImgElem = document.getElementById('mainImage');
-            if(product.image_url && mainImgElem) {
-                mainImgElem.src = product.image_url;
-                const thumbList = document.querySelector('.thumbnail-list');
-                if(thumbList) {
-                    thumbList.innerHTML = `
-                        <div class="thumb-item active" onclick="changeImage('${product.image_url}', this)">
-                            <img src="${product.image_url}" alt="메인 이미지">
-                        </div>
-                    `;
-                }
+            if (mainImgElem) {
+                mainImgElem.src = 'assets/no-image.png';
+            }
+            const thumbList = document.querySelector('.thumbnail-list');
+            if (thumbList) {
+                thumbList.innerHTML = '';
             }
             
             // Options Logic
@@ -400,12 +396,15 @@
             if(data) {
                 // Additional Main Images
                 if(data.mainImages && data.mainImages.length > 0) {
+                    if (mainImgElem) {
+                        mainImgElem.src = data.mainImages[0];
+                    }
                     const thumbList = document.querySelector('.thumbnail-list');
                     if(thumbList) {
+                        thumbList.innerHTML = '';
                         data.mainImages.forEach((src, idx) => {
-                            if(src === product.image_url) return;
                             thumbList.innerHTML += `
-                                <div class="thumb-item" onclick="changeImage('${src}', this)">
+                                <div class="thumb-item ${idx === 0 ? 'active' : ''}" onclick="changeImage('${src}', this)">
                                     <img src="${src}" alt="제품 이미지 ${idx+1}">
                                 </div>
                             `;

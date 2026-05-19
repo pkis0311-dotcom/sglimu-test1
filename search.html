@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -188,16 +188,33 @@
                 } else {
                     resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대한 총 <strong>${products.length}</strong>개의 상품이 검색되었습니다.`;
                     
+                    // Fetch site_configs for page data (mainImages)
+                    let configMap = {};
+                    try {
+                        const productIds = products.map(p => p.id);
+                        const { data: configs } = await supabase.from('site_configs').select('key, value').in('key', productIds.map(id => 'pageData_' + id));
+                        if (configs) {
+                            configs.forEach(c => {
+                                configMap[c.key] = c.value;
+                            });
+                        }
+                    } catch (err) {
+                        console.error("Error loading site configs for searched products", err);
+                    }
+
                     products.forEach(p => {
                         const card = document.createElement('div');
                         card.className = 'product-card visible';
                         card.style.cursor = 'pointer';
                         card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
                         
+                        const pData = configMap['pageData_' + p.id];
+                        const displayImg = (pData && pData.mainImages && pData.mainImages.length > 0) ? pData.mainImages[0] : 'assets/no-image.png';
+
                         const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                         
                         card.innerHTML = `
-                            <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                            <div class="product-img" style="background-image: url('${displayImg}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
                             <div class="product-info" style="text-align:center; padding:15px;">
                                 <h4 style="margin-bottom:8px; font-size:1.1rem;">${p.name}</h4>
                                 <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>

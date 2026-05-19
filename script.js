@@ -684,6 +684,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { data: products, error } = await supabase.from('products').select('*').in('id', selectedIds);
             if (error) throw error;
 
+            // Fetch site_configs for page data (mainImages)
+            let configMap = {};
+            try {
+                const { data: configs } = await supabase.from('site_configs').select('key, value').in('key', selectedIds.map(id => 'pageData_' + id));
+                if (configs) {
+                    configs.forEach(c => {
+                        configMap[c.key] = c.value;
+                    });
+                }
+            } catch (err) {
+                console.error("Error loading site configs for products", err);
+            }
+
             container.innerHTML = '';
             // 정렬 순서 유지
             const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
@@ -694,9 +707,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 card.style.cursor = 'pointer';
                 card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
                 
+                const pData = configMap['pageData_' + p.id];
+                const displayImg = (pData && pData.mainImages && pData.mainImages.length > 0) ? pData.mainImages[0] : 'assets/no-image.png';
+                
                 const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                 card.innerHTML = `
-                    <div class="product-img" style="background-image: url('${p.image_url || 'assets/no-image.png'}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                    <div class="product-img" style="background-image: url('${displayImg}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
                     <div class="product-info" style="text-align:center; padding:15px;">
                         <h4 style="margin-bottom:5px;">${p.name}</h4>
                         <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>
