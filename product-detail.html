@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -394,6 +394,9 @@
             const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
             const data = configData ? configData.value : null;
             
+            const specSection = document.getElementById('dynamicSpecContainer')?.closest('.info-text-box');
+            const featureSection = document.getElementById('dynamicFeatures')?.closest('.info-text-box');
+
             if(data) {
                 // Additional Main Images
                 if(data.mainImages && data.mainImages.length > 0) {
@@ -431,6 +434,9 @@
                     data.specs.forEach(s => {
                         specTable.innerHTML += `<tr><th style="padding:15px; text-align:left; background:#f9f9f9; width:25%; border:1px solid #ddd;">${s.key}</th><td style="padding:15px; border:1px solid #ddd;">${s.val}</td></tr>`;
                     });
+                    if (specSection) specSection.style.display = 'block';
+                } else {
+                    if (specSection) specSection.style.display = 'none';
                 }
                 
                 // Features
@@ -449,7 +455,13 @@
                             </div>
                         `;
                     });
+                    if (featureSection) featureSection.style.display = 'block';
+                } else {
+                    if (featureSection) featureSection.style.display = 'none';
                 }
+            } else {
+                if (specSection) specSection.style.display = 'none';
+                if (featureSection) featureSection.style.display = 'none';
             }
             
             calculateTotal();
