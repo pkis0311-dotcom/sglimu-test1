@@ -423,6 +423,73 @@
 .nav-icon-btn:hover {
     background: #f1f5f9;
     color: var(--auth-primary);
+}
+
+/* Auth Sub Links (Find ID / PW) */
+.auth-sub-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    font-size: 0.85rem;
+}
+
+.auth-sub-links a {
+    color: #888;
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.auth-sub-links a:hover {
+    color: var(--auth-primary);
+    text-decoration: underline;
+}
+
+.auth-sub-links .divider {
+    color: #ddd;
+}
+
+/* Find ID/PW Results */
+.auth-result-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+    text-align: center;
+    display: none;
+}
+
+.auth-result-box.active {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.auth-result-box h4 {
+    color: var(--auth-primary);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.auth-result-box p {
+    color: #475569;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+}
+
+.auth-result-box .found-email {
+    font-weight: bold;
+    color: var(--auth-accent);
+    font-size: 1.1rem;
+    padding: 10px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
 /* =========================================
    Mobile Responsiveness (Auth Modal)
    ========================================= */

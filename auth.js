@@ -44,6 +44,24 @@ const naverLoginBtn = document.getElementById('naverLoginBtn');
 const googleLoginBtn = document.getElementById('googleLoginBtn');
 const socialSignupBtns = document.querySelectorAll('.social-signup-btn');
 
+// Find ID / PW Elements
+const linkFindId = document.getElementById('linkFindId');
+const linkFindPw = document.getElementById('linkFindPw');
+const backToLoginBtns = document.querySelectorAll('.back-to-login');
+const btnGoToLoginFromId = document.getElementById('btnGoToLoginFromId');
+
+const findIdForm = document.getElementById('findIdForm');
+const findPwForm = document.getElementById('findPwForm');
+const resetPwForm = document.getElementById('resetPwForm');
+
+const findIdMsg = document.getElementById('findIdMsg');
+const findPwMsg = document.getElementById('findPwMsg');
+const resetPwMsg = document.getElementById('resetPwMsg');
+
+const findIdResult = document.getElementById('findIdResult');
+const findPwResult = document.getElementById('findPwResult');
+const foundEmailDisplay = document.getElementById('foundEmailDisplay');
+
 // ==========================================
 // 1. Modal & Tab Logic
 // ==========================================
@@ -97,6 +115,11 @@ if (authOverlay) {
 authTabs.forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.target));
 });
+
+if (linkFindId) linkFindId.addEventListener('click', () => switchTab('findIdPane'));
+if (linkFindPw) linkFindPw.addEventListener('click', () => switchTab('findPwPane'));
+if (backToLoginBtns) backToLoginBtns.forEach(btn => btn.addEventListener('click', () => switchTab('loginPane')));
+if (btnGoToLoginFromId) btnGoToLoginFromId.addEventListener('click', () => switchTab('loginPane'));
 
 // User Type Selection
 let selectedUserType = 'individual';
@@ -217,6 +240,7 @@ if (signupForm) {
                     id: data.user.id,
                     full_name: name,
                     phone: phone,
+                    email: email,
                     organization: organization,
                     address: address,
                     user_type: selectedUserType,
@@ -258,6 +282,11 @@ if (loginForm) {
                 loginMsg.classList.add('error');
             }
         } else {
+            // 이메일이 profile에 없으면 채워주는 자가 치유 로직
+            if (data.user && data.user.email) {
+                supabase.from('profiles').update({ email: data.user.email }).eq('id', data.user.id).then();
+            }
+
             if (loginMsg) {
                 loginMsg.textContent = '반갑습니다! 로그인 성공.';
                 loginMsg.classList.add('success');
@@ -324,6 +353,137 @@ if (completeProfileForm) {
                 closeAuthModal();
                 window.location.reload();
             }, 1000);
+        }
+    });
+}
+
+// ==========================================
+// 3.5 Find ID / Password Logic
+// ==========================================
+
+if (findIdForm) {
+    findIdForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('findIdName').value;
+        const phone = document.getElementById('findIdPhone').value;
+
+        if (findIdMsg) {
+            findIdMsg.className = 'auth-message';
+            findIdMsg.textContent = '조회 중...';
+            findIdMsg.style.display = 'block';
+            findIdResult.classList.remove('active');
+        }
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('full_name', name)
+            .eq('phone', phone);
+
+        if (error || !data || data.length === 0) {
+            if (findIdMsg) {
+                findIdMsg.textContent = '입력하신 정보와 일치하는 아이디를 찾을 수 없습니다.';
+                findIdMsg.classList.add('error');
+            }
+        } else {
+            const userEmail = data[0].email;
+            if (findIdMsg) findIdMsg.style.display = 'none';
+            if (findIdResult) {
+                findIdResult.classList.add('active');
+                if (foundEmailDisplay) {
+                    foundEmailDisplay.textContent = userEmail || '이메일 정보 누락 (재가입 요망)';
+                }
+            }
+        }
+    });
+}
+
+if (findPwForm) {
+    findPwForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('findPwEmail').value;
+        const name = document.getElementById('findPwName').value;
+        const phone = document.getElementById('findPwPhone').value;
+
+        if (findPwMsg) {
+            findPwMsg.className = 'auth-message';
+            findPwMsg.textContent = '조회 중...';
+            findPwMsg.style.display = 'block';
+            findPwResult.classList.remove('active');
+        }
+
+        // 1. 프로필 테이블에서 정보 일치 여부 확인
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', email)
+            .eq('full_name', name)
+            .eq('phone', phone)
+            .single();
+
+        if (error || !data) {
+            if (findPwMsg) {
+                findPwMsg.textContent = '입력하신 정보와 일치하는 회원 정보가 없습니다.';
+                findPwMsg.classList.add('error');
+            }
+        } else {
+            if (findPwMsg) findPwMsg.textContent = '비밀번호 재설정 이메일을 발송 중입니다...';
+            
+            // 2. 이메일 발송
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + window.location.pathname
+            });
+
+            if (resetError) {
+                if (findPwMsg) {
+                    findPwMsg.textContent = '이메일 발송 실패: ' + resetError.message;
+                    findPwMsg.classList.add('error');
+                }
+            } else {
+                if (findPwMsg) findPwMsg.style.display = 'none';
+                if (findPwResult) findPwResult.classList.add('active');
+            }
+        }
+    });
+}
+
+if (resetPwForm) {
+    resetPwForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const password = document.getElementById('resetPwInput').value;
+        const passwordConfirm = document.getElementById('resetPwConfirm').value;
+
+        if (resetPwMsg) resetPwMsg.className = 'auth-message';
+
+        if (password !== passwordConfirm) {
+            if (resetPwMsg) {
+                resetPwMsg.textContent = '비밀번호가 일치하지 않습니다.';
+                resetPwMsg.classList.add('error');
+            }
+            return;
+        }
+
+        if (resetPwMsg) {
+            resetPwMsg.textContent = '비밀번호 변경 중...';
+            resetPwMsg.style.display = 'block';
+        }
+
+        const { error } = await supabase.auth.updateUser({ password: password });
+
+        if (error) {
+            if (resetPwMsg) {
+                resetPwMsg.textContent = '변경 실패: ' + error.message;
+                resetPwMsg.classList.add('error');
+            }
+        } else {
+            if (resetPwMsg) {
+                resetPwMsg.textContent = '비밀번호가 성공적으로 변경되었습니다. 로그인 창으로 이동합니다.';
+                resetPwMsg.classList.add('success');
+            }
+            setTimeout(() => {
+                supabase.auth.signOut();
+                window.location.reload();
+            }, 2000);
         }
     });
 }
@@ -515,6 +675,10 @@ function updateAuthUI(user) {
 // 초기 세션 확인 및 리스너 등록
 supabase.auth.onAuthStateChange((event, session) => {
     console.log('Auth State Changed:', event, session);
+    if (event === 'PASSWORD_RECOVERY') {
+        // 비밀번호 재설정 링크를 통해 들어왔을 때
+        openAuthModal('resetPwPane');
+    }
     if (session) {
         updateAuthUI(session.user);
     } else {

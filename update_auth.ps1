@@ -1,21 +1,6 @@
 $path = "c:\Users\park4\OneDrive\Desktop\test7\sglimu-test1"
-# Include index.html this time
 $files = Get-ChildItem -Path $path -Filter *.html | Where-Object { $_.Name -ne 'admin.html' }
 
-$headPattern = '(?i)</head>'
-$headReplace = "    <link rel=`"stylesheet`" href=`"auth.css`">`r`n    <script src=`"https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js`" integrity=`"sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6`" crossorigin=`"anonymous`"></script>`r`n    <script src=`"https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js`"></script>`r`n</head>"
-
-$userIconPattern = '(?i)<a href=`"#`"><i class=`"fa-regular fa-user`"></i></a>'
-$userIconReplace = @"
-                <div class="user-auth-wrap" id="userAuthWrap">
-                    <button class="login-trigger-btn" id="loginTriggerBtn">
-                        <i class="fa-regular fa-user"></i>
-                        <span>로그인</span>
-                    </button>
-                </div>
-"@
-
-$bodyPattern = '(?i)</body>'
 $bodyReplace = @"
     <!-- Auth Modal Overlay -->
     <div class="auth-overlay" id="authOverlay">
@@ -146,23 +131,51 @@ $bodyReplace = @"
                     </form>
                     <div id="completeMsg" class="auth-message"></div>
                 </div>
+                
+                <!-- My Profile Pane -->
+                <div class="auth-pane" id="myProfilePane">
+                    <div class="auth-header">
+                        <h2>내 정보 관리</h2>
+                        <p>회원 정보를 확인하고 수정할 수 있습니다.</p>
+                    </div>
+                    <form id="myProfileForm">
+                        <div class="auth-form-group">
+                            <label>이름</label>
+                            <input type="text" id="myProfileName" class="auth-input" placeholder="이름" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>연락처</label>
+                            <input type="tel" id="myProfilePhone" class="auth-input" placeholder="010-0000-0000" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>소속 기관 / 학교명</label>
+                            <input type="text" id="myProfileOrg" class="auth-input" placeholder="예: 시립도서관" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>주소</label>
+                            <input type="text" id="myProfileAddress" class="auth-input" placeholder="주소를 입력하세요" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn">정보 수정하기</button>
+                    </form>
+                    <div id="myProfileMsg" class="auth-message"></div>
+                </div>
             </div>
         </div>
     </div>
+    <script type="module" src="script.js"></script>
+    <script src="cart.js"></script>
+    <script type="module" src="inquiry.js"></script>
     <script type="module" src="auth.js"></script>
 </body>
 "@
 
 foreach ($file in $files) {
-    Write-Output "Processing $($file.Name)..."
+    Write-Output "Updating $($file.Name)..."
     $content = [System.IO.File]::ReadAllText($file.FullName, [System.Text.Encoding]::UTF8)
     
-    # Check if Kakao SDK is already present
-    if ($content -notmatch 't1\.kakaocdn\.net') {
-        $content = [regex]::Replace($content, $headPattern, $headReplace)
-        $content = [regex]::Replace($content, $userIconPattern, $userIconReplace)
-        $content = [regex]::Replace($content, $bodyPattern, $bodyReplace)
-        [System.IO.File]::WriteAllText($file.FullName, $content, [System.Text.Encoding]::UTF8)
-    }
+    # regex replace from <!-- Auth Modal Overlay --> to </body>
+    $content = [regex]::Replace($content, '(?s)<!-- Auth Modal Overlay -->.*?</body>', $bodyReplace)
+    
+    [System.IO.File]::WriteAllText($file.FullName, $content, [System.Text.Encoding]::UTF8)
 }
-Write-Output "Global Auth Injection Done"
+Write-Output "Global Auth Modal Update Done"
