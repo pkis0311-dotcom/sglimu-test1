@@ -52,132 +52,132 @@
 
         check();
     </script>
-        <!-- Auth Modal Overlay -->
+            <!-- Auth Modal Overlay -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>
             <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">濡쒓렇??/div>
-                <div class="auth-tab" data-target="signupPane">?뚯썝媛??/div>
+                <div class="auth-tab active" data-target="loginPane">로그인</div>
+                <div class="auth-tab" data-target="signupPane">회원가입</div>
             </div>
             <div class="auth-content">
                 <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>?섏쁺?⑸땲??</h2><p>媛꾪렪濡쒓렇?몄쑝濡?鍮좊Ⅴ寃??쒖옉?섏꽭??</p></div>
+                    <div class="auth-header"><h2>환영합니다!</h2><p>간편로그인으로 빠르게 시작하세요.</p></div>
                     <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 移댁뭅??濡쒓렇??/button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰?濡쒓렇??/button>
+                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
+                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
                         <div id="naverIdLogin" style="display:none;"></div> 
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 濡쒓렇??/button>
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
                     </div>
-                    <div class="auth-divider"><span>?먮뒗</span></div>
+                    <div class="auth-divider"><span>또는</span></div>
                     <form id="loginForm">
-                        <div class="auth-form-group"><label>?대찓??/label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>鍮꾨?踰덊샇</label><input type="password" id="loginPassword" class="auth-input" placeholder="鍮꾨?踰덊샇瑜??낅젰?섏꽭?? required></div>
-                        <button type="submit" class="auth-submit-btn">濡쒓렇??/button>
+                        <div class="auth-form-group"><label>이메일</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>비밀번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비밀번호를 입력하세요" required></div>
+                        <button type="submit" class="auth-submit-btn">로그인</button>
                     </form>
                     <div id="loginMsg" class="auth-message"></div>
                     <div class="auth-sub-links">
-                        <a id="linkFindId">?꾩씠??李얘린</a>
+                        <a id="linkFindId">아이디 찾기</a>
                         <span class="divider">|</span>
-                        <a id="linkFindPw">鍮꾨?踰덊샇 李얘린</a>
+                        <a id="linkFindPw">비밀번호 찾기</a>
                     </div>
                 </div>
                 
                 <!-- Find ID Pane -->
                 <div class="auth-pane" id="findIdPane">
-                    <div class="auth-header"><h2>?꾩씠??李얘린</h2><p>媛?????낅젰???대쫫怨??꾪솕踰덊샇瑜??낅젰?댁＜?몄슂.</p></div>
+                    <div class="auth-header"><h2>아이디 찾기</h2><p>가입 시 입력한 이름과 전화번호를 입력해주세요.</p></div>
                     <form id="findIdForm">
-                        <div class="auth-form-group"><label>?대쫫</label><input type="text" id="findIdName" class="auth-input" placeholder="?대쫫???낅젰?섏꽭?? required></div>
-                        <div class="auth-form-group"><label>?꾪솕踰덊샇</label><input type="tel" id="findIdPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        <button type="submit" class="auth-submit-btn">?꾩씠??李얘린</button>
+                        <div class="auth-form-group"><label>이름</label><input type="text" id="findIdName" class="auth-input" placeholder="이름을 입력하세요" required></div>
+                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findIdPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        <button type="submit" class="auth-submit-btn">아이디 찾기</button>
                     </form>
                     <div id="findIdMsg" class="auth-message"></div>
                     <div id="findIdResult" class="auth-result-box">
-                        <h4>?꾩씠??李얘린 ?꾨즺</h4>
-                        <p>?뚯썝?섏쓽 ?꾩씠???대찓?????ㅼ쓬怨?媛숈뒿?덈떎.</p>
+                        <h4>아이디 찾기 완료</h4>
+                        <p>회원님의 아이디(이메일)는 다음과 같습니다.</p>
                         <div class="found-email" id="foundEmailDisplay"></div>
-                        <button class="auth-submit-btn" id="btnGoToLoginFromId">濡쒓렇?명븯??媛湲?/button>
+                        <button class="auth-submit-btn" id="btnGoToLoginFromId">로그인하러 가기</button>
                     </div>
                     <div class="auth-sub-links">
-                        <a class="back-to-login">濡쒓렇?몄쑝濡??뚯븘媛湲?/a>
+                        <a class="back-to-login">로그인으로 돌아가기</a>
                     </div>
                 </div>
 
                 <!-- Find Password Pane -->
                 <div class="auth-pane" id="findPwPane">
-                    <div class="auth-header"><h2>鍮꾨?踰덊샇 李얘린</h2><p>媛?낅맂 ?대찓?쇨낵 ?대쫫, ?꾪솕踰덊샇瑜??낅젰?섏떆硫?br>鍮꾨?踰덊샇 ?ъ꽕??留곹겕瑜?蹂대궡?쒕┰?덈떎.</p></div>
+                    <div class="auth-header"><h2>비밀번호 찾기</h2><p>가입된 이메일과 이름, 전화번호를 입력하시면<br>비밀번호 재설정 링크를 보내드립니다.</p></div>
                     <form id="findPwForm">
-                        <div class="auth-form-group"><label>?대찓???꾩씠??</label><input type="email" id="findPwEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>?대쫫</label><input type="text" id="findPwName" class="auth-input" placeholder="?대쫫???낅젰?섏꽭?? required></div>
-                        <div class="auth-form-group"><label>?꾪솕踰덊샇</label><input type="tel" id="findPwPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        <button type="submit" class="auth-submit-btn">?ъ꽕??留곹겕 諛쒖넚</button>
+                        <div class="auth-form-group"><label>이메일(아이디)</label><input type="email" id="findPwEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>이름</label><input type="text" id="findPwName" class="auth-input" placeholder="이름을 입력하세요" required></div>
+                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findPwPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        <button type="submit" class="auth-submit-btn">재설정 링크 발송</button>
                     </form>
                     <div id="findPwMsg" class="auth-message"></div>
                     <div id="findPwResult" class="auth-result-box">
-                        <h4>?대찓??諛쒖넚 ?꾨즺</h4>
-                        <p>?낅젰?섏떊 ?대찓?쇰줈 鍮꾨?踰덊샇 ?ъ꽕??留곹겕媛 諛쒖넚?섏뿀?듬땲??<br>?대찓?쇱쓣 ?뺤씤?댁＜?몄슂.</p>
-                        <button class="auth-submit-btn back-to-login">濡쒓렇?몄쑝濡??뚯븘媛湲?/button>
+                        <h4>이메일 발송 완료</h4>
+                        <p>입력하신 이메일로 비밀번호 재설정 링크가 발송되었습니다.<br>이메일을 확인해주세요.</p>
+                        <button class="auth-submit-btn back-to-login">로그인으로 돌아가기</button>
                     </div>
                     <div class="auth-sub-links">
-                        <a class="back-to-login">濡쒓렇?몄쑝濡??뚯븘媛湲?/a>
+                        <a class="back-to-login">로그인으로 돌아가기</a>
                     </div>
                 </div>
 
                 <!-- Reset Password Pane -->
                 <div class="auth-pane" id="resetPwPane">
-                    <div class="auth-header"><h2>鍮꾨?踰덊샇 ?ъ꽕??/h2><p>?덈줈??鍮꾨?踰덊샇瑜??낅젰?댁＜?몄슂.</p></div>
+                    <div class="auth-header"><h2>비밀번호 재설정</h2><p>새로운 비밀번호를 입력해주세요.</p></div>
                     <form id="resetPwForm">
-                        <div class="auth-form-group"><label>??鍮꾨?踰덊샇</label><input type="password" id="resetPwInput" class="auth-input" placeholder="6???댁긽 ?낅젰" minlength="6" required></div>
-                        <div class="auth-form-group"><label>??鍮꾨?踰덊샇 ?뺤씤</label><input type="password" id="resetPwConfirm" class="auth-input" placeholder="?ㅼ떆 ??踰??낅젰" minlength="6" required></div>
-                        <button type="submit" class="auth-submit-btn">鍮꾨?踰덊샇 蹂寃?/button>
+                        <div class="auth-form-group"><label>새 비밀번호</label><input type="password" id="resetPwInput" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
+                        <div class="auth-form-group"><label>새 비밀번호 확인</label><input type="password" id="resetPwConfirm" class="auth-input" placeholder="다시 한 번 입력" minlength="6" required></div>
+                        <button type="submit" class="auth-submit-btn">비밀번호 변경</button>
                     </form>
                     <div id="resetPwMsg" class="auth-message"></div>
                 </div>
 
                 <!-- Signup Pane -->
                 <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>?뚯썝媛??/h2><p>媛꾨떒???뺣낫 ?낅젰?쇰줈 ??留롮? ?쒗깮???꾨━?몄슂.</p></div>
+                    <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
                     <div class="auth-social-signup">
-                        <div class="auth-social-signup-header"><span>媛꾪렪 ?뚯썝媛??/span></div>
+                        <div class="auth-social-signup-header"><span>간편 회원가입</span></div>
                         <div class="social-login-grid">
-                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 移댁뭅?ㅻ줈 ?쒖옉</button>
-                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> ?ㅼ씠踰꾨줈 ?쒖옉</button>
-                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google濡??쒖옉</button>
+                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 카카오로 시작</button>
+                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작</button>
+                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google로 시작</button>
                         </div>
                     </div>
-                    <div class="auth-divider"><span>?먮뒗 ?대찓?쇰줈 媛??/span></div>
+                    <div class="auth-divider"><span>또는 이메일로 가입</span></div>
                     <div class="auth-type-selector" id="userTypeSelector">
-                        <div class="auth-type-btn active" data-type="individual">媛쒖씤 ?뚯썝</div>
-                        <div class="auth-type-btn" data-type="business">湲곌? / ?ъ뾽??/div>
+                        <div class="auth-type-btn active" data-type="individual">개인 회원</div>
+                        <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
                     </div>
                     <form id="signupForm">
                         <div class="auth-row">
-                            <div class="auth-form-group"><label>?대쫫 *</label><input type="text" id="signupName" class="auth-input" placeholder="?띻만?? required></div>
-                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                            <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
+                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
                         </div>
-                        <div class="auth-form-group"><label>?대찓??*</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
                         <div class="auth-row">
-                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6???댁긽" minlength="6" required></div>
-                            <div class="auth-form-group"><label>鍮꾨?踰덊샇 ?뺤씤 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="??踰????낅젰" required></div>
+                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required></div>
+                            <div class="auth-form-group"><label>비밀번호 확인 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required></div>
                         </div>
-                        <div class="auth-form-group" id="orgGroup"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?/label><input type="text" id="signupOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿"></div>
-                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>?ъ뾽???깅줉踰덊샇</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
-                        <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="signupAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
-                        <button type="submit" class="auth-submit-btn">媛?낇븯湲?/button>
+                        <div class="auth-form-group" id="orgGroup"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관"></div>
+                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>사업자 등록번호</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
+                        <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
+                        <button type="submit" class="auth-submit-btn">가입하기</button>
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
                 </div>
                 
                 <!-- Complete Profile Pane -->
                 <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header"><h2>異붽? ?뺣낫 ?낅젰</h2><p>?먰솢???쒕퉬???댁슜???꾪빐 ?꾩닔 ?뺣낫瑜??낅젰??二쇱꽭??</p></div>
+                    <div class="auth-header"><h2>추가 정보 입력</h2><p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p></div>
                     <form id="completeProfileForm">
                         <div class="highlight-box">
-                            <div class="auth-form-group"><label>?꾪솕踰덊샇 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                            <div class="auth-form-group"><label>?뚯냽湲곌? / ?숆탳 / ?꾩꽌愿紐?*</label><input type="text" id="completeOrg" class="auth-input" placeholder="?? ?쒓뎅??숆탳 ?꾩꽌愿" required></div>
-                            <div class="auth-form-group"><label>諛곗넚/諛⑸Ц??二쇱냼</label><input type="text" id="completeAddress" class="auth-input" placeholder="?꾩껜 二쇱냼瑜??낅젰?섏꽭??></div>
+                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                            <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명 *</label><input type="text" id="completeOrg" class="auth-input" placeholder="예: 한국대학교 도서관" required></div>
+                            <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
                         </div>
-                        <button type="submit" class="auth-submit-btn">?뺣낫 ???諛??쒖옉?섍린</button>
+                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
                     </form>
                     <div id="completeMsg" class="auth-message"></div>
                 </div>
@@ -185,27 +185,27 @@
                 <!-- My Profile Pane -->
                 <div class="auth-pane" id="myProfilePane">
                     <div class="auth-header">
-                        <h2>???뺣낫 愿由?/h2>
-                        <p>?뚯썝 ?뺣낫瑜??뺤씤?섍퀬 ?섏젙?????덉뒿?덈떎.</p>
+                        <h2>내 정보 관리</h2>
+                        <p>회원 정보를 확인하고 수정할 수 있습니다.</p>
                     </div>
                     <form id="myProfileForm">
                         <div class="auth-form-group">
-                            <label>?대쫫</label>
-                            <input type="text" id="myProfileName" class="auth-input" placeholder="?대쫫" required>
+                            <label>이름</label>
+                            <input type="text" id="myProfileName" class="auth-input" placeholder="이름" required>
                         </div>
                         <div class="auth-form-group">
-                            <label>?곕씫泥?/label>
+                            <label>연락처</label>
                             <input type="tel" id="myProfilePhone" class="auth-input" placeholder="010-0000-0000" required>
                         </div>
                         <div class="auth-form-group">
-                            <label>?뚯냽 湲곌? / ?숆탳紐?/label>
-                            <input type="text" id="myProfileOrg" class="auth-input" placeholder="?? ?쒕┰?꾩꽌愿" required>
+                            <label>소속 기관 / 학교명</label>
+                            <input type="text" id="myProfileOrg" class="auth-input" placeholder="예: 시립도서관" required>
                         </div>
                         <div class="auth-form-group">
-                            <label>二쇱냼</label>
-                            <input type="text" id="myProfileAddress" class="auth-input" placeholder="二쇱냼瑜??낅젰?섏꽭?? required>
+                            <label>주소</label>
+                            <input type="text" id="myProfileAddress" class="auth-input" placeholder="주소를 입력하세요" required>
                         </div>
-                        <button type="submit" class="auth-submit-btn">?뺣낫 ?섏젙?섍린</button>
+                        <button type="submit" class="auth-submit-btn">정보 수정하기</button>
                     </form>
                     <div id="myProfileMsg" class="auth-message"></div>
                 </div>
@@ -217,4 +217,5 @@
     <script type="module" src="inquiry.js"></script>
     <script type="module" src="auth.js"></script>
 </body>
+
 </html>
