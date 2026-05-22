@@ -917,6 +917,32 @@ saveProductBtn.addEventListener('click', async () => {
     if (error) {
         saveMsg.textContent = '저장 실패: ' + error.message;
     } else {
+        // [수정] 제품 카테고리가 변경되었을 수 있으므로 다른 카테고리의 전시 설정에서 제거
+        if (id) {
+            let configKey = null;
+            for (const mKey in SITE_CATEGORIES) {
+                const major = SITE_CATEGORIES[mKey];
+                if (!major || !major.middles) continue;
+                for (const midKey in major.middles) {
+                    const middle = major.middles[midKey];
+                    if (!middle || !Array.isArray(middle.subs)) continue;
+                    if (middle.subs.some(s => s.id === payload.category)) {
+                        configKey = `display_${midKey}-${payload.category}`;
+                        break;
+                    }
+                }
+                if (configKey) break;
+            }
+            if (payload.category === 'best_product') configKey = 'display_best_product';
+
+            for (const key in globalDisplayConfigs) {
+                if (key !== configKey && globalDisplayConfigs[key].includes(id)) {
+                    globalDisplayConfigs[key] = globalDisplayConfigs[key].filter(pid => pid !== id);
+                    db.from('site_configs').upsert({ key: key, value: globalDisplayConfigs[key] }).then();
+                }
+            }
+        }
+        
         closeModal(); fetchProducts();
     }
     
@@ -969,7 +995,18 @@ window.editProduct = async (id) => {
 window.deleteProduct = async (id, name) => {
     if(confirm(`"${name}" 제품을 영구 삭제하시겠습니까?`)) {
         const { error } = await db.from('products').delete().eq('id', id);
-        if (error) alert('삭제 실패: ' + error.message); else fetchProducts();
+        if (error) {
+            alert('삭제 실패: ' + error.message);
+        } else {
+            // 전시 설정에서도 삭제
+            for (const key in globalDisplayConfigs) {
+                if (globalDisplayConfigs[key].includes(id)) {
+                    globalDisplayConfigs[key] = globalDisplayConfigs[key].filter(pid => pid !== id);
+                    db.from('site_configs').upsert({ key: key, value: globalDisplayConfigs[key] }).then();
+                }
+            }
+            fetchProducts();
+        }
     }
 };
 
