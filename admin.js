@@ -480,14 +480,28 @@ function initDashboard() {
 // ==========================================
 // 3. (기존) 제품 목록 로드 / CRUD 
 // ==========================================
+let globalDisplayConfigs = {};
+
+async function fetchDisplayConfigs() {
+    const { data, error } = await db.from('site_configs').select('key, value').like('key', 'display_%');
+    globalDisplayConfigs = {};
+    if (!error && data) {
+        data.forEach(row => {
+            globalDisplayConfigs[row.key] = Array.isArray(row.value) ? row.value : [];
+        });
+    }
+}
+
 async function fetchProducts() {
-    productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
+    productTableBody.innerHTML = '<tr><td colspan="8" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
+    
+    await fetchDisplayConfigs(); // 전시 설정 로드
     
     const { data: products, error } = await db.from('products').select('*').order('created_at', { ascending: false });
     
     if (error) {
         console.error('Error fetching products:', error);
-        productTableBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:red"><i class="fa-solid fa-triangle-exclamation"></i> 오류: ${error.message}</td></tr>`;
+        productTableBody.innerHTML = `<tr><td colspan="8" class="empty-state" style="color:red"><i class="fa-solid fa-triangle-exclamation"></i> 오류: ${error.message}</td></tr>`;
         return;
     }
 
@@ -511,6 +525,7 @@ function renderProductTable(products) {
 
         // 카테고리 라벨 매핑 (3단계 대응)
         let displayCategory = p.category;
+        let configKey = null; // 전시 설정 키
         for (const mKey in SITE_CATEGORIES) {
             const major = SITE_CATEGORIES[mKey];
             if (!major || !major.middles) continue;
@@ -522,12 +537,18 @@ function renderProductTable(products) {
                 const sub = middle.subs.find(s => s.id === p.category);
                 if (sub) {
                     displayCategory = `${major.label} > ${middle.label} > ${sub.label}`;
+                    configKey = `display_${midKey}-${sub.id}`;
                     break;
                 }
             }
-            if (displayCategory !== p.category) break;
+            if (configKey) break;
         }
-        if (p.category === 'best_product') displayCategory = '★ 베스트 상품';
+        if (p.category === 'best_product') {
+            displayCategory = '★ 베스트 상품';
+            configKey = 'display_best_product';
+        }
+
+        const isDisplayed = configKey && globalDisplayConfigs[configKey] && globalDisplayConfigs[configKey].includes(p.id);
 
         tr.innerHTML = `
             <td>${imgHtml}</td>
@@ -536,8 +557,13 @@ function renderProductTable(products) {
             <td>${p.price}</td>
             <td>${p.stock}개</td>
             <td style="color:#666; font-size:0.9rem;">${dateStr}</td>
+            <td style="text-align:center;">
+                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; justify-content:center;">
+                    <input type="checkbox" style="transform:scale(1.2);" onchange="toggleProductDisplay('${p.id}', '${configKey}', this.checked)" ${isDisplayed ? 'checked' : ''}>
+                    <span style="font-size:0.85rem;">전시</span>
+                </label>
+            </td>
             <td>
-                <button class="action-btn" style="color:#27ae60; border: 1px solid #27ae60; background: white;" onclick="openCategoryDisplay()" title="카테고리 전시관리"><i class="fa-solid fa-check"></i></button>
                 <button class="action-btn edit" onclick="editProduct('${p.id}')" title="수정"><i class="fa-solid fa-pen-to-square"></i></button>
                 <button class="action-btn delete" onclick="deleteProduct('${p.id}', '${p.name}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -2804,12 +2830,39 @@ window.openPageManage = function(productId) {
     }
 };
 
-window.openCategoryDisplay = function() {
-    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
-    document.getElementById('tab-category-display').classList.add('active');
-    
-    if (typeof initCategoryDisplayTab === 'function') {
-        initCategoryDisplayTab();
+window.toggleProductDisplay = async function(productId, configKey, isChecked) {
+    if (!configKey || configKey === 'null') {
+        alert("이 제품의 카테고리 정보가 올바르지 않아 전시 설정을 변경할 수 없습니다.");
+        return;
+    }
+
+    if (!globalDisplayConfigs[configKey]) {
+        globalDisplayConfigs[configKey] = [];
+    }
+
+    if (isChecked) {
+        if (!globalDisplayConfigs[configKey].includes(productId)) {
+            globalDisplayConfigs[configKey].push(productId);
+        }
+    } else {
+        globalDisplayConfigs[configKey] = globalDisplayConfigs[configKey].filter(id => id !== productId);
+    }
+
+    const { error } = await db.from('site_configs').upsert({
+        key: configKey,
+        value: globalDisplayConfigs[configKey]
+    });
+
+    if (error) {
+        alert('전시 설정 저장 실패: ' + error.message);
+        // 상태 롤백
+        if (event && event.target) {
+            event.target.checked = !isChecked;
+        }
+        if (isChecked) {
+            globalDisplayConfigs[configKey] = globalDisplayConfigs[configKey].filter(id => id !== productId);
+        } else {
+            globalDisplayConfigs[configKey].push(productId);
+        }
     }
 };
