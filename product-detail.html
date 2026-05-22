@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -213,7 +213,7 @@
 
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
-            <li><a href="#" class="banner-btn search-btn-aside" title="검색"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">검색</span></a></li>
+            <li><a href="#" class="banner-btn recent-btn-aside" title="최근 본 상품"><i class="fa-solid fa-clock-rotate-left"></i><span class="tooltip">최근본상품</span></a></li>
             <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
             <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
             <li><a href="#" class="banner-btn" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
@@ -509,6 +509,26 @@
                 if (featureSection) featureSection.style.display = 'none';
             }
             
+            // [신규] 최근 본 상품 저장
+            try {
+                let recentItems = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+                recentItems = recentItems.filter(item => item.id !== product.id);
+                
+                const pData2 = configData ? configData.value : null;
+                const displayImg2 = (pData2 && pData2.mainImages && pData2.mainImages.length > 0) ? pData2.mainImages[0] : 'assets/no-image.png';
+                
+                recentItems.unshift({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: displayImg2,
+                    timestamp: new Date().getTime()
+                });
+                
+                if (recentItems.length > 15) recentItems.pop();
+                localStorage.setItem('recentlyViewed', JSON.stringify(recentItems));
+            } catch (e) { console.error("Recent view tracking error", e); }
+
             calculateTotal();
         }
 

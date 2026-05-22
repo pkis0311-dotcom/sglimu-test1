@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------------------------------------------------
     const headerSearchBtn = document.getElementById('headerSearchBtn');
     const searchInput = document.querySelector('.search-input');
-    const asideSearchBtn = document.querySelector('.search-btn-aside');
 
     // Pre-fill search input if on search page
     const urlParams = new URLSearchParams(window.location.search);
@@ -16,48 +15,108 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function performSearch() {
-        // 현재 화면에 있는 검색창 중 실제 값이 입력된 것을 찾거나 첫 번째를 사용
         const input = document.querySelector('.search-input');
         const query = input ? input.value.trim() : '';
         
         if (query) {
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         } else {
-            // 입력값이 없거나 모바일처럼 입력창이 숨겨진 상태라면 검색 페이지로 이동
             window.location.href = 'search.html';
         }
     }
 
-    // 모든 검색 버튼(헤더, 사이드바 등)에 이벤트 연결
     document.addEventListener('click', (e) => {
-        const btn = e.target.closest('#headerSearchBtn, .search-btn, .search-btn-aside');
-        if (btn) {
+        const btn = e.target.closest('#headerSearchBtn, .search-btn');
+        if (btn && !e.target.closest('.recent-btn-aside')) {
             e.preventDefault();
             performSearch();
         }
     });
 
-    // 엔터키 지원
     document.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && e.target.classList.contains('search-input')) {
             performSearch();
         }
     });
-    
-    if (asideSearchBtn) {
-        asideSearchBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+
+    // ---------------------------------------------------------
+    // 1-1. Recently Viewed Products Logic
+    // ---------------------------------------------------------
+    (function initRecentProducts() {
+        // Inject popup HTML if not exists
+        if (!document.getElementById('recentWindow')) {
+            const popupHtml = `
+            <div class="chat-window" id="recentWindow" style="display: none; height: 450px; bottom: 80px; right: 80px; width: 320px; z-index:9999;">
+                <div class="chat-header" style="background:#2980b9;">
+                    <h4><i class="fa-solid fa-clock-rotate-left"></i> 최근 본 상품</h4>
+                    <button class="chat-close" id="recentCloseBtn">&times;</button>
+                </div>
+                <div class="chat-body" id="recentBody" style="background:#f4f6f8; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; height:calc(100% - 50px);">
+                    <!-- Items injected by JS -->
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', popupHtml);
+        }
+
+        const recentWindow = document.getElementById('recentWindow');
+        const recentBody = document.getElementById('recentBody');
+        const recentCloseBtn = document.getElementById('recentCloseBtn');
+
+        function renderRecentItems() {
+            let items = [];
+            try {
+                items = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            } catch(e){}
+
+            recentBody.innerHTML = '';
+            if (items.length === 0) {
+                recentBody.innerHTML = `
+                    <div style="text-align:center; padding: 40px 0; color:#999;">
+                        <i class="fa-solid fa-box-open" style="font-size:3rem; margin-bottom:15px; color:#ddd;"></i>
+                        <p>최근 본 상품이 없습니다.</p>
+                    </div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const priceStr = (!item.price || item.price === '전화문의') ? '전화문의' : Number(item.price).toLocaleString() + '원';
+                const el = document.createElement('div');
+                el.style.cssText = "display:flex; background:#fff; padding:10px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; gap:10px; align-items:center; transition:transform 0.2s;";
+                el.onmouseover = () => el.style.transform = 'translateY(-2px)';
+                el.onmouseout = () => el.style.transform = 'translateY(0)';
+                el.onclick = () => window.location.href = `product-detail.html?id=${item.id}`;
+                
+                el.innerHTML = `
+                    <div style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:cover; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
+                    <div style="flex-grow:1; overflow:hidden;">
+                        <div style="font-size:0.9rem; font-weight:600; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;">${item.name}</div>
+                        <div style="font-size:0.85rem; color:#2980b9; font-weight:bold;">${priceStr}</div>
+                    </div>
+                `;
+                recentBody.appendChild(el);
             });
-            setTimeout(() => {
-                if (searchInput) {
-                    searchInput.focus();
+        }
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.recent-btn-aside');
+            if (btn) {
+                e.preventDefault();
+                const isHidden = recentWindow.style.display === 'none';
+                if (isHidden) {
+                    renderRecentItems();
+                    recentWindow.style.display = 'flex';
+                } else {
+                    recentWindow.style.display = 'none';
                 }
-            }, 500);
+            }
         });
-    }
+
+        if (recentCloseBtn) {
+            recentCloseBtn.addEventListener('click', () => {
+                recentWindow.style.display = 'none';
+            });
+        }
+    })();
 
     // ---------------------------------------------------------
     // 2. Slider Logic (Home Page Only)
