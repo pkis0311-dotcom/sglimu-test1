@@ -955,7 +955,7 @@ saveProductBtn.addEventListener('click', async () => {
                 if (!globalDisplayConfigs[configKey]) globalDisplayConfigs[configKey] = [];
                 if (!globalDisplayConfigs[configKey].includes(id)) {
                     globalDisplayConfigs[configKey].push(id);
-                    upsertPromises.push(db.from('site_configs').upsert({ key: configKey, value: globalDisplayConfigs[key] }));
+                    upsertPromises.push(db.from('site_configs').upsert({ key: configKey, value: globalDisplayConfigs[configKey] }));
                 }
             }
             
