@@ -531,12 +531,13 @@ function renderProductTable(products) {
 
         tr.innerHTML = `
             <td>${imgHtml}</td>
-            <td style="font-weight:600;">${p.name}</td>
+            <td style="font-weight:600;"><a href="#" onclick="event.preventDefault(); openPageManage('${p.id}')" style="color:#2980b9; text-decoration:underline; cursor:pointer;" title="상세페이지 관리">${p.name}</a></td>
             <td><span style="background:#eaf2f8; color:#2980b9; padding:3px 8px; border-radius:3px; font-size:0.8rem;">${displayCategory}</span></td>
             <td>${p.price}</td>
             <td>${p.stock}개</td>
             <td style="color:#666; font-size:0.9rem;">${dateStr}</td>
             <td>
+                <button class="action-btn" style="color:#27ae60; border: 1px solid #27ae60; background: white;" onclick="openCategoryDisplay()" title="카테고리 전시관리"><i class="fa-solid fa-check"></i></button>
                 <button class="action-btn edit" onclick="editProduct('${p.id}')" title="수정"><i class="fa-solid fa-pen-to-square"></i></button>
                 <button class="action-btn delete" onclick="deleteProduct('${p.id}', '${p.name}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -2779,3 +2780,36 @@ window.deleteProfile = async (id, name) => {
 };
 
 // 시스템 초기화는 상단의 DOMContentLoaded 리스너에서 수행됩니다.
+
+window.openPageManage = function(productId) {
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+    document.getElementById('tab-page-manage').classList.add('active');
+    
+    if (typeof initPageManageTab === 'function') {
+        initPageManageTab();
+    }
+    
+    const targetSelect = document.getElementById('targetPageId');
+    if(targetSelect) {
+        const majorFilter = document.getElementById('pageMajorFilter');
+        if (majorFilter) {
+            majorFilter.value = 'all';
+            majorFilter.dispatchEvent(new Event('change'));
+        }
+        setTimeout(() => {
+            targetSelect.value = productId;
+            targetSelect.dispatchEvent(new Event('change'));
+        }, 100);
+    }
+};
+
+window.openCategoryDisplay = function() {
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+    document.getElementById('tab-category-display').classList.add('active');
+    
+    if (typeof initCategoryDisplayTab === 'function') {
+        initCategoryDisplayTab();
+    }
+};
