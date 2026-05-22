@@ -112,24 +112,6 @@
                 <button id="downloadExcelBtn" class="btn-success"><i class="fa-solid fa-file-excel"></i> 전체 데이터 (.xlsx)</button>
             </div>
             
-            <!-- 상단 날짜 필터 -->
-            <div class="filter-section" style="background:#fff; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center; box-shadow:0 2px 4px rgba(0,0,0,0.05); flex-wrap:wrap;">
-                <span style="font-weight:bold; color:#555;">기간 조회:</span>
-                <button class="btn-secondary date-preset-btn" data-days="0">오늘</button>
-                <button class="btn-secondary date-preset-btn" data-days="7">최근 7일</button>
-                <button class="btn-secondary date-preset-btn" data-days="30">최근 1개월</button>
-                <button class="btn-secondary date-preset-btn" data-days="180">최근 6개월</button>
-                <button class="btn-secondary date-preset-btn" data-days="365">최근 1년</button>
-                <button class="btn-secondary date-preset-btn active" data-days="all">전체</button>
-                
-                <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
-                    <input type="date" id="statsStartDate" class="form-control" style="width:auto;">
-                    <span>~</span>
-                    <input type="date" id="statsEndDate" class="form-control" style="width:auto;">
-                    <button id="applyStatsFilterBtn" class="btn-primary">조회</button>
-                </div>
-            </div>
-
             <!-- 대시보드 요약 지표 -->
             <div class="dashboard-cards">
                 <div class="stat-card">
@@ -158,43 +140,21 @@
             <!-- 차트 영역 (2열 배치) -->
             <div class="charts-grid">
                 <div class="chart-container">
-                    <h3 id="orderChartTitle" style="margin-bottom:20px; font-size:1.1rem; color:#333;"><i class="fa-solid fa-chart-column"></i> 기간별 주문 건수 추이</h3>
+                    <h3 style="margin-bottom:20px; font-size:1.1rem; color:#333;"><i class="fa-solid fa-chart-column"></i> 최근 7일 주문 건수 추이</h3>
                     <div style="position:relative; height:calc(100% - 45px); width:100%;">
                         <canvas id="orderChart"></canvas>
                     </div>
                 </div>
                 <div class="chart-container">
-                    <h3 id="revenueChartTitle" style="margin-bottom:20px; font-size:1.1rem; color:#333;"><i class="fa-solid fa-chart-line"></i> 기간별 매출액(원) 추이</h3>
+                    <h3 style="margin-bottom:20px; font-size:1.1rem; color:#333;"><i class="fa-solid fa-chart-line"></i> 최근 7일 매출액(원) 추이</h3>
                     <div style="position:relative; height:calc(100% - 45px); width:100%;">
                         <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- 차트 영역 2 (상품 통계 및 상태 비율) -->
-            <div class="charts-grid" style="margin-top:20px;">
-                <div class="chart-container">
-                    <h3 style="margin-bottom:20px; font-size:1.1rem; color:#333; display:flex; justify-content:space-between; align-items:center;">
-                        <span><i class="fa-solid fa-ranking-star"></i> 상품별 판매 통계 (Top 5)</span>
-                        <select id="productStatType" class="form-control" style="width:auto; padding:3px 10px; font-size:0.9rem; margin:0;">
-                            <option value="quantity">판매 수량 기준</option>
-                            <option value="revenue">매출액 기준</option>
-                        </select>
-                    </h3>
-                    <div style="position:relative; height:calc(100% - 45px); width:100%;">
-                        <canvas id="productStatChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <h3 style="margin-bottom:20px; font-size:1.1rem; color:#333;"><i class="fa-solid fa-chart-pie"></i> 주문 상태 비율</h3>
-                    <div style="position:relative; height:calc(100% - 45px); width:100%; display:flex; justify-content:center;">
-                        <canvas id="statusRatioChart" style="max-width:300px; max-height:300px;"></canvas>
-                    </div>
-                </div>
-            </div>
-
             <!-- 통계 테이블 상세 목록 -->
-            <div class="table-card" style="margin-top:20px;">
+            <div class="table-card">
                 <table id="orderTable">
                     <thead>
                         <tr>
@@ -210,27 +170,6 @@
                     </thead>
                     <tbody id="orderTableBody">
                         <tr><td colspan="8" class="empty-state">통계 데이터를 불러오는 중입니다...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 상품별 판매 요약 테이블 -->
-            <div class="table-card" style="margin-top:20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0; font-size:1.1rem; color:#333;"><i class="fa-solid fa-list-ol"></i> 상품별 판매 요약 (베스트셀러)</h3>
-                    <button id="downloadProductStatsExcelBtn" class="btn-success" style="padding:5px 15px; font-size:0.9rem;"><i class="fa-solid fa-file-excel"></i> 상품 통계 엑셀 다운로드</button>
-                </div>
-                <table id="productStatTable">
-                    <thead>
-                        <tr>
-                            <th>순위</th>
-                            <th>상품명</th>
-                            <th>총 판매수량</th>
-                            <th>총 매출액</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productStatTableBody">
-                        <tr><td colspan="4" class="empty-state">조회된 데이터가 없습니다.</td></tr>
                     </tbody>
                 </table>
             </div>
