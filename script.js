@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Inject popup HTML if not exists
         if (!document.getElementById('recentWindow')) {
             const popupHtml = `
-            <div class="chat-window" id="recentWindow" style="display: none; height: 450px; bottom: 80px; right: 80px; width: 320px; z-index:9999;">
+            <div class="chat-window" id="recentWindow" style="height: 450px; bottom: 80px; right: 80px; width: 320px; z-index:9999;">
                 <div class="chat-header" style="background:#2980b9;">
                     <h4><i class="fa-solid fa-clock-rotate-left"></i> 최근 본 상품</h4>
                     <button class="chat-close" id="recentCloseBtn">&times;</button>
@@ -101,19 +101,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const btn = e.target.closest('.recent-btn-aside');
             if (btn) {
                 e.preventDefault();
-                const isHidden = recentWindow.style.display === 'none';
+                const isHidden = !recentWindow.classList.contains('active');
                 if (isHidden) {
                     renderRecentItems();
-                    recentWindow.style.display = 'flex';
+                    recentWindow.classList.add('active');
                 } else {
-                    recentWindow.style.display = 'none';
+                    recentWindow.classList.remove('active');
                 }
             }
         });
 
         if (recentCloseBtn) {
             recentCloseBtn.addEventListener('click', () => {
-                recentWindow.style.display = 'none';
+                recentWindow.classList.remove('active');
             });
         }
     })();
