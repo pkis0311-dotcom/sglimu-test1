@@ -102,6 +102,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (btn) {
                 e.preventDefault();
                 const isHidden = !recentWindow.classList.contains('active');
+                
+                // 다른 팝업 닫기
+                const wishlistWindow = document.getElementById('wishlistWindow');
+                if (wishlistWindow) wishlistWindow.classList.remove('active');
+                const cartOverlay = document.getElementById('cartOverlay');
+                if (cartOverlay) cartOverlay.classList.remove('open');
+
                 if (isHidden) {
                     renderRecentItems();
                     recentWindow.classList.add('active');
@@ -203,9 +210,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 창이 열려있지 않다면
                 const isHidden = !wishlistWindow.classList.contains('active');
                 
-                // 최근 본 상품 닫기
+                // 다른 팝업 닫기
                 const recentWindow = document.getElementById('recentWindow');
                 if (recentWindow) recentWindow.classList.remove('active');
+                const cartOverlay = document.getElementById('cartOverlay');
+                if (cartOverlay) cartOverlay.classList.remove('open');
 
                 if (isHidden) {
                     renderWishlistItems();

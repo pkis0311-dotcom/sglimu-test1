@@ -43,6 +43,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 사이드바 장바구니 버튼 연동
+    const asideCartBtns = document.querySelectorAll('.cart-btn-aside');
+    asideCartBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // 다른 팝업(관심상품, 최근본상품 등) 닫기
+            const wishlistWindow = document.getElementById('wishlistWindow');
+            if (wishlistWindow) wishlistWindow.classList.remove('active');
+            const recentWindow = document.getElementById('recentWindow');
+            if (recentWindow) recentWindow.classList.remove('active');
+            
+            openCart();
+        });
+    });
+
     closeCartBtn.addEventListener('click', closeCart);
     cartOverlay.addEventListener('click', (e) => {
         if(e.target === cartOverlay) closeCart();
