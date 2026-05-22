@@ -133,7 +133,7 @@
                 </div>
 
                 <div class="buy-btn-group" style="margin-top:30px;">
-                    <button class="btn-icon-large" title="관심상품"><i class="fa-regular fa-heart"></i></button>
+                    <button class="btn-icon-large" id="btnWishlist" title="관심상품"><i class="fa-regular fa-heart"></i></button>
                     <button class="btn-large btn-cart">장바구니</button>
                     <button class="btn-large btn-buy">바로구매</button>
                 </div>
@@ -216,7 +216,7 @@
             <li><a href="#" class="banner-btn recent-btn-aside" title="최근 본 상품"><i class="fa-solid fa-clock-rotate-left"></i><span class="tooltip">최근본상품</span></a></li>
             <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
             <li><a href="#" class="banner-btn" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
-            <li><a href="#" class="banner-btn" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
+            <li><a href="#" class="banner-btn wishlist-btn-aside" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
             <li><a href="#" class="banner-btn chat-trigger" id="chatTriggerBtn" title="실시간 채팅"><i class="fa-solid fa-comments"></i><span class="tooltip">실시간 채팅</span></a></li>
             <li class="scroll-btns">
                 <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
@@ -528,6 +528,48 @@
                 if (recentItems.length > 15) recentItems.pop();
                 localStorage.setItem('recentlyViewed', JSON.stringify(recentItems));
             } catch (e) { console.error("Recent view tracking error", e); }
+
+            // [신규] 관심상품 기능
+            try {
+                const btnWishlist = document.getElementById('btnWishlist');
+                const wishIcon = btnWishlist.querySelector('i');
+                const pData3 = configData ? configData.value : null;
+                const displayImg3 = (pData3 && pData3.mainImages && pData3.mainImages.length > 0) ? pData3.mainImages[0] : 'assets/no-image.png';
+                
+                const productObj = {
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: displayImg3,
+                    timestamp: new Date().getTime()
+                };
+
+                let wishItems = JSON.parse(localStorage.getItem('wishlist') || '[]');
+                let isWished = wishItems.some(item => item.id === product.id);
+
+                if (isWished) {
+                    wishIcon.classList.replace('fa-regular', 'fa-solid');
+                    wishIcon.style.color = '#e74c3c';
+                }
+
+                btnWishlist.addEventListener('click', () => {
+                    wishItems = JSON.parse(localStorage.getItem('wishlist') || '[]');
+                    isWished = wishItems.some(item => item.id === product.id);
+                    
+                    if (isWished) {
+                        wishItems = wishItems.filter(item => item.id !== product.id);
+                        wishIcon.classList.replace('fa-solid', 'fa-regular');
+                        wishIcon.style.color = '';
+                        alert('관심상품에서 해제되었습니다.');
+                    } else {
+                        wishItems.unshift(productObj);
+                        wishIcon.classList.replace('fa-regular', 'fa-solid');
+                        wishIcon.style.color = '#e74c3c';
+                        alert('관심상품에 추가되었습니다.');
+                    }
+                    localStorage.setItem('wishlist', JSON.stringify(wishItems));
+                });
+            } catch (e) { console.error("Wishlist tracking error", e); }
 
             calculateTotal();
         }

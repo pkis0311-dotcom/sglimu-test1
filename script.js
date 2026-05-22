@@ -119,6 +119,116 @@ document.addEventListener('DOMContentLoaded', async () => {
     })();
 
     // ---------------------------------------------------------
+    // 1-2. Wishlist Logic
+    // ---------------------------------------------------------
+    (function initWishlistProducts() {
+        if (!document.getElementById('wishlistWindow')) {
+            const popupHtml = `
+            <div class="chat-window" id="wishlistWindow" style="height: 450px; bottom: 80px; right: 80px; width: 320px; z-index:9999;">
+                <div class="chat-header" style="background:#e74c3c;">
+                    <h4><i class="fa-solid fa-heart"></i> 관심상품</h4>
+                    <button class="chat-close" id="wishlistCloseBtn">&times;</button>
+                </div>
+                <div class="chat-body" id="wishlistBody" style="background:#f4f6f8; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; height:calc(100% - 50px);">
+                    <!-- Items injected by JS -->
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', popupHtml);
+        }
+
+        const wishlistWindow = document.getElementById('wishlistWindow');
+        const wishlistBody = document.getElementById('wishlistBody');
+        const wishlistCloseBtn = document.getElementById('wishlistCloseBtn');
+
+        function renderWishlistItems() {
+            let items = [];
+            try {
+                items = JSON.parse(localStorage.getItem('wishlist') || '[]');
+            } catch(e){}
+
+            wishlistBody.innerHTML = '';
+            if (items.length === 0) {
+                wishlistBody.innerHTML = `
+                    <div style="text-align:center; padding: 40px 0; color:#999;">
+                        <i class="fa-regular fa-heart" style="font-size:3rem; margin-bottom:15px; color:#ddd;"></i>
+                        <p>등록된 관심상품이 없습니다.</p>
+                    </div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const priceStr = (!item.price || item.price === '전화문의') ? '전화문의' : Number(item.price).toLocaleString() + '원';
+                const el = document.createElement('div');
+                el.style.cssText = "display:flex; background:#fff; padding:10px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; gap:10px; align-items:center; transition:transform 0.2s; position:relative;";
+                el.onmouseover = () => el.style.transform = 'translateY(-2px)';
+                el.onmouseout = () => el.style.transform = 'translateY(0)';
+                
+                el.innerHTML = `
+                    <div onclick="window.location.href='product-detail.html?id=${item.id}'" style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:cover; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
+                    <div onclick="window.location.href='product-detail.html?id=${item.id}'" style="flex-grow:1; overflow:hidden;">
+                        <div style="font-size:0.9rem; font-weight:600; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;">${item.name}</div>
+                        <div style="font-size:0.85rem; color:#e74c3c; font-weight:bold;">${priceStr}</div>
+                    </div>
+                    <button class="remove-wish-btn" style="border:none; background:transparent; color:#ccc; cursor:pointer; padding:5px;"><i class="fa-solid fa-xmark"></i></button>
+                `;
+
+                // 개별 삭제 버튼 이벤트
+                const removeBtn = el.querySelector('.remove-wish-btn');
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let currentList = JSON.parse(localStorage.getItem('wishlist') || '[]');
+                    currentList = currentList.filter(w => w.id !== item.id);
+                    localStorage.setItem('wishlist', JSON.stringify(currentList));
+                    renderWishlistItems();
+                    
+                    // 상세페이지인 경우 하트 아이콘 해제
+                    const btnWishlist = document.getElementById('btnWishlist');
+                    if (btnWishlist && typeof product !== 'undefined' && product.id === item.id) {
+                        const wishIcon = btnWishlist.querySelector('i');
+                        if (wishIcon) {
+                            wishIcon.classList.replace('fa-solid', 'fa-regular');
+                            wishIcon.style.color = '';
+                        }
+                    }
+                });
+
+                wishlistBody.appendChild(el);
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.wishlist-btn-aside');
+            if (btn) {
+                e.preventDefault();
+                // 창이 열려있지 않다면
+                const isHidden = !wishlistWindow.classList.contains('active');
+                
+                // 최근 본 상품 닫기
+                const recentWindow = document.getElementById('recentWindow');
+                if (recentWindow) recentWindow.classList.remove('active');
+
+                if (isHidden) {
+                    renderWishlistItems();
+                    wishlistWindow.classList.add('active');
+                } else {
+                    wishlistWindow.classList.remove('active');
+                }
+            }
+            
+            // 최근 본 상품 버튼을 누르면 관심상품 창을 닫기
+            if (e.target.closest('.recent-btn-aside')) {
+                wishlistWindow.classList.remove('active');
+            }
+        });
+
+        if (wishlistCloseBtn) {
+            wishlistCloseBtn.addEventListener('click', () => {
+                wishlistWindow.classList.remove('active');
+            });
+        }
+    })();
+
+    // ---------------------------------------------------------
     // 2. Slider Logic (Home Page Only)
     // ---------------------------------------------------------
     const sliderContainer = document.getElementById('sliderContainer');
