@@ -935,11 +935,32 @@ saveProductBtn.addEventListener('click', async () => {
             }
             if (payload.category === 'best_product') configKey = 'display_best_product';
 
+            let wasDisplayedAnywhere = false;
+            const upsertPromises = [];
+            
             for (const key in globalDisplayConfigs) {
-                if (key !== configKey && globalDisplayConfigs[key].includes(id)) {
-                    globalDisplayConfigs[key] = globalDisplayConfigs[key].filter(pid => pid !== id);
-                    db.from('site_configs').upsert({ key: key, value: globalDisplayConfigs[key] }).then();
+                if (globalDisplayConfigs[key].includes(id)) {
+                    if (key !== configKey) {
+                        globalDisplayConfigs[key] = globalDisplayConfigs[key].filter(pid => pid !== id);
+                        upsertPromises.push(db.from('site_configs').upsert({ key: key, value: globalDisplayConfigs[key] }));
+                        wasDisplayedAnywhere = true;
+                    } else {
+                        wasDisplayedAnywhere = true;
+                    }
                 }
+            }
+            
+            // 기존에 전시 중이었다면, 새 카테고리에도 자동으로 전시 상태 유지
+            if (wasDisplayedAnywhere && configKey) {
+                if (!globalDisplayConfigs[configKey]) globalDisplayConfigs[configKey] = [];
+                if (!globalDisplayConfigs[configKey].includes(id)) {
+                    globalDisplayConfigs[configKey].push(id);
+                    upsertPromises.push(db.from('site_configs').upsert({ key: configKey, value: globalDisplayConfigs[key] }));
+                }
+            }
+            
+            if (upsertPromises.length > 0) {
+                await Promise.all(upsertPromises);
             }
         }
         
@@ -998,12 +1019,16 @@ window.deleteProduct = async (id, name) => {
         if (error) {
             alert('삭제 실패: ' + error.message);
         } else {
+            const upsertPromises = [];
             // 전시 설정에서도 삭제
             for (const key in globalDisplayConfigs) {
                 if (globalDisplayConfigs[key].includes(id)) {
                     globalDisplayConfigs[key] = globalDisplayConfigs[key].filter(pid => pid !== id);
-                    db.from('site_configs').upsert({ key: key, value: globalDisplayConfigs[key] }).then();
+                    upsertPromises.push(db.from('site_configs').upsert({ key: key, value: globalDisplayConfigs[key] }));
                 }
+            }
+            if (upsertPromises.length > 0) {
+                await Promise.all(upsertPromises);
             }
             fetchProducts();
         }
