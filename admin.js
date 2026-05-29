@@ -2193,14 +2193,21 @@ function initPageManageTab() {
                 };
                 
                 specContainer.querySelectorAll('.spec-row').forEach(row => {
-                    const inputs = row.querySelectorAll('input');
-                    if(inputs[0].value) data.specs.push({ key: inputs[0].value, val: inputs[1].value });
+                    const keyInput = row.querySelector('.spec-key');
+                    const editorContainer = row.querySelector('.spec-val-editor');
+                    if(keyInput && keyInput.value) {
+                        const valHTML = editorContainer && editorContainer.__quill ? editorContainer.__quill.root.innerHTML : (row.querySelectorAll('input')[1] ? row.querySelectorAll('input')[1].value : '');
+                        data.specs.push({ key: keyInput.value, val: valHTML });
+                    }
                 });
                 
                 featureContainer.querySelectorAll('.feature-block').forEach(block => {
-                    const title = block.querySelector('input').value;
-                    const desc = block.querySelector('textarea').value;
-                    if(title) data.features.push({ title, desc });
+                    const titleInput = block.querySelector('.feature-title');
+                    const editorContainer = block.querySelector('.feature-desc-editor');
+                    if(titleInput && titleInput.value) {
+                        const descHTML = editorContainer && editorContainer.__quill ? editorContainer.__quill.root.innerHTML : (block.querySelector('textarea') ? block.querySelector('textarea').value : '');
+                        data.features.push({ title: titleInput.value, desc: descHTML });
+                    }
                 });
                 
                 // [변경] localStorage 대신 Supabase site_configs 테이블에 저장
@@ -2242,13 +2249,32 @@ function createSpecRow(key, val) {
     const specContainer = document.getElementById('specContainer');
     const row = document.createElement('div');
     row.className = 'spec-row';
-    row.style.cssText = "display:flex; gap:10px; align-items:center;";
+    row.style.cssText = "display:flex; gap:10px; align-items:flex-start;";
+    
+    const qId = 'spec_val_' + Date.now() + Math.floor(Math.random()*1000);
+    
     row.innerHTML = `
-        <input type="text" class="form-control" placeholder="항목명" value="${key}" style="flex:1;">
-        <input type="text" class="form-control" placeholder="내용" value="${val}" style="flex:2;">
-        <button class="action-btn delete" onclick="this.parentElement.remove()"><i class="fa-solid fa-circle-minus"></i></button>
+        <input type="text" class="form-control spec-key" placeholder="항목명" value="${key}" style="flex:1; margin-top:5px;">
+        <div style="flex:2; background:#fff; min-width:0;">
+            <div id="${qId}" class="spec-val-editor" style="min-height: 50px;">${val}</div>
+        </div>
+        <button class="action-btn delete" onclick="this.parentElement.remove()" style="margin-top:5px;"><i class="fa-solid fa-circle-minus"></i></button>
     `;
     specContainer.appendChild(row);
+    
+    if (typeof Quill !== 'undefined') {
+        const quill = new Quill('#' + qId, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['bold', 'italic', 'clean']
+                ]
+            }
+        });
+        row.querySelector('.spec-val-editor').__quill = quill;
+    }
 }
 
 function createFeatureBlock(title, desc) {
@@ -2256,14 +2282,33 @@ function createFeatureBlock(title, desc) {
     const block = document.createElement('div');
     block.className = 'feature-block';
     block.style.cssText = "background:#f9f9f9; padding:15px; border-radius:6px; border:1px solid #eee; display:flex; flex-direction:column; gap:8px;";
+    
+    const qId = 'feat_desc_' + Date.now() + Math.floor(Math.random()*1000);
+    
     block.innerHTML = `
         <div style="display:flex; justify-content:space-between;">
-            <input type="text" class="form-control" placeholder="특징 제목" value="${title}" style="font-weight:bold; width:85%;">
+            <input type="text" class="form-control feature-title" placeholder="특징 제목" value="${title}" style="font-weight:bold; width:85%;">
             <button class="action-btn delete" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
         </div>
-        <textarea class="form-control" rows="2" placeholder="특징 설명을 입력하세요">${desc}</textarea>
+        <div style="background:#fff; min-width:0;">
+            <div id="${qId}" class="feature-desc-editor" style="min-height: 80px;">${desc}</div>
+        </div>
     `;
     featureContainer.appendChild(block);
+    
+    if (typeof Quill !== 'undefined') {
+        const quill = new Quill('#' + qId, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['bold', 'italic', 'underline', 'clean']
+                ]
+            }
+        });
+        block.querySelector('.feature-desc-editor').__quill = quill;
+    }
 }
 
 async function loadPageData() {
