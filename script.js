@@ -462,25 +462,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------------------------------------------------
     // 3-1. Mobile Menu Logic
     // ---------------------------------------------------------
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const mainGnb = document.getElementById('mainGnb');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle') || document.querySelector('.mobile-menu-toggle');
+    const mainGnb = document.getElementById('mainGnb') || document.querySelector('.gnb');
 
     if (mobileMenuToggle && mainGnb) {
         mobileMenuToggle.addEventListener('click', () => {
             mainGnb.classList.toggle('active');
             const icon = mobileMenuToggle.querySelector('i');
-            if (mainGnb.classList.contains('active')) {
-                icon.classList.replace('fa-bars', 'fa-xmark');
-            } else {
-                icon.classList.replace('fa-xmark', 'fa-bars');
+            if (icon) {
+                if (mainGnb.classList.contains('active')) {
+                    icon.classList.replace('fa-bars', 'fa-xmark');
+                } else {
+                    icon.classList.replace('fa-xmark', 'fa-bars');
+                }
             }
         });
+    }
 
+    if (mainGnb) {
         // 모바일 서브메뉴 토글 (이벤트 위임)
         mainGnb.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
-                const parentLi = e.target.closest('.has-submenu');
-                if (parentLi && e.target.tagName === 'A' && e.target.getAttribute('href') === '#') {
+            if (window.innerWidth <= 1024) {
+                const aTag = e.target.closest('a');
+                if (!aTag) return;
+                
+                const parentLi = aTag.closest('.has-submenu');
+                
+                // 최상위 카테고리이면서 하위 메뉴가 있는 경우에만 아코디언 동작 및 링크 이동 방지
+                if (parentLi && parentLi.parentElement === mainGnb.querySelector('ul')) {
                     e.preventDefault();
                     parentLi.classList.toggle('active');
                 }
@@ -814,13 +823,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     li.innerHTML = `
-                        <a href="#">${major.label}</a>
+                        <a href="javascript:void(0);">${major.label}</a>
                         <ul class="submenu">
                             ${middlesHtml}
                         </ul>
                     `;
                 } else {
-                    li.innerHTML = `<a href="#">${major.label}</a>`;
+                    // 하위 메뉴가 없는 경우 실제 카테고리 링크로 이동
+                    li.innerHTML = `<a href="category.html?id=${mKey}">${major.label}</a>`;
                 }
                 gnbUl.appendChild(li);
             }
