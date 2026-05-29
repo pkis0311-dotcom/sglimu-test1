@@ -713,7 +713,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // 네이버 정보를 이용한 프로필 연동 함수 (자동 가입/로그인 방식)
 async function handleNaverSocialLogin(naverUser) {
-    const { email, name, id } = naverUser;
+    const { id, name } = naverUser;
+    // 네이버 API에서 이메일 제공에 동의하지 않았을 경우를 대비해 고유 임시 이메일 생성
+    const email = naverUser.email || `naver_${id}@social.sglimu.com`;
     const userType = localStorage.getItem('pending_user_type') || 'individual';
 
     console.log('네이버 유저 Supabase 공식 연동 시도...');
