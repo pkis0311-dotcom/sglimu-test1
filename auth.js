@@ -704,7 +704,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Supabase 유저 세션이 없는 경우에만 프로필 연동
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) {
-                    await handleNaverSocialLogin(naverUser);
+                    // 무한 가입 시도(rate limit) 방지: 네이버에서 방금 넘어온 경우(해시 존재)에만 연동
+                    if (window.location.hash.includes('access_token')) {
+                        await handleNaverSocialLogin(naverUser);
+                    } else {
+                        // 세션은 없는데 네이버 토큰만 있는 경우(이메일 인증 미완료 등)
+                        // 네이버 로컬 토큰을 지워서 다시 로그인 버튼을 누를 수 있도록 초기화
+                        localStorage.removeItem('com.naver.nid.access_token');
+                    }
                 }
             }
         });
@@ -744,19 +751,28 @@ async function handleNaverSocialLogin(naverUser) {
 
         if (signUpError) {
             console.error('네이버 자동 가입 실패:', signUpError.message);
-            // 만약 이미 가입된 이메일인데 비밀번호가 다른 경우 등에 대한 예외 처리
-            if (signUpError.message.includes('already registered')) {
+            if (signUpError.message.includes('rate limit')) {
+                alert('로그인 시도 횟수를 초과했습니다(Rate Limit). 잠시 후 다시 시도해 주세요.');
+            } else if (signUpError.message.includes('already registered')) {
                 alert('이미 다른 방식으로 가입된 이메일입니다. 일반 로그인을 이용해 주세요.');
             } else {
                 alert('로그인 처리 중 오류가 발생했습니다: ' + signUpError.message);
             }
+            localStorage.removeItem('com.naver.nid.access_token');
             return;
         }
         data = signUpData;
+        
+        // 이메일 인증이 켜져있어 세션이 바로 생성되지 않는 경우
+        if (data.user && !data.session) {
+            alert('이메일 인증이 켜져 있어 로그인이 지연되었습니다.\nSupabase 대시보드 [Authentication] -> [Providers] -> [Email]에서 "Confirm email" 설정을 꺼주시면 네이버 연동이 즉시 로그인됩니다.');
+            localStorage.removeItem('com.naver.nid.access_token');
+            return;
+        }
     }
 
     // 3. 세션 생성 성공 시 UI 업데이트 및 추가정보 확인
-    if (data.user) {
+    if (data.user && data.session) {
         console.log('Supabase 세션 생성 성공!');
         updateAuthUI(data.user);
         
