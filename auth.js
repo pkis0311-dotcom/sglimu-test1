@@ -626,12 +626,20 @@ function updateAuthUI(user) {
 
     if (user) {
         console.log('Updating UI for logged-in user:', user.email);
-        const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '유저';
+        let userName = user.user_metadata?.full_name;
+        if (!userName) {
+            if (user.email && user.email.startsWith('naver_')) {
+                userName = '네이버 회원';
+            } else {
+                userName = user.email?.split('@')[0] || '유저';
+            }
+        }
+
         wrap.innerHTML = `
             <div class="user-profile-nav">
                 <div class="user-info-badge">
                     <i class="fa-solid fa-circle-user"></i>
-                    <span class="user-name"><b>${userName}</b> 님</span>
+                    <span class="user-name" id="topUserName"><b>${userName}</b> 님</span>
                 </div>
                 <div class="user-nav-actions">
                     <button class="nav-icon-btn" id="myProfileBtn" title="내 정보 관리">
@@ -643,6 +651,14 @@ function updateAuthUI(user) {
                 </div>
             </div>
         `;
+
+        // DB에서 최신 프로필 이름을 비동기로 가져와서 업데이트
+        supabase.from('profiles').select('full_name').eq('id', user.id).single().then(({ data }) => {
+            if (data && data.full_name && data.full_name !== '유저') {
+                const nameEl = document.getElementById('topUserName');
+                if (nameEl) nameEl.innerHTML = `<b>${data.full_name}</b> 님`;
+            }
+        }).catch(err => console.error(err));
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
