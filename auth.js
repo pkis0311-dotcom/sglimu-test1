@@ -333,8 +333,8 @@ if (completeProfileForm) {
             updated_at: new Date().toISOString()
         };
 
-        // 네이버 유저의 경우 ID가 UUID가 아니므로, email을 기준으로 upsert 처리
-        const { error } = await supabase.from('profiles').upsert(profileData, { onConflict: 'email' });
+        // 프로필 업데이트 (기본값인 id를 기준으로 덮어쓰기 처리)
+        const { error } = await supabase.from('profiles').upsert(profileData);
 
         if (error) {
             if (completeMsg) {
