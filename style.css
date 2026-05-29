@@ -1433,30 +1433,33 @@ button {
         width: 100%;
         height: auto;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
     }
 
     .gnb > ul > li > a {
         width: 100%;
+        display: block;
         padding: 15px 25px;
         border-bottom: 1px solid var(--color-border);
     }
 
     .gnb .submenu {
-        position: static;
-        transform: none;
-        width: 100%;
-        opacity: 1;
-        visibility: visible;
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        opacity: 1 !important;
+        visibility: visible !important;
         box-shadow: none;
         border-radius: 0;
         border: none;
         background: #f9f9f9;
-        display: none; /* 클릭 시 토글하거나 상시 노출 */
+        display: none;
     }
     
-    .gnb .has-submenu.active .submenu {
+    .gnb .has-submenu.active .submenu,
+    .gnb .has-submenu:hover .submenu {
         display: flex;
+        transform: none !important;
     }
 
     .header-container {
