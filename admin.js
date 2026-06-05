@@ -868,11 +868,11 @@ if (openInventoryModalBtn) {
         inventoryManagerNameInput.value = '';
         inventoryReasonInput.value = '';
         saveInventoryMsg.textContent = '';
-        inventoryModal.classList.add('active');
+        inventoryModal.style.display = 'flex';
     });
 }
-if (closeInventoryModalBtn) closeInventoryModalBtn.addEventListener('click', () => inventoryModal.classList.remove('active'));
-if (cancelInventoryModalBtn) cancelInventoryModalBtn.addEventListener('click', () => inventoryModal.classList.remove('active'));
+if (closeInventoryModalBtn) closeInventoryModalBtn.addEventListener('click', () => inventoryModal.style.display = 'none');
+if (cancelInventoryModalBtn) cancelInventoryModalBtn.addEventListener('click', () => inventoryModal.style.display = 'none');
 
 if (saveInventoryBtn) {
     saveInventoryBtn.addEventListener('click', async () => {
@@ -908,7 +908,7 @@ if (saveInventoryBtn) {
         if (error) {
             saveInventoryMsg.textContent = '오류 발생: ' + error.message;
         } else {
-            inventoryModal.classList.remove('active');
+            inventoryModal.style.display = 'none';
             const oldStock = parseInt(productStockInput.value) || 0;
             productStockInput.value = oldStock + changeAmount;
             fetchProducts();
