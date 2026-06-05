@@ -329,6 +329,18 @@ const productImageFile = document.getElementById('productImageFile');
 const productImageUrl = document.getElementById('productImageUrl');
 const imagePreview = document.getElementById('imagePreview');
 
+// Inventory Modal Elements
+const inventoryModal = document.getElementById('inventoryModal');
+const closeInventoryModalBtn = document.getElementById('closeInventoryModalBtn');
+const cancelInventoryModalBtn = document.getElementById('cancelInventoryModalBtn');
+const saveInventoryBtn = document.getElementById('saveInventoryBtn');
+const openInventoryModalBtn = document.getElementById('openInventoryModalBtn');
+const inventoryCurrentStockInput = document.getElementById('inventoryCurrentStock');
+const inventoryChangeAmountInput = document.getElementById('inventoryChangeAmount');
+const inventoryManagerNameInput = document.getElementById('inventoryManagerName');
+const inventoryReasonInput = document.getElementById('inventoryReason');
+const saveInventoryMsg = document.getElementById('saveInventoryMsg');
+
 // DOM Elements - Banner Management (Tab 4)
 const bannerTableBody = document.getElementById('bannerTableBody');
 const addBannerBtn = document.getElementById('addBannerBtn');
@@ -828,14 +840,16 @@ function openModal(isEdit = false) {
     if (!isEdit) {
         modalTitle.textContent = '새 제품 등록';
         productIdInput.value = ''; productNameInput.value = ''; productPriceInput.value = '전화문의';
-        productStockInput.value = '999'; productDescInput.value = ''; productImageUrl.value = ''; productImageFile.value = '';
+        productStockInput.value = '0'; productDescInput.value = ''; productImageUrl.value = ''; productImageFile.value = '';
         imagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
         const colorContainer = document.getElementById('colorContainer');
         if(colorContainer) colorContainer.innerHTML = ''; // 색상 초기화
         const sizeContainer = document.getElementById('sizeContainer');
         if(sizeContainer) sizeContainer.innerHTML = ''; // 사이즈 초기화
+        if (openInventoryModalBtn) openInventoryModalBtn.style.display = 'none';
     } else {
         modalTitle.textContent = '제품 정보 수정';
+        if (openInventoryModalBtn) openInventoryModalBtn.style.display = 'inline-block';
     }
     saveMsg.textContent = ''; saveProductBtn.disabled = false; saveProductBtn.textContent = '저장하기';
     modalOverlay.style.display = 'flex';
@@ -844,6 +858,64 @@ function closeModal() { modalOverlay.style.display = 'none'; }
 addProductBtn.addEventListener('click', () => openModal(false));
 closeModalBtn.addEventListener('click', closeModal);
 cancelModalBtn.addEventListener('click', closeModal);
+
+// 재고 모달 로직
+if (openInventoryModalBtn) {
+    openInventoryModalBtn.addEventListener('click', () => {
+        if (!productIdInput.value) return;
+        inventoryCurrentStockInput.value = productStockInput.value || 0;
+        inventoryChangeAmountInput.value = '';
+        inventoryManagerNameInput.value = '';
+        inventoryReasonInput.value = '';
+        saveInventoryMsg.textContent = '';
+        inventoryModal.classList.add('active');
+    });
+}
+if (closeInventoryModalBtn) closeInventoryModalBtn.addEventListener('click', () => inventoryModal.classList.remove('active'));
+if (cancelInventoryModalBtn) cancelInventoryModalBtn.addEventListener('click', () => inventoryModal.classList.remove('active'));
+
+if (saveInventoryBtn) {
+    saveInventoryBtn.addEventListener('click', async () => {
+        const changeAmount = parseInt(inventoryChangeAmountInput.value);
+        const managerName = inventoryManagerNameInput.value.trim();
+        const reason = inventoryReasonInput.value.trim();
+        const pid = productIdInput.value;
+
+        if (!pid) return;
+        if (isNaN(changeAmount) || changeAmount === 0) {
+            saveInventoryMsg.textContent = '증감 수량을 올바르게 입력해주세요.'; return;
+        }
+        if (!managerName) {
+            saveInventoryMsg.textContent = '담당자 성함을 반드시 기입해야 합니다.'; return;
+        }
+        if (!reason) {
+            saveInventoryMsg.textContent = '변동 사유를 기입해주세요.'; return;
+        }
+
+        saveInventoryBtn.textContent = '저장 중...';
+        saveInventoryBtn.disabled = true;
+
+        const { error } = await db.from('inventory_logs').insert([{
+            product_id: pid,
+            change_amount: changeAmount,
+            reason: reason,
+            manager_name: managerName
+        }]);
+
+        saveInventoryBtn.textContent = '기록 저장하기';
+        saveInventoryBtn.disabled = false;
+
+        if (error) {
+            saveInventoryMsg.textContent = '오류 발생: ' + error.message;
+        } else {
+            inventoryModal.classList.remove('active');
+            const oldStock = parseInt(productStockInput.value) || 0;
+            productStockInput.value = oldStock + changeAmount;
+            fetchProducts();
+            alert('재고 변동 내역이 성공적으로 기록되었습니다.');
+        }
+    });
+}
 
 productImageFile.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -857,7 +929,7 @@ productImageFile.addEventListener('change', (e) => {
 saveProductBtn.addEventListener('click', async () => {
     const payload = {
         name: productNameInput.value.trim(), category: productCategoryInput.value,
-        price: productPriceInput.value.trim(), stock: parseInt(productStockInput.value) || 0,
+        price: productPriceInput.value.trim(), 
         description: productDescInput.value.trim(), image_url: productImageUrl.value,
         colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(','),
         sizes: Array.from(document.querySelectorAll('#sizeContainer .size-row')).map(row => {
