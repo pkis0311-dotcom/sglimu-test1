@@ -434,8 +434,13 @@
         <!-- 6. 상세페이지 관리 탭 (신규) -->
         <!-- ======================= -->
         <div id="tab-page-manage" class="tab-pane">
-            <div class="page-header">
-                <h1 class="page-title">상세페이지 컨텐츠 관리</h1>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="btn-secondary" onclick="window.history.back()" style="height: 40px; padding: 0 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #ddd;">
+                        <i class="fa-solid fa-arrow-left"></i> 뒤로가기
+                    </button>
+                    <h1 class="page-title" style="margin: 0;">상세페이지 컨텐츠 관리</h1>
+                </div>
                 <button class="btn-primary" id="savePageBtn"><i class="fa-solid fa-save"></i> 변경사항 저장</button>
             </div>
             
