@@ -3596,15 +3596,20 @@ window.fetchPhoneOrders = async function() {
         const dateStr = createdAt.toLocaleString('ko-KR');
         const finalPrice = Number(o.total_price) || 0;
 
-        // customer_name 파싱 [전화] 고객명||담당자||메모
+        // customer_name 파싱 [전화] 고객명||담당자||메모||파일URL
         let customerName = '익명';
         let managerName = '-';
         let memo = '-';
+        let fileLinkHtml = '';
         if (o.customer_name) {
             const parts = o.customer_name.split('||');
             customerName = parts[0].replace('[전화] ', '');
             if (parts.length > 1) managerName = parts[1];
             if (parts.length > 2) memo = parts[2];
+            if (parts.length > 3 && parts[3]) {
+                const fileUrl = parts[3];
+                fileLinkHtml = `<a href="${fileUrl}" target="_blank" style="color: #2980b9; margin-left: 8px; font-size: 0.95rem;" title="첨부파일 보기"><i class="fa-solid fa-paperclip"></i></a>`;
+            }
         }
 
         tr.innerHTML = `
@@ -3615,7 +3620,7 @@ window.fetchPhoneOrders = async function() {
             <td>${o.quantity || 1}개</td>
             <td style="font-weight:600; color:#e74c3c;">${finalPrice.toLocaleString()}원</td>
             <td style="font-weight:500;">${managerName}</td>
-            <td style="font-size:0.85rem; color:#666; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${memo}">${memo}</td>
+            <td style="font-size:0.85rem; color:#666; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${memo}">${memo}${fileLinkHtml}</td>
         `;
         tableBody.appendChild(tr);
     });
@@ -3752,9 +3757,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalPrice = qty * discountPrice;
 
             try {
+                // 0. 파일 업로드 처리
+                let uploadedFileUrl = '';
+                const file = fileInput && fileInput.files[0];
+                if (file) {
+                    savePhoneOrderBtn.textContent = '파일 업로드 중...';
+                    const ext = file.name.split('.').pop();
+                    const filePath = `log-files/${pid}_${Date.now()}.${ext}`;
+                    
+                    const { error: uploadError } = await db.storage.from('product-images').upload(filePath, file);
+                    if (uploadError) {
+                        msgDiv.textContent = '파일 업로드 실패: ' + uploadError.message;
+                        savePhoneOrderBtn.textContent = '발주 등록하기';
+                        savePhoneOrderBtn.disabled = false;
+                        return;
+                    }
+                    
+                    const { data: { publicUrl } } = db.storage.from('product-images').getPublicUrl(filePath);
+                    uploadedFileUrl = publicUrl;
+                }
+
                 // 1. 재고 출고 처리 (inventory_logs insert)
                 // 트리거에 의해 products 테이블 stock은 자동 차감됨
-                const reasonStr = `[${prodName}] 전화 발주 출고 (정상가: ${originalPriceStr}, 할인가: ${discountPrice.toLocaleString()}원) ${memo ? '- ' + memo : ''}`;
+                let reasonStr = `[${prodName}] 전화 발주 출고 (정상가: ${originalPriceStr}, 할인가: ${discountPrice.toLocaleString()}원) ${memo ? '- ' + memo : ''}`;
+                if (uploadedFileUrl) {
+                    reasonStr += `||파일:${uploadedFileUrl}`;
+                }
                 
                 const { error: logError } = await db.from('inventory_logs').insert([{
                     product_id: pid,
@@ -3767,7 +3795,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 2. 주문 등록 처리 (orders insert - 주문 통계 포함 목적)
                 // customer_name 에 [전화] 접두사 및 파이프라인 합산
-                const dbCustomerName = `[전화] ${customerName}||${managerName}||${memo}`;
+                const dbCustomerName = `[전화] ${customerName}||${managerName}||${memo}||${uploadedFileUrl}`;
                 const { error: orderError } = await db.from('orders').insert([{
                     customer_name: dbCustomerName,
                     customer_phone: customerPhone,
@@ -3809,11 +3837,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 let customerName = '익명';
                 let managerName = '-';
                 let memo = '-';
+                let fileUrl = '없음';
                 if (o.customer_name) {
                     const parts = o.customer_name.split('||');
                     customerName = parts[0].replace('[전화] ', '');
                     if (parts.length > 1) managerName = parts[1];
                     if (parts.length > 2) memo = parts[2];
+                    if (parts.length > 3 && parts[3]) fileUrl = parts[3];
                 }
 
                 return {
@@ -3824,7 +3854,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     "수량": o.quantity,
                     "최종 발주 금액": o.total_price,
                     "등록 담당자": managerName,
-                    "메모/비고": memo
+                    "메모/비고": memo,
+                    "첨부파일 URL": fileUrl
                 };
             });
 
