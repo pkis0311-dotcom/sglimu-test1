@@ -3644,6 +3644,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const customerPhoneInput = document.getElementById('phoneOrderCustomerPhone');
     const managerNameInput = document.getElementById('phoneOrderManagerName');
     const memoInput = document.getElementById('phoneOrderMemo');
+    const fileInput = document.getElementById('phoneOrderFile');
     const msgDiv = document.getElementById('savePhoneOrderMsg');
 
     if (addPhoneOrderBtn) {
@@ -3677,6 +3678,7 @@ document.addEventListener('DOMContentLoaded', () => {
             customerPhoneInput.value = '';
             managerNameInput.value = '';
             memoInput.value = '';
+            if (fileInput) fileInput.value = '';
 
             phoneOrderModal.style.display = 'flex';
         });
