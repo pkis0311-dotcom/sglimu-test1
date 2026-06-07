@@ -341,6 +341,7 @@ const inventoryChangeAmountInput = document.getElementById('inventoryChangeAmoun
 const inventoryManagerNameInput = document.getElementById('inventoryManagerName');
 const inventoryReasonInput = document.getElementById('inventoryReason');
 const saveInventoryMsg = document.getElementById('saveInventoryMsg');
+const inventoryFileInput = document.getElementById('inventoryFile');
 
 // DOM Elements - Banner Management (Tab 4)
 const bannerTableBody = document.getElementById('bannerTableBody');
@@ -905,6 +906,7 @@ if (openInventoryModalBtn) {
         inventoryChangeAmountInput.value = '';
         inventoryManagerNameInput.value = '';
         inventoryReasonInput.value = '';
+        if (inventoryFileInput) inventoryFileInput.value = '';
         saveInventoryMsg.textContent = '';
         inventoryModal.style.display = 'flex';
     });
@@ -917,7 +919,6 @@ if (saveInventoryBtn) {
         const changeAmount = parseInt(inventoryChangeAmountInput.value);
         const managerName = inventoryManagerNameInput.value.trim();
         const prodName = productNameInput ? productNameInput.value.trim() : '알 수 없는 상품';
-        const reasonStr = `[${prodName}] ${inventoryReasonInput.value.trim()}`;
         const pid = productIdInput.value;
 
         if (!pid) return;
@@ -933,6 +934,30 @@ if (saveInventoryBtn) {
 
         saveInventoryBtn.textContent = '저장 중...';
         saveInventoryBtn.disabled = true;
+
+        let uploadedFileUrl = '';
+        const file = inventoryFileInput && inventoryFileInput.files[0];
+        if (file) {
+            saveInventoryBtn.textContent = '파일 업로드 중...';
+            const ext = file.name.split('.').pop();
+            const filePath = `log-files/${pid}_${Date.now()}.${ext}`;
+            
+            const { error: uploadError } = await db.storage.from('product-images').upload(filePath, file);
+            if (uploadError) {
+                saveInventoryMsg.textContent = '파일 업로드 실패: ' + uploadError.message;
+                saveInventoryBtn.textContent = '기록 저장하기';
+                saveInventoryBtn.disabled = false;
+                return;
+            }
+            
+            const { data: { publicUrl } } = db.storage.from('product-images').getPublicUrl(filePath);
+            uploadedFileUrl = publicUrl;
+        }
+
+        let reasonStr = `[${prodName}] ${inventoryReasonInput.value.trim()}`;
+        if (uploadedFileUrl) {
+            reasonStr += `||파일:${uploadedFileUrl}`;
+        }
 
         const { error } = await db.from('inventory_logs').insert([{
             product_id: pid,
@@ -1000,13 +1025,21 @@ async function fetchInventoryLogs(productId) {
         // Remove bracket prefix like [Product Name] for clean display
         displayReason = displayReason.replace(/^\[.*?\]\s*/, '');
 
+        let fileLinkHtml = '';
+        if (displayReason.includes('||파일:')) {
+            const parts = displayReason.split('||파일:');
+            displayReason = parts[0];
+            const fileUrl = parts[1];
+            fileLinkHtml = `<a href="${fileUrl}" target="_blank" style="color: #2980b9; margin-left: 8px; font-size: 0.95rem;" title="첨부파일 보기"><i class="fa-solid fa-paperclip"></i></a>`;
+        }
+
         return `
             <tr style="border-bottom: 1px solid #f0f0f0;">
                 <td style="padding: 10px; color: #666; white-space: nowrap;">${dateStr}</td>
                 <td style="padding: 10px;">${changeBadge}</td>
                 <td style="padding: 10px; font-weight: bold; color: ${changeColor};">${changeText}개</td>
                 <td style="padding: 10px; color: #444;">${log.manager_name || '-'}</td>
-                <td style="padding: 10px; color: #555;" title="${displayReason}">${displayReason}</td>
+                <td style="padding: 10px; color: #555;" title="${displayReason}">${displayReason}${fileLinkHtml}</td>
             </tr>
         `;
     }).join('');
@@ -1044,10 +1077,18 @@ async function fetchAllInventoryLogs() {
         let cleanReason = log.reason || '';
         cleanReason = cleanReason.replace(/^\[.*?\]\s*/, '');
 
+        let fileUrl = '';
+        if (cleanReason.includes('||파일:')) {
+            const parts = cleanReason.split('||파일:');
+            cleanReason = parts[0];
+            fileUrl = parts[1];
+        }
+
         return {
             ...log,
             product_name: productName,
-            clean_reason: cleanReason
+            clean_reason: cleanReason,
+            file_url: fileUrl
         };
     });
 
@@ -1072,6 +1113,10 @@ function renderGlobalLogTable(logs) {
         const changeColor = changeVal > 0 ? '#2ecc71' : '#e74c3c';
         const changeText = changeVal > 0 ? `+${changeVal}` : `${changeVal}`;
 
+        const fileLinkHtml = log.file_url 
+            ? `<a href="${log.file_url}" target="_blank" style="color: #2980b9; margin-left: 8px; font-size: 0.95rem;" title="첨부파일 보기"><i class="fa-solid fa-paperclip"></i></a>` 
+            : '';
+
         return `
             <tr>
                 <td style="color: #666; font-size: 0.9rem; white-space: nowrap;">${dateStr}</td>
@@ -1079,7 +1124,7 @@ function renderGlobalLogTable(logs) {
                 <td>${changeBadge}</td>
                 <td style="font-weight: bold; color: ${changeColor};">${changeText}개</td>
                 <td>${log.manager_name || '-'}</td>
-                <td style="color: #555;">${log.clean_reason}</td>
+                <td style="color: #555;">${log.clean_reason}${fileLinkHtml}</td>
             </tr>
         `;
     }).join('');
