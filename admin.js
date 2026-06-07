@@ -249,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // 사이트 통합 카테고리 정의 (전역 변수)
 // ==========================================
+window.adminHistoryPushedCount = 0;
 let SITE_CATEGORIES = {}; // DB에서 로드됩니다.
 const DEFAULT_CATEGORIES = {
     'system': {
@@ -447,40 +448,69 @@ logoutBtn.addEventListener('click', async () => {
 // ==========================================
 // 2. 탭(메뉴) 전환 제어
 // ==========================================
+window.switchAdminTab = function(targetId, pushState = true) {
+    const navItems = document.querySelectorAll('.nav-item');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    navItems.forEach(nav => nav.classList.remove('active'));
+    tabPanes.forEach(tab => tab.classList.remove('active'));
+
+    const activeNav = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+    if (activeNav) {
+        activeNav.classList.add('active');
+    }
+    const targetPane = document.getElementById(targetId);
+    if (targetPane) {
+        targetPane.classList.add('active');
+    }
+
+    // 해당 탭 접속 시 데이터 로드
+    if(targetId === 'tab-products') {
+        if (typeof fetchProducts === 'function') fetchProducts();
+    } else if(targetId === 'tab-orders') {
+        if (typeof fetchOrders === 'function') fetchOrders();
+    } else if(targetId === 'tab-inquiries') {
+        if (typeof fetchInquiries === 'function') fetchInquiries();
+    } else if(targetId === 'tab-banners') {
+        if (typeof switchBannerSubTab === 'function') switchBannerSubTab('banner');
+    } else if(targetId === 'tab-users') {
+        if (typeof switchUserSubTab === 'function') switchUserSubTab('institution');
+    } else if(targetId === 'tab-page-manage') {
+        if (typeof initPageManageTab === 'function') initPageManageTab();
+    } else if(targetId === 'tab-category-display') {
+        if (typeof initCategoryDisplayTab === 'function') initCategoryDisplayTab();
+    } else if(targetId === 'tab-category-manage') {
+        if (typeof initCategoryManageTab === 'function') initCategoryManageTab();
+    }
+
+    if (pushState) {
+        if (!history.state || history.state.tab !== targetId) {
+            history.pushState({ tab: targetId }, '', `#${targetId}`);
+            window.adminHistoryPushedCount++;
+        }
+    }
+};
+
 navItems.forEach(item => {
     item.addEventListener('click', () => {
-        // 활성화 상태 토글
-        navItems.forEach(nav => nav.classList.remove('active'));
-        tabPanes.forEach(tab => tab.classList.remove('active'));
-
-        item.classList.add('active');
         const targetId = item.getAttribute('data-target');
-        document.getElementById(targetId).classList.add('active');
-
-        // 해당 탭 접속 시 데이터 로드
-        if(targetId === 'tab-products') {
-            fetchProducts();
-        } else if(targetId === 'tab-orders') {
-            fetchOrders();
-        } else if(targetId === 'tab-inquiries') {
-            fetchInquiries();
-        } else if(targetId === 'tab-banners') {
-            switchBannerSubTab('banner');
-        } else if(targetId === 'tab-users') {
-            switchUserSubTab('institution'); // 기본 서브탭 활성화
-        } else if(targetId === 'tab-page-manage') {
-            initPageManageTab();
-        } else if(targetId === 'tab-category-display') {
-            initCategoryDisplayTab();
-        } else if(targetId === 'tab-category-manage') {
-            initCategoryManageTab();
-        }
+        switchAdminTab(targetId);
     });
 });
 
+window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.tab) {
+        switchAdminTab(e.state.tab, false);
+    } else {
+        const hashTab = window.location.hash ? window.location.hash.substring(1) : 'tab-products';
+        switchAdminTab(hashTab, false);
+    }
+});
+
 function initDashboard() {
-    // 최초 접속 시 제품 관리 탭 로드
-    document.querySelector('.nav-item[data-target="tab-products"]').click();
+    // 최초 접속 시 제품 관리 탭 로드 (또는 URL에 정의된 해시 탭 로드)
+    const initialTab = window.location.hash ? window.location.hash.substring(1) : 'tab-products';
+    switchAdminTab(initialTab, true);
     
     // [신규] 새로운 문의사항이 있는지 미리 확인하여 뱃지 표시
     checkNewInquiries();
@@ -3230,12 +3260,13 @@ window.deleteProfile = async (id, name) => {
 // 시스템 초기화는 상단의 DOMContentLoaded 리스너에서 수행됩니다.
 
 window.openPageManage = function(productId) {
-    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
-    document.getElementById('tab-page-manage').classList.add('active');
-    
-    if (typeof initPageManageTab === 'function') {
-        initPageManageTab();
+    if (typeof switchAdminTab === 'function') {
+        switchAdminTab('tab-page-manage');
+    } else {
+        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('tab-page-manage').classList.add('active');
+        if (typeof initPageManageTab === 'function') initPageManageTab();
     }
     
     const targetSelect = document.getElementById('targetPageId');
