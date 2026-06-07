@@ -879,9 +879,13 @@ function openModal(isEdit = false) {
         const shortCommentInput = document.getElementById('productShortComment');
         if(shortCommentInput) shortCommentInput.value = ''; // 한줄 코멘트 초기화
         if (openInventoryModalBtn) openInventoryModalBtn.style.display = 'none';
+        const logSection = document.getElementById('inventoryLogSection');
+        if (logSection) logSection.style.display = 'none';
     } else {
         modalTitle.textContent = '제품 정보 수정';
         if (openInventoryModalBtn) openInventoryModalBtn.style.display = 'inline-block';
+        const logSection = document.getElementById('inventoryLogSection');
+        if (logSection) logSection.style.display = 'block';
     }
     saveMsg.textContent = ''; saveProductBtn.disabled = false; saveProductBtn.textContent = '저장하기';
     modalOverlay.style.display = 'flex';
@@ -945,9 +949,65 @@ if (saveInventoryBtn) {
             const oldStock = parseInt(productStockInput.value) || 0;
             productStockInput.value = oldStock + changeAmount;
             fetchProducts();
+            if (typeof fetchInventoryLogs === 'function') {
+                fetchInventoryLogs(pid);
+            }
             alert('재고 변동 내역이 성공적으로 기록되었습니다.');
         }
     });
+}
+
+async function fetchInventoryLogs(productId) {
+    const logTableBody = document.getElementById('inventoryLogTableBody');
+    if (!logTableBody) return;
+
+    logTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 15px; color: #999;">기록을 불러오는 중...</td></tr>';
+
+    const { data: logs, error } = await db
+        .from('inventory_logs')
+        .select('*')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching inventory logs:', error);
+        logTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 15px; color: red;">오류: ${error.message}</td></tr>`;
+        return;
+    }
+
+    if (!logs || logs.length === 0) {
+        logTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 15px; color: #999;">입출고 변동 기록이 없습니다.</td></tr>';
+        return;
+    }
+
+    logTableBody.innerHTML = logs.map(log => {
+        const dateStr = new Date(log.created_at).toLocaleString('ko-KR', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        const changeVal = log.change_amount;
+        const changeBadge = changeVal > 0 
+            ? `<span style="background: #eafaf1; color: #2ecc71; padding: 3px 8px; border-radius: 4px; font-weight: bold;">입고</span>`
+            : `<span style="background: #fdf2f2; color: #e74c3c; padding: 3px 8px; border-radius: 4px; font-weight: bold;">출고</span>`;
+        const changeColor = changeVal > 0 ? '#2ecc71' : '#e74c3c';
+        const changeText = changeVal > 0 ? `+${changeVal}` : `${changeVal}`;
+        
+        let displayReason = log.reason || '';
+        // Remove bracket prefix like [Product Name] for clean display
+        displayReason = displayReason.replace(/^\[.*?\]\s*/, '');
+
+        return `
+            <tr style="border-bottom: 1px solid #f0f0f0;">
+                <td style="padding: 10px; color: #666; white-space: nowrap;">${dateStr}</td>
+                <td style="padding: 10px;">${changeBadge}</td>
+                <td style="padding: 10px; font-weight: bold; color: ${changeColor};">${changeText}개</td>
+                <td style="padding: 10px; color: #444;">${log.manager_name || '-'}</td>
+                <td style="padding: 10px; color: #555;" title="${displayReason}">${displayReason}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 productImageFile.addEventListener('change', (e) => {
@@ -1094,6 +1154,9 @@ window.editProduct = async (id) => {
     const { data: p, error } = await db.from('products').select('*').eq('id', id).single();
     if (error) { alert("데이터 불러오기 실패"); return; }
     openModal(true);
+    if (typeof fetchInventoryLogs === 'function') {
+        fetchInventoryLogs(id);
+    }
     productIdInput.value = p.id; productNameInput.value = p.name; productCategoryInput.value = p.category;
     productPriceInput.value = p.price; productStockInput.value = p.stock; 
     
