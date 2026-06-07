@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -214,7 +214,7 @@
                         const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                         
                         card.innerHTML = `
-                            <div class="product-img" style="background-image: url('${displayImg}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                            <div class="product-img" style="background-image: url('${displayImg}'); background-size: cover; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
                             <div class="product-info" style="text-align:center; padding:15px;">
                                 <h4 style="margin-bottom:8px; font-size:1.1rem;">${p.name}</h4>
                                 <p style="color:var(--color-primary); font-weight:bold;">${priceStr}</p>

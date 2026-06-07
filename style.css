@@ -836,8 +836,8 @@ button {
 .main-image-container img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    background-color: #fff; /* ?域� 諻國祭?潺� ??篧竾�?瞘� */
+    object-fit: cover;
+    background-color: #fff; /* ?역 諻국제?潺 ??篧竾?瞘 */
     transition: transform 0.5s ease;
 }
 
@@ -864,7 +864,7 @@ button {
 .thumb-item img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     background-color: #fff;
 }
 
