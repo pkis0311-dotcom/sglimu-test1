@@ -47,6 +47,7 @@
             <li class="nav-item" data-target="tab-inventory-logs"><i class="fa-solid fa-clock-rotate-left"></i> 입출고 변동 로그</li>
             <li class="nav-item" data-target="tab-category-manage"><i class="fa-solid fa-sitemap"></i> 카테고리 구성 관리</li>
             <li class="nav-item" data-target="tab-orders"><i class="fa-solid fa-chart-line"></i> 주문 통계 분석</li>
+            <li class="nav-item" data-target="tab-phone-orders"><i class="fa-solid fa-phone-volume"></i> 전화 발주 관리</li>
             <li class="nav-item" data-target="tab-inquiries">
                 <i class="fa-solid fa-comment-dots"></i> 견적/문의 상담 관리
                 <span id="inquiryBadge" class="sidebar-badge" style="display:none;">0</span>
@@ -283,6 +284,42 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- 2-2. 전화 발주 관리 탭 -->
+        <!-- ======================= -->
+        <div id="tab-phone-orders" class="tab-pane">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 class="page-title"><i class="fa-solid fa-phone-volume"></i> 전화 발주 관리</h1>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="downloadPhoneOrderExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71; height: 40px;">
+                        <i class="fa-solid fa-file-excel"></i> 엑셀 다운
+                    </button>
+                    <button id="addPhoneOrderBtn" class="btn-primary" style="height: 40px;">
+                        <i class="fa-solid fa-plus"></i> 전화 발주 등록
+                    </button>
+                </div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>발주 일시</th>
+                            <th>발주처/고객명</th>
+                            <th>연락처</th>
+                            <th>발주 제품</th>
+                            <th>수량</th>
+                            <th>최종 발주 금액</th>
+                            <th>담당자</th>
+                            <th>메모 / 비고</th>
+                        </tr>
+                    </thead>
+                    <tbody id="phoneOrderTableBody">
+                        <tr><td colspan="8" class="empty-state">데이터를 불러오는 중입니다...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -953,6 +990,66 @@
                 <button type="button" class="btn-secondary" id="cancelInventoryModalBtn">취소</button>
                 <button type="button" class="btn-primary" id="saveInventoryBtn" style="background-color:#e67e22; border-color:#d35400;">기록 저장하기</button>
                 <div id="saveInventoryMsg" style="color:var(--danger); margin-top:10px; text-align:right; font-size:0.9rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전화 발주 등록 팝업(모달) -->
+    <div id="phoneOrderModal" class="modal-overlay" style="z-index: 1050;">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 style="color:#2c3e50;"><i class="fa-solid fa-phone-volume"></i> 전화 발주 등록</h3>
+                <button class="close-modal" id="closePhoneOrderModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.9rem; color:#666; margin-bottom:15px; line-height:1.4;">
+                    전화로 접수된 발주 내역을 등록합니다. 등록 시 **재고가 즉시 출고(차감)**되며 **매출 통계에 반영**됩니다.
+                </p>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>발주 제품 선택 *</label>
+                        <select id="phoneOrderProduct" class="form-control" style="font-weight: 600;">
+                            <option value="">제품을 선택해 주세요</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>제품 정상 판매가</label>
+                        <input type="text" id="phoneOrderOriginalPrice" class="form-control" readonly style="background:#f1f3f5; font-weight:bold;">
+                    </div>
+                    <div class="form-group">
+                        <label>발주 수량 *</label>
+                        <input type="number" id="phoneOrderQuantity" class="form-control" min="1" placeholder="예: 5" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>할인 적용 단가 *</label>
+                        <input type="number" id="phoneOrderDiscountPrice" class="form-control" min="0" placeholder="할인된 개별 단가 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>최종 결제 금액 (자동)</label>
+                        <input type="text" id="phoneOrderTotalPrice" class="form-control" readonly style="background:#f1f3f5; font-weight:bold; color:#e74c3c;">
+                    </div>
+                    <div class="form-group">
+                        <label>발주처 / 고객명 *</label>
+                        <input type="text" id="phoneOrderCustomerName" class="form-control" placeholder="예: 서울초등학교 또는 홍길동">
+                    </div>
+                    <div class="form-group">
+                        <label>고객 연락처</label>
+                        <input type="text" id="phoneOrderCustomerPhone" class="form-control" placeholder="예: 010-1234-5678">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>담당자 성함 *</label>
+                        <input type="text" id="phoneOrderManagerName" class="form-control" placeholder="발주 등록 담당 관리자 이름 기입">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>메모 / 비고 (선택)</label>
+                        <input type="text" id="phoneOrderMemo" class="form-control" placeholder="예: 10% 단체 할인 적용">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelPhoneOrderModalBtn">취소</button>
+                <button type="button" class="btn-primary" id="savePhoneOrderBtn" style="background-color:#2ecc71; border-color:#27ae60;">발주 등록하기</button>
+                <div id="savePhoneOrderMsg" style="color:var(--danger); margin-top:10px; text-align:right; font-size:0.9rem;"></div>
             </div>
         </div>
     </div>

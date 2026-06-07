@@ -484,6 +484,8 @@ window.switchAdminTab = function(targetId, pushState = true) {
         if (typeof initCategoryManageTab === 'function') initCategoryManageTab();
     } else if(targetId === 'tab-inventory-logs') {
         if (typeof fetchAllInventoryLogs === 'function') fetchAllInventoryLogs();
+    } else if(targetId === 'tab-phone-orders') {
+        if (typeof fetchPhoneOrders === 'function') fetchPhoneOrders();
     }
 
     if (pushState) {
@@ -1538,7 +1540,7 @@ function renderOrdersDashboard(orders, filterStart, filterEnd) {
 
         tr.innerHTML = `
             <td>#${displayId}</td>
-            <td style="font-weight:600;">${o.customer_name || '익명'}</td>
+            <td style="font-weight:600;">${o.customer_name ? o.customer_name.split('||')[0] : '익명'}</td>
             <td>${o.product_name || '정보없음'}</td>
             <td>${o.quantity || 1}개</td>
             <td style="font-weight:600;">${rawPrice.toLocaleString()}원</td>
@@ -1800,7 +1802,7 @@ downloadExcelBtn.addEventListener('click', () => {
     // 엑셀 표로 만들 데이터 가공 (한글 컬럼 적용)
     const excelData = globalOrders.map(o => ({
         "접수번호": o.id,
-        "고객명/소속": o.customer_name,
+        "고객명/소속": o.customer_name ? o.customer_name.split('||')[0] : "익명",
         "연락처": o.customer_phone || "미입력",
         "주문 상품명": o.product_name,
         "구매 수량": o.quantity,
@@ -3554,3 +3556,284 @@ window.toggleProductDisplay = async function(productId, configKey, isChecked) {
         }
     }
 };
+
+// ==========================================
+// 전화 발주 관리 기능
+// ==========================================
+let globalPhoneOrders = [];
+
+// 1. 전화 발주 목록 조회
+window.fetchPhoneOrders = async function() {
+    const tableBody = document.getElementById('phoneOrderTableBody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
+
+    // orders 테이블에서 customer_name이 [전화]% 인 데이터 필터링하여 조회
+    const { data: orders, error } = await db
+        .from('orders')
+        .select('*')
+        .like('customer_name', '[전화]%')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('전화 발주 로드 에러:', error);
+        tableBody.innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">전화 발주 내역을 불러올 수 없습니다. (${error.message})</td></tr>`;
+        return;
+    }
+
+    globalPhoneOrders = orders || [];
+
+    if (globalPhoneOrders.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">등록된 전화 발주 내역이 없습니다.</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = '';
+    globalPhoneOrders.forEach(o => {
+        const tr = document.createElement('tr');
+        const createdAt = o.created_at ? new Date(o.created_at) : new Date();
+        const dateStr = createdAt.toLocaleString('ko-KR');
+        const finalPrice = Number(o.total_price) || 0;
+
+        // customer_name 파싱 [전화] 고객명||담당자||메모
+        let customerName = '익명';
+        let managerName = '-';
+        let memo = '-';
+        if (o.customer_name) {
+            const parts = o.customer_name.split('||');
+            customerName = parts[0].replace('[전화] ', '');
+            if (parts.length > 1) managerName = parts[1];
+            if (parts.length > 2) memo = parts[2];
+        }
+
+        tr.innerHTML = `
+            <td style="font-size:0.9rem; color:#666;">${dateStr}</td>
+            <td style="font-weight:600;">${customerName}</td>
+            <td>${o.customer_phone || '-'}</td>
+            <td style="font-weight:600; color:#2c3e50;">${o.product_name || '-'}</td>
+            <td>${o.quantity || 1}개</td>
+            <td style="font-weight:600; color:#e74c3c;">${finalPrice.toLocaleString()}원</td>
+            <td style="font-weight:500;">${managerName}</td>
+            <td style="font-size:0.85rem; color:#666; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${memo}">${memo}</td>
+        `;
+        tableBody.appendChild(tr);
+    });
+};
+
+// 2. 전화 발주 등록 모달 제어
+document.addEventListener('DOMContentLoaded', () => {
+    const phoneOrderModal = document.getElementById('phoneOrderModal');
+    const addPhoneOrderBtn = document.getElementById('addPhoneOrderBtn');
+    const closePhoneOrderModalBtn = document.getElementById('closePhoneOrderModalBtn');
+    const cancelPhoneOrderModalBtn = document.getElementById('cancelPhoneOrderModalBtn');
+    const savePhoneOrderBtn = document.getElementById('savePhoneOrderBtn');
+
+    const selectProduct = document.getElementById('phoneOrderProduct');
+    const originalPriceInput = document.getElementById('phoneOrderOriginalPrice');
+    const qtyInput = document.getElementById('phoneOrderQuantity');
+    const discountPriceInput = document.getElementById('phoneOrderDiscountPrice');
+    const totalPriceInput = document.getElementById('phoneOrderTotalPrice');
+
+    const customerNameInput = document.getElementById('phoneOrderCustomerName');
+    const customerPhoneInput = document.getElementById('phoneOrderCustomerPhone');
+    const managerNameInput = document.getElementById('phoneOrderManagerName');
+    const memoInput = document.getElementById('phoneOrderMemo');
+    const msgDiv = document.getElementById('savePhoneOrderMsg');
+
+    if (addPhoneOrderBtn) {
+        addPhoneOrderBtn.addEventListener('click', async () => {
+            msgDiv.textContent = '';
+            
+            // 제품 목록 동적 바인딩
+            if (!globalProducts || globalProducts.length === 0) {
+                if (typeof fetchProducts === 'function') {
+                    await fetchProducts();
+                }
+            }
+
+            selectProduct.innerHTML = '<option value="">제품을 선택해 주세요</option>';
+            globalProducts.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name;
+                // 정상 가격이 숫자 형태인지 또는 '전화문의' 인지 파싱
+                opt.dataset.price = p.price;
+                opt.dataset.name = p.name;
+                selectProduct.appendChild(opt);
+            });
+
+            // 폼 초기화
+            originalPriceInput.value = '';
+            qtyInput.value = 1;
+            discountPriceInput.value = '';
+            totalPriceInput.value = '0원';
+            customerNameInput.value = '';
+            customerPhoneInput.value = '';
+            managerNameInput.value = '';
+            memoInput.value = '';
+
+            phoneOrderModal.style.display = 'flex';
+        });
+    }
+
+    if (closePhoneOrderModalBtn) closePhoneOrderModalBtn.addEventListener('click', () => phoneOrderModal.style.display = 'none');
+    if (cancelPhoneOrderModalBtn) cancelPhoneOrderModalBtn.addEventListener('click', () => phoneOrderModal.style.display = 'none');
+
+    // 제품 선택 변경 시 정상 가격 바인딩 및 할인 가격 기본값 입력
+    if (selectProduct) {
+        selectProduct.addEventListener('change', () => {
+            const selectedOpt = selectProduct.options[selectProduct.selectedIndex];
+            if (!selectedOpt || !selectedOpt.value) {
+                originalPriceInput.value = '';
+                discountPriceInput.value = '';
+                calculatePhoneOrderTotal();
+                return;
+            }
+
+            const rawPrice = selectedOpt.dataset.price || '전화문의';
+            originalPriceInput.value = rawPrice;
+
+            // 가격 숫자로 변환 시도
+            const numericPrice = parseInt(rawPrice.replace(/[^0-9]/g, ''));
+            if (!isNaN(numericPrice)) {
+                discountPriceInput.value = numericPrice; // 기본 할인가 = 정상가
+            } else {
+                discountPriceInput.value = '';
+            }
+            calculatePhoneOrderTotal();
+        });
+    }
+
+    // 수량 및 할인 단가 변경 시 최종 결제 금액 계산
+    if (qtyInput) qtyInput.addEventListener('input', calculatePhoneOrderTotal);
+    if (discountPriceInput) discountPriceInput.addEventListener('input', calculatePhoneOrderTotal);
+
+    function calculatePhoneOrderTotal() {
+        const qty = parseInt(qtyInput.value) || 0;
+        const discountPrice = parseInt(discountPriceInput.value) || 0;
+        const total = qty * discountPrice;
+        totalPriceInput.value = total.toLocaleString() + '원';
+    }
+
+    // 전화 발주 등록 제출
+    if (savePhoneOrderBtn) {
+        savePhoneOrderBtn.addEventListener('click', async () => {
+            const pid = selectProduct.value;
+            const qty = parseInt(qtyInput.value) || 0;
+            const discountPrice = parseInt(discountPriceInput.value);
+            const customerName = customerNameInput.value.trim();
+            const customerPhone = customerPhoneInput.value.trim();
+            const managerName = managerNameInput.value.trim();
+            const memo = memoInput.value.trim();
+
+            if (!pid) {
+                msgDiv.textContent = '발주 제품을 선택해 주세요.'; return;
+            }
+            if (qty <= 0) {
+                msgDiv.textContent = '수량을 1개 이상 입력해 주세요.'; return;
+            }
+            if (isNaN(discountPrice) || discountPrice < 0) {
+                msgDiv.textContent = '올바른 할인 적용 단가를 입력해 주세요.'; return;
+            }
+            if (!customerName) {
+                msgDiv.textContent = '발주처 / 고객명을 입력해 주세요.'; return;
+            }
+            if (!managerName) {
+                msgDiv.textContent = '등록 담당자 성함을 입력해 주세요.'; return;
+            }
+
+            savePhoneOrderBtn.textContent = '등록 중...';
+            savePhoneOrderBtn.disabled = true;
+
+            const selectedOpt = selectProduct.options[selectProduct.selectedIndex];
+            const prodName = selectedOpt.dataset.name;
+            const originalPriceStr = selectedOpt.dataset.price || '전화문의';
+            const totalPrice = qty * discountPrice;
+
+            try {
+                // 1. 재고 출고 처리 (inventory_logs insert)
+                // 트리거에 의해 products 테이블 stock은 자동 차감됨
+                const reasonStr = `[${prodName}] 전화 발주 출고 (정상가: ${originalPriceStr}, 할인가: ${discountPrice.toLocaleString()}원) ${memo ? '- ' + memo : ''}`;
+                
+                const { error: logError } = await db.from('inventory_logs').insert([{
+                    product_id: pid,
+                    change_amount: -qty, // 출고는 음수
+                    reason: reasonStr,
+                    manager_name: managerName
+                }]);
+
+                if (logError) throw logError;
+
+                // 2. 주문 등록 처리 (orders insert - 주문 통계 포함 목적)
+                // customer_name 에 [전화] 접두사 및 파이프라인 합산
+                const dbCustomerName = `[전화] ${customerName}||${managerName}||${memo}`;
+                const { error: orderError } = await db.from('orders').insert([{
+                    customer_name: dbCustomerName,
+                    customer_phone: customerPhone,
+                    product_name: prodName,
+                    quantity: qty,
+                    total_price: totalPrice,
+                    status: 'completed'
+                }]);
+
+                if (orderError) throw orderError;
+
+                alert('전화 발주가 성공적으로 등록되었습니다.');
+                phoneOrderModal.style.display = 'none';
+
+                // 목록 갱신
+                fetchPhoneOrders();
+                if (typeof fetchProducts === 'function') fetchProducts(); // 재고 갱신 반영을 위해
+
+            } catch (err) {
+                console.error('전화 발주 등록 오류:', err);
+                msgDiv.textContent = '등록 실패: ' + err.message;
+            } finally {
+                savePhoneOrderBtn.textContent = '발주 등록하기';
+                savePhoneOrderBtn.disabled = false;
+            }
+        });
+    }
+
+    // 엑셀 다운로드 리스너
+    const downloadPhoneExcelBtn = document.getElementById('downloadPhoneOrderExcelBtn');
+    if (downloadPhoneExcelBtn) {
+        downloadPhoneExcelBtn.addEventListener('click', () => {
+            if (globalPhoneOrders.length === 0) {
+                alert("다운로드할 전화 발주 데이터가 없습니다.");
+                return;
+            }
+
+            const excelData = globalPhoneOrders.map(o => {
+                let customerName = '익명';
+                let managerName = '-';
+                let memo = '-';
+                if (o.customer_name) {
+                    const parts = o.customer_name.split('||');
+                    customerName = parts[0].replace('[전화] ', '');
+                    if (parts.length > 1) managerName = parts[1];
+                    if (parts.length > 2) memo = parts[2];
+                }
+
+                return {
+                    "발주 일자 (KST)": new Date(o.created_at).toLocaleString('ko-KR'),
+                    "발주처/고객명": customerName,
+                    "연락처": o.customer_phone || "미입력",
+                    "발주 상품명": o.product_name,
+                    "수량": o.quantity,
+                    "최종 발주 금액": o.total_price,
+                    "등록 담당자": managerName,
+                    "메모/비고": memo
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "전화발주내역");
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(workbook, `SG_LIMU_전화발주내역_${todayStr}.xlsx`);
+        });
+    }
+});
