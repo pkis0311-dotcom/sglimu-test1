@@ -869,7 +869,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const { data: products, error } = await supabase.from('products').select('*').in('id', selectedIds);
+            const { data: products, error } = await supabase
+                .from('products')
+                .select('id, name, price, image_url, category, short_comment')
+                .in('id', selectedIds);
             if (error) throw error;
 
             // Fetch site_configs for page data (mainImages)

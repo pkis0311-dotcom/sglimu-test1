@@ -961,38 +961,50 @@ saveProductBtn.addEventListener('click', async () => {
 
     const id = productIdInput.value;
     
-    // [폴백 로직] 컬럼이 없을 경우를 대비해 description에도 색상/사이즈 정보 포함 (기존 마커 제거 후 새로 추가)
-    const colorTag = `[[C:${payload.colors}]]`;
-    const sizeTag = `[[S:${payload.sizes}]]`;
-    let cleanDesc = payload.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
-    const payloadWithDescFallback = { ...payload, description: (cleanDesc + "\n\n" + colorTag + "\n" + sizeTag).trim() };
+    // ── 저장 전략: 3단계 분리 ──────────────────────────────────────
+    // 1단계: 반드시 저장해야 하는 핵심 필드 (short_comment 포함)
+    const corePayload = {
+        name: payload.name,
+        category: payload.category,
+        price: payload.price,
+        description: payload.description,
+        image_url: payload.image_url,
+        short_comment: payload.short_comment || ''
+    };
 
     let error = null;
     if (id) {
-        const { error: updateError } = await db.from('products').update(payload).eq('id', id);
-        error = updateError;
-        // 컬럼이 없어서 실패한 경우 폴백 실행
-        if (error && (error.message.includes("colors") || error.message.includes("sizes") || error.message.includes("short_comment"))) {
-            console.warn("Falling back: removing unknown columns...");
-            const { colors, sizes, short_comment, ...fallbackPayload } = payloadWithDescFallback;
-            const { error: fallbackError } = await db.from('products').update(fallbackPayload).eq('id', id);
+        // 2단계: colors/sizes 포함해서 먼저 시도
+        const { error: updateError } = await db.from('products').update({ ...corePayload, colors: payload.colors, sizes: payload.sizes }).eq('id', id);
+        if (updateError && (updateError.message.includes('colors') || updateError.message.includes('sizes'))) {
+            // colors/sizes 컬럼이 없으면 핵심 필드만 저장
+            console.warn('[폴백] colors/sizes 컬럼 없음 → 핵심 필드만 저장');
+            const { error: fallbackError } = await db.from('products').update(corePayload).eq('id', id);
             error = fallbackError;
+        } else {
+            error = updateError;
         }
     } else {
-        const { error: insertError } = await db.from('products').insert([payload]);
-        error = insertError;
-        // 컬럼이 없어서 실패한 경우 폴백 실행
-        if (error && (error.message.includes("colors") || error.message.includes("sizes") || error.message.includes("short_comment"))) {
-            console.warn("Falling back: removing unknown columns...");
-            const { colors, sizes, short_comment, ...fallbackPayload } = payloadWithDescFallback;
-            const { error: fallbackError } = await db.from('products').insert([fallbackPayload]);
+        // 2단계: colors/sizes 포함해서 먼저 시도
+        const { error: insertError } = await db.from('products').insert([{ ...corePayload, colors: payload.colors, sizes: payload.sizes }]);
+        if (insertError && (insertError.message.includes('colors') || insertError.message.includes('sizes'))) {
+            // colors/sizes 컬럼이 없으면 핵심 필드만 저장
+            console.warn('[폴백] colors/sizes 컬럼 없음 → 핵심 필드만 저장');
+            const { error: fallbackError } = await db.from('products').insert([corePayload]);
             error = fallbackError;
+        } else {
+            error = insertError;
         }
     }
 
     if (error) {
+        console.error('[저장 실패 상세]', error);
         saveMsg.textContent = '저장 실패: ' + error.message;
+        saveMsg.style.color = 'red';
     } else {
+        console.log('[저장 성공] short_comment:', payload.short_comment);
+        saveMsg.textContent = '✅ 저장 완료!';
+        saveMsg.style.color = 'green';
         // [수정] 제품 카테고리가 변경되었을 수 있으므로 다른 카테고리의 전시 설정에서 제거
         if (id) {
             let configKey = null;
@@ -1040,7 +1052,7 @@ saveProductBtn.addEventListener('click', async () => {
             }
         }
         
-        closeModal(); fetchProducts();
+        setTimeout(() => { closeModal(); fetchProducts(); }, 600);
     }
     
     saveProductBtn.disabled = false;
