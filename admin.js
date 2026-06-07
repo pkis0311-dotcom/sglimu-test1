@@ -846,6 +846,8 @@ function openModal(isEdit = false) {
         if(colorContainer) colorContainer.innerHTML = ''; // 색상 초기화
         const sizeContainer = document.getElementById('sizeContainer');
         if(sizeContainer) sizeContainer.innerHTML = ''; // 사이즈 초기화
+        const shortCommentInput = document.getElementById('productShortComment');
+        if(shortCommentInput) shortCommentInput.value = ''; // 한줄 코멘트 초기화
         if (openInventoryModalBtn) openInventoryModalBtn.style.display = 'none';
     } else {
         modalTitle.textContent = '제품 정보 수정';
@@ -927,10 +929,12 @@ productImageFile.addEventListener('change', (e) => {
 });
 
 saveProductBtn.addEventListener('click', async () => {
+    const shortCommentInput = document.getElementById('productShortComment');
     const payload = {
         name: productNameInput.value.trim(), category: productCategoryInput.value,
         price: productPriceInput.value.trim(), 
         description: productDescInput.value.trim(), image_url: productImageUrl.value,
+        short_comment: shortCommentInput ? shortCommentInput.value.trim() : '',
         colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(','),
         sizes: Array.from(document.querySelectorAll('#sizeContainer .size-row')).map(row => {
             const inps = row.querySelectorAll('input');
@@ -968,9 +972,9 @@ saveProductBtn.addEventListener('click', async () => {
         const { error: updateError } = await db.from('products').update(payload).eq('id', id);
         error = updateError;
         // 컬럼이 없어서 실패한 경우 폴백 실행
-        if (error && (error.message.includes("colors") || error.message.includes("sizes"))) {
-            console.warn("Falling back to description for colors and sizes...");
-            const { colors, sizes, ...fallbackPayload } = payloadWithDescFallback;
+        if (error && (error.message.includes("colors") || error.message.includes("sizes") || error.message.includes("short_comment"))) {
+            console.warn("Falling back: removing unknown columns...");
+            const { colors, sizes, short_comment, ...fallbackPayload } = payloadWithDescFallback;
             const { error: fallbackError } = await db.from('products').update(fallbackPayload).eq('id', id);
             error = fallbackError;
         }
@@ -978,9 +982,9 @@ saveProductBtn.addEventListener('click', async () => {
         const { error: insertError } = await db.from('products').insert([payload]);
         error = insertError;
         // 컬럼이 없어서 실패한 경우 폴백 실행
-        if (error && (error.message.includes("colors") || error.message.includes("sizes"))) {
-            console.warn("Falling back to description for colors and sizes...");
-            const { colors, sizes, ...fallbackPayload } = payloadWithDescFallback;
+        if (error && (error.message.includes("colors") || error.message.includes("sizes") || error.message.includes("short_comment"))) {
+            console.warn("Falling back: removing unknown columns...");
+            const { colors, sizes, short_comment, ...fallbackPayload } = payloadWithDescFallback;
             const { error: fallbackError } = await db.from('products').insert([fallbackPayload]);
             error = fallbackError;
         }
@@ -1052,6 +1056,10 @@ window.editProduct = async (id) => {
     
     // 상세 설명 로드 시 색상/사이즈 태그 제거 처리
     productDescInput.value = (p.description || '').replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
+    
+    // 한줄 코멘트 로드
+    const shortCommentInput = document.getElementById('productShortComment');
+    if (shortCommentInput) shortCommentInput.value = p.short_comment || '';
     
     productImageUrl.value = p.image_url || '';
     imagePreview.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
