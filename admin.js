@@ -481,6 +481,8 @@ window.switchAdminTab = function(targetId, pushState = true) {
         if (typeof initCategoryDisplayTab === 'function') initCategoryDisplayTab();
     } else if(targetId === 'tab-category-manage') {
         if (typeof initCategoryManageTab === 'function') initCategoryManageTab();
+    } else if(targetId === 'tab-inventory-logs') {
+        if (typeof fetchAllInventoryLogs === 'function') fetchAllInventoryLogs();
     }
 
     if (pushState) {
@@ -1009,6 +1011,130 @@ async function fetchInventoryLogs(productId) {
         `;
     }).join('');
 }
+
+let globalInventoryLogs = [];
+
+async function fetchAllInventoryLogs() {
+    const tBody = document.getElementById('globalLogTableBody');
+    if (!tBody) return;
+
+    tBody.innerHTML = '<tr><td colspan="6" class="empty-state">로그 데이터를 불러오는 중입니다...</td></tr>';
+
+    const { data: logs, error } = await db
+        .from('inventory_logs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching global inventory logs:', error);
+        tBody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:red"><i class="fa-solid fa-triangle-exclamation"></i> 오류: ${error.message}</td></tr>`;
+        return;
+    }
+
+    const { data: products } = await db.from('products').select('id, name');
+    const productMap = {};
+    if (products) {
+        products.forEach(p => {
+            productMap[p.id] = p.name;
+        });
+    }
+
+    globalInventoryLogs = (logs || []).map(log => {
+        let productName = productMap[log.product_id] || '알 수 없는 상품 (삭제됨)';
+        let cleanReason = log.reason || '';
+        cleanReason = cleanReason.replace(/^\[.*?\]\s*/, '');
+
+        return {
+            ...log,
+            product_name: productName,
+            clean_reason: cleanReason
+        };
+    });
+
+    renderGlobalLogTable(globalInventoryLogs);
+}
+
+function renderGlobalLogTable(logs) {
+    const tBody = document.getElementById('globalLogTableBody');
+    if (!tBody) return;
+
+    if (logs.length === 0) {
+        tBody.innerHTML = '<tr><td colspan="6" class="empty-state">기록된 입출고 변동 로그가 없습니다.</td></tr>';
+        return;
+    }
+
+    tBody.innerHTML = logs.map(log => {
+        const dateStr = new Date(log.created_at).toLocaleString('ko-KR');
+        const changeVal = log.change_amount;
+        const changeBadge = changeVal > 0 
+            ? `<span style="background: #eafaf1; color: #2ecc71; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">입고</span>`
+            : `<span style="background: #fdf2f2; color: #e74c3c; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">출고</span>`;
+        const changeColor = changeVal > 0 ? '#2ecc71' : '#e74c3c';
+        const changeText = changeVal > 0 ? `+${changeVal}` : `${changeVal}`;
+
+        return `
+            <tr>
+                <td style="color: #666; font-size: 0.9rem; white-space: nowrap;">${dateStr}</td>
+                <td style="font-weight: 600; color: var(--admin-sidebar);">${log.product_name}</td>
+                <td>${changeBadge}</td>
+                <td style="font-weight: bold; color: ${changeColor};">${changeText}개</td>
+                <td>${log.manager_name || '-'}</td>
+                <td style="color: #555;">${log.clean_reason}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const logSearchInput = document.getElementById('logSearchInput');
+    if (logSearchInput) {
+        logSearchInput.addEventListener('input', () => {
+            const query = logSearchInput.value.toLowerCase().trim();
+            const filtered = globalInventoryLogs.filter(log => {
+                return log.product_name.toLowerCase().includes(query) ||
+                       (log.manager_name || '').toLowerCase().includes(query) ||
+                       (log.clean_reason || '').toLowerCase().includes(query);
+            });
+            renderGlobalLogTable(filtered);
+        });
+    }
+
+    const downloadLogExcelBtn = document.getElementById('downloadLogExcelBtn');
+    if (downloadLogExcelBtn) {
+        downloadLogExcelBtn.addEventListener('click', () => {
+            if (globalInventoryLogs.length === 0) {
+                alert('다운로드할 로그 데이터가 없습니다.');
+                return;
+            }
+
+            const data = globalInventoryLogs.map(log => ({
+                '변동일시': new Date(log.created_at).toLocaleString('ko-KR'),
+                '제품명': log.product_name,
+                '구분': log.change_amount > 0 ? '입고' : '출고',
+                '변동수량': log.change_amount + '개',
+                '담당자': log.manager_name || '',
+                '변동사유': log.clean_reason || ''
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "입출고로그");
+
+            const wscols = [
+                {wch: 25}, // 일시
+                {wch: 35}, // 제품명
+                {wch: 10}, // 구분
+                {wch: 12}, // 수량
+                {wch: 15}, // 담당자
+                {wch: 40}  // 사유
+            ];
+            worksheet['!cols'] = wscols;
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(workbook, `SG_LIMU_입출고로그_${dateStr}.xlsx`);
+        });
+    }
+});
 
 productImageFile.addEventListener('change', (e) => {
     const file = e.target.files[0];

@@ -44,6 +44,7 @@
         </div>
         <ul class="sidebar-menu">
             <li class="nav-item active" data-target="tab-products"><i class="fa-solid fa-box-open"></i> 제품 전/후 관리</li>
+            <li class="nav-item" data-target="tab-inventory-logs"><i class="fa-solid fa-clock-rotate-left"></i> 입출고 변동 로그</li>
             <li class="nav-item" data-target="tab-category-manage"><i class="fa-solid fa-sitemap"></i> 카테고리 구성 관리</li>
             <li class="nav-item" data-target="tab-orders"><i class="fa-solid fa-chart-line"></i> 주문 통계 분석</li>
             <li class="nav-item" data-target="tab-inquiries">
@@ -105,6 +106,41 @@
                     </thead>
                     <tbody id="productTableBody">
                         <tr><td colspan="7" class="empty-state">로딩 중입니다...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- 9. 입출고 변동 로그 탭 (신규) -->
+        <!-- ======================= -->
+        <div id="tab-inventory-logs" class="tab-pane">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 class="page-title"><i class="fa-solid fa-clock-rotate-left"></i> 전체 입출고 변동 로그</h1>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="search-box" style="position: relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                        <input type="text" id="logSearchInput" class="form-control" placeholder="제품명/담당자/사유 검색..." style="padding-left: 35px; width: 250px; height: 40px;">
+                    </div>
+                    <button id="downloadLogExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71; height: 40px;">
+                        <i class="fa-solid fa-file-excel"></i> 엑셀 다운
+                    </button>
+                </div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>변동 일시</th>
+                            <th>제품명</th>
+                            <th>구분</th>
+                            <th>변동 수량</th>
+                            <th>담당자</th>
+                            <th>상세 변동 사유</th>
+                        </tr>
+                    </thead>
+                    <tbody id="globalLogTableBody">
+                        <tr><td colspan="6" class="empty-state">로딩 중입니다...</td></tr>
                     </tbody>
                 </table>
             </div>
