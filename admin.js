@@ -910,7 +910,8 @@ if (saveInventoryBtn) {
     saveInventoryBtn.addEventListener('click', async () => {
         const changeAmount = parseInt(inventoryChangeAmountInput.value);
         const managerName = inventoryManagerNameInput.value.trim();
-        const reason = inventoryReasonInput.value.trim();
+        const prodName = productNameInput ? productNameInput.value.trim() : '알 수 없는 상품';
+        const reasonStr = `[${prodName}] ${inventoryReasonInput.value.trim()}`;
         const pid = productIdInput.value;
 
         if (!pid) return;
@@ -920,7 +921,7 @@ if (saveInventoryBtn) {
         if (!managerName) {
             saveInventoryMsg.textContent = '담당자 성함을 반드시 기입해야 합니다.'; return;
         }
-        if (!reason) {
+        if (!inventoryReasonInput.value.trim()) {
             saveInventoryMsg.textContent = '변동 사유를 기입해주세요.'; return;
         }
 
@@ -930,7 +931,7 @@ if (saveInventoryBtn) {
         const { error } = await db.from('inventory_logs').insert([{
             product_id: pid,
             change_amount: changeAmount,
-            reason: reason,
+            reason: reasonStr,
             manager_name: managerName
         }]);
 
