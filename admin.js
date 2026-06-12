@@ -402,6 +402,12 @@ const categoryModalTitle = document.getElementById('categoryModalTitle');
 async function checkSession() {
     const { data: { session }, error } = await db.auth.getSession();
     if (session) {
+        if (session.user && !session.user.email_confirmed_at) {
+            console.log('Unconfirmed email admin session detected, signing out...');
+            await db.auth.signOut();
+            loginOverlay.style.display = 'flex';
+            return;
+        }
         loginOverlay.style.display = 'none';
         await fetchCategories(); // 카테고리 로드 추가
         initDashboard(); // 로그인 성공 시 대시보드 강제 초기화
@@ -428,10 +434,21 @@ loginBtn.addEventListener('click', async () => {
     });
 
     if (error) {
-        loginMessage.textContent = '로그인 실패: ' + error.message;
+        if (error.message.includes('Email not confirmed') || error.message.includes('confirm your email') || error.message.includes('confirmed')) {
+            loginMessage.textContent = '이메일 인증이 완료되지 않았습니다. 메일함의 인증 링크를 확인해 주세요.';
+        } else {
+            loginMessage.textContent = '로그인 실패: ' + error.message;
+        }
         loginBtn.textContent = '로그인';
         loginBtn.disabled = false;
     } else {
+        if (data.user && !data.user.email_confirmed_at) {
+            await db.auth.signOut();
+            loginMessage.textContent = '이메일 인증이 완료되지 않았습니다. 메일함의 인증 링크를 확인해 주세요.';
+            loginBtn.textContent = '로그인';
+            loginBtn.disabled = false;
+            return;
+        }
         loginOverlay.style.display = 'none';
         emailInput.value = '';
         passInput.value = '';

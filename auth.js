@@ -252,7 +252,7 @@ if (signupForm) {
             }
 
             if (signupMsg) {
-                signupMsg.textContent = '가입 성공! 이메일을 확인하거나 로그인해 주세요.';
+                signupMsg.textContent = '가입 성공! 가입하신 이메일로 인증 메일이 발송되었습니다. 메일함의 인증 링크를 클릭한 후 로그인해 주세요.';
                 signupMsg.classList.add('success');
             }
             signupForm.reset();
@@ -278,10 +278,24 @@ if (loginForm) {
 
         if (error) {
             if (loginMsg) {
-                loginMsg.textContent = '로그인 실패: ' + error.message;
+                if (error.message.includes('Email not confirmed') || error.message.includes('confirm your email') || error.message.includes('confirmed')) {
+                    loginMsg.textContent = '이메일 인증이 완료되지 않았습니다. 메일함의 인증 링크를 확인해 주세요.';
+                } else {
+                    loginMsg.textContent = '로그인 실패: ' + error.message;
+                }
                 loginMsg.classList.add('error');
             }
         } else {
+            // 이중 체크: 만약 세션이 생성되었는데 email_confirmed_at이 비어 있는 경우 로그아웃 처리
+            if (data.user && !data.user.email_confirmed_at) {
+                await supabase.auth.signOut();
+                if (loginMsg) {
+                    loginMsg.textContent = '이메일 인증이 완료되지 않았습니다. 메일함의 인증 링크를 확인해 주세요.';
+                    loginMsg.classList.add('error');
+                }
+                return;
+            }
+
             // 이메일이 profile에 없으면 채워주는 자가 치유 로직
             if (data.user && data.user.email) {
                 supabase.from('profiles').update({ email: data.user.email }).eq('id', data.user.id).then();
@@ -696,6 +710,13 @@ supabase.auth.onAuthStateChange((event, session) => {
         openAuthModal('resetPwPane');
     }
     if (session) {
+        if (session.user && !session.user.email_confirmed_at) {
+            console.log('Unconfirmed email detected, signing out...');
+            supabase.auth.signOut().then(() => {
+                updateAuthUI(null);
+            });
+            return;
+        }
         updateAuthUI(session.user);
     } else {
         updateAuthUI(null);
@@ -707,7 +728,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session } } = await supabase.auth.getSession();
     console.log('Initial Session Check:', session);
     if (session) {
-        updateAuthUI(session.user);
+        if (session.user && !session.user.email_confirmed_at) {
+            console.log('Unconfirmed email session on page load, signing out...');
+            await supabase.auth.signOut();
+            updateAuthUI(null);
+        } else {
+            updateAuthUI(session.user);
+        }
     }
 
     // [네이버 추가] 페이지 로드 시 로그인 상태 확인 (Callback 처리)
