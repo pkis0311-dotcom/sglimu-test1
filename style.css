@@ -77,13 +77,19 @@ button {
     margin: 0;
     padding: 0;
     margin-right: 60px;
+    display: flex;
+    align-items: center;
 }
 
 .logo a {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
 }
 
 .gnb {
