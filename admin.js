@@ -1039,8 +1039,16 @@ function createColorRow(val = '') {
     const div = document.createElement('div');
     div.className = 'color-row';
     div.style.cssText = "display:flex; align-items:center; gap:5px; background:#fff; padding:5px 10px; border:1px solid #ddd; border-radius:20px;";
+    
+    // 명칭:금액 분리 파싱
+    const parts = val.split(':');
+    const name = parts[0] || '';
+    const price = parts[1] || '0';
+
     div.innerHTML = `
-        <input type="text" value="${val}" placeholder="색상명" style="border:none; outline:none; font-size:0.9rem; width:80px;">
+        <input type="text" value="${name}" placeholder="색상명" style="border:none; outline:none; font-size:0.9rem; width:80px;">
+        <span style="color:#eee">|</span>
+        <input type="number" value="${price}" placeholder="추가금" style="border:none; outline:none; font-size:0.9rem; width:60px;">
         <i class="fa-solid fa-xmark" style="cursor:pointer; color:#999; font-size:0.8rem;" onclick="this.parentElement.remove()"></i>
     `;
     container.appendChild(div);
@@ -1410,7 +1418,12 @@ saveProductBtn.addEventListener('click', async () => {
         price: productPriceInput.value.trim().replace(/,/g, ''), 
         description: productDescInput.value.trim(), image_url: productImageUrl.value,
         short_comment: shortCommentInput ? shortCommentInput.value.trim() : '',
-        colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(','),
+        colors: Array.from(document.querySelectorAll('#colorContainer .color-row')).map(row => {
+            const inps = row.querySelectorAll('input');
+            const name = inps[0].value.trim();
+            const price = inps[1].value.trim() || '0';
+            return name ? `${name}:${price}` : null;
+        }).filter(v => v).join(','),
         sizes: Array.from(document.querySelectorAll('#sizeContainer .size-row')).map(row => {
             const inps = row.querySelectorAll('input');
             const name = inps[0].value.trim();

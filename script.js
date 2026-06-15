@@ -1004,6 +1004,95 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------------------------------------------------
     // 8. Global Product Loading Logic
     // ---------------------------------------------------------
+    // [신규] 상품 카드 옵션(색상/사이즈) 표시 마크업 생성 함수
+    function renderProductOptionsMarkup(colorsStr, sizesStr) {
+        let html = '';
+        
+        // 색상 파싱 & 렌더링
+        let colorHtml = '';
+        if (colorsStr) {
+            const colors = colorsStr.split(',').map(c => c.trim()).filter(c => c);
+            if (colors.length > 0) {
+                const colorMap = {
+                    '블랙': '#000000', 'black': '#000000', '검정': '#000000', '검은색': '#000000',
+                    '화이트': '#ffffff', 'white': '#ffffff', '흰색': '#ffffff', '하얀색': '#ffffff',
+                    '그레이': '#808080', 'gray': '#808080', 'grey': '#808080', '회색': '#808080',
+                    '실버': '#c0c0c0', 'silver': '#c0c0c0', '은색': '#c0c0c0',
+                    '레드': '#e74c3c', 'red': '#e74c3c', '빨강': '#e74c3c', '빨간색': '#e74c3c',
+                    '블루': '#3498db', 'blue': '#3498db', '파랑': '#3498db', '파란색': '#3498db',
+                    '그린': '#2ecc71', 'green': '#2ecc71', '초록': '#2ecc71', '초록색': '#2ecc71',
+                    '옐로우': '#f1c40f', 'yellow': '#f1c40f', '노랑': '#f1c40f', '노란색': '#f1c40f',
+                    '오렌지': '#e67e22', 'orange': '#e67e22', '주황': '#e67e22', '주황색': '#e67e22',
+                    '퍼플': '#9b59b6', 'purple': '#9b59b6', '보라': '#9b59b6', '보라색': '#9b59b6',
+                    '핑크': '#e84393', 'pink': '#e84393', '분홍': '#e84393', '분홍색': '#e84393',
+                    '브라운': '#8d6e63', 'brown': '#8d6e63', '갈색': '#8d6e63',
+                    '베이지': '#f5f5dc', 'beige': '#f5f5dc',
+                    '네이비': '#1b4f72', 'navy': '#1b4f72', '남색': '#1b4f72',
+                    '골드': '#d4af37', 'gold': '#d4af37', '금색': '#d4af37',
+                    '오크': '#c29b6f', 'oak': '#c29b6f',
+                    '메이플': '#e1b885', 'maple': '#e1b885',
+                    '월넛': '#5c4033', 'walnut': '#5c4033',
+                    '옹이': '#d2b48c',
+                    '아카시아': '#b8860b'
+                };
+                
+                colorHtml += `<div class="card-color-chips" style="display:flex; gap:4px; align-items:center;">`;
+                colors.forEach(c => {
+                    const parts = c.split(':');
+                    const cName = parts[0] || c;
+                    const lowerC = cName.toLowerCase();
+                    let bgColor = '#e0e0e0';
+                    let isMapped = false;
+                    
+                    for (const key in colorMap) {
+                        if (lowerC.includes(key)) {
+                            bgColor = colorMap[key];
+                            isMapped = true;
+                            break;
+                        }
+                    }
+                    
+                    const borderStyle = (bgColor === '#ffffff' || bgColor === '#f5f5dc' || lowerC === '화이트' || lowerC === 'white') 
+                        ? 'border: 1px solid #ccc;' 
+                        : 'border: 1px solid transparent;';
+                    
+                    if (isMapped) {
+                        colorHtml += `<span class="color-dot" title="${cName}" style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${bgColor}; ${borderStyle}"></span>`;
+                    } else {
+                        colorHtml += `<span class="color-text-chip" title="${cName}" style="font-size:0.7rem; background:#f1f3f5; color:#495057; border-radius:3px; padding:1px 4px; line-height:1; max-width:50px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${cName}</span>`;
+                    }
+                });
+                colorHtml += `</div>`;
+            }
+        }
+        
+        // 사이즈 파싱 & 렌더링
+        let sizeHtml = '';
+        if (sizesStr) {
+            const sizes = sizesStr.split(',').map(s => s.trim()).filter(s => s);
+            if (sizes.length > 0) {
+                sizeHtml += `<div class="card-size-chips" style="display:flex; gap:3px; align-items:center; flex-wrap:wrap;">`;
+                sizes.forEach(s => {
+                    const name = s.split(':')[0] || s;
+                    sizeHtml += `<span class="size-chip" style="font-size:0.68rem; font-weight:600; color:#7f8c8d; border:1px solid #bdc3c7; border-radius:3px; padding:0px 4px; line-height:1.3; background:#fafafa;">${name}</span>`;
+                });
+                sizeHtml += `</div>`;
+            }
+        }
+        
+        if (colorHtml || sizeHtml) {
+            html = `
+                <div class="product-card-options" style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap; border-top:1px dashed #eee; padding-top:8px;">
+                    ${colorHtml}
+                    ${sizeHtml}
+                </div>
+            `;
+        }
+        
+        return html;
+    }
+    window.renderProductOptionsMarkup = renderProductOptionsMarkup;
+
     window.loadDisplayProducts = async function(containerId, displayKey) {
         const container = document.querySelector(`#${containerId} .product-list`) || document.getElementById(containerId);
         if(!container) return;
@@ -1019,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const { data: products, error } = await supabase
                 .from('products')
-                .select('id, name, price, image_url, category, short_comment')
+                .select('id, name, price, image_url, category, short_comment, colors, sizes')
                 .in('id', selectedIds);
             if (error) throw error;
 
@@ -1051,12 +1140,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                 const commentHtml = p.short_comment ? `<p style="font-size:0.78rem; color:#888; margin:0 0 4px 0; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.short_comment}</p>` : '';
+                const optionsHtml = renderProductOptionsMarkup(p.colors, p.sizes);
+                
                 card.innerHTML = `
                     <div class="product-img" style="background-image: url('${displayImg}'); background-size: cover; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
                     <div class="product-info" style="text-align:center; padding:15px;">
                         <h4 style="margin-bottom:4px;">${p.name}</h4>
                         ${commentHtml}
                         <p style="color:var(--color-primary); font-weight:bold; margin:0;">${priceStr}</p>
+                        ${optionsHtml}
                     </div>
                 `;
                 container.appendChild(card);

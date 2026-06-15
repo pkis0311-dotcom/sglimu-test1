@@ -76,18 +76,64 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             // 상품 상세 페이지일 경우 정보 자동수집
-            const TitleEl = document.querySelector('.product-title h1');
+            const TitleEl = document.querySelector('.product-title');
             const PriceEl = document.querySelector('.product-price');
             
-            const pName = TitleEl ? TitleEl.innerText : document.title;
-            const pPriceRaw = PriceEl ? PriceEl.innerText.replace(/[^0-9]/g, '') : "0";
-            const pPrice = parseInt(pPriceRaw) || 0;
+            let pName = TitleEl ? TitleEl.innerText.trim() : document.title;
+            if (!TitleEl && pName.includes(' - 에스지라이뮤')) {
+                pName = pName.replace(' - 에스지라이뮤', '');
+            }
+            
+            // 기본 가격 가져오기 (상세페이지면 window.basePrice를 우선 사용)
+            let pPrice = window.basePrice;
+            if (pPrice === undefined || pPrice === null) {
+                const pPriceRaw = PriceEl ? PriceEl.innerText.replace(/[^0-9]/g, '') : "0";
+                pPrice = parseInt(pPriceRaw) || 0;
+            }
+            
+            // 상세페이지의 색상/사이즈 옵션 수집
+            const colorSelect = document.getElementById('colorOption');
+            const sizeSelect = document.getElementById('sizeOption');
+            const qtyInput = document.getElementById('qtyInput');
+            
+            let selectedOptions = [];
+            let optPrice = 0;
+            let optionKeyParts = [];
+            
+            if (colorSelect && colorSelect.value && colorSelect.value !== '0|') {
+                const val = colorSelect.value;
+                const parts = val.split('|');
+                if (parts.length === 2 && parts[1]) {
+                    optPrice += parseInt(parts[0]) || 0;
+                    selectedOptions.push(`색상: ${parts[1]}`);
+                    optionKeyParts.push(parts[1]);
+                }
+            }
+            if (sizeSelect && sizeSelect.value && sizeSelect.value !== '0|') {
+                const val = sizeSelect.value;
+                const parts = val.split('|');
+                if (parts.length === 2 && parts[1]) {
+                    optPrice += parseInt(parts[0]) || 0;
+                    selectedOptions.push(`사이즈: ${parts[1]}`);
+                    optionKeyParts.push(parts[1]);
+                }
+            }
+            
+            const finalUnitPrice = pPrice + optPrice;
+            const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+            
+            // 장바구니에 담을 때 옵션 정보를 이름에 병기
+            let displayName = pName;
+            if (selectedOptions.length > 0) {
+                displayName += ` (${selectedOptions.join(', ')})`;
+            }
             
             const item = {
-                id: pName + '_' + new Date().getTime(),
-                name: pName,
-                price: pPrice,
-                qty: 1
+                // 중복 방지를 위한 ID 생성 (옵션 조합별로 다른 장바구니 아이템으로 처리)
+                id: pName + '_' + optionKeyParts.join('_') + '_' + finalUnitPrice + '_' + new Date().getTime(),
+                name: displayName,
+                price: finalUnitPrice,
+                qty: qty
             };
             
             addToCart(item);
@@ -110,11 +156,11 @@ function saveCart(cart) {
 
 function addToCart(newItem) {
     let cart = getCart();
-    // 중복 상품이 있다면 수량만 증가
+    // 중복 상품이 있다면 수량 합산
     let existingItem = cart.find(item => item.name === newItem.name && item.price === newItem.price);
     
     if(existingItem) {
-        existingItem.qty += 1;
+        existingItem.qty += (newItem.qty || 1);
     } else {
         cart.push(newItem);
     }

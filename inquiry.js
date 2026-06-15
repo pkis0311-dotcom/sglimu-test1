@@ -57,10 +57,29 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             // 보고 있던 상품명 가져오기
-            const TitleEl = document.querySelector('.product-title h1');
-            const pName = TitleEl ? TitleEl.innerText : document.title;
+            const TitleEl = document.querySelector('.product-title');
+            let pName = TitleEl ? TitleEl.innerText.trim() : document.title;
+            if (!TitleEl && pName.includes(' - 에스지라이뮤')) {
+                pName = pName.replace(' - 에스지라이뮤', '');
+            }
             
-            inqTitle.value = `[문의상품: ${pName}]\n\n`; // 내용에 상품명 자동 기입
+            // 상세페이지의 색상/사이즈 옵션 수집
+            const colorSelect = document.getElementById('colorOption');
+            const sizeSelect = document.getElementById('sizeOption');
+            let selectedOptions = [];
+            
+            if (colorSelect && colorSelect.value && colorSelect.value !== '0|') {
+                const optText = colorSelect.options[colorSelect.selectedIndex].text;
+                selectedOptions.push(`색상: ${optText}`);
+            }
+            if (sizeSelect && sizeSelect.value && sizeSelect.value !== '0|') {
+                const optText = sizeSelect.options[sizeSelect.selectedIndex].text;
+                selectedOptions.push(`사이즈: ${optText}`);
+            }
+            
+            let optionStr = selectedOptions.length > 0 ? ` (옵션: ${selectedOptions.join(', ')})` : '';
+            
+            inqTitle.value = `[문의상품: ${pName}${optionStr}]\n\n`; // 내용에 상품명 및 옵션 자동 기입
             inqAuthor.value = '';
             inqPhone.value = '';
             statusMsg.textContent = '* 입력하신 정보는 원활한 상담을 위해서만 활용됩니다.';

@@ -262,7 +262,10 @@
         function calculateTotal() {
             let optPrice = 0;
             const colorSelect = document.getElementById('colorOption');
-            // Basic logic for hardcoded colors if needed, but usually from DB
+            if(colorSelect && colorSelect.value) {
+                const parts = colorSelect.value.split('|');
+                optPrice += parseInt(parts[0]) || 0;
+            }
             
             const sizeSelect = document.getElementById('sizeOption');
             if(sizeSelect && sizeSelect.value) {
@@ -271,7 +274,7 @@
             }
             
             const qty = parseInt(document.getElementById('qtyInput').value);
-            const total = (window.basePrice || 0 + optPrice) * qty;
+            const total = ((window.basePrice || 0) + optPrice) * qty;
             const totalPriceElem = document.getElementById('totalPrice');
             if (totalPriceElem) totalPriceElem.innerText = total.toLocaleString();
         }
@@ -343,10 +346,14 @@
                 let colorList = [];
                 if(product.colors) colorList = product.colors.split(',').map(c => c.trim());
                 if(colorList.length > 0) {
-                    colorOption.innerHTML = '<option value="">색상을 선택하세요</option>';
+                    colorOption.innerHTML = '<option value="0|">색상을 선택하세요</option>';
                     colorList.forEach(c => {
+                        const parts = c.split(':');
+                        const name = parts[0];
+                        const price = parseInt(parts[1]) || 0;
                         const opt = document.createElement('option');
-                        opt.value = c; opt.innerText = c;
+                        opt.value = `${price}|${name}`;
+                        opt.innerText = price > 0 ? `${name} (+${price.toLocaleString()}원)` : name;
                         colorOption.appendChild(opt);
                     });
                     document.getElementById('colorOptionGroup').style.display = 'block';
