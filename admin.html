@@ -84,6 +84,10 @@
                     <select id="categoryFilter" class="form-control" style="width: 180px; height: 40px; margin-right: 5px; font-size: 0.9rem;">
                         <option value="all">전체 카테고리</option>
                     </select>
+                    <select id="productSortFilter" class="form-control" style="width: 150px; height: 40px; margin-right: 5px; font-size: 0.9rem;">
+                        <option value="created_at_desc">등록일 최신순</option>
+                        <option value="display_order_asc">전시 순서순</option>
+                    </select>
                     <button id="downloadProductExcelBtn" class="btn-primary" style="background-color: #27ae60; border-color: #2ecc71; height: 40px;">
                         <i class="fa-solid fa-file-excel"></i> 엑셀 다운
                     </button>
@@ -107,7 +111,7 @@
                         </tr>
                     </thead>
                     <tbody id="productTableBody">
-                        <tr><td colspan="7" class="empty-state">로딩 중입니다...</td></tr>
+                        <tr><td colspan="8" class="empty-state">로딩 중입니다...</td></tr>
                     </tbody>
                 </table>
             </div>

@@ -42,12 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 제품 검색 및 필터 기능
     const productSearchInput = document.getElementById('productSearchInput');
     const categoryFilter = document.getElementById('categoryFilter');
+    const productSortFilter = document.getElementById('productSortFilter');
 
     function applyProductFilters() {
         const query = productSearchInput ? productSearchInput.value.toLowerCase().trim() : '';
         const catValue = categoryFilter ? categoryFilter.value : 'all';
+        const sortValue = productSortFilter ? productSortFilter.value : 'created_at_desc';
 
-        const filtered = globalProducts.filter(p => {
+        let filtered = globalProducts.filter(p => {
             const nameMatch = p.name.toLowerCase().includes(query);
             // 검색어에 카테고리 ID가 포함된 경우도 인정
             const categoryMatch = (p.category || '').toLowerCase().includes(query);
@@ -57,11 +59,43 @@ document.addEventListener('DOMContentLoaded', () => {
             
             return (nameMatch || categoryMatch) && catFilterMatch;
         });
+
+        // 정렬 적용
+        if (sortValue === 'display_order_asc') {
+            filtered.sort((a, b) => {
+                const aKey = getProductConfigKey(a);
+                const bKey = getProductConfigKey(b);
+                const aDisplayed = aKey && globalDisplayConfigs[aKey] && globalDisplayConfigs[aKey].includes(a.id);
+                const bDisplayed = bKey && globalDisplayConfigs[bKey] && globalDisplayConfigs[bKey].includes(b.id);
+
+                if (aDisplayed && bDisplayed) {
+                    const aIdx = globalDisplayConfigs[aKey].indexOf(a.id);
+                    const bIdx = globalDisplayConfigs[bKey].indexOf(b.id);
+                    // 카테고리가 서로 다른 경우 카테고리별로 정렬 후 순서순으로
+                    if (aKey !== bKey) {
+                        return aKey.localeCompare(bKey) || (aIdx - bIdx);
+                    }
+                    return aIdx - bIdx;
+                } else if (aDisplayed) {
+                    return -1; // 전시 중인 제품을 상위로
+                } else if (bDisplayed) {
+                    return 1;
+                } else {
+                    // 둘 다 전시 중이 아니면 등록일 최신순 정렬
+                    return new Date(b.created_at) - new Date(a.created_at);
+                }
+            });
+        } else {
+            // 기본값: 등록일 최신순
+            filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        }
+
         renderProductTable(filtered);
     }
 
     if (productSearchInput) productSearchInput.addEventListener('input', applyProductFilters);
     if (categoryFilter) categoryFilter.addEventListener('change', applyProductFilters);
+    if (productSortFilter) productSortFilter.addEventListener('change', applyProductFilters);
 
     // ---------------------------------------------------------
     // 실시간 채팅 로직 (관리자용 고도화)
@@ -562,6 +596,52 @@ function initDashboard() {
 // ==========================================
 let globalDisplayConfigs = {};
 
+// 카테고리별 전시 설정 키(configKey) 파싱 헬퍼 함수
+function getProductConfigKey(p) {
+    if (!p) return null;
+    if (p.category === 'best_product') {
+        return 'display_best_product';
+    }
+    for (const mKey in SITE_CATEGORIES) {
+        const major = SITE_CATEGORIES[mKey];
+        if (!major || !major.middles) continue;
+
+        for (const midKey in major.middles) {
+            const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
+
+            const sub = middle.subs.find(s => s.id === p.category);
+            if (sub) {
+                return `display_${midKey}-${sub.id}`;
+            }
+        }
+    }
+    return null;
+}
+
+// 카테고리 전시 경로 라벨 헬퍼 함수
+function getProductCategoryPath(p) {
+    if (!p) return '';
+    if (p.category === 'best_product') {
+        return '★ 베스트 상품';
+    }
+    for (const mKey in SITE_CATEGORIES) {
+        const major = SITE_CATEGORIES[mKey];
+        if (!major || !major.middles) continue;
+
+        for (const midKey in major.middles) {
+            const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
+
+            const sub = middle.subs.find(s => s.id === p.category);
+            if (sub) {
+                return `${major.label} > ${middle.label} > ${sub.label}`;
+            }
+        }
+    }
+    return p.category || '';
+}
+
 async function fetchDisplayConfigs() {
     const { data, error } = await db.from('site_configs').select('key, value').like('key', 'display_%');
     globalDisplayConfigs = {};
@@ -593,7 +673,7 @@ async function fetchProducts() {
 // 제품 테이블 렌더링 함수 (검색 필터링 대응)
 function renderProductTable(products) {
     if (products.length === 0) {
-        productTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">등록된 제품이 없거나 검색 결과가 없습니다.</td></tr>';
+        productTableBody.innerHTML = '<tr><td colspan="8" class="empty-state">등록된 제품이 없거나 검색 결과가 없습니다.</td></tr>';
         return;
     }
 
@@ -603,30 +683,9 @@ function renderProductTable(products) {
         const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${p.name}">` : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
         const dateStr = new Date(p.created_at).toLocaleDateString('ko-KR');
 
-        // 카테고리 라벨 매핑 (3단계 대응)
-        let displayCategory = p.category;
-        let configKey = null; // 전시 설정 키
-        for (const mKey in SITE_CATEGORIES) {
-            const major = SITE_CATEGORIES[mKey];
-            if (!major || !major.middles) continue;
-
-            for (const midKey in major.middles) {
-                const middle = major.middles[midKey];
-                if (!middle || !Array.isArray(middle.subs)) continue;
-
-                const sub = middle.subs.find(s => s.id === p.category);
-                if (sub) {
-                    displayCategory = `${major.label} > ${middle.label} > ${sub.label}`;
-                    configKey = `display_${midKey}-${sub.id}`;
-                    break;
-                }
-            }
-            if (configKey) break;
-        }
-        if (p.category === 'best_product') {
-            displayCategory = '★ 베스트 상품';
-            configKey = 'display_best_product';
-        }
+        // 카테고리 라벨 매핑 및 전시 설정 키(configKey) 구하기
+        const displayCategory = getProductCategoryPath(p);
+        const configKey = getProductConfigKey(p);
 
         const isDisplayed = configKey && globalDisplayConfigs[configKey] && globalDisplayConfigs[configKey].includes(p.id);
         const orderIndex = isDisplayed ? globalDisplayConfigs[configKey].indexOf(p.id) + 1 : '';
@@ -670,25 +729,7 @@ function updateProductRelatedUI(products) {
     if (displayCheckboxGrid) {
         if (products.length > 0) {
             displayCheckboxGrid.innerHTML = products.map(p => {
-                // 카테고리 라벨 매핑 (3단계 대응)
-                let displayCategory = p.category;
-                for (const mKey in SITE_CATEGORIES) {
-                    const major = SITE_CATEGORIES[mKey];
-                    if (!major || !major.middles) continue;
-
-                    for (const midKey in major.middles) {
-                        const middle = major.middles[midKey];
-                        if (!middle || !Array.isArray(middle.subs)) continue;
-
-                        const sub = middle.subs.find(s => s.id === p.category);
-                        if (sub) {
-                            displayCategory = `${major.label} > ${middle.label} > ${sub.label}`;
-                            break;
-                        }
-                    }
-                    if (displayCategory !== p.category) break;
-                }
-                if (p.category === 'best_product') displayCategory = '★ 베스트 상품';
+                const displayCategory = getProductCategoryPath(p);
 
                 return `
                 <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
