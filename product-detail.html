@@ -299,6 +299,25 @@
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
 
+        function parseProductOptions(product) {
+            if (!product) return { colors: '', sizes: '' };
+            let colors = product.colors || '';
+            let sizes = product.sizes || '';
+            
+            // colors 컬럼이 없거나 비어있는 경우 description에서 파싱
+            if (!colors && product.description) {
+                const match = product.description.match(/\[\[C:(.*?)\]\]/);
+                if (match) colors = match[1];
+            }
+            // sizes 컬럼이 없거나 비어있는 경우 description에서 파싱
+            if (!sizes && product.description) {
+                const match = product.description.match(/\[\[S:(.*?)\]\]/);
+                if (match) sizes = match[1];
+            }
+            
+            return { colors, sizes };
+        }
+
         async function initProductDetail() {
             if(!productId) {
                 console.warn("Product ID missing in URL.");
@@ -341,10 +360,12 @@
             }
             
             // Options Logic
+            const parsedOpts = parseProductOptions(product);
+
             const colorOption = document.getElementById('colorOption');
             if(colorOption) {
                 let colorList = [];
-                if(product.colors) colorList = product.colors.split(',').map(c => c.trim());
+                if(parsedOpts.colors) colorList = parsedOpts.colors.split(',').map(c => c.trim());
                 if(colorList.length > 0) {
                     colorOption.innerHTML = '<option value="0|">색상을 선택하세요</option>';
                     colorList.forEach(c => {
@@ -365,7 +386,7 @@
             const sizeOption = document.getElementById('sizeOption');
             if(sizeOption) {
                 let sizeList = [];
-                if(product.sizes) sizeList = product.sizes.split(',').map(s => s.trim());
+                if(parsedOpts.sizes) sizeList = parsedOpts.sizes.split(',').map(s => s.trim());
                 if(sizeList.length > 0) {
                     sizeOption.innerHTML = '<option value="0|">사이즈를 선택하세요</option>';
                     sizeList.forEach(s => {

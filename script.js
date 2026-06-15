@@ -1004,6 +1004,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------------------------------------------------
     // 8. Global Product Loading Logic
     // ---------------------------------------------------------
+    // [신규] description 태그에서 옵션(색상/사이즈)을 파싱하는 헬퍼 함수
+    function parseProductOptions(product) {
+        if (!product) return { colors: '', sizes: '' };
+        let colors = product.colors || '';
+        let sizes = product.sizes || '';
+        
+        // colors 컬럼이 없거나 비어있는 경우 description에서 파싱
+        if (!colors && product.description) {
+            const match = product.description.match(/\[\[C:(.*?)\]\]/);
+            if (match) colors = match[1];
+        }
+        // sizes 컬럼이 없거나 비어있는 경우 description에서 파싱
+        if (!sizes && product.description) {
+            const match = product.description.match(/\[\[S:(.*?)\]\]/);
+            if (match) sizes = match[1];
+        }
+        
+        return { colors, sizes };
+    }
+    window.parseProductOptions = parseProductOptions;
+
     // [신규] 상품 카드 옵션(색상/사이즈) 표시 마크업 생성 함수
     function renderProductOptionsMarkup(colorsStr, sizesStr) {
         let html = '';
@@ -1108,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const { data: products, error } = await supabase
                 .from('products')
-                .select('id, name, price, image_url, category, short_comment, colors, sizes')
+                .select('id, name, price, image_url, category, short_comment, description')
                 .in('id', selectedIds);
             if (error) throw error;
 
@@ -1140,7 +1161,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
                 const commentHtml = p.short_comment ? `<p style="font-size:0.78rem; color:#888; margin:0 0 4px 0; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.short_comment}</p>` : '';
-                const optionsHtml = renderProductOptionsMarkup(p.colors, p.sizes);
+                const options = parseProductOptions(p);
+                const optionsHtml = renderProductOptionsMarkup(options.colors, options.sizes);
                 
                 card.innerHTML = `
                     <div class="product-img" style="background-image: url('${displayImg}'); background-size: cover; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>

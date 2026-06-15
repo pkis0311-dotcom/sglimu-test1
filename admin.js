@@ -1449,13 +1449,16 @@ saveProductBtn.addEventListener('click', async () => {
 
     const id = productIdInput.value;
     
+    // [신규] colors/sizes 정보를 description 끝부분에 [[C:...]] [[S:...]] 형식의 태그로 결합
+    const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]`;
+    
     // ── 저장 전략: 3단계 분리 ──────────────────────────────────────
     // 1단계: 반드시 저장해야 하는 핵심 필드 (short_comment 포함)
     const corePayload = {
         name: payload.name,
         category: payload.category,
         price: payload.price,
-        description: payload.description,
+        description: finalDescription,
         image_url: payload.image_url,
         short_comment: payload.short_comment || ''
     };
