@@ -1037,3 +1037,8 @@ td {
 .chat-trigger-admin:hover {
     background: var(--admin-primary);
 }
+
+/* Quill Editor Excel Font Sync */
+.ql-editor, .ql-editor * {
+    font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif !important;
+}
