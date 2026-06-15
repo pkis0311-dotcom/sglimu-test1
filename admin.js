@@ -3220,9 +3220,46 @@ async function loadPageData() {
         });
     }
 
+    // [신규] 특징 및 규격 레이아웃 미리보기 이미지 갱신 함수
+    function updateFeatureStylePreview() {
+        const select = document.getElementById('featureStyle');
+        const previewBox = document.getElementById('featureStylePreview');
+        if (!select || !previewBox) return;
+        
+        const val = select.value || 'type-a';
+        const img = previewBox.querySelector('img');
+        if (img) {
+            img.src = `assets/feature_preview_${val.replace('type-', '')}.png`;
+            previewBox.style.display = 'block';
+        }
+    }
+
+    function updateSpecStylePreview() {
+        const select = document.getElementById('specStyle');
+        const previewBox = document.getElementById('specStylePreview');
+        if (!select || !previewBox) return;
+        
+        const val = select.value || 'type-a';
+        const img = previewBox.querySelector('img');
+        if (img) {
+            img.src = `assets/spec_preview_${val.replace('type-', '')}.png`;
+            previewBox.style.display = 'block';
+        }
+    }
+
+    // 이벤트 바인딩 자동 수행 (일회성)
+    document.addEventListener('DOMContentLoaded', () => {
+        const fSelect = document.getElementById('featureStyle');
+        const sSelect = document.getElementById('specStyle');
+        if (fSelect) fSelect.addEventListener('change', updateFeatureStylePreview);
+        if (sSelect) sSelect.addEventListener('change', updateSpecStylePreview);
+    });
+
     pageDescription.value = data.description || '';
     if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
     if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
+    updateFeatureStylePreview();
+    updateSpecStylePreview();
     if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
     if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
 }
@@ -3241,6 +3278,8 @@ function clearPageManageUI() {
     if (pageDescription) pageDescription.value = '';
     if (document.getElementById('specStyle')) document.getElementById('specStyle').value = 'type-a';
     if (document.getElementById('featureStyle')) document.getElementById('featureStyle').value = 'type-a';
+    updateFeatureStylePreview();
+    updateSpecStylePreview();
     
     // 파일 인풋도 초기화
     if (document.getElementById('pageMainImage')) document.getElementById('pageMainImage').value = '';
