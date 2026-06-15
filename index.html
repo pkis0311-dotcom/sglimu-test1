@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -64,10 +64,10 @@
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
-                    <button class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
-                </div>
+                <form action="search.html" method="get" class="search-wrapper">
+                    <input type="text" name="q" class="search-input" placeholder="검색어를 입력하세요">
+                    <button type="submit" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
                 <a href="cart.html" title="장바구니"><i class="fa-solid fa-cart-shopping"></i></a>
                 <div id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
@@ -153,10 +153,7 @@
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
-    <script type="module" src="auth.js"></script>
+
 
             <!-- Auth Modal Overlay -->
     <div class="auth-overlay" id="authOverlay">

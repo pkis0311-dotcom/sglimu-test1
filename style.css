@@ -224,6 +224,24 @@ button {
     border-color: var(--color-accent);
 }
 
+.search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.search-btn:hover {
+    color: var(--color-accent);
+    transform: scale(1.1);
+}
+
 .header-utils a {
     font-size: 1.25rem;
     color: var(--color-primary);

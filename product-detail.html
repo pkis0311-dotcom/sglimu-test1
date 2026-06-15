@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -58,10 +58,10 @@
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
-                </div>
+                <form action="search.html" method="get" class="search-wrapper">
+                    <input type="text" name="q" class="search-input" placeholder="검색어를 입력하세요">
+                    <button type="submit" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
                 <div id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
                         <i class="fa-regular fa-user"></i>

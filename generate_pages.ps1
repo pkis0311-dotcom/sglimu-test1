@@ -55,11 +55,10 @@ foreach ($fileName in $categories.Keys) {
     $content = $template -replace '<title>.*?<', "<title>$title - 에스지라이뮤<"
     $content = $content -replace '(?s)<main class="category-page">.*?</main>', $header_html
     
-    # Supabase Migration: Ensure CURRENT_PAGE_ID is correctly set (handles both single and double quotes)
-    $content = $content -replace 'const CURRENT_PAGE_ID = [''"].*?[''"];', "const CURRENT_PAGE_ID = '$pageId';"
+    $content = $content -replace 'window.CURRENT_PAGE_ID\s*=\s*[''"].*?[''"];', "window.CURRENT_PAGE_ID = '$pageId';"
     
     # Save with UTF-8 to prevent encoding issues with Korean text
-    $outputPath = Join-Path $PSScriptRoot "$fileName.html"
+    $outputPath = Join-Path . "$fileName.html"
     [System.IO.File]::WriteAllText($outputPath, $content, [System.Text.Encoding]::UTF8)
 }
 

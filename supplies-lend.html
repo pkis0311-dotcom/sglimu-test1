@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?�서?��??�품 - ?�스지?�이�?/title>
-    <meta name="description" content="?�서?��??�품, ?�서관?�품, ?�서관물품">
+    <title>대출용품 - 에스지라이뮤</title>
+    <meta name="description" content="RFID시스템, 도서관용품, 도서관물품">
     <link rel="stylesheet" href="style.css?v=7">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -71,6 +71,7 @@
     <link rel="stylesheet" href="inquiry.css">
     <link rel="stylesheet" href="auth.css">
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <header class="header">
@@ -82,14 +83,14 @@
                 </ul>
             </nav>
             <div class="header-utils">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" placeholder="검?�어�??�력?�세??>
-                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
-                </div>
+                <form action="search.html" method="get" class="search-wrapper">
+                    <input type="text" name="q" class="search-input" placeholder="검색어를 입력하세요">
+                    <button type="submit" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
                 <div class="user-auth-wrap" id="userAuthWrap">
                     <button class="login-trigger-btn" id="loginTriggerBtn">
                         <i class="fa-regular fa-user"></i>
-                        <span>로그??/span>
+                        <span>로그인</span>
                     </button>
                 </div>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
@@ -99,15 +100,61 @@
 
     <main class="category-page">
         <div class="category-header">
-            <h2 class="category-title">?�서?��??�품</h2>
-            <p>?�리?�고 빠른 ?�서 ?��??�비?��? ?�한 ?�품?�니??</p>
+            <h2 class="category-title">대출용품</h2>
+            <p>도서 대출 및 반납 처리에 필요한 용품입니다.</p>
         </div>
 
         <div class="category-container">
             <ul class="subcategory-nav" id="subCategoryNav">
-                <!-- Sub-categories will be rendered dynamically by script.js -->
+                <li class="subcategory-item active" data-target="cat-0">바코드</li>
+                <li class="subcategory-item" data-target="cat-1">(카드프린터/카드리본/소모품)</li>
+                <li class="subcategory-item" data-target="cat-2">회원증카드</li>
+                <li class="subcategory-item" data-target="cat-3">감열지</li>
             </ul>
 
+            <div id="cat-0" class="sub-content active">
+                <div class="product-list">
+                    <div class="product-card visible">
+                        <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
+                        <div class="product-info">
+                            <h4>바코드 샘플상품</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cat-1" class="sub-content">
+                <div class="product-list">
+                    <div class="product-card visible">
+                        <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
+                        <div class="product-info">
+                            <h4>(카드프린터/카드리본/소모품) 샘플상품</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cat-2" class="sub-content">
+                <div class="product-list">
+                    <div class="product-card visible">
+                        <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
+                        <div class="product-info">
+                            <h4>회원증카드 샘플상품</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cat-3" class="sub-content">
+                <div class="product-list">
+                    <div class="product-card visible">
+                        <div class="product-img" style="background-image: url('assets/public_library.png'); background-size: cover; background-position: center;"></div>
+                        <div class="product-info">
+                            <h4>감열지 샘플상품</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </main>
@@ -115,176 +162,47 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(�??�스지?�이�?/strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; ?�스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; E-Mail : limu101@nate.com</p>
                 <p class="copyright">Copyright(c)2023 www.sgperzoom.com. All right Reserved.</p>
             </div>
         </div>
     </footer>
 
-            <!-- Auth Modal Overlay -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <div class="auth-close" id="authClose">&times;</div>
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-target="loginPane">로그인</div>
-                <div class="auth-tab" data-target="signupPane">회원가입</div>
-            </div>
-            <div class="auth-content">
-                <div class="auth-pane active" id="loginPane">
-                    <div class="auth-header"><h2>환영합니다!</h2><p>간편로그인으로 빠르게 시작하세요.</p></div>
-                    <div class="social-login-grid">
-                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
-                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
-                        <div id="naverIdLogin" style="display:none;"></div> 
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
-                    </div>
-                    <div class="auth-divider"><span>또는</span></div>
-                    <form id="loginForm">
-                        <div class="auth-form-group"><label>이메일</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>비밀번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비밀번호를 입력하세요" required></div>
-                        <button type="submit" class="auth-submit-btn">로그인</button>
-                    </form>
-                    <div id="loginMsg" class="auth-message"></div>
-                    <div class="auth-sub-links">
-                        <a id="linkFindId">아이디 찾기</a>
-                        <span class="divider">|</span>
-                        <a id="linkFindPw">비밀번호 찾기</a>
-                    </div>
-                </div>
-                
-                <!-- Find ID Pane -->
-                <div class="auth-pane" id="findIdPane">
-                    <div class="auth-header"><h2>아이디 찾기</h2><p>가입 시 입력한 이름과 전화번호를 입력해주세요.</p></div>
-                    <form id="findIdForm">
-                        <div class="auth-form-group"><label>이름</label><input type="text" id="findIdName" class="auth-input" placeholder="이름을 입력하세요" required></div>
-                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findIdPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        <button type="submit" class="auth-submit-btn">아이디 찾기</button>
-                    </form>
-                    <div id="findIdMsg" class="auth-message"></div>
-                    <div id="findIdResult" class="auth-result-box">
-                        <h4>아이디 찾기 완료</h4>
-                        <p>회원님의 아이디(이메일)는 다음과 같습니다.</p>
-                        <div class="found-email" id="foundEmailDisplay"></div>
-                        <button class="auth-submit-btn" id="btnGoToLoginFromId">로그인하러 가기</button>
-                    </div>
-                    <div class="auth-sub-links">
-                        <a class="back-to-login">로그인으로 돌아가기</a>
-                    </div>
-                </div>
+    <aside class="right-fixed-banner">
+        <ul class="banner-menu">
+            <li><a href="#" class="banner-btn recent-btn-aside" title="최근 본 상품"><i class="fa-solid fa-clock-rotate-left"></i><span class="tooltip">최근본상품</span></a></li>
+            <li><a href="#" class="banner-btn" title="주문배송"><i class="fa-solid fa-truck"></i><span class="tooltip">주문배송</span></a></li>
+            <li><a href="#" class="banner-btn cart-btn-aside" title="장바구니"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">장바구니</span></a></li>
+            <li><a href="#" class="banner-btn wishlist-btn-aside" title="관심상품"><i class="fa-regular fa-heart"></i><span class="tooltip">관심상품</span></a></li>
+            <li><a href="#" class="banner-btn chat-trigger" id="chatTriggerBtn" title="실시간 채팅"><i class="fa-solid fa-comments"></i><span class="tooltip">실시간 채팅</span></a></li>
+            <li class="scroll-btns">
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="위로"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="아래로"><i class="fa-solid fa-chevron-down"></i></button>
+            </li>
+        </ul>
+    </aside>
 
-                <!-- Find Password Pane -->
-                <div class="auth-pane" id="findPwPane">
-                    <div class="auth-header"><h2>비밀번호 찾기</h2><p>가입된 이메일과 이름, 전화번호를 입력하시면<br>비밀번호 재설정 링크를 보내드립니다.</p></div>
-                    <form id="findPwForm">
-                        <div class="auth-form-group"><label>이메일(아이디)</label><input type="email" id="findPwEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-form-group"><label>이름</label><input type="text" id="findPwName" class="auth-input" placeholder="이름을 입력하세요" required></div>
-                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findPwPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        <button type="submit" class="auth-submit-btn">재설정 링크 발송</button>
-                    </form>
-                    <div id="findPwMsg" class="auth-message"></div>
-                    <div id="findPwResult" class="auth-result-box">
-                        <h4>이메일 발송 완료</h4>
-                        <p>입력하신 이메일로 비밀번호 재설정 링크가 발송되었습니다.<br>이메일을 확인해주세요.</p>
-                        <button class="auth-submit-btn back-to-login">로그인으로 돌아가기</button>
-                    </div>
-                    <div class="auth-sub-links">
-                        <a class="back-to-login">로그인으로 돌아가기</a>
-                    </div>
-                </div>
+    <!-- chat-fab 제거됨 (사이드바로 이동) -->
 
-                <!-- Reset Password Pane -->
-                <div class="auth-pane" id="resetPwPane">
-                    <div class="auth-header"><h2>비밀번호 재설정</h2><p>새로운 비밀번호를 입력해주세요.</p></div>
-                    <form id="resetPwForm">
-                        <div class="auth-form-group"><label>새 비밀번호</label><input type="password" id="resetPwInput" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
-                        <div class="auth-form-group"><label>새 비밀번호 확인</label><input type="password" id="resetPwConfirm" class="auth-input" placeholder="다시 한 번 입력" minlength="6" required></div>
-                        <button type="submit" class="auth-submit-btn">비밀번호 변경</button>
-                    </form>
-                    <div id="resetPwMsg" class="auth-message"></div>
-                </div>
-
-                <!-- Signup Pane -->
-                <div class="auth-pane" id="signupPane">
-                    <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
-                    <div class="auth-social-signup">
-                        <div class="auth-social-signup-header"><span>간편 회원가입</span></div>
-                        <div class="social-login-grid">
-                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 카카오로 시작</button>
-                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작</button>
-                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google로 시작</button>
-                        </div>
-                    </div>
-                    <div class="auth-divider"><span>또는 이메일로 가입</span></div>
-                    <div class="auth-type-selector" id="userTypeSelector">
-                        <div class="auth-type-btn active" data-type="individual">개인 회원</div>
-                        <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
-                    </div>
-                    <form id="signupForm">
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
-                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                        </div>
-                        <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
-                        <div class="auth-row">
-                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required></div>
-                            <div class="auth-form-group"><label>비밀번호 확인 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required></div>
-                        </div>
-                        <div class="auth-form-group" id="orgGroup"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관"></div>
-                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>사업자 등록번호</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
-                        <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
-                        <button type="submit" class="auth-submit-btn">가입하기</button>
-                    </form>
-                    <div id="signupMsg" class="auth-message"></div>
-                </div>
-                
-                <!-- Complete Profile Pane -->
-                <div class="auth-pane" id="completeProfilePane">
-                    <div class="auth-header"><h2>추가 정보 입력</h2><p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p></div>
-                    <form id="completeProfileForm">
-                        <div class="highlight-box">
-                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                            <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명 *</label><input type="text" id="completeOrg" class="auth-input" placeholder="예: 한국대학교 도서관" required></div>
-                            <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
-                        </div>
-                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
-                    </form>
-                    <div id="completeMsg" class="auth-message"></div>
-                </div>
-                
-                <!-- My Profile Pane -->
-                <div class="auth-pane" id="myProfilePane">
-                    <div class="auth-header">
-                        <h2>내 정보 관리</h2>
-                        <p>회원 정보를 확인하고 수정할 수 있습니다.</p>
-                    </div>
-                    <form id="myProfileForm">
-                        <div class="auth-form-group">
-                            <label>이름</label>
-                            <input type="text" id="myProfileName" class="auth-input" placeholder="이름" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>연락처</label>
-                            <input type="tel" id="myProfilePhone" class="auth-input" placeholder="010-0000-0000" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>소속 기관 / 학교명</label>
-                            <input type="text" id="myProfileOrg" class="auth-input" placeholder="예: 시립도서관" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>주소</label>
-                            <input type="text" id="myProfileAddress" class="auth-input" placeholder="주소를 입력하세요" required>
-                        </div>
-                        <button type="submit" class="auth-submit-btn">정보 수정하기</button>
-                    </form>
-                    <div id="myProfileMsg" class="auth-message"></div>
-                </div>
-            </div>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h4>실시간 문의</h4>
+            <button class="chat-close" id="chatCloseBtn">&times;</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message system-msg">안녕하세요! 무엇을 도와드릴까요?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+            <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        window.CURRENT_PAGE_ID = 'supplies-lend';
+    </script>
     <script type="module" src="script.js"></script>
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
     <script type="module" src="auth.js"></script>
 </body>
-
 </html>
