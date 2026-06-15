@@ -629,6 +629,13 @@ function renderProductTable(products) {
         }
 
         const isDisplayed = configKey && globalDisplayConfigs[configKey] && globalDisplayConfigs[configKey].includes(p.id);
+        const orderIndex = isDisplayed ? globalDisplayConfigs[configKey].indexOf(p.id) + 1 : '';
+        const orderInputHtml = isDisplayed ? `
+            <div style="margin-top:6px; display:flex; align-items:center; justify-content:center; gap:4px;">
+                <span style="font-size:0.75rem; color:#666; font-weight:600;">순서:</span>
+                <input type="number" value="${orderIndex}" min="1" max="${globalDisplayConfigs[configKey].length}" style="width:48px; height:20px; text-align:center; font-size:0.8rem; border:1px solid #ccc; border-radius:3px; outline:none; font-family:'Malgun Gothic','맑은 고딕',sans-serif;" onchange="changeProductDisplayOrder('${p.id}', '${configKey}', this.value, this)">
+            </div>
+        ` : '';
 
         tr.innerHTML = `
             <td>${imgHtml}</td>
@@ -637,11 +644,12 @@ function renderProductTable(products) {
             <td>${p.price}</td>
             <td>${p.stock}개</td>
             <td style="color:#666; font-size:0.9rem;">${dateStr}</td>
-            <td style="text-align:center;">
-                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; justify-content:center;">
+            <td style="text-align:center; vertical-align:middle;">
+                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; justify-content:center; margin-bottom: 2px;">
                     <input type="checkbox" style="transform:scale(1.2);" onchange="toggleProductDisplay('${p.id}', '${configKey}', this.checked)" ${isDisplayed ? 'checked' : ''}>
-                    <span style="font-size:0.85rem;">전시</span>
+                    <span style="font-size:0.85rem; font-weight:600;">전시</span>
                 </label>
+                ${orderInputHtml}
             </td>
             <td>
                 <button class="action-btn edit" onclick="editProduct('${p.id}')" title="수정"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -3846,7 +3854,49 @@ window.toggleProductDisplay = async function(productId, configKey, isChecked) {
         } else {
             globalDisplayConfigs[configKey].push(productId);
         }
+    } else {
+        // 전시 상태 변경 성공 시, 순서 표시 인풋을 반영하기 위해 테이블을 즉각 새로고침
+        fetchProducts();
     }
+};
+
+window.changeProductDisplayOrder = async function(productId, configKey, newOrderVal, inputElem) {
+    if (!configKey || configKey === 'null') return;
+    
+    let targetIndex = parseInt(newOrderVal) - 1;
+    if (isNaN(targetIndex) || targetIndex < 0) {
+        alert('올바른 순서 번호를 입력해주세요.');
+        if (inputElem) {
+            const currentIdx = globalDisplayConfigs[configKey].indexOf(productId) + 1;
+            inputElem.value = currentIdx;
+        }
+        return;
+    }
+    
+    let arr = globalDisplayConfigs[configKey] || [];
+    const currentIdx = arr.indexOf(productId);
+    if (currentIdx === -1) return; // 전시 중이 아님
+    
+    if (targetIndex >= arr.length) targetIndex = arr.length - 1;
+    
+    // 배열 내 위치 재배정 (원래 위치에서 빼고 새로운 위치에 주입)
+    arr.splice(currentIdx, 1);
+    arr.splice(targetIndex, 0, productId);
+    
+    globalDisplayConfigs[configKey] = arr;
+    
+    // DB 업데이트
+    const { error } = await db.from('site_configs').upsert({
+        key: configKey,
+        value: arr
+    });
+    
+    if (error) {
+        alert('순서 저장 실패: ' + error.message);
+    }
+    
+    // 테이블 다시 그리기 (다른 상품들의 순서도 자동 동기화 갱신)
+    fetchProducts();
 };
 
 // ==========================================
