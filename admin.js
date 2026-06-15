@@ -1048,7 +1048,7 @@ function createColorRow(val = '') {
     div.innerHTML = `
         <input type="text" value="${name}" placeholder="색상명" style="border:none; outline:none; font-size:0.9rem; width:80px;">
         <span style="color:#eee">|</span>
-        <input type="number" value="${price}" placeholder="추가금" style="border:none; outline:none; font-size:0.9rem; width:60px;">
+        <input type="text" value="${formatPriceInput(price)}" placeholder="추가금" style="border:none; outline:none; font-size:0.9rem; width:60px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',')">
         <i class="fa-solid fa-xmark" style="cursor:pointer; color:#999; font-size:0.8rem;" onclick="this.parentElement.remove()"></i>
     `;
     container.appendChild(div);
@@ -1076,7 +1076,7 @@ function createSizeRow(val = '') {
     div.innerHTML = `
         <input type="text" value="${name}" placeholder="사이즈명" style="border:none; outline:none; font-size:0.9rem; width:80px;">
         <span style="color:#eee">|</span>
-        <input type="number" value="${price}" placeholder="추가금" style="border:none; outline:none; font-size:0.9rem; width:60px;">
+        <input type="text" value="${formatPriceInput(price)}" placeholder="추가금" style="border:none; outline:none; font-size:0.9rem; width:60px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',')">
         <i class="fa-solid fa-xmark" style="cursor:pointer; color:#999; font-size:0.8rem;" onclick="this.parentElement.remove()"></i>
     `;
     container.appendChild(div);
@@ -1421,13 +1421,13 @@ saveProductBtn.addEventListener('click', async () => {
         colors: Array.from(document.querySelectorAll('#colorContainer .color-row')).map(row => {
             const inps = row.querySelectorAll('input');
             const name = inps[0].value.trim();
-            const price = inps[1].value.trim() || '0';
+            const price = inps[1].value.trim().replace(/,/g, '') || '0';
             return name ? `${name}:${price}` : null;
         }).filter(v => v).join(','),
         sizes: Array.from(document.querySelectorAll('#sizeContainer .size-row')).map(row => {
             const inps = row.querySelectorAll('input');
             const name = inps[0].value.trim();
-            const price = inps[1].value.trim() || '0';
+            const price = inps[1].value.trim().replace(/,/g, '') || '0';
             return name ? `${name}:${price}` : null;
         }).filter(v => v).join(',')
     };
