@@ -1038,9 +1038,27 @@ td {
     background: var(--admin-primary);
 }
 
-/* Quill Editor Excel Font Sync */
-.ql-editor, .ql-editor * {
+/* Quill Editor Excel Font Sync & Scrollable */
+.ql-editor {
     font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif !important;
+}
+
+/* 스크롤 이슈 해결: 모달 내 에디터 높이 제한 및 내부 스크롤 허용 */
+.spec-val-editor, .feature-desc-editor {
+    max-height: 250px !important;
+    overflow-y: auto !important;
+    background: #ffffff;
+}
+
+.spec-val-editor .ql-editor, .feature-desc-editor .ql-editor {
+    min-height: 80px !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+}
+
+.spec-val-editor .ql-container, .feature-desc-editor .ql-container {
+    border: none !important;
+    height: auto !important;
 }
 
 /* -------------------------------------
@@ -1085,31 +1103,162 @@ td {
     font-weight: bold !important;
 }
 
-/* 엑셀 셀렉트박스 스타일 */
-.excel-select {
+/* 엑셀 스타일 셀렉트(Quill Picker) 디자인 및 정렬 깨짐 방지 */
+.excel-toolbar .ql-picker.ql-font {
+    width: 95px !important;
+}
+.excel-toolbar .ql-picker.ql-size {
+    width: 55px !important;
+}
+
+.excel-toolbar .ql-picker {
     height: 24px !important;
+    display: inline-block !important;
+    position: relative !important;
+}
+
+.excel-toolbar .ql-picker-label {
     border: 1px solid #b2b2b2 !important;
     background: #ffffff !important;
     font-size: 11px !important;
-    padding: 0 2px !important;
-    outline: none !important;
+    padding: 0 16px 0 6px !important; /* 화살표 여백 */
+    display: flex !important;
+    align-items: center !important;
+    height: 24px !important;
     border-radius: 2px !important;
-    cursor: pointer !important;
-    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif !important;
     color: #333 !important;
+    font-weight: normal !important;
+    line-height: 22px !important;
+    position: relative !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif !important;
 }
 
-.excel-select.font-select {
-    width: 85px !important;
-}
-
-.excel-select.size-select {
-    width: 48px !important;
-}
-
-.excel-select:hover {
+.excel-toolbar .ql-picker-label:hover {
     border-color: #707070 !important;
     background-color: #fcfcfc !important;
+}
+
+/* Quill 기본 아래 화살표 SVG 숨김 */
+.excel-toolbar .ql-picker-label svg {
+    display: none !important;
+}
+
+/* 우측 정렬된 역삼각형(▼) 화살표 직접 연출 */
+.excel-toolbar .ql-picker-label::after {
+    content: '▼' !important;
+    font-size: 7px !important;
+    color: #555 !important;
+    position: absolute !important;
+    right: 5px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+}
+
+/* 텍스트 정중앙 배치 */
+.excel-toolbar .ql-picker-label::before {
+    display: inline-block !important;
+    line-height: 22px !important;
+    vertical-align: middle !important;
+}
+
+/* 드롭다운 옵션 상자 스타일 */
+.excel-toolbar .ql-picker-options {
+    background-color: #ffffff !important;
+    border: 1px solid #b2b2b2 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    padding: 4px 0 !important;
+    z-index: 10002 !important;
+    top: 25px !important;
+}
+
+.excel-toolbar .ql-picker-item {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    cursor: pointer !important;
+    color: #333 !important;
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif !important;
+}
+
+.excel-toolbar .ql-picker-item:hover {
+    background-color: #f0f0f0 !important;
+}
+
+/* --- 글꼴(font) 이름 텍스트 매핑 (위로 깨지는 현상 해결) --- */
+.ql-snow .ql-picker.ql-font .ql-picker-label::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item::before {
+    content: '맑은 고딕' !important;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Calibri"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Calibri"]::before {
+    content: 'Calibri' !important;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Pretendard"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Pretendard"]::before {
+    content: 'Pretendard' !important;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Gulim"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Gulim"]::before {
+    content: '굴림' !important;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Dotum"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Dotum"]::before {
+    content: '돋움' !important;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Gungsuh"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Gungsuh"]::before {
+    content: '궁서' !important;
+}
+
+/* --- 글꼴 크기(size) 숫자 매핑 (위로 깨지는 현상 해결) --- */
+.ql-snow .ql-picker.ql-size .ql-picker-label::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item::before {
+    content: '11' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="9px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="9px"]::before {
+    content: '9' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10px"]::before {
+    content: '10' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="11px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11px"]::before {
+    content: '11' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before {
+    content: '12' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before {
+    content: '14' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before {
+    content: '16' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before {
+    content: '18' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="20px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before {
+    content: '20' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before {
+    content: '24' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="30px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="30px"]::before {
+    content: '30' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36px"]::before {
+    content: '36' !important;
 }
 
 /* 엑셀 스타일 버튼 */
@@ -1160,31 +1309,4 @@ td {
 .ql-excel-size-down sub {
     font-size: 8px !important;
     vertical-align: sub !important;
-}
-
-/* 컬러 피커, 배경색 아이콘 크기/스타일 */
-.excel-toolbar .ql-picker {
-    height: 24px !important;
-}
-.excel-toolbar .ql-picker-label {
-    border: 1px solid transparent !important;
-    padding: 0 4px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 24px !important;
-    width: 28px !important;
-    background: transparent !important;
-    border-radius: 2px !important;
-}
-.excel-toolbar .ql-picker-label:hover {
-    background: #e1dfdd !important;
-    border-color: #a3a09e !important;
-}
-.excel-toolbar .ql-color .ql-picker-label svg,
-.excel-toolbar .ql-background .ql-picker-label svg {
-    display: none !important; /* 기본 화살표 숨김 */
-}
-.excel-toolbar .ql-expanded .ql-picker-options {
-    z-index: 10002 !important;
 }
