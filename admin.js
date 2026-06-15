@@ -684,7 +684,7 @@ function updateProductRelatedUI(products) {
 
                 return `
                 <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
-                    <input type="checkbox" class="display-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
+                    <input type="checkbox" class="display-item-cb" id="cb_${p.id}" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
                     <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
                         <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${displayCategory}]</span><br>
                         ${p.name}
@@ -692,6 +692,13 @@ function updateProductRelatedUI(products) {
                 </label>
                 `;
             }).join('');
+            
+            // 체크박스 클릭(체인지) 이벤트 리스너 결합
+            displayCheckboxGrid.querySelectorAll('.display-item-cb').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    updateProductSortListFromCheckbox(cb);
+                });
+            });
             
             // 카테고리 전시 관리 탭이 활성화된 상태이고 현재 선택된 소분류가 있다면 체크박스 상태 갱신
             if(document.getElementById('tab-category-display').classList.contains('active') && typeof currentSelectedSection !== 'undefined' && currentSelectedSection) {
@@ -702,6 +709,73 @@ function updateProductRelatedUI(products) {
         }
     }
 }
+
+// [신규] 체크박스 상태에 따라 정렬 목록 동적 업데이트
+function updateProductSortListFromCheckbox(cb) {
+    const sortList = document.getElementById('productSortList');
+    if (!sortList) return;
+    
+    // placeholder 텍스트 제거
+    const placeholder = sortList.querySelector('div[style*="color:#999"]');
+    if (placeholder) {
+        sortList.innerHTML = '';
+    }
+    
+    const productId = cb.value;
+    const labelWrapper = cb.closest('label');
+    const productName = labelWrapper ? labelWrapper.querySelector('div').innerText.split('\n').pop().trim() : '알 수 없는 상품';
+    
+    if (cb.checked) {
+        if (sortList.querySelector(`.sort-item[data-id="${productId}"]`)) return;
+        
+        const sortItem = document.createElement('div');
+        sortItem.className = 'sort-item';
+        sortItem.dataset.id = productId;
+        sortItem.style.cssText = "display:flex; align-items:center; gap:10px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:6px; cursor:grab; box-shadow:0 2px 5px rgba(0,0,0,0.02);";
+        sortItem.innerHTML = `
+            <i class="fa-solid fa-grip-vertical drag-handle" style="color:#aaa; cursor:grab;"></i>
+            <span style="font-size:0.95rem; font-weight:600; color:#333; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${productName}</span>
+            <button class="sort-remove-btn" type="button" style="color:#e74c3c; background:none; border:none; cursor:pointer;" onclick="removeProductFromSortList('${productId}')"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        sortList.appendChild(sortItem);
+    } else {
+        const existingItem = sortList.querySelector(`.sort-item[data-id="${productId}"]`);
+        if (existingItem) {
+            existingItem.remove();
+        }
+    }
+    
+    // 리스트가 비어있으면 안내문 재노출
+    if (sortList.children.length === 0) {
+        sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">왼쪽에서 상품을 선택하면 여기에 표시됩니다.</div>';
+    }
+    
+    // SortableJS 바인딩 갱신
+    if (typeof Sortable !== 'undefined') {
+        Sortable.create(sortList, {
+            handle: '.drag-handle',
+            animation: 150
+        });
+    }
+}
+
+// [신규] 정렬 목록에서 제거 버튼 클릭 시 연계 동작
+window.removeProductFromSortList = (productId) => {
+    const cb = document.getElementById(`cb_${productId}`) || document.querySelector(`.display-item-cb[value="${productId}"]`);
+    if (cb) {
+        cb.checked = false;
+        cb.dispatchEvent(new Event('change'));
+    } else {
+        const sortList = document.getElementById('productSortList');
+        const existingItem = sortList ? sortList.querySelector(`.sort-item[data-id="${productId}"]`) : null;
+        if (existingItem) {
+            existingItem.remove();
+            if (sortList && sortList.children.length === 0) {
+                sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">왼쪽에서 상품을 선택하면 여기에 표시됩니다.</div>';
+            }
+        }
+    }
+};
 
 function renderPageManageProducts() {
     const targetSelect = document.getElementById('targetPageId');
@@ -3168,11 +3242,11 @@ function initCategoryDisplayTab() {
                 alert('먼저 관리할 소분류(전시화면)를 선택해주세요.');
                 return;
             }
-            const checkboxes = document.querySelectorAll('.display-item-cb');
-            const selectedProducts = [];
-            checkboxes.forEach(cb => {
-                if(cb.checked) selectedProducts.push(cb.value);
-            });
+            
+            // 정렬 목록에서 순서대로 ID 추출
+            const sortItems = document.querySelectorAll('#productSortList .sort-item');
+            const selectedProducts = Array.from(sortItems).map(item => item.dataset.id);
+
             // [변경] localStorage 대신 Supabase site_configs 테이블에 저장
             const { error: displayError } = await db.from('site_configs').upsert({
                 key: 'display_' + currentSelectedSection,
@@ -3193,6 +3267,11 @@ function initCategoryDisplayTab() {
 }
 
 async function loadCategoryDisplay(sectionKey) {
+    const sortList = document.getElementById('productSortList');
+    if (!sortList) return;
+    
+    sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">로딩 중...</div>';
+
     // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
     const { data: configData, error } = await db.from('site_configs').select('value').eq('key', 'display_' + sectionKey).single();
     const selectedIds = configData ? configData.value : [];
@@ -3201,6 +3280,38 @@ async function loadCategoryDisplay(sectionKey) {
     checkboxes.forEach(cb => {
         cb.checked = selectedIds.includes(cb.value);
     });
+    
+    // 정렬 리스트 렌더링
+    sortList.innerHTML = '';
+    
+    // selectedIds에 저장된 순서대로 정렬 리스트 아이템 노출
+    selectedIds.forEach(id => {
+        const p = globalProducts.find(prod => prod.id === id);
+        if (!p) return;
+        
+        const sortItem = document.createElement('div');
+        sortItem.className = 'sort-item';
+        sortItem.dataset.id = p.id;
+        sortItem.style.cssText = "display:flex; align-items:center; gap:10px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:6px; cursor:grab; box-shadow:0 2px 5px rgba(0,0,0,0.02);";
+        sortItem.innerHTML = `
+            <i class="fa-solid fa-grip-vertical drag-handle" style="color:#aaa; cursor:grab;"></i>
+            <span style="font-size:0.95rem; font-weight:600; color:#333; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</span>
+            <button class="sort-remove-btn" type="button" style="color:#e74c3c; background:none; border:none; cursor:pointer;" onclick="removeProductFromSortList('${p.id}')"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        sortList.appendChild(sortItem);
+    });
+
+    if (sortList.children.length === 0) {
+        sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">왼쪽에서 상품을 선택하면 여기에 표시됩니다.</div>';
+    }
+
+    // SortableJS 인스턴스화
+    if (typeof Sortable !== 'undefined') {
+        Sortable.create(sortList, {
+            handle: '.drag-handle',
+            animation: 150
+        });
+    }
 }
 
 // ------------------------------------------
