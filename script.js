@@ -40,6 +40,154 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ---------------------------------------------------------
+    // 1-0. Search Autocomplete / Suggestions Dropdown
+    // ---------------------------------------------------------
+    const searchWrapper = document.querySelector('.search-wrapper');
+    let suggestionsContainer = null;
+    if (searchWrapper) {
+        suggestionsContainer = document.createElement('div');
+        suggestionsContainer.className = 'search-suggestions';
+        searchWrapper.appendChild(suggestionsContainer);
+    }
+
+    let debounceTimer = null;
+    let selectedIndex = -1;
+
+    if (searchInput && suggestionsContainer) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const query = searchInput.value.trim();
+            if (query.length < 1) {
+                hideSuggestions();
+                return;
+            }
+            debounceTimer = setTimeout(() => fetchSuggestions(query), 200);
+        });
+
+        // Close suggestions dropdown when user clicks outside
+        document.addEventListener('click', (e) => {
+            if (searchWrapper && !searchWrapper.contains(e.target)) {
+                hideSuggestions();
+            }
+        });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', (e) => {
+            const list = suggestionsContainer.querySelectorAll('.suggestion-item');
+            if (list.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex + 1) % list.length;
+                updateSelectedSuggestion(list);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex - 1 + list.length) % list.length;
+                updateSelectedSuggestion(list);
+            } else if (e.key === 'Enter') {
+                if (selectedIndex > -1 && list[selectedIndex]) {
+                    e.preventDefault();
+                    list[selectedIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                hideSuggestions();
+            }
+        });
+    }
+
+    function updateSelectedSuggestion(list) {
+        list.forEach((el, idx) => {
+            el.classList.toggle('selected', idx === selectedIndex);
+        });
+    }
+
+    function hideSuggestions() {
+        if (suggestionsContainer) {
+            suggestionsContainer.classList.remove('active');
+            suggestionsContainer.innerHTML = '';
+        }
+        selectedIndex = -1;
+    }
+
+    async function fetchSuggestions(query) {
+        if (!query) return;
+        try {
+            // Fetch up to 6 products matching the query
+            const { data: products, error } = await supabase
+                .from('products')
+                .select('id, name, price, image_url, short_comment')
+                .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+                .limit(6);
+
+            if (error) throw error;
+
+            if (!products || products.length === 0) {
+                renderNoSuggestions();
+                return;
+            }
+
+            renderSuggestions(products, query);
+        } catch (err) {
+            console.error('Suggestions error:', err);
+        }
+    }
+
+    function renderNoSuggestions() {
+        if (suggestionsContainer) {
+            suggestionsContainer.innerHTML = '<div class="suggestion-no-results">검색 결과가 없습니다.</div>';
+            suggestionsContainer.classList.add('active');
+        }
+    }
+
+    function renderSuggestions(products, query) {
+        if (!suggestionsContainer) return;
+        suggestionsContainer.innerHTML = '';
+        
+        const titleEl = document.createElement('div');
+        titleEl.className = 'suggestion-list-title';
+        titleEl.textContent = '연관 추천 제품';
+        suggestionsContainer.appendChild(titleEl);
+
+        selectedIndex = -1;
+
+        products.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.onclick = () => {
+                window.location.href = `product-detail.html?id=${p.id}`;
+            };
+
+            const imgUrl = p.image_url || 'assets/no-image.png';
+            const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+            const description = p.short_comment || '';
+
+            // Highlight query string in name and description
+            const highlightedName = highlightKeyword(p.name, query);
+            const highlightedDesc = highlightKeyword(description, query);
+
+            item.innerHTML = `
+                <div class="suggestion-thumb" style="background-image: url('${imgUrl}');"></div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">${highlightedName}</div>
+                    ${description ? `<div class="suggestion-desc">${highlightedDesc}</div>` : ''}
+                    <div class="suggestion-price">${priceStr}</div>
+                </div>
+            `;
+            suggestionsContainer.appendChild(item);
+        });
+
+        suggestionsContainer.classList.add('active');
+    }
+
+    function highlightKeyword(text, keyword) {
+        if (!text) return '';
+        // Escape special regex characters in keyword
+        const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const regex = new RegExp(`(${escapedKeyword})`, 'gi');
+        return text.replace(regex, '<mark class="suggestion-keyword-highlight">$1</mark>');
+    }
+
+    // ---------------------------------------------------------
     // 1-1. Recently Viewed Products Logic
     // ---------------------------------------------------------
     (function initRecentProducts() {
