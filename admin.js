@@ -98,6 +98,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (productSortFilter) productSortFilter.addEventListener('change', applyProductFilters);
     window.applyProductFilters = applyProductFilters;
 
+    // 제품 가격 입력 시 실시간 천 단위 콤마 추가
+    const productPriceInput = document.getElementById('productPrice');
+    if (productPriceInput) {
+        productPriceInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const cleanVal = val.replace(/[^0-9]/g, '');
+            if (cleanVal) {
+                // 숫자와 콤마/공백으로만 이루어진 입력인 경우만 자동 콤마 포맷팅 수행
+                const isNumeric = /^[0-9,\s]+$/.test(val);
+                if (isNumeric) {
+                    e.target.value = Number(cleanVal).toLocaleString('ko-KR');
+                }
+            }
+        });
+    }
+
     // ---------------------------------------------------------
     // 실시간 채팅 로직 (관리자용 고도화)
     // ---------------------------------------------------------
@@ -597,6 +613,26 @@ function initDashboard() {
 // ==========================================
 let globalDisplayConfigs = {};
 
+// 가격 표시 포맷팅 헬퍼 함수
+function formatPriceDisplay(price) {
+    if (!price) return '0원';
+    const clean = price.toString().replace(/,/g, '').trim();
+    if (/^\d+$/.test(clean)) {
+        return Number(clean).toLocaleString('ko-KR') + '원';
+    }
+    return price;
+}
+
+// [신규] 입력창용 가격 포맷팅 헬퍼 함수
+function formatPriceInput(price) {
+    if (!price) return '';
+    const clean = price.toString().replace(/,/g, '').trim();
+    if (/^\d+$/.test(clean)) {
+        return Number(clean).toLocaleString('ko-KR');
+    }
+    return price;
+}
+
 // 카테고리별 전시 설정 키(configKey) 파싱 헬퍼 함수
 function getProductConfigKey(p) {
     if (!p) return null;
@@ -679,8 +715,16 @@ async function fetchProducts(isSilent = false) {
 
 // 제품 테이블 렌더링 함수 (검색 필터링 대응)
 function renderProductTable(products) {
+    // 스크롤 위치 저장
+    const mainContent = document.querySelector('.main-content');
+    const mainScroll = mainContent ? mainContent.scrollTop : 0;
+    const windowScroll = window.scrollY;
+
     if (products.length === 0) {
         productTableBody.innerHTML = '<tr><td colspan="8" class="empty-state">등록된 제품이 없거나 검색 결과가 없습니다.</td></tr>';
+        // 스크롤 위치 복구
+        if (mainContent) mainContent.scrollTop = mainScroll;
+        window.scrollTo(0, windowScroll);
         return;
     }
 
@@ -707,7 +751,7 @@ function renderProductTable(products) {
             <td>${imgHtml}</td>
             <td style="font-weight:600;"><a href="#" onclick="event.preventDefault(); openPageManage('${p.id}')" style="color:#2980b9; text-decoration:underline; cursor:pointer;" title="상세페이지 관리">${p.name}</a></td>
             <td><span style="background:#eaf2f8; color:#2980b9; padding:3px 8px; border-radius:3px; font-size:0.8rem;">${displayCategory}</span></td>
-            <td>${p.price}</td>
+            <td>${formatPriceDisplay(p.price)}</td>
             <td>${p.stock}개</td>
             <td style="color:#666; font-size:0.9rem;">${dateStr}</td>
             <td style="text-align:center; vertical-align:middle;">
@@ -724,6 +768,10 @@ function renderProductTable(products) {
         `;
         productTableBody.appendChild(tr);
     });
+
+    // 스크롤 위치 복구
+    if (mainContent) mainContent.scrollTop = mainScroll;
+    window.scrollTo(0, windowScroll);
 }
 
 // 제품 데이터와 연동된 기타 UI 요소들 업데이트
@@ -1359,7 +1407,7 @@ saveProductBtn.addEventListener('click', async () => {
     const shortCommentInput = document.getElementById('productShortComment');
     const payload = {
         name: productNameInput.value.trim(), category: productCategoryInput.value,
-        price: productPriceInput.value.trim(), 
+        price: productPriceInput.value.trim().replace(/,/g, ''), 
         description: productDescInput.value.trim(), image_url: productImageUrl.value,
         short_comment: shortCommentInput ? shortCommentInput.value.trim() : '',
         colors: Array.from(document.querySelectorAll('#colorContainer .color-row input')).map(inp => inp.value).filter(v => v).join(','),
@@ -1494,7 +1542,7 @@ window.editProduct = async (id) => {
         fetchInventoryLogs(id);
     }
     productIdInput.value = p.id; productNameInput.value = p.name; productCategoryInput.value = p.category;
-    productPriceInput.value = p.price; productStockInput.value = p.stock; 
+    productPriceInput.value = formatPriceInput(p.price); productStockInput.value = p.stock; 
     
     // 상세 설명 로드 시 색상/사이즈 태그 제거 처리
     productDescInput.value = (p.description || '').replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
@@ -2409,19 +2457,93 @@ function renderBestProductCheckboxes() {
         return;
     }
 
-    grid.innerHTML = globalProducts.map(p => `
+    grid.innerHTML = globalProducts.map(p => {
+        const displayCategory = getProductCategoryPath(p);
+        return `
         <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
             <input type="checkbox" class="best-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
             <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
-                <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${p.category}]</span><br>
+                <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${displayCategory}]</span><br>
                 ${p.name}
             </div>
         </label>
-    `).join('');
+        `;
+    }).join('');
+
+    // 체크박스 변경 시 정렬 리스트 갱신 연동
+    grid.querySelectorAll('.best-item-cb').forEach(cb => {
+        cb.addEventListener('change', () => {
+            updateBestProductSortListFromCheckbox(cb);
+        });
+    });
     
     // 현재 섹션의 데이터로 체크 상태 복구
     loadBestProductDisplay(currentBestSection);
 }
+
+// [신규] 체크박스 상태에 따라 베스트 상품 정렬 목록 업데이트
+function updateBestProductSortListFromCheckbox(cb) {
+    const sortList = document.getElementById('bestProductSortList');
+    if (!sortList) return;
+
+    const placeholder = sortList.querySelector('div[style*="color:#999"]');
+    if (placeholder) {
+        sortList.innerHTML = '';
+    }
+
+    const productId = cb.value;
+    const labelWrapper = cb.closest('label');
+    const productName = labelWrapper ? labelWrapper.querySelector('div').innerText.split('\n').pop().trim() : '알 수 없는 상품';
+
+    if (cb.checked) {
+        if (sortList.querySelector(`.best-sort-item[data-id="${productId}"]`)) return;
+
+        const sortItem = document.createElement('div');
+        sortItem.className = 'best-sort-item';
+        sortItem.dataset.id = productId;
+        sortItem.style.cssText = "display:flex; align-items:center; gap:10px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:6px; cursor:grab; box-shadow:0 2px 5px rgba(0,0,0,0.02);";
+        sortItem.innerHTML = `
+            <i class="fa-solid fa-grip-vertical drag-handle" style="color:#aaa; cursor:grab;"></i>
+            <span style="font-size:0.95rem; font-weight:600; color:#333; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${productName}</span>
+            <button class="best-sort-remove-btn" type="button" style="color:#e74c3c; background:none; border:none; cursor:pointer;" onclick="removeBestProductFromSortList('${productId}')"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        sortList.appendChild(sortItem);
+    } else {
+        const existingItem = sortList.querySelector(`.best-sort-item[data-id="${productId}"]`);
+        if (existingItem) {
+            existingItem.remove();
+        }
+    }
+
+    if (sortList.children.length === 0) {
+        sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">왼쪽에서 상품을 선택하면 여기에 표시됩니다.</div>';
+    }
+
+    if (typeof Sortable !== 'undefined') {
+        Sortable.create(sortList, {
+            handle: '.drag-handle',
+            animation: 150
+        });
+    }
+}
+
+// [신규] 베스트 상품 정렬 목록에서 삭제 연동
+window.removeBestProductFromSortList = (productId) => {
+    const cb = document.querySelector(`.best-item-cb[value="${productId}"]`);
+    if (cb) {
+        cb.checked = false;
+        cb.dispatchEvent(new Event('change'));
+    } else {
+        const sortList = document.getElementById('bestProductSortList');
+        const existingItem = sortList ? sortList.querySelector(`.best-sort-item[data-id="${productId}"]`) : null;
+        if (existingItem) {
+            existingItem.remove();
+            if (sortList && sortList.children.length === 0) {
+                sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">왼쪽에서 상품을 선택하면 여기에 표시됩니다.</div>';
+            }
+        }
+    }
+};
 
 window.selectBestSection = function(sectionId, sectionName) {
     currentBestSection = sectionId;
@@ -2439,6 +2561,11 @@ window.selectBestSection = function(sectionId, sectionName) {
 }
 
 async function loadBestProductDisplay(sectionId) {
+    const sortList = document.getElementById('bestProductSortList');
+    if (!sortList) return;
+
+    sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">로딩 중...</div>';
+
     const { data: configData } = await db.from('site_configs').select('value').eq('key', 'display_' + sectionId).single();
     const selectedIds = configData ? configData.value : [];
     
@@ -2446,6 +2573,34 @@ async function loadBestProductDisplay(sectionId) {
     checkboxes.forEach(cb => {
         cb.checked = selectedIds.includes(cb.value);
     });
+
+    sortList.innerHTML = '';
+    selectedIds.forEach(id => {
+        const p = globalProducts.find(prod => prod.id === id);
+        if (!p) return;
+
+        const sortItem = document.createElement('div');
+        sortItem.className = 'best-sort-item';
+        sortItem.dataset.id = p.id;
+        sortItem.style.cssText = "display:flex; align-items:center; gap:10px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:6px; cursor:grab; box-shadow:0 2px 5px rgba(0,0,0,0.02);";
+        sortItem.innerHTML = `
+            <i class="fa-solid fa-grip-vertical drag-handle" style="color:#aaa; cursor:grab;"></i>
+            <span style="font-size:0.95rem; font-weight:600; color:#333; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</span>
+            <button class="best-sort-remove-btn" type="button" style="color:#e74c3c; background:none; border:none; cursor:pointer;" onclick="removeBestProductFromSortList('${p.id}')"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        sortList.appendChild(sortItem);
+    });
+
+    if (sortList.children.length === 0) {
+        sortList.innerHTML = '<div style="color:#999; text-align:center; padding: 40px 0; width:100%;">왼쪽에서 상품을 선택하면 여기에 표시됩니다.</div>';
+    }
+
+    if (typeof Sortable !== 'undefined') {
+        Sortable.create(sortList, {
+            handle: '.drag-handle',
+            animation: 150
+        });
+    }
 }
 
 async function saveBestProductDisplay() {
@@ -2456,8 +2611,9 @@ async function saveBestProductDisplay() {
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
 
-    const checkboxes = document.querySelectorAll('.best-item-cb');
-    const selectedIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    // 정렬 목록에서 순서대로 ID 추출하여 저장
+    const sortItems = document.querySelectorAll('#bestProductSortList .best-sort-item');
+    const selectedIds = Array.from(sortItems).map(item => item.dataset.id);
 
     const { error } = await db.from('site_configs').upsert({
         key: 'display_' + currentBestSection,
@@ -2468,7 +2624,7 @@ async function saveBestProductDisplay() {
         alert('저장 실패: ' + error.message);
     } else {
         const sectionName = document.getElementById('currentBestSelectionName').innerText;
-        alert(`[${sectionName}] 베스트 상품 설정이 저장되었습니다.`);
+        alert(`[${sectionName}] 베스트 상품 전시 순서가 성공적으로 저장되었습니다.`);
     }
 
     saveBtn.disabled = false;
