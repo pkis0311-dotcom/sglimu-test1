@@ -1042,3 +1042,149 @@ td {
 .ql-editor, .ql-editor * {
     font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif !important;
 }
+
+/* -------------------------------------
+   EXCEL STYLE TOOLBAR FOR QUILL
+-------------------------------------- */
+.excel-toolbar {
+    background: #f3f3f3 !important;
+    border: none !important;
+    border-bottom: 1px solid #d4d4d4 !important;
+    padding: 6px 12px 24px 12px !important; /* 아래 영역 라벨을 위한 공간 확보 */
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    user-select: none !important;
+    position: relative !important;
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif !important;
+}
+
+.excel-toolbar-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    background: transparent !important;
+}
+
+.excel-toolbar-divider {
+    width: 1px !important;
+    height: 20px !important;
+    background: #c0c0c0 !important;
+    margin: 0 4px !important;
+    display: inline-block !important;
+}
+
+.excel-toolbar-label {
+    position: absolute !important;
+    bottom: 2px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    font-size: 9px !important;
+    color: #808080 !important;
+    font-weight: bold !important;
+}
+
+/* 엑셀 셀렉트박스 스타일 */
+.excel-select {
+    height: 24px !important;
+    border: 1px solid #b2b2b2 !important;
+    background: #ffffff !important;
+    font-size: 11px !important;
+    padding: 0 2px !important;
+    outline: none !important;
+    border-radius: 2px !important;
+    cursor: pointer !important;
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif !important;
+    color: #333 !important;
+}
+
+.excel-select.font-select {
+    width: 85px !important;
+}
+
+.excel-select.size-select {
+    width: 48px !important;
+}
+
+.excel-select:hover {
+    border-color: #707070 !important;
+    background-color: #fcfcfc !important;
+}
+
+/* 엑셀 스타일 버튼 */
+.excel-btn {
+    height: 24px !important;
+    min-width: 24px !important;
+    padding: 0 4px !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    border-radius: 2px !important;
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif !important;
+}
+
+.excel-btn:hover {
+    background: #e1dfdd !important;
+    border-color: #a3a09e !important;
+}
+
+.excel-btn.ql-active {
+    background: #c8c6c4 !important;
+    border-color: #8a8886 !important;
+}
+
+/* 개별 단추 스타일 */
+.excel-btn.bold-btn {
+    font-weight: bold !important;
+}
+.excel-btn.italic-btn {
+    font-style: italic !important;
+    font-family: 'Georgia', serif !important;
+}
+.excel-btn.underline-btn {
+    text-decoration: underline !important;
+}
+
+.ql-excel-size-up sup {
+    font-size: 8px !important;
+    font-weight: bold !important;
+    vertical-align: super !important;
+}
+.ql-excel-size-down sub {
+    font-size: 8px !important;
+    vertical-align: sub !important;
+}
+
+/* 컬러 피커, 배경색 아이콘 크기/스타일 */
+.excel-toolbar .ql-picker {
+    height: 24px !important;
+}
+.excel-toolbar .ql-picker-label {
+    border: 1px solid transparent !important;
+    padding: 0 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 24px !important;
+    width: 28px !important;
+    background: transparent !important;
+    border-radius: 2px !important;
+}
+.excel-toolbar .ql-picker-label:hover {
+    background: #e1dfdd !important;
+    border-color: #a3a09e !important;
+}
+.excel-toolbar .ql-color .ql-picker-label svg,
+.excel-toolbar .ql-background .ql-picker-label svg {
+    display: none !important; /* 기본 화살표 숨김 */
+}
+.excel-toolbar .ql-expanded .ql-picker-options {
+    z-index: 10002 !important;
+}

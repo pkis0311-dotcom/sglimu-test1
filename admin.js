@@ -1,6 +1,22 @@
 // admin.js - Integrated Admin Script
 // [MIGRATION] Switched from ES Module to Global Script for local file support.
 
+// 엑셀 스타일의 Quill 에디터 포맷 설정
+if (typeof Quill !== 'undefined') {
+    const SizeStyle = Quill.import('attributors/style/size');
+    SizeStyle.whitelist = ['9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px'];
+    Quill.register(SizeStyle, true);
+
+    const FontStyle = Quill.import('attributors/style/font');
+    FontStyle.whitelist = ['Malgun Gothic', 'Calibri', 'Pretendard', 'Gulim', 'Dotum', 'Gungsuh'];
+    Quill.register(FontStyle, true);
+
+    // Quill 아이콘을 엑셀 테마로 커스터마이징 (가 밑에 빨간색 밑줄, 채우기 페인트통 등)
+    const icons = Quill.import('ui/icons');
+    icons['color'] = '<span style="display:inline-flex; flex-direction:column; align-items:center; line-height:1; font-weight:bold; font-family:\'맑은 고딕\',\'Malgun Gothic\'">가<span style="width:14px; height:3px; background:#ff0000; margin-top:1px;"></span></span>';
+    icons['background'] = '<i class="fa-solid fa-fill-drip" style="font-size: 11px;"></i>';
+}
+
 let db;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2625,14 +2641,55 @@ function createSpecRow(key, val) {
     const specContainer = document.getElementById('specContainer');
     const row = document.createElement('div');
     row.className = 'spec-row';
-    row.style.cssText = "display:flex; gap:10px; align-items:flex-start;";
+    row.style.cssText = "display:flex; gap:10px; align-items:flex-start; margin-bottom:10px;";
     
     const qId = 'spec_val_' + Date.now() + Math.floor(Math.random()*1000);
+    const tId = 'toolbar_' + qId;
     
     row.innerHTML = `
         <input type="text" class="form-control spec-key" placeholder="항목명" value="${key}" style="flex:1; margin-top:5px;">
-        <div style="flex:2; background:#fff; min-width:0;">
-            <div id="${qId}" class="spec-val-editor" style="min-height: 50px;">${val}</div>
+        <div style="flex:2; background:#fff; min-width:0; display:flex; flex-direction:column; border:1px solid #d4d4d4; border-radius:4px; overflow:hidden;">
+            <div id="${tId}" class="excel-toolbar">
+                <div class="excel-toolbar-group font-group">
+                    <select class="ql-font excel-select font-select">
+                        <option value="Malgun Gothic" selected>맑은 고딕</option>
+                        <option value="Calibri">Calibri</option>
+                        <option value="Pretendard">Pretendard</option>
+                        <option value="Gulim">굴림</option>
+                        <option value="Dotum">돋움</option>
+                        <option value="Gungsuh">궁서</option>
+                    </select>
+                    <select class="ql-size excel-select size-select">
+                        <option value="9px">9</option>
+                        <option value="10px">10</option>
+                        <option value="11px" selected>11</option>
+                        <option value="12px">12</option>
+                        <option value="14px">14</option>
+                        <option value="16px">16</option>
+                        <option value="18px">18</option>
+                        <option value="20px">20</option>
+                        <option value="24px">24</option>
+                        <option value="30px">30</option>
+                        <option value="36px">36</option>
+                    </select>
+                    <button class="excel-btn ql-excel-size-up" type="button" title="글꼴 크기 크게">가<sup>▲</sup></button>
+                    <button class="excel-btn ql-excel-size-down" type="button" title="글꼴 크기 작게">가<sub>▼</sub></button>
+                </div>
+                <div class="excel-toolbar-divider"></div>
+                <div class="excel-toolbar-group style-group">
+                    <button class="ql-bold excel-btn bold-btn" type="button" title="굵게">가</button>
+                    <button class="ql-italic excel-btn italic-btn" type="button" title="기울임꼴">가</button>
+                    <button class="ql-underline excel-btn underline-btn" type="button" title="밑줄">가</button>
+                </div>
+                <div class="excel-toolbar-divider"></div>
+                <div class="excel-toolbar-group color-group">
+                    <button class="ql-table excel-btn" type="button" title="표 삽입"><i class="fa-solid fa-table-cells" style="font-size: 11px;"></i></button>
+                    <select class="ql-background excel-color-picker" title="채우기 색"></select>
+                    <select class="ql-color excel-color-picker" title="글꼴 색"></select>
+                </div>
+                <div class="excel-toolbar-label">글꼴</div>
+            </div>
+            <div id="${qId}" class="spec-val-editor" style="min-height: 80px; border:none !important; padding: 10px;">${val}</div>
         </div>
         <button class="action-btn delete" onclick="this.parentElement.remove()" style="margin-top:5px;"><i class="fa-solid fa-circle-minus"></i></button>
     `;
@@ -2642,14 +2699,47 @@ function createSpecRow(key, val) {
         const quill = new Quill('#' + qId, {
             theme: 'snow',
             modules: {
-                toolbar: [
-                    [{ 'size': ['small', false, 'large', 'huge'] }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['bold', 'italic', 'clean']
-                ]
+                toolbar: {
+                    container: '#' + tId,
+                    handlers: {
+                        table: function() {
+                            const tableModule = this.quill.getModule('table');
+                            if (tableModule) {
+                                tableModule.insertTable(3, 3);
+                            }
+                        }
+                    }
+                },
+                table: true
             }
         });
         row.querySelector('.spec-val-editor').__quill = quill;
+        
+        // 폰트 크기 증감 기능 바인딩
+        const EXCEL_SIZES = ['9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px'];
+        row.querySelector('.ql-excel-size-up').addEventListener('click', () => {
+            const range = quill.getSelection();
+            if (!range) return;
+            const formats = quill.getFormat(range);
+            let currentSize = formats.size || '11px';
+            let index = EXCEL_SIZES.indexOf(currentSize);
+            if (index === -1) index = EXCEL_SIZES.indexOf('11px');
+            if (index < EXCEL_SIZES.length - 1) {
+                quill.format('size', EXCEL_SIZES[index + 1]);
+            }
+        });
+        
+        row.querySelector('.ql-excel-size-down').addEventListener('click', () => {
+            const range = quill.getSelection();
+            if (!range) return;
+            const formats = quill.getFormat(range);
+            let currentSize = formats.size || '11px';
+            let index = EXCEL_SIZES.indexOf(currentSize);
+            if (index === -1) index = EXCEL_SIZES.indexOf('11px');
+            if (index > 0) {
+                quill.format('size', EXCEL_SIZES[index - 1]);
+            }
+        });
     }
 }
 
@@ -2660,14 +2750,55 @@ function createFeatureBlock(title, desc) {
     block.style.cssText = "background:#f9f9f9; padding:15px; border-radius:6px; border:1px solid #eee; display:flex; flex-direction:column; gap:8px;";
     
     const qId = 'feat_desc_' + Date.now() + Math.floor(Math.random()*1000);
+    const tId = 'toolbar_' + qId;
     
     block.innerHTML = `
         <div style="display:flex; justify-content:space-between;">
             <input type="text" class="form-control feature-title" placeholder="특징 제목" value="${title}" style="font-weight:bold; width:85%;">
             <button class="action-btn delete" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
         </div>
-        <div style="background:#fff; min-width:0;">
-            <div id="${qId}" class="feature-desc-editor" style="min-height: 80px;">${desc}</div>
+        <div style="background:#fff; min-width:0; display:flex; flex-direction:column; border:1px solid #d4d4d4; border-radius:4px; overflow:hidden;">
+            <div id="${tId}" class="excel-toolbar">
+                <div class="excel-toolbar-group font-group">
+                    <select class="ql-font excel-select font-select">
+                        <option value="Malgun Gothic" selected>맑은 고딕</option>
+                        <option value="Calibri">Calibri</option>
+                        <option value="Pretendard">Pretendard</option>
+                        <option value="Gulim">굴림</option>
+                        <option value="Dotum">돋움</option>
+                        <option value="Gungsuh">궁서</option>
+                    </select>
+                    <select class="ql-size excel-select size-select">
+                        <option value="9px">9</option>
+                        <option value="10px">10</option>
+                        <option value="11px" selected>11</option>
+                        <option value="12px">12</option>
+                        <option value="14px">14</option>
+                        <option value="16px">16</option>
+                        <option value="18px">18</option>
+                        <option value="20px">20</option>
+                        <option value="24px">24</option>
+                        <option value="30px">30</option>
+                        <option value="36px">36</option>
+                    </select>
+                    <button class="excel-btn ql-excel-size-up" type="button" title="글꼴 크기 크게">가<sup>▲</sup></button>
+                    <button class="excel-btn ql-excel-size-down" type="button" title="글꼴 크기 작게">가<sub>▼</sub></button>
+                </div>
+                <div class="excel-toolbar-divider"></div>
+                <div class="excel-toolbar-group style-group">
+                    <button class="ql-bold excel-btn bold-btn" type="button" title="굵게">가</button>
+                    <button class="ql-italic excel-btn italic-btn" type="button" title="기울임꼴">가</button>
+                    <button class="ql-underline excel-btn underline-btn" type="button" title="밑줄">가</button>
+                </div>
+                <div class="excel-toolbar-divider"></div>
+                <div class="excel-toolbar-group color-group">
+                    <button class="ql-table excel-btn" type="button" title="표 삽입"><i class="fa-solid fa-table-cells" style="font-size: 11px;"></i></button>
+                    <select class="ql-background excel-color-picker" title="채우기 색"></select>
+                    <select class="ql-color excel-color-picker" title="글꼴 색"></select>
+                </div>
+                <div class="excel-toolbar-label">글꼴</div>
+            </div>
+            <div id="${qId}" class="feature-desc-editor" style="min-height: 120px; border:none !important; padding: 10px;">${desc}</div>
         </div>
     `;
     featureContainer.appendChild(block);
@@ -2676,14 +2807,47 @@ function createFeatureBlock(title, desc) {
         const quill = new Quill('#' + qId, {
             theme: 'snow',
             modules: {
-                toolbar: [
-                    [{ 'size': ['small', false, 'large', 'huge'] }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['bold', 'italic', 'underline', 'clean']
-                ]
+                toolbar: {
+                    container: '#' + tId,
+                    handlers: {
+                        table: function() {
+                            const tableModule = this.quill.getModule('table');
+                            if (tableModule) {
+                                tableModule.insertTable(3, 3);
+                            }
+                        }
+                    }
+                },
+                table: true
             }
         });
         block.querySelector('.feature-desc-editor').__quill = quill;
+        
+        // 폰트 크기 증감 기능 바인딩
+        const EXCEL_SIZES = ['9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px'];
+        block.querySelector('.ql-excel-size-up').addEventListener('click', () => {
+            const range = quill.getSelection();
+            if (!range) return;
+            const formats = quill.getFormat(range);
+            let currentSize = formats.size || '11px';
+            let index = EXCEL_SIZES.indexOf(currentSize);
+            if (index === -1) index = EXCEL_SIZES.indexOf('11px');
+            if (index < EXCEL_SIZES.length - 1) {
+                quill.format('size', EXCEL_SIZES[index + 1]);
+            }
+        });
+        
+        block.querySelector('.ql-excel-size-down').addEventListener('click', () => {
+            const range = quill.getSelection();
+            if (!range) return;
+            const formats = quill.getFormat(range);
+            let currentSize = formats.size || '11px';
+            let index = EXCEL_SIZES.indexOf(currentSize);
+            if (index === -1) index = EXCEL_SIZES.indexOf('11px');
+            if (index > 0) {
+                quill.format('size', EXCEL_SIZES[index - 1]);
+            }
+        });
     }
 }
 
