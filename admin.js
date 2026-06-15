@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (productSearchInput) productSearchInput.addEventListener('input', applyProductFilters);
     if (categoryFilter) categoryFilter.addEventListener('change', applyProductFilters);
     if (productSortFilter) productSortFilter.addEventListener('change', applyProductFilters);
+    window.applyProductFilters = applyProductFilters;
 
     // ---------------------------------------------------------
     // 실시간 채팅 로직 (관리자용 고도화)
@@ -652,8 +653,10 @@ async function fetchDisplayConfigs() {
     }
 }
 
-async function fetchProducts() {
-    productTableBody.innerHTML = '<tr><td colspan="8" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
+async function fetchProducts(isSilent = false) {
+    if (!isSilent) {
+        productTableBody.innerHTML = '<tr><td colspan="8" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
+    }
     
     await fetchDisplayConfigs(); // 전시 설정 로드
     
@@ -666,7 +669,11 @@ async function fetchProducts() {
     }
 
     globalProducts = products || [];
-    renderProductTable(globalProducts);
+    if (typeof window.applyProductFilters === 'function') {
+        window.applyProductFilters();
+    } else {
+        renderProductTable(globalProducts);
+    }
     updateProductRelatedUI(globalProducts);
 }
 
@@ -3897,7 +3904,7 @@ window.toggleProductDisplay = async function(productId, configKey, isChecked) {
         }
     } else {
         // 전시 상태 변경 성공 시, 순서 표시 인풋을 반영하기 위해 테이블을 즉각 새로고침
-        fetchProducts();
+        fetchProducts(true);
     }
 };
 
@@ -3937,7 +3944,7 @@ window.changeProductDisplayOrder = async function(productId, configKey, newOrder
     }
     
     // 테이블 다시 그리기 (다른 상품들의 순서도 자동 동기화 갱신)
-    fetchProducts();
+    fetchProducts(true);
 };
 
 // ==========================================
