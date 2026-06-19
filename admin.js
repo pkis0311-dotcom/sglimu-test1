@@ -481,7 +481,7 @@ async function checkSession() {
             // profiles 테이블에서 로그인한 관리자의 full_name과 role을 조회
             const { data: profile, error: profileError } = await db
                 .from('profiles')
-                .select('full_name', 'role')
+                .select('full_name, role')
                 .eq('email', session.user.email)
                 .single();
 
@@ -549,7 +549,7 @@ loginBtn.addEventListener('click', async () => {
         try {
             const { data: profile, error: profileError } = await db
                 .from('profiles')
-                .select('full_name', 'role')
+                .select('full_name, role')
                 .eq('email', data.user.email)
                 .single();
 
