@@ -486,6 +486,7 @@ async function checkSession() {
                 .single();
 
             if (profileError || !profile || (profile.role !== 'super_admin' && profile.role !== 'sub_admin')) {
+                console.error('Check session profile error or insufficient role:', profileError, profile);
                 alert('관리자 권한이 없습니다.');
                 await db.auth.signOut();
                 loginOverlay.style.display = 'flex';
@@ -553,6 +554,7 @@ loginBtn.addEventListener('click', async () => {
                 .single();
 
             if (profileError || !profile || (profile.role !== 'super_admin' && profile.role !== 'sub_admin')) {
+                console.error('Login profile error or insufficient role:', profileError, profile);
                 await db.auth.signOut();
                 loginMessage.textContent = '로그인 권한이 없습니다. 최고관리자에게 문의하세요.';
                 loginBtn.textContent = '로그인';
