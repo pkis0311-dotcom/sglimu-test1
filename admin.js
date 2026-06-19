@@ -463,9 +463,10 @@ const editCatIcon = document.getElementById('editCatIcon');
 const majorIconGroup = document.getElementById('majorIconGroup');
 const categoryModalTitle = document.getElementById('categoryModalTitle');
 
-// ==========================================
-// 1. 로그인 / 세션 관리
-// ==========================================
+// 전역 변수: 로그인한 관리자 정보 보관
+let loggedInUser = null;
+window.currentUserRole = 'user';
+
 async function checkSession() {
     const { data: { session }, error } = await db.auth.getSession();
     if (session) {
@@ -475,6 +476,32 @@ async function checkSession() {
             loginOverlay.style.display = 'flex';
             return;
         }
+
+        try {
+            // profiles 테이블에서 로그인한 관리자의 full_name과 role을 조회
+            const { data: profile, error: profileError } = await db
+                .from('profiles')
+                .select('full_name', 'role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profileError || !profile || (profile.role !== 'super_admin' && profile.role !== 'sub_admin')) {
+                alert('관리자 권한이 없습니다.');
+                await db.auth.signOut();
+                loginOverlay.style.display = 'flex';
+                return;
+            }
+
+            loggedInUser = profile;
+            window.currentUserRole = profile.role;
+        } catch (e) {
+            console.error('Admin session validation failed:', e);
+            alert('로그인 권한 확인 중 오류가 발생했습니다.');
+            await db.auth.signOut();
+            loginOverlay.style.display = 'flex';
+            return;
+        }
+
         loginOverlay.style.display = 'none';
         await fetchCategories(); // 카테고리 로드 추가
         initDashboard(); // 로그인 성공 시 대시보드 강제 초기화
@@ -516,9 +543,38 @@ loginBtn.addEventListener('click', async () => {
             loginBtn.disabled = false;
             return;
         }
+
+        // 로그인 직후 권한 검증
+        try {
+            const { data: profile, error: profileError } = await db
+                .from('profiles')
+                .select('full_name', 'role')
+                .eq('id', data.user.id)
+                .single();
+
+            if (profileError || !profile || (profile.role !== 'super_admin' && profile.role !== 'sub_admin')) {
+                await db.auth.signOut();
+                loginMessage.textContent = '로그인 권한이 없습니다. 최고관리자에게 문의하세요.';
+                loginBtn.textContent = '로그인';
+                loginBtn.disabled = false;
+                return;
+            }
+
+            loggedInUser = profile;
+            window.currentUserRole = profile.role;
+        } catch (e) {
+            await db.auth.signOut();
+            loginMessage.textContent = '권한 확인 중 오류가 발생했습니다.';
+            loginBtn.textContent = '로그인';
+            loginBtn.disabled = false;
+            return;
+        }
+
         loginOverlay.style.display = 'none';
         emailInput.value = '';
         passInput.value = '';
+        loginBtn.textContent = '로그인';
+        loginBtn.disabled = false;
         // [FIX] 로그인 시에도 카테고리 정보 로드 보장
         await fetchCategories();
         initDashboard();
@@ -1161,7 +1217,18 @@ if (openInventoryModalBtn) {
 
         inventoryCurrentStockInput.value = productStockInput.value || 0;
         inventoryChangeAmountInput.value = '';
-        inventoryManagerNameInput.value = '';
+        
+        // 로그인한 관리자 성함 자동 채우기 및 읽기전용 처리
+        if (loggedInUser && loggedInUser.full_name) {
+            inventoryManagerNameInput.value = loggedInUser.full_name;
+            inventoryManagerNameInput.readOnly = true;
+            inventoryManagerNameInput.style.backgroundColor = '#f1f3f5';
+        } else {
+            inventoryManagerNameInput.value = '';
+            inventoryManagerNameInput.readOnly = false;
+            inventoryManagerNameInput.style.backgroundColor = '#fff';
+        }
+        
         inventoryReasonInput.value = '';
         if (inventoryFileInput) inventoryFileInput.value = '';
         saveInventoryMsg.textContent = '';
