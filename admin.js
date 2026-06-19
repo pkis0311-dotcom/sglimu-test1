@@ -1119,10 +1119,46 @@ addProductBtn.addEventListener('click', () => openModal(false));
 closeModalBtn.addEventListener('click', closeModal);
 cancelModalBtn.addEventListener('click', closeModal);
 
+// 최고관리자 재고 관리 비밀번호 검증 함수
+async function verifyInventoryPassword() {
+    const userInput = prompt('재고 관리(입/출고)를 위한 최고관리자 비밀번호를 입력해주세요:');
+    if (userInput === null) return false; // 취소 누름
+
+    try {
+        // Supabase site_configs 테이블에서 비밀번호 정보 조회
+        const { data, error } = await db.from('site_configs').select('value').eq('key', 'admin_inventory_password').single();
+        
+        let correctPassword = 'kis7090'; // 기본 패스워드 (fallback)
+        if (data && data.value && data.value.password) {
+            correctPassword = data.value.password;
+        }
+
+        if (userInput === correctPassword) {
+            return true;
+        } else {
+            alert('비밀번호가 일치하지 않습니다.');
+            return false;
+        }
+    } catch (e) {
+        console.error('Password verification error, falling back to default:', e);
+        // 통신 문제 등이 있을 시 기본 패스워드로 검증 보완
+        if (userInput === 'kis7090') {
+            return true;
+        }
+        alert('비밀번호 검증 중 오류가 발생했습니다.');
+        return false;
+    }
+}
+
 // 재고 모달 로직
 if (openInventoryModalBtn) {
-    openInventoryModalBtn.addEventListener('click', () => {
+    openInventoryModalBtn.addEventListener('click', async () => {
         if (!productIdInput.value) return;
+
+        // 최고관리자 비밀번호 확인 추가
+        const isVerified = await verifyInventoryPassword();
+        if (!isVerified) return;
+
         inventoryCurrentStockInput.value = productStockInput.value || 0;
         inventoryChangeAmountInput.value = '';
         inventoryManagerNameInput.value = '';
