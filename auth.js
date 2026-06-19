@@ -229,8 +229,9 @@ if (signupForm) {
         });
 
         if (error) {
+            console.error('Sign-up error detail:', error);
             if (signupMsg) {
-                signupMsg.textContent = '가입 오류: ' + error.message;
+                signupMsg.textContent = '가입 오류: ' + (error.message || JSON.stringify(error));
                 signupMsg.classList.add('error');
             }
         } else {
