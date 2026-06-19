@@ -482,7 +482,7 @@ async function checkSession() {
             const { data: profile, error: profileError } = await db
                 .from('profiles')
                 .select('full_name', 'role')
-                .eq('id', session.user.id)
+                .eq('email', session.user.email)
                 .single();
 
             if (profileError || !profile || (profile.role !== 'super_admin' && profile.role !== 'sub_admin')) {
@@ -550,7 +550,7 @@ loginBtn.addEventListener('click', async () => {
             const { data: profile, error: profileError } = await db
                 .from('profiles')
                 .select('full_name', 'role')
-                .eq('id', data.user.id)
+                .eq('email', data.user.email)
                 .single();
 
             if (profileError || !profile || (profile.role !== 'super_admin' && profile.role !== 'sub_admin')) {
