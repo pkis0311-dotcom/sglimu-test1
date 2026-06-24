@@ -4681,7 +4681,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const selectHtml = `
-                <select class="form-control" style="width:130px; height:32px; font-size:0.85rem;" onchange="updateHomepageOrderStatus('${order.id}', this.value)">
+                <select class="form-control" style="width:145px; height:32px; font-size:0.85rem; padding: 2px 25px 2px 8px;" onchange="updateHomepageOrderStatus('${order.id}', this.value)">
                     <option value="pending" ${status === 'pending' ? 'selected' : ''}>결제대기</option>
                     <option value="준비중" ${status === '준비중' ? 'selected' : ''}>배송준비중</option>
                     <option value="배송중" ${status === '배송중' ? 'selected' : ''}>배송중</option>
