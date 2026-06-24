@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span>총 결제금액</span>
                         <span id="cartTotalPrice">0원</span>
                     </div>
-                    <button class="btn-checkout" onclick="alert('결제 모듈은 준비중입니다.')">장바구니 결제하기</button>
+                    <button class="btn-checkout" id="btnCartCheckout">장바구니 결제하기</button>
                     <button class="btn-quote" id="btnCartQuote">견적서 자동 발행 (PDF)</button>
                 </div>
             </div>
@@ -25,8 +25,217 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.body.insertAdjacentHTML('beforeend', cartHTML);
 
+    // 1-2. 주문 정보 입력 모달 주입
+    const checkoutHTML = `
+        <div id="checkoutOverlay" class="auth-overlay" style="display:none; align-items:center; justify-content:center;">
+            <div class="auth-modal" style="max-width:500px;">
+                <div class="auth-close" id="closeCheckoutBtn">&times;</div>
+                <div class="auth-content" style="max-height:85vh; overflow-y:auto;">
+                    <div class="auth-header">
+                        <h2><i class="fa-solid fa-credit-card"></i> 주문서 작성</h2>
+                        <p>배송 정보를 입력해 주세요.</p>
+                    </div>
+                    <form id="checkoutForm">
+                        <div class="auth-form-group">
+                            <label>주문자 이름 *</label>
+                            <input type="text" id="checkoutName" class="auth-input" placeholder="홍길동" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>연락처 *</label>
+                            <input type="tel" id="checkoutPhone" class="auth-input" placeholder="010-0000-0000" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>소속 기관 / 학교명</label>
+                            <input type="text" id="checkoutOrg" class="auth-input" placeholder="예: 시립도서관">
+                        </div>
+                        <div class="auth-form-group">
+                            <label>배송지 주소 *</label>
+                            <input type="text" id="checkoutAddress" class="auth-input" placeholder="전체 주소를 입력하세요" required>
+                        </div>
+                        <div class="total-price-box" style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:600; font-size:1.1rem;">최종 결제 금액</span>
+                            <span id="checkoutTotalPrice" style="font-weight:800; font-size:1.5rem; color:var(--color-primary);">0원</span>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" id="btnSubmitCheckout">주문 완료하기</button>
+                    </form>
+                    <div id="checkoutMsg" class="auth-message"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', checkoutHTML);
+
     const cartOverlay = document.getElementById('cartOverlay');
     const closeCartBtn = document.getElementById('closeCartBtn');
+    const btnCartCheckout = document.getElementById('btnCartCheckout');
+    const checkoutOverlay = document.getElementById('checkoutOverlay');
+    const closeCheckoutBtn = document.getElementById('closeCheckoutBtn');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const checkoutMsg = document.getElementById('checkoutMsg');
+
+    // 결제 모달 열기 이벤트
+    if (btnCartCheckout) {
+        btnCartCheckout.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const cart = getCart();
+            if (cart.length === 0) {
+                alert('장바구니가 비어 있습니다.');
+                return;
+            }
+            closeCart();
+            
+            // 토탈 가격 표시
+            let total = 0;
+            cart.forEach(item => total += item.price * item.qty);
+            document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
+            
+            // 모달 초기화
+            if (checkoutMsg) {
+                checkoutMsg.className = 'auth-message';
+                checkoutMsg.style.display = 'none';
+                checkoutMsg.textContent = '';
+            }
+
+            // 모달 열기
+            checkoutOverlay.style.display = 'flex';
+
+            // 로그인 사용자 정보 자동 조회
+            if (window.supabase) {
+                try {
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    if (user) {
+                        const { data: profile } = await window.supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', user.id)
+                            .single();
+                        
+                        if (profile) {
+                            if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = profile.full_name || '';
+                            if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
+                            if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
+                            if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = profile.address || '';
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to pre-fill user info:', err);
+                }
+            }
+        });
+    }
+
+    // 결제 모달 닫기
+    if (closeCheckoutBtn) {
+        closeCheckoutBtn.addEventListener('click', () => {
+            checkoutOverlay.style.display = 'none';
+        });
+    }
+    if (checkoutOverlay) {
+        checkoutOverlay.addEventListener('click', (e) => {
+            if (e.target === checkoutOverlay) {
+                checkoutOverlay.style.display = 'none';
+            }
+        });
+    }
+
+    // 주문서 제출 이벤트
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('btnSubmitCheckout');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = '주문 접수 중...';
+            submitBtn.disabled = true;
+
+            if (checkoutMsg) {
+                checkoutMsg.className = 'auth-message';
+                checkoutMsg.style.display = 'none';
+            }
+
+            try {
+                const name = document.getElementById('checkoutName').value.trim();
+                const phone = document.getElementById('checkoutPhone').value.trim();
+                const org = document.getElementById('checkoutOrg').value.trim();
+                const address = document.getElementById('checkoutAddress').value.trim();
+                
+                const cart = getCart();
+                if (cart.length === 0) {
+                    throw new Error('장바구니가 비어 있습니다.');
+                }
+
+                // 상품명 문자열 포맷팅
+                let orderProductName = cart[0].name;
+                if (cart.length > 1) {
+                    orderProductName += ` 외 ${cart.length - 1}건`;
+                }
+
+                // 총 수량 및 금액 계산
+                let totalQuantity = 0;
+                let totalPrice = 0;
+                cart.forEach(item => {
+                    totalQuantity += item.qty;
+                    totalPrice += item.price * item.qty;
+                });
+
+                if (!window.supabase) {
+                    throw new Error('Supabase client가 초기화되지 않았습니다.');
+                }
+
+                // Supabase orders 테이블에 주문 추가
+                const { data, error } = await window.supabase.from('orders').insert([
+                    {
+                        customer_name: name,
+                        customer_phone: phone,
+                        product_name: orderProductName,
+                        quantity: totalQuantity,
+                        total_price: totalPrice,
+                        status: 'pending' // 결제대기
+                    }
+                ]).select();
+
+                if (error) throw error;
+
+                // 로그인 회원인 경우 프로필의 주소/연락처가 빈 경우 자가 치유(자동 저장)
+                const { data: { user } } = await window.supabase.auth.getUser();
+                if (user) {
+                    await window.supabase.from('profiles').update({
+                        phone: phone,
+                        organization: org,
+                        address: address
+                    }).eq('id', user.id);
+                }
+
+                // 성공 메시지 표시
+                if (checkoutMsg) {
+                    checkoutMsg.textContent = '주문이 성공적으로 접수되었습니다! 결제계좌는 하단 정보를 참조해주세요.';
+                    checkoutMsg.classList.add('success');
+                    checkoutMsg.style.display = 'block';
+                }
+
+                // 장바구니 비우기
+                localStorage.removeItem('sg_limu_cart');
+                renderCart();
+
+                setTimeout(() => {
+                    checkoutOverlay.style.display = 'none';
+                    checkoutForm.reset();
+                    // 새로고침하여 상태 반영
+                    window.location.reload();
+                }, 2000);
+
+            } catch (err) {
+                console.error('Order checkout error:', err);
+                if (checkoutMsg) {
+                    checkoutMsg.textContent = '주문 실패: ' + (err.message || '알 수 없는 오류');
+                    checkoutMsg.classList.add('error');
+                    checkoutMsg.style.display = 'block';
+                }
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
     
     // 2. 상단 메뉴 바 장바구니 아이콘 찾아서 뱃지 달기 및 클릭이벤트 연동
     const topCartIcons = document.querySelectorAll('.header-utils .fa-cart-shopping');

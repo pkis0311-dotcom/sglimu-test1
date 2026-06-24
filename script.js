@@ -386,6 +386,212 @@ document.addEventListener('DOMContentLoaded', async () => {
     })();
 
     // ---------------------------------------------------------
+    // 1-3. Order & Delivery Tracking Logic
+    // ---------------------------------------------------------
+    (function initOrderTracking() {
+        if (!document.getElementById('orderTrackingWindow')) {
+            const popupHtml = `
+            <div class="chat-window" id="orderTrackingWindow" style="height: 450px; bottom: 80px; right: 80px; width: 340px; z-index:9999;">
+                <div class="chat-header" style="background:#2c5f2d;">
+                    <h4><i class="fa-solid fa-truck"></i> 주문/배송 조회</h4>
+                    <button class="chat-close" id="orderTrackingCloseBtn">&times;</button>
+                </div>
+                <div class="chat-body" id="orderTrackingBody" style="background:#f4f6f8; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; height:calc(100% - 50px);">
+                    <!-- Content will be injected by JS -->
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', popupHtml);
+        }
+
+        const trackingWindow = document.getElementById('orderTrackingWindow');
+        const trackingBody = document.getElementById('orderTrackingBody');
+        const trackingCloseBtn = document.getElementById('orderTrackingCloseBtn');
+
+        async function renderTrackingContent() {
+            trackingBody.innerHTML = '';
+            
+            // 1. 로그인 여부 확인
+            let userProfile = null;
+            if (window.supabase) {
+                try {
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    if (user) {
+                        const { data: profile } = await window.supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', user.id)
+                            .single();
+                        userProfile = profile;
+                    }
+                } catch(e) {
+                    console.error("Failed to check auth for tracking:", e);
+                }
+            }
+
+            if (userProfile) {
+                // 로그인 회원의 경우 자동 조회
+                trackingBody.innerHTML = `
+                    <div style="text-align:center; padding:10px 0; border-bottom:1px dashed #eee; margin-bottom:10px;">
+                        <span style="font-size:0.9rem; font-weight:600; color:#555;"><b>${userProfile.full_name}</b> 님의 주문 내역</span>
+                    </div>
+                    <div id="trackingListContainer" style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="text-align:center; padding:30px 0; color:#999;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:10px;"></i><p>조회 중...</p></div>
+                    </div>
+                `;
+                fetchAndRenderOrders(userProfile.full_name, userProfile.phone);
+            } else {
+                // 비로그인의 경우 조회 폼 제공
+                trackingBody.innerHTML = `
+                    <div style="background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:10px; margin-bottom:5px;">
+                        <div style="font-size:0.9rem; font-weight:600; color:#333;">비회원 주문 조회</div>
+                        <input type="text" id="trackNameInput" placeholder="주문자 이름" style="width:100%; height:36px; padding:0 10px; border:1px solid #ddd; border-radius:6px; outline:none; font-size:0.85rem;">
+                        <input type="tel" id="trackPhoneInput" placeholder="연락처 (예: 010-1234-5678)" style="width:100%; height:36px; padding:0 10px; border:1px solid #ddd; border-radius:6px; outline:none; font-size:0.85rem;">
+                        <button id="btnSearchTracking" style="width:100%; height:38px; background:#2c5f2d; color:#fff; border-radius:6px; font-weight:600; font-size:0.9rem; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;">
+                            <i class="fa-solid fa-magnifying-glass"></i> 조회하기
+                        </button>
+                    </div>
+                    <div id="trackingListContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+                `;
+
+                const btnSearch = document.getElementById('btnSearchTracking');
+                if (btnSearch) {
+                    btnSearch.addEventListener('click', () => {
+                        const name = document.getElementById('trackNameInput').value.trim();
+                        const phone = document.getElementById('trackPhoneInput').value.trim();
+                        if (!name || !phone) {
+                            alert("이름과 연락처를 모두 입력해 주세요.");
+                            return;
+                        }
+                        const listContainer = document.getElementById('trackingListContainer');
+                        listContainer.innerHTML = `<div style="text-align:center; padding:30px 0; color:#999;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:10px;"></i><p>조회 중...</p></div>`;
+                        fetchAndRenderOrders(name, phone);
+                    });
+                }
+            }
+        }
+
+        async function fetchAndRenderOrders(name, phone) {
+            const listContainer = document.getElementById('trackingListContainer');
+            if (!listContainer) return;
+
+            try {
+                if (!window.supabase) {
+                    throw new Error("Supabase client not loaded.");
+                }
+
+                const { data: orders, error } = await window.supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('customer_name', name)
+                    .eq('customer_phone', phone)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                listContainer.innerHTML = '';
+
+                if (!orders || orders.length === 0) {
+                    listContainer.innerHTML = `
+                        <div style="text-align:center; padding:40px 0; color:#999;">
+                            <i class="fa-solid fa-circle-info" style="font-size:2.5rem; margin-bottom:12px; color:#ddd;"></i>
+                            <p style="font-size:0.9rem;">주문 내역이 존재하지 않습니다.</p>
+                        </div>`;
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const priceStr = order.total_price.toLocaleString() + '원';
+                    const dateObj = new Date(order.created_at);
+                    const dateStr = `${dateObj.getFullYear()}-${(dateObj.getMonth()+1).toString().padStart(2,'0')}-${dateObj.getDate().toString().padStart(2,'0')}`;
+                    
+                    // 주문 상태 텍스트 및 스타일 결정
+                    let statusLabel = '결제대기';
+                    let statusColor = '#e67e22'; // orange
+                    let statusBg = '#fdf2e9';
+
+                    if (order.status === 'pending' || order.status === '결제대기') {
+                        statusLabel = '결제대기';
+                        statusColor = '#e67e22';
+                        statusBg = '#fdf2e9';
+                    } else if (order.status === '준비중' || order.status === '배송준비중') {
+                        statusLabel = '배송준비중';
+                        statusColor = '#2980b9'; // blue
+                        statusBg = '#ebf5fb';
+                    } else if (order.status === '배송중') {
+                        statusLabel = '배송중';
+                        statusColor = '#2c5f2d'; // green
+                        statusBg = '#eaf2e8';
+                    } else if (order.status === '배송완료') {
+                        statusLabel = '배송완료';
+                        statusColor = '#27ae60'; // bright green
+                        statusBg = '#e8f8f5';
+                    } else if (order.status === 'cancel' || order.status === '취소') {
+                        statusLabel = '주문취소';
+                        statusColor = '#7f8c8d'; // gray
+                        statusBg = '#f2f4f4';
+                    }
+
+                    const card = document.createElement('div');
+                    card.style.cssText = "background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:8px; border: 1px solid #f0f0f0;";
+                    
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f7f7f7; padding-bottom:8px;">
+                            <span style="font-size:0.78rem; color:#777; font-weight:600;">주문일: ${dateStr}</span>
+                            <span style="font-size:0.75rem; font-weight:700; color:${statusColor}; background:${statusBg}; padding:2px 8px; border-radius:20px;">${statusLabel}</span>
+                        </div>
+                        <div style="font-size:0.9rem; font-weight:700; color:#333; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${order.product_name}">
+                            ${order.product_name}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; margin-top:2px;">
+                            <span style="color:#666;">수량: ${order.quantity}개</span>
+                            <span style="font-weight:700; color:var(--color-primary);">${priceStr}</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+                });
+
+            } catch (err) {
+                console.error("Failed to fetch orders:", err);
+                listContainer.innerHTML = `<div style="text-align:center; padding:30px 0; color:#e74c3c;"><p>조회 실패: ${err.message || '오류 발생'}</p></div>`;
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('a.banner-btn[title="주문배송"], a.banner-btn[title*="주문"]');
+            if (btn) {
+                e.preventDefault();
+                const isHidden = !trackingWindow.classList.contains('active');
+                
+                // 다른 팝업(관심상품, 최근본상품, 장바구니 등) 닫기
+                const recentWindow = document.getElementById('recentWindow');
+                if (recentWindow) recentWindow.classList.remove('active');
+                const wishlistWindow = document.getElementById('wishlistWindow');
+                if (wishlistWindow) wishlistWindow.classList.remove('active');
+                const cartOverlay = document.getElementById('cartOverlay');
+                if (cartOverlay) cartOverlay.classList.remove('open');
+
+                if (isHidden) {
+                    renderTrackingContent();
+                    trackingWindow.classList.add('active');
+                } else {
+                    trackingWindow.classList.remove('active');
+                }
+            }
+
+            // 최근본상품이나 관심상품 버튼을 누르면 이 창을 닫기
+            if (e.target.closest('.recent-btn-aside, .wishlist-btn-aside, .cart-btn-aside')) {
+                trackingWindow.classList.remove('active');
+            }
+        });
+
+        if (trackingCloseBtn) {
+            trackingCloseBtn.addEventListener('click', () => {
+                trackingWindow.classList.remove('active');
+            });
+        }
+    })();
+
+    // ---------------------------------------------------------
     // 2. Slider Logic (Home Page Only)
     // ---------------------------------------------------------
     const sliderContainer = document.getElementById('sliderContainer');

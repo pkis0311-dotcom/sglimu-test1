@@ -1,0 +1,36 @@
+$SUPABASE_URL = "https://xxvfgnoffomrhtxitqkj.supabase.co"
+$API_KEY = "sb_publishable_Q4t2p9WcUBdtUxd7HYV56A_MvxnZRk9"
+$headers = @{ 
+    "apikey" = $API_KEY
+    "Authorization" = "Bearer $API_KEY"
+    "Content-Type" = "application/json"
+    "Prefer" = "return=representation"
+}
+
+$orderData = @{
+    customer_name = "Test User"
+    product_name = "Test Product"
+    total_price = 1000
+} | ConvertTo-Json
+
+try {
+    $uri = "$SUPABASE_URL/rest/v1/orders"
+    $res = Invoke-RestMethod -Uri $uri -Headers $headers -Method Post -Body $orderData
+    Write-Host "Insert Success! Returned:"
+    Write-Host ($res | ConvertTo-Json)
+    
+    # Delete it immediately to clean up
+    $insertedId = $res[0].id
+    if ($insertedId) {
+        $delUri = "$SUPABASE_URL/rest/v1/orders?id=eq.$insertedId"
+        $delRes = Invoke-RestMethod -Uri $delUri -Headers $headers -Method Delete
+        Write-Host "Cleanup deleted ID: $insertedId"
+    }
+} catch {
+    Write-Host "Insert Failed: $($_.Exception.Message)"
+    if ($_.Exception.Response) {
+        $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+        $body = $reader.ReadToEnd()
+        Write-Host "Response Body: $body"
+    }
+}
