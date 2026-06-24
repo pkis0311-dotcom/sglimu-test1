@@ -118,6 +118,7 @@ button {
     transition: color 0.3s ease;
     padding: 10px 0;
     position: relative;
+    white-space: nowrap;
 }
 
 .gnb > ul > li > a::after {
@@ -1419,16 +1420,51 @@ button {
     color: var(--color-primary);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1360px) {
     .header-container {
         padding: 0 20px;
+    }
+    .logo {
+        margin-right: 30px;
     }
     .gnb > ul {
         gap: 20px;
     }
+    .search-wrapper {
+        margin-left: 20px;
+    }
+    .search-input {
+        width: 160px;
+    }
+    .header-utils {
+        gap: 15px;
+        margin-left: 20px;
+    }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+    .logo {
+        margin-right: 20px;
+    }
+    .gnb > ul {
+        gap: 15px;
+    }
+    .gnb > ul > li > a {
+        font-size: 0.95rem;
+    }
+    .search-wrapper {
+        margin-left: 15px;
+    }
+    .search-input {
+        width: 140px;
+    }
+    .header-utils {
+        gap: 10px;
+        margin-left: 15px;
+    }
+}
+
+@media (max-width: 1024px) {
     .mobile-menu-toggle {
         display: block;
     }
