@@ -628,6 +628,8 @@ window.switchAdminTab = function(targetId, pushState = true) {
         if (typeof fetchAllInventoryLogs === 'function') fetchAllInventoryLogs();
     } else if(targetId === 'tab-phone-orders') {
         if (typeof fetchPhoneOrders === 'function') fetchPhoneOrders();
+    } else if(targetId === 'tab-homepage-orders') {
+        if (typeof fetchHomepageOrders === 'function') fetchHomepageOrders();
     }
 
     if (pushState) {
@@ -1878,7 +1880,7 @@ function renderOrdersDashboard(orders, filterStart, filterEnd) {
             <td style="font-weight:600;">${rawPrice.toLocaleString()}원</td>
             <td>${statusStr}</td>
             <td style="font-size:0.9rem; color:#666;">${dateStr}</td>
-            <td><button class="action-btn" title="주문 관리(준비중)"><i class="fa-solid fa-pen"></i></button></td>
+            <td><button class="action-btn" title="주문 관리" onclick="goToHomepageOrder('${o.id}')"><i class="fa-solid fa-pen"></i></button></td>
         `;
         tableBody.appendChild(tr);
 
@@ -4574,5 +4576,188 @@ document.addEventListener('DOMContentLoaded', () => {
             const todayStr = new Date().toISOString().split('T')[0];
             XLSX.writeFile(workbook, `SG_LIMU_전화발주내역_${todayStr}.xlsx`);
         });
+    }
+
+    // ==========================================================
+    // [신규] 홈페이지 주문/배송 관리 기능 구현
+    // ==========================================================
+    let globalHomepageOrders = [];
+
+    // 1. 주문 데이터 로드 및 렌더링
+    async function fetchHomepageOrders(isSilent = false) {
+        const tableBody = document.getElementById('homepageOrderTableBody');
+        if (!tableBody) return;
+
+        if (!isSilent) {
+            tableBody.innerHTML = '<tr><td colspan="9" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
+        }
+
+        const { data: orders, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Homepage Orders 로드 에러:', error.message);
+            tableBody.innerHTML = `<tr><td colspan="9" class="empty-state" style="color:var(--danger)">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size:1.5rem;margin-bottom:10px;"></i><br>
+                주문 목록을 불러올 수 없습니다. (${error.message})
+            </td></tr>`;
+            return;
+        }
+
+        globalHomepageOrders = orders || [];
+        applyHomepageOrderFilters();
+    }
+
+    // 2. 검색 및 필터 적용
+    function applyHomepageOrderFilters() {
+        const statusFilter = document.getElementById('homepageOrderStatusFilter');
+        const searchInput = document.getElementById('homepageOrderSearchInput');
+        const tableBody = document.getElementById('homepageOrderTableBody');
+        if (!tableBody) return;
+
+        const selectedStatus = statusFilter ? statusFilter.value : 'all';
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+        let filtered = globalHomepageOrders.filter(order => {
+            const status = order.status || 'pending';
+            if (selectedStatus !== 'all' && status !== selectedStatus) {
+                return false;
+            }
+
+            const customerName = order.customer_name ? order.customer_name.toLowerCase() : '';
+            const customerPhone = order.customer_phone ? order.customer_phone.toLowerCase() : '';
+            const productName = order.product_name ? order.product_name.toLowerCase() : '';
+            const orderId = order.id ? order.id.toString().toLowerCase() : '';
+
+            const queryMatch = customerName.includes(query) || 
+                               customerPhone.includes(query) || 
+                               productName.includes(query) ||
+                               orderId.includes(query);
+
+            return queryMatch;
+        });
+
+        if (filtered.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="9" class="empty-state">조회된 주문 내역이 없습니다.</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = '';
+        filtered.forEach(order => {
+            const tr = document.createElement('tr');
+            
+            const displayId = order.id ? order.id.toString().substring(0,8).toUpperCase() : 'N/A';
+            const fullId = order.id || '';
+
+            let displayName = '익명';
+            let isPhoneOrder = false;
+            if (order.customer_name) {
+                if (order.customer_name.startsWith('[전화] ')) {
+                    isPhoneOrder = true;
+                    displayName = order.customer_name.split('||')[0];
+                } else {
+                    displayName = order.customer_name.split('||')[0];
+                }
+            }
+
+            const createdAt = order.created_at ? new Date(order.created_at) : new Date();
+            const dateStr = createdAt.toLocaleString('ko-KR');
+
+            const price = Number(order.total_price) || 0;
+
+            const status = order.status || 'pending';
+            let statusBadge = '';
+            if (status === 'pending') {
+                statusBadge = '<span class="status-badge" style="background:#ffebee; color:#c62828; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">결제대기</span>';
+            } else if (status === '준비중') {
+                statusBadge = '<span class="status-badge" style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">배송준비</span>';
+            } else if (status === '배송중') {
+                statusBadge = '<span class="status-badge" style="background:#e3f2fd; color:#1565c0; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">배송중</span>';
+            } else if (status === '배송완료') {
+                statusBadge = '<span class="status-badge" style="background:#f1f8e9; color:#558b2f; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">배송완료</span>';
+            } else if (status === '취소') {
+                statusBadge = '<span class="status-badge" style="background:#efebe9; color:#4e342e; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">주문취소</span>';
+            } else {
+                statusBadge = `<span class="status-badge" style="background:#eceff1; color:#37474f; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">${status}</span>`;
+            }
+
+            const selectHtml = `
+                <select class="form-control" style="width:130px; height:32px; font-size:0.85rem;" onchange="updateHomepageOrderStatus('${order.id}', this.value)">
+                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>결제대기</option>
+                    <option value="준비중" ${status === '준비중' ? 'selected' : ''}>배송준비중</option>
+                    <option value="배송중" ${status === '배송중' ? 'selected' : ''}>배송중</option>
+                    <option value="배송완료" ${status === '배송완료' ? 'selected' : ''}>배송완료</option>
+                    <option value="취소" ${status === '취소' ? 'selected' : ''}>주문취소</option>
+                </select>
+            `;
+
+            tr.innerHTML = `
+                <td style="font-family:monospace; font-weight:bold; color:#555;" title="${fullId}">#${displayId}</td>
+                <td style="font-weight:600;">${displayName} ${isPhoneOrder ? '<span style="font-size:0.75rem; background:#78909c; color:#fff; padding:2px 4px; border-radius:3px; font-weight:normal; margin-left:5px;">전화</span>' : ''}</td>
+                <td>${order.customer_phone || '-'}</td>
+                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${order.product_name || ''}">${order.product_name || '정보없음'}</td>
+                <td>${order.quantity || 1}개</td>
+                <td style="font-weight:600;">${price.toLocaleString()}원</td>
+                <td style="font-size:0.85rem; color:#666;">${dateStr}</td>
+                <td>${statusBadge}</td>
+                <td>${selectHtml}</td>
+            `;
+
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // 3. 주문 상태 업데이트
+    async function updateHomepageOrderStatus(orderId, newStatus) {
+        if (!confirm('주문의 배송 상태를 변경하시겠습니까?')) {
+            applyHomepageOrderFilters();
+            return;
+        }
+
+        try {
+            const { error } = await db
+                .from('orders')
+                .update({ status: newStatus })
+                .eq('id', orderId);
+
+            if (error) throw error;
+
+            alert('배송 상태가 성공적으로 변경되었습니다.');
+
+            await fetchHomepageOrders(true);
+
+            if (typeof fetchOrders === 'function') {
+                await fetchOrders();
+            }
+        } catch (err) {
+            console.error('주문 상태 변경 오류:', err);
+            alert('상태 변경에 실패했습니다: ' + err.message);
+            applyHomepageOrderFilters();
+        }
+    }
+
+    // 통계 탭에서 펜 아이콘 클릭 시 이동 처리 전역 함수
+    window.goToHomepageOrder = function(orderId) {
+        switchAdminTab('tab-homepage-orders');
+        const searchInput = document.getElementById('homepageOrderSearchInput');
+        if (searchInput) {
+            searchInput.value = orderId;
+            searchInput.dispatchEvent(new Event('input'));
+        }
+    };
+
+    // 전역 함수로 노출
+    window.fetchHomepageOrders = fetchHomepageOrders;
+    window.applyHomepageOrderFilters = applyHomepageOrderFilters;
+    window.updateHomepageOrderStatus = updateHomepageOrderStatus;
+
+    // 이벤트 리스너 바인딩
+    const homepageOrderStatusFilter = document.getElementById('homepageOrderStatusFilter');
+    const homepageOrderSearchInput = document.getElementById('homepageOrderSearchInput');
+
+    if (homepageOrderStatusFilter) {
+        homepageOrderStatusFilter.addEventListener('change', applyHomepageOrderFilters);
+    }
+    if (homepageOrderSearchInput) {
+        homepageOrderSearchInput.addEventListener('input', applyHomepageOrderFilters);
     }
 });

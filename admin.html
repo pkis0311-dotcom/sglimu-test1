@@ -48,6 +48,7 @@
             <li class="nav-item" data-target="tab-category-manage"><i class="fa-solid fa-sitemap"></i> 카테고리 구성 관리</li>
             <li class="nav-item" data-target="tab-category-display"><i class="fa-solid fa-shapes"></i> 카테고리 전시 관리</li>
             <li class="nav-item" data-target="tab-orders"><i class="fa-solid fa-chart-line"></i> 주문 통계 분석</li>
+            <li class="nav-item" data-target="tab-homepage-orders"><i class="fa-solid fa-truck-fast"></i> 홈페이지 주문/배송 관리</li>
             <li class="nav-item" data-target="tab-phone-orders"><i class="fa-solid fa-phone-volume"></i> 전화 발주 관리</li>
             <li class="nav-item" data-target="tab-inquiries">
                 <i class="fa-solid fa-comment-dots"></i> 견적/문의 상담 관리
@@ -289,6 +290,49 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- 2-3. 홈페이지 주문/배송 관리 탭 (신규) -->
+        <!-- ======================= -->
+        <div id="tab-homepage-orders" class="tab-pane">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 class="page-title"><i class="fa-solid fa-truck-fast"></i> 홈페이지 주문/배송 관리</h1>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="homepageOrderStatusFilter" class="form-control" style="width: 150px; height: 40px; font-size: 0.9rem;">
+                        <option value="all">전체 상태</option>
+                        <option value="pending">결제대기</option>
+                        <option value="준비중">배송준비중</option>
+                        <option value="배송중">배송중</option>
+                        <option value="배송완료">배송완료</option>
+                        <option value="취소">주문취소</option>
+                    </select>
+                    <div class="search-box" style="position: relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                        <input type="text" id="homepageOrderSearchInput" class="form-control" placeholder="주문자/연락처/상품명 검색..." style="padding-left: 35px; width: 250px; height: 40px;">
+                    </div>
+                </div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>주문번호</th>
+                            <th>주문자명</th>
+                            <th>연락처</th>
+                            <th>주문 품목</th>
+                            <th>총 수량</th>
+                            <th>총 금액</th>
+                            <th>주문 일시</th>
+                            <th>배송 상태</th>
+                            <th>상태 관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="homepageOrderTableBody">
+                        <tr><td colspan="9" class="empty-state">데이터를 불러오는 중입니다...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
