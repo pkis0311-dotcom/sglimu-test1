@@ -61,7 +61,7 @@
 
         check();
     </script>
-                <!-- Auth Modal Overlay -->
+            <!-- Auth Modal Overlay -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>
@@ -76,6 +76,7 @@
                         <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
                         <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
                         <div id="naverIdLogin" style="display:none;"></div> 
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
                     </div>
                     <div class="auth-divider"><span>또는</span></div>
                     <form id="loginForm">
@@ -150,6 +151,7 @@
                         <div class="social-login-grid">
                             <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 카카오로 시작</button>
                             <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작</button>
+                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google로 시작</button>
                         </div>
                     </div>
                     <div class="auth-divider"><span>또는 이메일로 가입</span></div>
@@ -224,6 +226,5 @@
     <script type="module" src="inquiry.js"></script>
     <script type="module" src="auth.js"></script>
 </body>
-
 
 </html>
