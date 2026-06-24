@@ -1490,16 +1490,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             subNav.innerHTML = '';
             
             const sortedSubs = [...currentMiddle.subs].sort((a, b) => (a.order || 0) - (b.order || 0));
+            if (sortedSubs.length === 0) {
+                return;
+            }
 
             // [최적화] 1. 필요한 모든 displayKey 및 configs 일괄(Batch) 조회
             const displayKeys = sortedSubs.map(sub => 'display_' + pageId + '-' + sub.id);
-            const { data: configsData, error: configsErr } = await supabase
-                .from('site_configs')
-                .select('key, value')
-                .in('key', displayKeys);
             
-            if (configsErr) throw configsErr;
             const configsMap = {};
+            let configsData = [];
+            
+            if (displayKeys.length > 0) {
+                const { data, error: configsErr } = await supabase
+                    .from('site_configs')
+                    .select('key, value')
+                    .in('key', displayKeys);
+                
+                if (configsErr) throw configsErr;
+                configsData = data || [];
+            }
+            
             configsData.forEach(c => {
                 configsMap[c.key] = c.value || [];
             });
