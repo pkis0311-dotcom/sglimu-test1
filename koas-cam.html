@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>�ھƽ� CAM ���� - ���������̹�</title>
-    <link rel="stylesheet" href="style.css?v=7">
-    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .spec-table {
@@ -71,7 +71,7 @@
 <body>
     <header class="header">
         <div class="header-container">
-            <h1 class="logo"><a href="index.html"><img src="assets/logo.png" alt="에스지라이뮤"></a></h1>
+            <h1 class="logo"><a href="index.html">SG LIMU</a></h1>
             <nav class="gnb">
                 <ul>
                     <li class="has-submenu"><a href="#">�������� �ý���</a><ul class="submenu"><li><a href="rfid.html">RFID�ý���</a></li><li><a href="em.html">EM�ý���</a></li><li><a href="access.html">���������ý���</a></li></ul></li>
@@ -83,7 +83,10 @@
                 </ul>
             </nav>
             <div class="header-utils">
-                <form action="search.html" method="get" class="search-wrapper">`n                    <input type="text" name="q" class="search-input" placeholder="검색어를 입력하세요">`n                    <button type="submit" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>`n                </form>
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="�˻�� �Է��ϼ���">
+                    <a href="#" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></a>
+                </div>
                 <a href="#"><i class="fa-regular fa-user"></i></a>
                 <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
@@ -264,13 +267,28 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; 점심시간 (12:00~13:00) &nbsp;|&nbsp; E-Mail : limu101@nate.com &nbsp;|&nbsp; Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
-                <p>대표자명 : 강인숙 &nbsp;|&nbsp; 개인정보취급담당자 : 강인숙 &nbsp;|&nbsp; 사업자번호 : 621-81-42086 &nbsp;|&nbsp; 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
-                <p class="copyright">Copyright(c)2026 www.sglimu.com. All right Reserved.</p>
+                <p>
+                    <strong>(��)���������̹�</strong> &nbsp;|&nbsp; 
+                    Tel : 1544-5703 &nbsp;|&nbsp; 
+                    �ѽ� : 051-518-5985 &nbsp;|&nbsp; 
+                    ���ɽð� (12:00~13:00) &nbsp;|&nbsp; 
+                    E-Mail : limu101@nate.com
+                </p>
+                <p>
+                    Address : �λ걤���� ������ ü�������� 29-1 (û�浿)
+                </p>
+                <p>
+                    ��ǥ�ڸ�: ���ι� &nbsp;|&nbsp; 
+                    ����������޴����: ���ι� &nbsp;|&nbsp; 
+                    ����ڹ�ȣ: 621-81-42086 &nbsp;|&nbsp; 
+                    ����Ǹž��Ű��ȣ : ��2018-�λ����-0045ȣ
+                </p>
+                <p class="copyright">
+                    Copyright(c)2023 www.sgperzoom.com. All right Reserved.
+                </p>
             </div>
         </div>
     </footer>
-
 
     <aside class="right-fixed-banner">
         <ul class="banner-menu">
@@ -309,7 +327,7 @@
         </div>
     </div>
 
-    
+    <script type="module" src="script.js"></script>
     <script>
         const images = ['cam-1.jpg', 'cam-2.jpg'];
         let currentIndex = 0;
@@ -368,9 +386,9 @@
         }
     </script>
     <!-- SG LIMU Global Scripts -->
-    
-    
-            <!-- Auth Modal Overlay -->
+    <script src="cart.js"></script>
+    <script type="module" src="inquiry.js"></script>
+        <!-- Auth Modal Overlay -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>
@@ -385,7 +403,6 @@
                         <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
                         <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
                         <div id="naverIdLogin" style="display:none;"></div> 
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
                     </div>
                     <div class="auth-divider"><span>또는</span></div>
                     <form id="loginForm">
@@ -460,7 +477,6 @@
                         <div class="social-login-grid">
                             <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 카카오로 시작</button>
                             <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작</button>
-                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google로 시작</button>
                         </div>
                     </div>
                     <div class="auth-divider"><span>또는 이메일로 가입</span></div>

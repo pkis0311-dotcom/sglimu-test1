@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>제품 상세 정보 - 에스지라이뮤</title>
     <link rel="stylesheet" href="style.css?v=7">
-    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="cart.css">
     <link rel="stylesheet" href="inquiry.css">
@@ -242,370 +242,7 @@
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
-    <script>
-        // UI Logic
-        function changeImage(src, element) {
-            document.getElementById('mainImage').src = src;
-            document.querySelectorAll('.thumb-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        function updateQty(change) {
-            const input = document.getElementById('qtyInput');
-            let current = parseInt(input.value);
-            let newVal = current + change;
-            if (newVal < 1) newVal = 1;
-            input.value = newVal;
-            
-            calculateTotal();
-        }
-
-        function calculateTotal() {
-            let optPrice = 0;
-            const colorSelect = document.getElementById('colorOption');
-            if(colorSelect && colorSelect.value) {
-                const parts = colorSelect.value.split('|');
-                optPrice += parseInt(parts[0]) || 0;
-            }
-            
-            const sizeSelect = document.getElementById('sizeOption');
-            if(sizeSelect && sizeSelect.value) {
-                const parts = sizeSelect.value.split('|');
-                optPrice += parseInt(parts[0]) || 0;
-            }
-            
-            const qty = parseInt(document.getElementById('qtyInput').value);
-            const total = ((window.basePrice || 0) + optPrice) * qty;
-            const totalPriceElem = document.getElementById('totalPrice');
-            if (totalPriceElem) totalPriceElem.innerText = total.toLocaleString();
-        }
-
-        document.getElementById('colorOption')?.addEventListener('change', calculateTotal);
-        document.getElementById('sizeOption')?.addEventListener('change', calculateTotal);
-
-        function switchTab(index, element) {
-            document.querySelectorAll('.detail-tab-btn').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.detail-tab-content').forEach(el => el.classList.remove('active'));
-            
-            element.classList.add('active');
-            document.getElementById('tab' + index).classList.add('active');
-        }
-    </script>
-    <script src="cart.js"></script>
-    <script type="module" src="inquiry.js"></script>
-    <script type="module" src="auth.js"></script>
-    <script type="module">
-        import { supabase } from './supabase-client.js';
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
-
-        function parseProductOptions(product) {
-            if (!product) return { colors: '', sizes: '' };
-            let colors = product.colors || '';
-            let sizes = product.sizes || '';
-            
-            // colors 컬럼이 없거나 비어있는 경우 description에서 파싱
-            if (!colors && product.description) {
-                const match = product.description.match(/\[\[C:(.*?)\]\]/);
-                if (match) colors = match[1];
-            }
-            // sizes 컬럼이 없거나 비어있는 경우 description에서 파싱
-            if (!sizes && product.description) {
-                const match = product.description.match(/\[\[S:(.*?)\]\]/);
-                if (match) sizes = match[1];
-            }
-            
-            return { colors, sizes };
-        }
-
-        async function initProductDetail() {
-            if(!productId) {
-                console.warn("Product ID missing in URL.");
-                return;
-            }
-
-            const { data: product, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('id', productId)
-                .single();
-
-            if (error || !product) {
-                console.error("Product fetch error:", error);
-                return;
-            }
-
-            // Update Basic Info
-            document.title = product.name + " - 에스지라이뮤";
-            document.querySelector('.product-title').innerText = product.name;
-            const priceElem = document.querySelector('.product-price');
-            if (product.price === '전화문의' || !product.price) {
-                priceElem.innerHTML = '전화문의';
-                window.basePrice = 0;
-            } else {
-                priceElem.innerHTML = Number(product.price).toLocaleString() + '<span>원</span>';
-                window.basePrice = Number(product.price);
-            }
-            
-            document.getElementById('breadcrumbCurrent').innerText = product.name;
-
-            // Main Image & Thumbnails
-            const mainImgElem = document.getElementById('mainImage');
-            if (mainImgElem) {
-                mainImgElem.src = 'assets/no-image.png';
-            }
-            const thumbList = document.querySelector('.thumbnail-list');
-            if (thumbList) {
-                thumbList.innerHTML = '';
-            }
-            
-            // Options Logic
-            const parsedOpts = parseProductOptions(product);
-
-            const colorOption = document.getElementById('colorOption');
-            if(colorOption) {
-                let colorList = [];
-                if(parsedOpts.colors) colorList = parsedOpts.colors.split(',').map(c => c.trim());
-                if(colorList.length > 0) {
-                    colorOption.innerHTML = '<option value="0|">색상을 선택하세요</option>';
-                    colorList.forEach(c => {
-                        const parts = c.split(':');
-                        const name = parts[0];
-                        const price = parseInt(parts[1]) || 0;
-                        const opt = document.createElement('option');
-                        opt.value = `${price}|${name}`;
-                        opt.innerText = price > 0 ? `${name} (+${price.toLocaleString()}원)` : name;
-                        colorOption.appendChild(opt);
-                    });
-                    document.getElementById('colorOptionGroup').style.display = 'block';
-                } else {
-                    document.getElementById('colorOptionGroup').style.display = 'none';
-                }
-            }
-
-            const sizeOption = document.getElementById('sizeOption');
-            if(sizeOption) {
-                let sizeList = [];
-                if(parsedOpts.sizes) sizeList = parsedOpts.sizes.split(',').map(s => s.trim());
-                if(sizeList.length > 0) {
-                    sizeOption.innerHTML = '<option value="0|">사이즈를 선택하세요</option>';
-                    sizeList.forEach(s => {
-                        const parts = s.split(':');
-                        const name = parts[0];
-                        const price = parseInt(parts[1]) || 0;
-                        const opt = document.createElement('option');
-                        opt.value = `${price}|${name}`;
-                        opt.innerText = price > 0 ? `${name} (+${price.toLocaleString()}원)` : name;
-                        sizeOption.appendChild(opt);
-                    });
-                    document.getElementById('sizeOptionGroup').style.display = 'block';
-                } else {
-                    document.getElementById('sizeOptionGroup').style.display = 'none';
-                }
-            }
-
-            // Description
-            const descElem = document.getElementById('dynamicDesc');
-            if(descElem && product.description) {
-                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
-            }
-
-            // Page Data from site_configs
-            const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
-            const data = configData ? configData.value : null;
-            
-            const specSection = document.getElementById('dynamicSpecContainer')?.closest('.info-text-box');
-            const featureSection = document.getElementById('dynamicFeatures')?.closest('.info-text-box');
-
-            if(data) {
-                // Description Summary from Detail Page Config
-                if (data.description && descElem) {
-                    descElem.innerHTML = data.description.replace(/\n/g, '<br>').trim();
-                }
-
-                // Additional Main Images
-                if(data.mainImages && data.mainImages.length > 0) {
-                    if (mainImgElem) {
-                        mainImgElem.src = data.mainImages[0];
-                    }
-                    const thumbList = document.querySelector('.thumbnail-list');
-                    if(thumbList) {
-                        thumbList.innerHTML = '';
-                        data.mainImages.forEach((src, idx) => {
-                            thumbList.innerHTML += `
-                                <div class="thumb-item ${idx === 0 ? 'active' : ''}" onclick="changeImage('${src}', this)">
-                                    <img src="${src}" alt="제품 이미지 ${idx+1}">
-                                </div>
-                            `;
-                        });
-                    }
-                }
-                
-                // Detail Images
-                const detailContainer = document.getElementById('detailImagesContainer');
-                if(detailContainer && (data.detailImages || data.detailImage)) {
-                    detailContainer.innerHTML = '';
-                    const imgs = data.detailImages || [data.detailImage];
-                    imgs.forEach(src => {
-                        if(!src) return;
-                        const img = document.createElement('img');
-                        img.src = src;
-                        img.style.cssText = "max-width:100%; display:block; margin: 0 auto 10px auto;";
-                        detailContainer.appendChild(img);
-                    });
-                }
-                
-                // Specs
-                const specContainer = document.getElementById('dynamicSpecContainer');
-                if(specContainer && data.specs && data.specs.length > 0) {
-                    specContainer.innerHTML = '';
-                    const styleClass = data.specStyle || 'type-a';
-                    specContainer.className = `spec-container ${styleClass}`;
-                    
-                    if (styleClass === 'type-a') {
-                        const table = document.createElement('table');
-                        table.className = 'spec-table';
-                        table.style.width = '100%';
-                        table.style.borderCollapse = 'collapse';
-                        const tbody = document.createElement('tbody');
-                        data.specs.forEach(s => {
-                            tbody.innerHTML += `<tr><th style="padding:15px; text-align:left; background:#f9f9f9; width:25%; border:1px solid #ddd;">${s.key}</th><td style="padding:15px; border:1px solid #ddd;">${s.val}</td></tr>`;
-                        });
-                        table.appendChild(tbody);
-                        specContainer.appendChild(table);
-                    } else {
-                        data.specs.forEach(s => {
-                            specContainer.innerHTML += `
-                                <div class="spec-item">
-                                    <div class="spec-key">${s.key}</div>
-                                    <div class="spec-val">${s.val}</div>
-                                </div>
-                            `;
-                        });
-                    }
-                    if (specSection) specSection.style.display = 'block';
-                } else {
-                    if (specSection) specSection.style.display = 'none';
-                }
-                
-                // Features
-                const featureContainer = document.getElementById('dynamicFeatures');
-                if(featureContainer && data.features && data.features.length > 0) {
-                    featureContainer.innerHTML = '';
-                    const styleClass = data.featureStyle || 'type-a';
-                    featureContainer.className = `feature-container ${styleClass}`;
-                    
-                    data.features.forEach((feat, i) => {
-                        const num = (i + 1).toString().padStart(2, '0');
-                        
-                        if (styleClass === 'type-a') {
-                            featureContainer.innerHTML += `
-                                <div class="feature-item">
-                                    <div class="feature-num">${num}</div>
-                                    <div class="feature-content">
-                                        <h5>${feat.title}</h5>
-                                        <p>${feat.desc.replace(/\n/g, '<br>')}</p>
-                                    </div>
-                                </div>
-                            `;
-                        } else if (styleClass === 'type-b') {
-                            featureContainer.innerHTML += `
-                                <div class="feature-item">
-                                    <h5>${feat.title}</h5>
-                                    <p>${feat.desc.replace(/\n/g, '<br>')}</p>
-                                </div>
-                            `;
-                        } else if (styleClass === 'type-c') {
-                            featureContainer.innerHTML += `
-                                <div class="feature-item">
-                                    <div class="feature-title-box">
-                                        <h5>${feat.title}</h5>
-                                    </div>
-                                    <div class="feature-desc-box">
-                                        <p>${feat.desc.replace(/\n/g, '<br>')}</p>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
-                    if (featureSection) featureSection.style.display = 'block';
-                } else {
-                    if (featureSection) featureSection.style.display = 'none';
-                }
-            } else {
-                if (specSection) specSection.style.display = 'none';
-                if (featureSection) featureSection.style.display = 'none';
-            }
-            
-            // [신규] 최근 본 상품 저장
-            try {
-                let recentItems = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-                recentItems = recentItems.filter(item => item.id !== product.id);
-                
-                const pData2 = configData ? configData.value : null;
-                const displayImg2 = (pData2 && pData2.mainImages && pData2.mainImages.length > 0) ? pData2.mainImages[0] : 'assets/no-image.png';
-                
-                recentItems.unshift({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: displayImg2,
-                    timestamp: new Date().getTime()
-                });
-                
-                if (recentItems.length > 15) recentItems.pop();
-                localStorage.setItem('recentlyViewed', JSON.stringify(recentItems));
-            } catch (e) { console.error("Recent view tracking error", e); }
-
-            // [신규] 관심상품 기능
-            try {
-                const btnWishlist = document.getElementById('btnWishlist');
-                const wishIcon = btnWishlist.querySelector('i');
-                const pData3 = configData ? configData.value : null;
-                const displayImg3 = (pData3 && pData3.mainImages && pData3.mainImages.length > 0) ? pData3.mainImages[0] : 'assets/no-image.png';
-                
-                const productObj = {
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: displayImg3,
-                    timestamp: new Date().getTime()
-                };
-
-                let wishItems = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                let isWished = wishItems.some(item => item.id === product.id);
-
-                if (isWished) {
-                    wishIcon.classList.replace('fa-regular', 'fa-solid');
-                    wishIcon.style.color = '#e74c3c';
-                }
-
-                btnWishlist.addEventListener('click', () => {
-                    wishItems = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                    isWished = wishItems.some(item => item.id === product.id);
-                    
-                    if (isWished) {
-                        wishItems = wishItems.filter(item => item.id !== product.id);
-                        wishIcon.classList.replace('fa-solid', 'fa-regular');
-                        wishIcon.style.color = '';
-                        alert('관심상품에서 해제되었습니다.');
-                    } else {
-                        wishItems.unshift(productObj);
-                        wishIcon.classList.replace('fa-regular', 'fa-solid');
-                        wishIcon.style.color = '#e74c3c';
-                        alert('관심상품에 추가되었습니다.');
-                    }
-                    localStorage.setItem('wishlist', JSON.stringify(wishItems));
-                });
-            } catch (e) { console.error("Wishlist tracking error", e); }
-
-            calculateTotal();
-        }
-
-        window.addEventListener('DOMContentLoaded', initProductDetail);
-    </script>
+        <!-- Auth Modal Overlay -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>
@@ -619,7 +256,7 @@
                     <div class="social-login-grid">
                         <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
                         <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
-                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
+                        <div id="naverIdLogin" style="display:none;"></div> 
                     </div>
                     <div class="auth-divider"><span>또는</span></div>
                     <form id="loginForm">
@@ -628,9 +265,79 @@
                         <button type="submit" class="auth-submit-btn">로그인</button>
                     </form>
                     <div id="loginMsg" class="auth-message"></div>
+                    <div class="auth-sub-links">
+                        <a id="linkFindId">아이디 찾기</a>
+                        <span class="divider">|</span>
+                        <a id="linkFindPw">비밀번호 찾기</a>
+                    </div>
                 </div>
+                
+                <!-- Find ID Pane -->
+                <div class="auth-pane" id="findIdPane">
+                    <div class="auth-header"><h2>아이디 찾기</h2><p>가입 시 입력한 이름과 전화번호를 입력해주세요.</p></div>
+                    <form id="findIdForm">
+                        <div class="auth-form-group"><label>이름</label><input type="text" id="findIdName" class="auth-input" placeholder="이름을 입력하세요" required></div>
+                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findIdPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        <button type="submit" class="auth-submit-btn">아이디 찾기</button>
+                    </form>
+                    <div id="findIdMsg" class="auth-message"></div>
+                    <div id="findIdResult" class="auth-result-box">
+                        <h4>아이디 찾기 완료</h4>
+                        <p>회원님의 아이디(이메일)는 다음과 같습니다.</p>
+                        <div class="found-email" id="foundEmailDisplay"></div>
+                        <button class="auth-submit-btn" id="btnGoToLoginFromId">로그인하러 가기</button>
+                    </div>
+                    <div class="auth-sub-links">
+                        <a class="back-to-login">로그인으로 돌아가기</a>
+                    </div>
+                </div>
+
+                <!-- Find Password Pane -->
+                <div class="auth-pane" id="findPwPane">
+                    <div class="auth-header"><h2>비밀번호 찾기</h2><p>가입된 이메일과 이름, 전화번호를 입력하시면<br>비밀번호 재설정 링크를 보내드립니다.</p></div>
+                    <form id="findPwForm">
+                        <div class="auth-form-group"><label>이메일(아이디)</label><input type="email" id="findPwEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>이름</label><input type="text" id="findPwName" class="auth-input" placeholder="이름을 입력하세요" required></div>
+                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findPwPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        <button type="submit" class="auth-submit-btn">재설정 링크 발송</button>
+                    </form>
+                    <div id="findPwMsg" class="auth-message"></div>
+                    <div id="findPwResult" class="auth-result-box">
+                        <h4>이메일 발송 완료</h4>
+                        <p>입력하신 이메일로 비밀번호 재설정 링크가 발송되었습니다.<br>이메일을 확인해주세요.</p>
+                        <button class="auth-submit-btn back-to-login">로그인으로 돌아가기</button>
+                    </div>
+                    <div class="auth-sub-links">
+                        <a class="back-to-login">로그인으로 돌아가기</a>
+                    </div>
+                </div>
+
+                <!-- Reset Password Pane -->
+                <div class="auth-pane" id="resetPwPane">
+                    <div class="auth-header"><h2>비밀번호 재설정</h2><p>새로운 비밀번호를 입력해주세요.</p></div>
+                    <form id="resetPwForm">
+                        <div class="auth-form-group"><label>새 비밀번호</label><input type="password" id="resetPwInput" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
+                        <div class="auth-form-group"><label>새 비밀번호 확인</label><input type="password" id="resetPwConfirm" class="auth-input" placeholder="다시 한 번 입력" minlength="6" required></div>
+                        <button type="submit" class="auth-submit-btn">비밀번호 변경</button>
+                    </form>
+                    <div id="resetPwMsg" class="auth-message"></div>
+                </div>
+
+                <!-- Signup Pane -->
                 <div class="auth-pane" id="signupPane">
                     <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
+                    <div class="auth-social-signup">
+                        <div class="auth-social-signup-header"><span>간편 회원가입</span></div>
+                        <div class="social-login-grid">
+                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 카카오로 시작</button>
+                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작</button>
+                        </div>
+                    </div>
+                    <div class="auth-divider"><span>또는 이메일로 가입</span></div>
+                    <div class="auth-type-selector" id="userTypeSelector">
+                        <div class="auth-type-btn active" data-type="individual">개인 회원</div>
+                        <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
+                    </div>
                     <form id="signupForm">
                         <div class="auth-row">
                             <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
@@ -638,29 +345,65 @@
                         </div>
                         <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
                         <div class="auth-row">
-                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
+                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required></div>
                             <div class="auth-form-group"><label>비밀번호 확인 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required></div>
                         </div>
-                        <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예) 한국대학교 도서관"></div>
+                        <div class="auth-form-group" id="orgGroup"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관"></div>
+                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>사업자 등록번호</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
                         <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
                         <button type="submit" class="auth-submit-btn">가입하기</button>
                     </form>
                     <div id="signupMsg" class="auth-message"></div>
                 </div>
+                
+                <!-- Complete Profile Pane -->
                 <div class="auth-pane" id="completeProfilePane">
                     <div class="auth-header"><h2>추가 정보 입력</h2><p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p></div>
                     <form id="completeProfileForm">
                         <div class="highlight-box">
                             <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
-                            <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명 *</label><input type="text" id="completeOrg" class="auth-input" placeholder="예) 한국대학교 도서관" required></div>
+                            <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명 *</label><input type="text" id="completeOrg" class="auth-input" placeholder="예: 한국대학교 도서관" required></div>
                             <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
                         </div>
                         <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
                     </form>
                     <div id="completeMsg" class="auth-message"></div>
                 </div>
+                
+                <!-- My Profile Pane -->
+                <div class="auth-pane" id="myProfilePane">
+                    <div class="auth-header">
+                        <h2>내 정보 관리</h2>
+                        <p>회원 정보를 확인하고 수정할 수 있습니다.</p>
+                    </div>
+                    <form id="myProfileForm">
+                        <div class="auth-form-group">
+                            <label>이름</label>
+                            <input type="text" id="myProfileName" class="auth-input" placeholder="이름" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>연락처</label>
+                            <input type="tel" id="myProfilePhone" class="auth-input" placeholder="010-0000-0000" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>소속 기관 / 학교명</label>
+                            <input type="text" id="myProfileOrg" class="auth-input" placeholder="예: 시립도서관" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>주소</label>
+                            <input type="text" id="myProfileAddress" class="auth-input" placeholder="주소를 입력하세요" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn">정보 수정하기</button>
+                    </form>
+                    <div id="myProfileMsg" class="auth-message"></div>
+                </div>
             </div>
         </div>
     </div>
+    <script type="module" src="script.js"></script>
+    <script src="cart.js"></script>
+    <script type="module" src="inquiry.js"></script>
+    <script type="module" src="auth.js"></script>
 </body>
+
 </html>

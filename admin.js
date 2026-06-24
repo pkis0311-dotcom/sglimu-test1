@@ -4667,21 +4667,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = order.status || 'pending';
             let statusBadge = '';
             if (status === 'pending') {
-                statusBadge = '<span class="status-badge" style="background:#ffebee; color:#c62828; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">결제대기</span>';
+                statusBadge = '<span class="status-badge" style="background:#ffebee; color:#c62828; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; display:inline-block; white-space:nowrap;">결제대기</span>';
             } else if (status === '준비중') {
-                statusBadge = '<span class="status-badge" style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">배송준비</span>';
+                statusBadge = '<span class="status-badge" style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; display:inline-block; white-space:nowrap;">배송준비</span>';
             } else if (status === '배송중') {
-                statusBadge = '<span class="status-badge" style="background:#e3f2fd; color:#1565c0; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">배송중</span>';
+                statusBadge = '<span class="status-badge" style="background:#e3f2fd; color:#1565c0; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; display:inline-block; white-space:nowrap;">배송중</span>';
             } else if (status === '배송완료') {
-                statusBadge = '<span class="status-badge" style="background:#f1f8e9; color:#558b2f; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">배송완료</span>';
+                statusBadge = '<span class="status-badge" style="background:#f1f8e9; color:#558b2f; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; display:inline-block; white-space:nowrap;">배송완료</span>';
             } else if (status === '취소') {
-                statusBadge = '<span class="status-badge" style="background:#efebe9; color:#4e342e; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">주문취소</span>';
+                statusBadge = '<span class="status-badge" style="background:#efebe9; color:#4e342e; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; display:inline-block; white-space:nowrap;">주문취소</span>';
             } else {
-                statusBadge = `<span class="status-badge" style="background:#eceff1; color:#37474f; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem;">${status}</span>`;
+                statusBadge = `<span class="status-badge" style="background:#eceff1; color:#37474f; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; display:inline-block; white-space:nowrap;">${status}</span>`;
             }
 
             const selectHtml = `
-                <select class="form-control" style="width:145px; height:32px; font-size:0.85rem; padding: 2px 25px 2px 8px;" onchange="updateHomepageOrderStatus('${order.id}', this.value)">
+                <select class="form-control" style="width:100%; min-width:130px; height:36px; font-size:0.88rem; padding: 4px 8px; box-sizing: border-box; line-height: 1.4;" onchange="updateHomepageOrderStatus('${order.id}', this.value)">
                     <option value="pending" ${status === 'pending' ? 'selected' : ''}>결제대기</option>
                     <option value="준비중" ${status === '준비중' ? 'selected' : ''}>배송준비중</option>
                     <option value="배송중" ${status === '배송중' ? 'selected' : ''}>배송중</option>
@@ -4725,8 +4725,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${trackingInputHtml}
                     </div>
                 </td>
-                <td>${statusBadge}</td>
-                <td>${selectHtml}</td>
+                <td style="white-space: nowrap; text-align: center;">${statusBadge}</td>
+                <td style="min-width: 150px; text-align: center;">${selectHtml}</td>
             `;
 
             tableBody.appendChild(tr);
