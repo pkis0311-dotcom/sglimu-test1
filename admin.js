@@ -4589,7 +4589,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tableBody) return;
 
         if (!isSilent) {
-            tableBody.innerHTML = '<tr><td colspan="9" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="10" class="empty-state">데이터를 불러오는 중입니다...</td></tr>';
         }
 
         const { data: orders, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
@@ -4637,7 +4637,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (filtered.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="9" class="empty-state">조회된 주문 내역이 없습니다.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="10" class="empty-state">조회된 주문 내역이 없습니다.</td></tr>';
             return;
         }
 
@@ -4690,6 +4690,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </select>
             `;
 
+            const trackingInputHtml = `
+                <input type="text" class="form-control" style="width:110px; height:32px; font-size:0.8rem; padding:2px 5px;" 
+                       value="${order.tracking_number || ''}" placeholder="운송장 입력" 
+                       onchange="updateHomepageOrderTracking('${order.id}', this.value)">
+            `;
+
             tr.innerHTML = `
                 <td style="font-family:monospace; font-weight:bold; color:#555;" title="${fullId}">#${displayId}</td>
                 <td style="font-weight:600;">${displayName} ${isPhoneOrder ? '<span style="font-size:0.75rem; background:#78909c; color:#fff; padding:2px 4px; border-radius:3px; font-weight:normal; margin-left:5px;">전화</span>' : ''}</td>
@@ -4698,6 +4704,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${order.quantity || 1}개</td>
                 <td style="font-weight:600;">${price.toLocaleString()}원</td>
                 <td style="font-size:0.85rem; color:#666;">${dateStr}</td>
+                <td>${trackingInputHtml}</td>
                 <td>${statusBadge}</td>
                 <td>${selectHtml}</td>
             `;
@@ -4735,6 +4742,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 3.5 운송장 번호 업데이트
+    async function updateHomepageOrderTracking(orderId, trackingNumber) {
+        try {
+            const { error } = await db
+                .from('orders')
+                .update({ tracking_number: trackingNumber })
+                .eq('id', orderId);
+
+            if (error) throw error;
+
+            console.log(`Order ${orderId} tracking number updated to ${trackingNumber}`);
+            await fetchHomepageOrders(true);
+        } catch (err) {
+            console.error('운송장 번호 업데이트 오류:', err);
+            alert('운송장 번호 저장에 실패했습니다: ' + err.message);
+            applyHomepageOrderFilters();
+        }
+    }
+
     // 통계 탭에서 펜 아이콘 클릭 시 이동 처리 전역 함수
     window.goToHomepageOrder = function(orderId) {
         switchAdminTab('tab-homepage-orders');
@@ -4749,6 +4775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.fetchHomepageOrders = fetchHomepageOrders;
     window.applyHomepageOrderFilters = applyHomepageOrderFilters;
     window.updateHomepageOrderStatus = updateHomepageOrderStatus;
+    window.updateHomepageOrderTracking = updateHomepageOrderTracking;
 
     // 이벤트 리스너 바인딩
     const homepageOrderStatusFilter = document.getElementById('homepageOrderStatusFilter');

@@ -534,6 +534,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const card = document.createElement('div');
                     card.style.cssText = "background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:8px; border: 1px solid #f0f0f0;";
                     
+                    let trackingHtml = '';
+                    if (order.tracking_number) {
+                        trackingHtml = `
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+                                <span style="color:#666;">운송장: <strong style="color:#2c3e50; font-family:monospace;">${order.tracking_number}</strong></span>
+                                <a href="https://search.naver.com/search.naver?query=${encodeURIComponent(order.tracking_number)}" target="_blank" style="color:#3498db; text-decoration:none; font-weight:700; font-size:0.75rem; display: flex; align-items: center; gap: 3px;">
+                                    배송조회 <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.7rem;"></i>
+                                </a>
+                            </div>
+                        `;
+                    }
+
                     card.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f7f7f7; padding-bottom:8px;">
                             <span style="font-size:0.78rem; color:#777; font-weight:600;">주문일: ${dateStr}</span>
@@ -546,6 +558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span style="color:#666;">수량: ${order.quantity}개</span>
                             <span style="font-weight:700; color:var(--color-primary);">${priceStr}</span>
                         </div>
+                        ${trackingHtml}
                     `;
                     listContainer.appendChild(card);
                 });
