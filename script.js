@@ -536,10 +536,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     let trackingHtml = '';
                     if (order.tracking_number) {
+                        const courierName = order.delivery_company || '';
+                        const searchQuery = courierName ? `${courierName} ${order.tracking_number}` : order.tracking_number;
+                        const displayCourier = courierName ? `<span style="font-size:0.72rem; color:#7f8c8d; background:#f2f4f4; padding:2px 5px; border-radius:3px; margin-right:4px;">${courierName}</span>` : '';
+
                         trackingHtml = `
                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
-                                <span style="color:#666;">운송장: <strong style="color:#2c3e50; font-family:monospace;">${order.tracking_number}</strong></span>
-                                <a href="https://search.naver.com/search.naver?query=${encodeURIComponent(order.tracking_number)}" target="_blank" style="color:#3498db; text-decoration:none; font-weight:700; font-size:0.75rem; display: flex; align-items: center; gap: 3px;">
+                                <span style="color:#666; display:flex; align-items:center;">
+                                    ${displayCourier}
+                                    <strong style="color:#2c3e50; font-family:monospace;">${order.tracking_number}</strong>
+                                </span>
+                                <a href="https://search.naver.com/search.naver?query=${encodeURIComponent(searchQuery)}" target="_blank" style="color:#3498db; text-decoration:none; font-weight:700; font-size:0.75rem; display: flex; align-items: center; gap: 3px;">
                                     배송조회 <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.7rem;"></i>
                                 </a>
                             </div>

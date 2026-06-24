@@ -4690,8 +4690,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 </select>
             `;
 
+            const courier = order.delivery_company || '';
+            const courierSelectHtml = `
+                <select class="form-control" style="width:100%; height:30px; font-size:0.8rem; padding: 2px 5px;" onchange="updateHomepageOrderCourier('${order.id}', this.value)">
+                    <option value="" ${courier === '' ? 'selected' : ''}>택배사 선택</option>
+                    <option value="CJ대한통운" ${courier === 'CJ대한통운' ? 'selected' : ''}>CJ대한통운</option>
+                    <option value="우체국택배" ${courier === '우체국택배' ? 'selected' : ''}>우체국택배</option>
+                    <option value="한진택배" ${courier === '한진택배' ? 'selected' : ''}>한진택배</option>
+                    <option value="롯데택배" ${courier === '롯데택배' ? 'selected' : ''}>롯데택배</option>
+                    <option value="로젠택배" ${courier === '로젠택배' ? 'selected' : ''}>로젠택배</option>
+                    <option value="경동택배" ${courier === '경동택배' ? 'selected' : ''}>경동택배</option>
+                    <option value="대신택배" ${courier === '대신택배' ? 'selected' : ''}>대신택배</option>
+                    <option value="기타" ${courier === '기타' ? 'selected' : ''}>기타</option>
+                </select>
+            `;
+
             const trackingInputHtml = `
-                <input type="text" class="form-control" style="width:110px; height:32px; font-size:0.8rem; padding:2px 5px;" 
+                <input type="text" class="form-control" style="width:100%; height:30px; font-size:0.8rem; padding:2px 5px;" 
                        value="${order.tracking_number || ''}" placeholder="운송장 입력" 
                        onchange="updateHomepageOrderTracking('${order.id}', this.value)">
             `;
@@ -4704,7 +4719,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${order.quantity || 1}개</td>
                 <td style="font-weight:600;">${price.toLocaleString()}원</td>
                 <td style="font-size:0.85rem; color:#666;">${dateStr}</td>
-                <td>${trackingInputHtml}</td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:4px; align-items:stretch; min-width:105px;">
+                        ${courierSelectHtml}
+                        ${trackingInputHtml}
+                    </div>
+                </td>
                 <td>${statusBadge}</td>
                 <td>${selectHtml}</td>
             `;
@@ -4738,6 +4758,25 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('주문 상태 변경 오류:', err);
             alert('상태 변경에 실패했습니다: ' + err.message);
+            applyHomepageOrderFilters();
+        }
+    }
+
+    // 3.4 택배사 업데이트
+    async function updateHomepageOrderCourier(orderId, courierName) {
+        try {
+            const { error } = await db
+                .from('orders')
+                .update({ delivery_company: courierName })
+                .eq('id', orderId);
+
+            if (error) throw error;
+
+            console.log(`Order ${orderId} courier updated to ${courierName}`);
+            await fetchHomepageOrders(true);
+        } catch (err) {
+            console.error('택배사 업데이트 오류:', err);
+            alert('택배사 저장에 실패했습니다: ' + err.message);
             applyHomepageOrderFilters();
         }
     }
@@ -4776,6 +4815,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.applyHomepageOrderFilters = applyHomepageOrderFilters;
     window.updateHomepageOrderStatus = updateHomepageOrderStatus;
     window.updateHomepageOrderTracking = updateHomepageOrderTracking;
+    window.updateHomepageOrderCourier = updateHomepageOrderCourier;
 
     // 이벤트 리스너 바인딩
     const homepageOrderStatusFilter = document.getElementById('homepageOrderStatusFilter');
