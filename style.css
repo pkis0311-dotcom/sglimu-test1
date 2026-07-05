@@ -1760,8 +1760,6 @@ button {
 }
 
 /* --- Quill Editor Output Alignment & Size Styles & Excel Font Theme --- */
-.product-detail-page,
-.product-detail-page *,
 .ql-editor,
 .ql-editor * {
     font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif !important;
