@@ -862,8 +862,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const parentLi = aTag.closest('.has-submenu');
                 
-                // 최상위 카테고리이면서 하위 메뉴가 있는 경우에만 아코디언 동작 및 링크 이동 방지
-                if (parentLi && parentLi.parentElement === mainGnb.querySelector('ul')) {
+                // 최상위 카테고리이면서 하위 메뉴가 있는 경우에만 아코디언 동작 및 링크 이동 방지 (소분류 클릭 시 이동 허용)
+                if (parentLi && parentLi.parentElement === mainGnb.querySelector('ul') && !aTag.closest('.submenu')) {
                     e.preventDefault();
                     parentLi.classList.toggle('active');
                 }
