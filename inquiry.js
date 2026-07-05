@@ -56,6 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
     buyBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+
+            // 가격 책정 여부 확인
+            const priceElem = document.querySelector('.product-price');
+            const priceText = priceElem ? priceElem.innerText.trim() : '';
+            const priceNum = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+            const isConsultationOnly = !priceElem || priceText.includes('전화문의') || priceNum === 0;
+
             // 보고 있던 상품명 가져오기
             const TitleEl = document.querySelector('.product-title');
             let pName = TitleEl ? TitleEl.innerText.trim() : document.title;
@@ -67,16 +74,55 @@ document.addEventListener('DOMContentLoaded', () => {
             const colorSelect = document.getElementById('colorOption');
             const sizeSelect = document.getElementById('sizeOption');
             let selectedOptions = [];
+            let optPrice = 0;
+            let colorText = '';
+            let sizeText = '';
             
             if (colorSelect && colorSelect.value && colorSelect.value !== '0|') {
                 const optText = colorSelect.options[colorSelect.selectedIndex].text;
                 selectedOptions.push(`색상: ${optText}`);
+                
+                const parts = colorSelect.value.split('|');
+                optPrice += parseInt(parts[0]) || 0;
+                colorText = optText.split(' (+')[0];
             }
             if (sizeSelect && sizeSelect.value && sizeSelect.value !== '0|') {
                 const optText = sizeSelect.options[sizeSelect.selectedIndex].text;
                 selectedOptions.push(`사이즈: ${optText}`);
+                
+                const parts = sizeSelect.value.split('|');
+                optPrice += parseInt(parts[0]) || 0;
+                sizeText = optText.split(' (+')[0];
+            }
+
+            if (!isConsultationOnly) {
+                // 가격이 측정되어 있는 상품 -> 바로 결제/주문서 작성 모달로 이동
+                const qtyInput = document.getElementById('qtyInput');
+                const qty = qtyInput ? parseInt(qtyInput.value) : 1;
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('id');
+                
+                const unitPrice = (window.basePrice || 0) + optPrice;
+                
+                const mainImg = document.getElementById('mainImage');
+                const imgUrl = mainImg ? mainImg.src : 'assets/no-image.png';
+
+                if (window.buyNowDirect) {
+                    window.buyNowDirect({
+                        id: productId || 'custom-product',
+                        name: pName,
+                        price: unitPrice,
+                        qty: qty,
+                        image: imgUrl,
+                        optionColor: colorText,
+                        optionSize: sizeText
+                    });
+                }
+                return;
             }
             
+            // 가격이 없는 상품(전화문의) -> 견적/상담요청 팝업 모달 켜기
             let optionStr = selectedOptions.length > 0 ? ` (옵션: ${selectedOptions.join(', ')})` : '';
             
             inqTitle.value = `[문의상품: ${pName}${optionStr}]\n\n`; // 내용에 상품명 및 옵션 자동 기입

@@ -714,3 +714,55 @@ async function generateQuotePDF() {
         btn.disabled = false;
     }
 }
+
+// [신규] 상세페이지 바로구매(결제창 즉시 이동) 처리용 전역 함수
+window.buyNowDirect = async function(item) {
+    let cart = getCart();
+    // 동일 상품 및 동일 옵션 존재 여부 확인
+    const existing = cart.find(x => x.id === item.id && x.optionColor === item.optionColor && x.optionSize === item.optionSize);
+    if (existing) {
+        existing.qty += item.qty;
+    } else {
+        cart.push(item);
+    }
+    saveCart(cart);
+    renderCart();
+
+    const checkoutOverlay = document.getElementById('checkoutOverlay');
+    const checkoutMsg = document.getElementById('checkoutMsg');
+    
+    let total = 0;
+    cart.forEach(x => total += x.price * x.qty);
+    document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
+    
+    if (checkoutMsg) {
+        checkoutMsg.className = 'auth-message';
+        checkoutMsg.style.display = 'none';
+        checkoutMsg.textContent = '';
+    }
+
+    checkoutOverlay.style.display = 'flex';
+    
+    if (window.supabase) {
+        try {
+            const { data: { user } } = await window.supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await window.supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (profile) {
+                    if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = profile.full_name || '';
+                    if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
+                    if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
+                    if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
+                    if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = profile.address || '';
+                }
+            }
+        } catch (err) {
+            console.error('Failed to pre-fill user info:', err);
+        }
+    }
+};
