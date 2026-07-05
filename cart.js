@@ -1,5 +1,15 @@
 // cart.js - 장바구니 로직 처리
 
+// 나이스페이 결제창 SDK 스크립트 즉시 로드 (onload 시점 이전에 정의하기 위함)
+(function() {
+    if (window.nicepayStart) return;
+    const script = document.createElement('script');
+    script.src = 'https://web.nicepay.co.kr/v3/webstd/js/nicepay-3.0.js';
+    script.type = 'text/javascript';
+    script.charset = 'utf-8';
+    document.head.appendChild(script);
+})();
+
 // NICEPAY 연동에 필요한 헬퍼 함수들
 function getEdiDate() {
     const d = new Date();
@@ -18,22 +28,6 @@ async function sha256(message) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     return hashHex;
-}
-
-function loadNicepayScript() {
-    return new Promise((resolve, reject) => {
-        if (window.nicepayStart) {
-            resolve();
-            return;
-        }
-        const script = document.createElement('script');
-        script.src = 'https://web.nicepay.co.kr/v3/webstd/js/nicepay-3.0.js';
-        script.type = 'text/javascript';
-        script.charset = 'utf-8';
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('나이스페이 결제 모듈 로드에 실패했습니다.'));
-        document.head.appendChild(script);
-    });
 }
 
 // 전역 장바구니 팝업 HTML 템플릿 주입
@@ -225,8 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Supabase client가 초기화되지 않았습니다.');
                 }
 
-                // 1. NICEPAY SDK 스크립트 동적 로드
-                await loadNicepayScript();
+                // 1. NICEPAY SDK 로드 여부 검증
+                if (!window.nicepayStart) {
+                    throw new Error('나이스페이 결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.');
+                }
 
                 // 2. Supabase orders 테이블에 주문 추가 (상태: pending)
                 const { data: orderData, error: orderError } = await window.supabase.from('orders').insert([
