@@ -180,7 +180,8 @@
                 const { data: products, error } = await supabase
                     .from('products')
                     .select('*')
-                    .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+                    .or(
+ame.ilike.%${query}%,description.ilike.%${query}%`)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
