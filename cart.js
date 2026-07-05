@@ -484,11 +484,38 @@ function renderCart() {
     
     if(!cartItemList) return;
 
+    const btnCheckout = document.getElementById('btnCartCheckout');
+    const btnQuote = document.getElementById('btnCartQuote');
+
     if(cart.length === 0) {
         cartItemList.innerHTML = `<div class="cart-empty"><i class="fa-solid fa-box-open" style="font-size:3rem; margin-bottom:15px;"></i><p>장바구니가 비어 있습니다.</p></div>`;
         document.getElementById('cartTotalPrice').innerText = '0원';
         if(badge) badge.style.display = 'none';
+        
+        // 장바구니가 비어있을 때 버튼 비활성화 및 스타일 적용
+        if (btnCheckout) {
+            btnCheckout.disabled = true;
+            btnCheckout.style.opacity = '0.5';
+            btnCheckout.style.cursor = 'not-allowed';
+        }
+        if (btnQuote) {
+            btnQuote.disabled = true;
+            btnQuote.style.opacity = '0.5';
+            btnQuote.style.cursor = 'not-allowed';
+        }
         return;
+    }
+
+    // 장바구니에 상품이 있을 때 버튼 활성화 및 스타일 복구
+    if (btnCheckout) {
+        btnCheckout.disabled = false;
+        btnCheckout.style.opacity = '1';
+        btnCheckout.style.cursor = 'pointer';
+    }
+    if (btnQuote) {
+        btnQuote.disabled = false;
+        btnQuote.style.opacity = '1';
+        btnQuote.style.cursor = 'pointer';
     }
 
     // 뱃지 업데이트
