@@ -1,4 +1,41 @@
 // cart.js - 장바구니 로직 처리
+
+// NICEPAY 연동에 필요한 헬퍼 함수들
+function getEdiDate() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    return `${yyyy}${mm}${dd}${hh}${min}${ss}`;
+}
+
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
+function loadNicepayScript() {
+    return new Promise((resolve, reject) => {
+        if (window.nicepayStart) {
+            resolve();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://web.nicepay.co.kr/v3/webstd/js/nicepay-3.0.js';
+        script.type = 'text/javascript';
+        script.charset = 'utf-8';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('나이스페이 결제 모듈 로드에 실패했습니다.'));
+        document.head.appendChild(script);
+    });
+}
+
 // 전역 장바구니 팝업 HTML 템플릿 주입
 document.addEventListener('DOMContentLoaded', () => {
     // 1. 장바구니 UI 주입
@@ -25,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.body.insertAdjacentHTML('beforeend', cartHTML);
 
-    // 1-2. 주문 정보 입력 모달 주입
+    // 1-2. 주문 정보 입력 모달 주입 (이메일 필드 추가)
     const checkoutHTML = `
         <div id="checkoutOverlay" class="auth-overlay" style="display:none; align-items:center; justify-content:center;">
             <div class="auth-modal" style="max-width:500px;">
@@ -45,6 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <input type="tel" id="checkoutPhone" class="auth-input" placeholder="010-0000-0000" required>
                         </div>
                         <div class="auth-form-group">
+                            <label>이메일 주소 *</label>
+                            <input type="email" id="checkoutEmail" class="auth-input" placeholder="example@email.com" required>
+                        </div>
+                        <div class="auth-form-group">
                             <label>소속 기관 / 학교명</label>
                             <input type="text" id="checkoutOrg" class="auth-input" placeholder="예: 시립도서관">
                         </div>
@@ -56,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span style="font-weight:600; font-size:1.1rem;">최종 결제 금액</span>
                             <span id="checkoutTotalPrice" style="font-weight:800; font-size:1.5rem; color:var(--color-primary);">0원</span>
                         </div>
-                        <button type="submit" class="auth-submit-btn" id="btnSubmitCheckout">주문 완료하기</button>
+                        <button type="submit" class="auth-submit-btn" id="btnSubmitCheckout">결제 및 주문 완료하기</button>
                     </form>
                     <div id="checkoutMsg" class="auth-message"></div>
                 </div>
@@ -113,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (profile) {
                             if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = profile.full_name || '';
                             if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
+                            if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
                             if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
                             if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = profile.address || '';
                         }
@@ -138,14 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 주문서 제출 이벤트
+    // 주문서 제출 이벤트 (NICEPAY 결제창 연동)
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const submitBtn = document.getElementById('btnSubmitCheckout');
             const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = '주문 접수 중...';
+            submitBtn.innerText = '결제 요청 중...';
             submitBtn.disabled = true;
 
             if (checkoutMsg) {
@@ -156,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const name = document.getElementById('checkoutName').value.trim();
                 const phone = document.getElementById('checkoutPhone').value.trim();
+                const email = document.getElementById('checkoutEmail').value.trim();
                 const org = document.getElementById('checkoutOrg').value.trim();
                 const address = document.getElementById('checkoutAddress').value.trim();
                 
@@ -182,8 +225,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Supabase client가 초기화되지 않았습니다.');
                 }
 
-                // Supabase orders 테이블에 주문 추가
-                const { data, error } = await window.supabase.from('orders').insert([
+                // 1. NICEPAY SDK 스크립트 동적 로드
+                await loadNicepayScript();
+
+                // 2. Supabase orders 테이블에 주문 추가 (상태: pending)
+                const { data: orderData, error: orderError } = await window.supabase.from('orders').insert([
                     {
                         customer_name: name,
                         customer_phone: phone,
@@ -194,9 +240,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 ]).select();
 
-                if (error) throw error;
+                if (orderError) throw orderError;
+                if (!orderData || orderData.length === 0) {
+                    throw new Error('주문 생성에 실패했습니다.');
+                }
 
-                // 로그인 회원인 경우 프로필의 주소/연락처가 빈 경우 자가 치유(자동 저장)
+                const orderId = orderData[0].id; // 생성된 주문 ID (Moid로 사용)
+
+                // 로그인 회원인 경우 프로필의 주소/연락처 자가 치유(자동 저장)
                 const { data: { user } } = await window.supabase.auth.getUser();
                 if (user) {
                     await window.supabase.from('profiles').update({
@@ -206,28 +257,73 @@ document.addEventListener('DOMContentLoaded', () => {
                     }).eq('id', user.id);
                 }
 
-                // 성공 메시지 표시
-                if (checkoutMsg) {
-                    checkoutMsg.textContent = '주문이 성공적으로 접수되었습니다! 결제계좌는 하단 정보를 참조해주세요.';
-                    checkoutMsg.classList.add('success');
-                    checkoutMsg.style.display = 'block';
+                // 3. NICEPAY 서명 데이터 생성 (SHA-256)
+                const NICEPAY_MID = 'SG1142086m';
+                const NICEPAY_KEY = 'AaJF/v+0i2QFScNpEl2pNs/5VqTk6rRyh2iwP1RlQ7Oxhta5jNNAitKJpY0Q15Lcm4p8jOD0UZ40ob9XgkJyoA==';
+                
+                // Return URL: 결제 결과를 수신할 Supabase Edge Function 주소
+                const NICEPAY_RETURN_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback';
+
+                const ediDate = getEdiDate();
+                
+                // SignData = SHA256(EdiDate + MID + Amt + MerchantKey)
+                const signSource = ediDate + NICEPAY_MID + totalPrice + NICEPAY_KEY;
+                const signData = await sha256(signSource);
+
+                // 4. NICEPAY 결제를 위한 히든 폼 생성 및 전송
+                // 기존 결제 폼 제거
+                const existingForm = document.querySelector('form[name="payForm"]');
+                if (existingForm) {
+                    existingForm.remove();
                 }
 
-                // 장바구니 비우기
-                localStorage.removeItem('sg_limu_cart');
-                renderCart();
+                const form = document.createElement('form');
+                form.name = 'payForm';
+                form.method = 'POST';
+                form.action = NICEPAY_RETURN_URL; // NICEPAY가 최종 결제 완료 후 POST 결과를 전송할 주소
 
-                setTimeout(() => {
-                    checkoutOverlay.style.display = 'none';
-                    checkoutForm.reset();
-                    // 새로고침하여 상태 반영
-                    window.location.reload();
-                }, 2000);
+                // 필드값 정의
+                const fields = {
+                    PayMethod: 'CARD', // 기본 결제 수단: 신용카드
+                    GoodsName: orderProductName,
+                    Amt: totalPrice,
+                    MID: NICEPAY_MID,
+                    Moid: orderId,
+                    BuyerName: name,
+                    BuyerTel: phone,
+                    BuyerEmail: email,
+                    EdiDate: ediDate,
+                    SignData: signData,
+                    CharSet: 'utf-8',
+                    GoodsCl: '1', // 1: 실물, 0: 컨텐츠
+                    TransType: '0', // 0: 일반, 1: 에스크로
+                    NP_Keytype: '2' // 2: SHA256
+                };
+
+                for (const [key, value] of Object.entries(fields)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
+                }
+
+                document.body.appendChild(form);
+
+                // 결제 완료 시 로컬 카트를 지우기 위한 임시 세션 마킹 (NICEPAY는 Iframe으로 결제되므로 완료 후 페이지 전환 전 카트 정리용)
+                localStorage.setItem('sg_limu_pending_order', orderId);
+
+                // 5. NICEPAY 결제창 시작
+                nicepayStart();
+                
+                // 버튼 상태 복구
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
 
             } catch (err) {
                 console.error('Order checkout error:', err);
                 if (checkoutMsg) {
-                    checkoutMsg.textContent = '주문 실패: ' + (err.message || '알 수 없는 오류');
+                    checkoutMsg.textContent = '결제 요청 실패: ' + (err.message || '알 수 없는 오류');
                     checkoutMsg.classList.add('error');
                     checkoutMsg.style.display = 'block';
                 }
