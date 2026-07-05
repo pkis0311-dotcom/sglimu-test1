@@ -1340,11 +1340,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     window.renderProductOptionsMarkup = renderProductOptionsMarkup;
 
+    // [신규 헬퍼] 상품 리스트 HTML 렌더링 함수 (중복 배제 및 캐싱 데이터 복원용)
+    function renderProducts(container, products, configMap, selectedIds) {
+        container.innerHTML = '';
+        // 정렬 순서 유지
+        const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
+        
+        sortedProducts.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card visible';
+            card.style.cursor = 'pointer';
+            card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
+            
+            const pData = configMap['pageData_' + p.id];
+            const displayImg = (pData && pData.mainImages && pData.mainImages.length > 0) ? pData.mainImages[0] : 'assets/no-image.png';
+            
+            const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+            const commentHtml = p.short_comment ? `<p style="font-size:0.78rem; color:#888; margin:0 0 4px 0; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.short_comment}</p>` : '';
+            const options = parseProductOptions(p);
+            const optionsHtml = renderProductOptionsMarkup(options.colors, options.sizes);
+            
+            card.innerHTML = `
+                <div class="product-img" style="background-image: url('${displayImg}'); background-size: cover; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                <div class="product-info" style="text-align:center; padding:15px;">
+                    <h4 style="margin-bottom:4px;">${p.name}</h4>
+                    ${commentHtml}
+                    <p style="color:var(--color-primary); font-weight:bold; margin:0;">${priceStr}</p>
+                    ${optionsHtml}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // [최적화] 전시 상품 조회 로직 (브라우저 세션 캐시 탑재)
     window.loadDisplayProducts = async function(containerId, displayKey) {
         const container = document.querySelector(`#${containerId} .product-list`) || document.getElementById(containerId);
         if(!container) return;
 
         try {
+            // 1. 브라우저 세션 캐시 조회 (동일 탭 내 즉각 로드)
+            const cacheKey = 'sg_display_' + displayKey;
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+                const data = JSON.parse(cached);
+                renderProducts(container, data.products, data.configMap, data.selectedIds);
+                return;
+            }
+
             const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
             const selectedIds = configData ? configData.value : [];
 
@@ -1372,49 +1415,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error("Error loading site configs for products", err);
             }
 
-            container.innerHTML = '';
-            // 정렬 순서 유지
-            const sortedProducts = selectedIds.map(id => products.find(p => p.id === id)).filter(p => p);
-            
-            sortedProducts.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card visible';
-                card.style.cursor = 'pointer';
-                card.onclick = () => window.location.href = 'product-detail.html?id=' + p.id;
-                
-                const pData = configMap['pageData_' + p.id];
-                const displayImg = (pData && pData.mainImages && pData.mainImages.length > 0) ? pData.mainImages[0] : 'assets/no-image.png';
-                
-                const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
-                const commentHtml = p.short_comment ? `<p style="font-size:0.78rem; color:#888; margin:0 0 4px 0; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.short_comment}</p>` : '';
-                const options = parseProductOptions(p);
-                const optionsHtml = renderProductOptionsMarkup(options.colors, options.sizes);
-                
-                card.innerHTML = `
-                    <div class="product-img" style="background-image: url('${displayImg}'); background-size: cover; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
-                    <div class="product-info" style="text-align:center; padding:15px;">
-                        <h4 style="margin-bottom:4px;">${p.name}</h4>
-                        ${commentHtml}
-                        <p style="color:var(--color-primary); font-weight:bold; margin:0;">${priceStr}</p>
-                        ${optionsHtml}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            // 2. 세션 캐시 저장
+            sessionStorage.setItem(cacheKey, JSON.stringify({ products, configMap, selectedIds }));
+
+            renderProducts(container, products, configMap, selectedIds);
         } catch (err) {
             console.error("Load Products Error:", err);
         }
     };
 
     // ---------------------------------------------------------
-    // 9. Dynamic Sub-Category Tabs (Category Pages)
+    // 9. Dynamic Sub-Category Tabs (Category Pages) - [최적화 완료]
     // ---------------------------------------------------------
     async function initDynamicSubNav() {
         const subNav = document.getElementById('subCategoryNav');
         if (!subNav) return;
 
-        // CURRENT_PAGE_ID는 각 html의 스크립트에서 전역 변수로 정의되어 있어야 합니다.
-        // [수정] URL 파라미터가 있으면 우선 사용, 없으면 전역 변수 사용
         const urlParams = new URLSearchParams(window.location.search);
         const pageId = urlParams.get('id') || window.CURRENT_PAGE_ID;
         
@@ -1424,9 +1440,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const { data: catData } = await supabase.from('site_configs').select('value').eq('key', 'site_categories').single();
-            if (!catData) return;
-            const siteCategories = catData.value;
+            // 카테고리 구성 데이터 캐싱 처리 (1회 로드 후 재활용)
+            let siteCategories = null;
+            const cachedCat = sessionStorage.getItem('sg_site_categories');
+            if (cachedCat) {
+                siteCategories = JSON.parse(cachedCat);
+            } else {
+                const { data: catData } = await supabase.from('site_configs').select('value').eq('key', 'site_categories').single();
+                if (catData) {
+                    siteCategories = catData.value;
+                    sessionStorage.setItem('sg_site_categories', JSON.stringify(siteCategories));
+                }
+            }
+
+            if (!siteCategories) return;
 
             // 현재 페이지(중간분류) 찾기
             let currentMiddle = null;
@@ -1439,7 +1466,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!currentMiddle || !currentMiddle.subs) return;
             
-            // [추가] 헤더 타이틀 동적 변경
             const titleElem = document.querySelector('.category-title');
             if (titleElem && currentMiddle.label) {
                 titleElem.textContent = currentMiddle.label;
@@ -1451,10 +1477,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 탭 초기화
             subNav.innerHTML = '';
-            
-            const detailSection = document.querySelector('.dynamic-detail-section');
             const sortedSubs = [...currentMiddle.subs].sort((a, b) => (a.order || 0) - (b.order || 0));
 
+            // DOM 탭 및 서브컨텐츠 컨테이너를 동기(동시) 생성
             for (const [index, sub] of sortedSubs.entries()) {
                 // 탭 생성
                 const li = document.createElement('li');
@@ -1477,22 +1502,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
                 subNav.appendChild(li);
 
-                // 컨텐츠 영역 생성 (없을 경우만)
+                // 컨텐츠 영역 생성
                 let contentDiv = document.getElementById(sub.id);
                 if (!contentDiv) {
                     contentDiv = document.createElement('div');
                     contentDiv.id = sub.id;
                     contentDiv.className = `sub-content ${index === 0 ? 'active' : ''}`;
                     contentDiv.innerHTML = '<div class="product-list"></div>';
-                    // subNav의 부모(container)에 추가
                     subNav.parentElement.appendChild(contentDiv);
                 } else {
                     contentDiv.classList.toggle('active', index === 0);
                 }
-
-                // 상품 로드
-                await window.loadDisplayProducts(sub.id, pageId + '-' + sub.id);
             }
+
+            // [병렬 핵심 최적화] Promise.all을 활용해 모든 소분류 상품 정보를 동시에 병렬 요청 로드
+            const loadPromises = sortedSubs.map(sub => 
+                window.loadDisplayProducts(sub.id, pageId + '-' + sub.id)
+            );
+            await Promise.all(loadPromises);
 
         } catch (err) {
             console.error("SubNav Load Error:", err);
