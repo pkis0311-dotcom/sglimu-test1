@@ -2,7 +2,7 @@
 
 // 나이스페이 결제창 SDK 스크립트 즉시 로드 (onload 시점 이전에 정의하기 위함)
 (function() {
-    if (window.nicepayStart) return;
+    if (window.goPay) return;
     const script = document.createElement('script');
     script.src = 'https://web.nicepay.co.kr/v3/webstd/js/nicepay-3.0.js';
     script.type = 'text/javascript';
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // 1. NICEPAY SDK 로드 여부 검증
-                if (!window.nicepayStart) {
+                if (!window.goPay) {
                     throw new Error('나이스페이 결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.');
                 }
 
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('sg_limu_pending_order', orderId);
 
                 // 5. NICEPAY 결제창 시작
-                nicepayStart();
+                goPay(form);
                 
                 // 버튼 상태 복구
                 submitBtn.innerText = originalBtnText;
