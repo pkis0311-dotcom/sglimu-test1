@@ -1812,3 +1812,73 @@ button {
     font-weight: bold !important;
     color: #333 !important;
 }
+
+/* --- Responsive Typography and Spacing Adjustments --- */
+@media (max-width: 768px) {
+    html {
+        font-size: 14px; /* Scales down all REM units globally by 12.5% */
+    }
+    
+    /* Specific overrides to keep layouts proportional */
+    .slide-content h2 {
+        font-size: 1.8rem !important;
+    }
+    .section-title {
+        font-size: 1.5rem !important;
+    }
+    .product-title {
+        font-size: 1.6rem !important;
+    }
+    .product-price {
+        font-size: 1.8rem !important;
+    }
+    .category-title {
+        font-size: 1.8rem !important;
+        margin-bottom: 10px !important;
+    }
+    .category-header {
+        margin-bottom: 30px !important;
+        padding: 40px 5% !important;
+    }
+    .subcategory-item {
+        padding: 8px 18px !important;
+        font-size: 0.95rem !important;
+    }
+    .product-detail-top {
+        gap: 30px !important;
+        margin-bottom: 40px !important;
+    }
+    .purchase-options {
+        margin-top: 15px !important;
+    }
+    .buy-btn-group {
+        margin-top: 20px !important;
+        gap: 10px !important;
+    }
+    .btn-large {
+        padding: 12px 20px !important;
+        font-size: 0.95rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        font-size: 13px; /* Scales down all REM units globally by 18.75% for phones */
+    }
+    .slide-content h2 {
+        font-size: 1.5rem !important;
+    }
+    .category-title {
+        font-size: 1.6rem !important;
+    }
+    .product-title {
+        font-size: 1.4rem !important;
+    }
+    .product-price {
+        font-size: 1.6rem !important;
+    }
+    .btn-large {
+        font-size: 0.9rem !important;
+        padding: 10px 15px !important;
+    }
+}
