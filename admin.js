@@ -117,6 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     // 실시간 채팅 로직 (관리자용 고도화)
     // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    // 실시간 채팅 로직 (관리자용 고도화 + 실시간 알림 알람 추가)
+    // ---------------------------------------------------------
     const adminChatTrigger = document.getElementById('adminChatTrigger');
     const chatWindow = document.getElementById('chatWindow');
     const chatCloseBtn = document.getElementById('chatCloseBtn');
@@ -127,14 +130,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentRoomId = null; // 현재 대화 중인 고객의 Room ID
     let chatRooms = []; // 활성 채팅방 목록
+    let unreadCount = 0;
+
+    // 미확인 메시지 뱃지 엘리먼트 생성 및 주입
+    const chatBadge = document.createElement('span');
+    chatBadge.id = 'adminChatBadge';
+    chatBadge.style.display = 'none';
+    chatBadge.style.background = '#e74c3c';
+    chatBadge.style.color = '#fff';
+    chatBadge.style.borderRadius = '10px';
+    chatBadge.style.padding = '2px 6px';
+    chatBadge.style.fontSize = '10px';
+    chatBadge.style.marginLeft = '6px';
+    chatBadge.style.fontWeight = 'bold';
+    chatBadge.style.verticalAlign = 'middle';
+    if (adminChatTrigger) {
+        adminChatTrigger.appendChild(chatBadge);
+    }
 
     // 1) 채팅창 토글 및 초기화
     if (adminChatTrigger && chatWindow) {
         adminChatTrigger.addEventListener('click', async () => {
             const isActive = chatWindow.classList.toggle('active');
             if (isActive) {
+                // 알림 뱃지 초기화
+                unreadCount = 0;
+                chatBadge.style.display = 'none';
+                
                 await loadChatRooms();
-                subscribeToAllChats();
                 renderRoomList();
             }
         });
@@ -254,6 +277,97 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 
+    // [신규] 실시간 채팅 웹 알림 토스트 UI 출력
+    function showChatToast(senderName, messageText, roomId) {
+        // 기존 토스트가 있다면 삭제
+        const existingToast = document.getElementById('chatToastAdmin');
+        if (existingToast) existingToast.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'chatToastAdmin';
+        toast.style.position = 'fixed';
+        toast.style.bottom = '25px';
+        toast.style.right = '25px';
+        toast.style.background = 'rgba(44, 95, 45, 0.95)';
+        toast.style.color = '#fff';
+        toast.style.padding = '14px 18px';
+        toast.style.borderRadius = '8px';
+        toast.style.boxShadow = '0 5px 20px rgba(0,0,0,0.3)';
+        toast.style.display = 'flex';
+        toast.style.alignItems = 'center';
+        toast.style.gap = '12px';
+        toast.style.zIndex = '999999';
+        toast.style.cursor = 'pointer';
+        toast.style.transition = 'all 0.3s ease';
+        toast.style.border = '1px solid rgba(255,255,255,0.15)';
+        toast.style.backdropFilter = 'blur(10px)';
+
+        toast.innerHTML = `
+            <div style="font-size: 22px; color: #8ec342;"><i class="fa-solid fa-comment-dots"></i></div>
+            <div style="flex-grow: 1;">
+                <div style="font-weight: 700; font-size: 13px; margin-bottom: 2px; color: #fff;">실시간 채팅 알림 (${senderName})</div>
+                <div style="font-size: 12px; color: #eee; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${messageText}</div>
+            </div>
+        `;
+
+        toast.onclick = () => {
+            toast.remove();
+            if (chatWindow && !chatWindow.classList.contains('active')) {
+                chatWindow.classList.add('active');
+            }
+            unreadCount = 0;
+            chatBadge.style.display = 'none';
+            openChatRoom(roomId, senderName);
+        };
+
+        document.body.appendChild(toast);
+        playNotificationSound();
+
+        // 4초 후 페이드아웃 및 제거
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 4000);
+    }
+
+    // Web Audio API를 활용한 알림 알람음 재생 (별도 음원 로드 필요 없음)
+    function playNotificationSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // 첫번째 음
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+            gain1.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc1.start(audioCtx.currentTime);
+            osc1.stop(audioCtx.currentTime + 0.15);
+
+            // 두번째 음
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime); // A5
+                gain2.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc2.start(audioCtx.currentTime);
+                osc2.stop(audioCtx.currentTime + 0.25);
+            }, 120);
+        } catch (e) {
+            console.warn('Audio play error:', e);
+        }
+    }
+
     // 6) 실시간 모든 메시지 감시
     let adminChatChannel = null;
     function subscribeToAllChats() {
@@ -268,13 +382,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newMsg = payload.new;
                 
                 // 1. 현재 열려있는 채팅방의 메시지인 경우 즉시 렌더링
-                if (currentRoomId === newMsg.room_id) {
+                const isCurrentRoom = currentRoomId === newMsg.room_id;
+                if (isCurrentRoom) {
                     if (newMsg.sender_role === 'customer') {
                         renderAdminMessage(newMsg.message, 'system');
                     }
                 } 
                 
-                // 2. 전체 목록 갱신 (비동기)
+                // 2. 고객이 보낸 메시지인 경우 알람 노출
+                if (newMsg.sender_role === 'customer') {
+                    const isChatWindowActive = chatWindow && chatWindow.classList.contains('active');
+                    
+                    if (!isChatWindowActive || !isCurrentRoom) {
+                        // 대화창이 꺼져있거나, 켜져있어도 다른 사람과의 방일 때 알림 활성화
+                        unreadCount++;
+                        chatBadge.textContent = unreadCount;
+                        chatBadge.style.display = 'inline-block';
+                        showChatToast(newMsg.sender_name, newMsg.message, newMsg.room_id);
+                    }
+                }
+
+                // 3. 전체 목록 갱신 (비동기)
                 loadChatRooms().then(() => {
                     if (!currentRoomId) renderRoomList();
                 });
@@ -308,6 +436,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatInput) chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendAdminMessage();
     });
+
+    // 관리자 페이지에 접속하는 즉시 모든 대화 실시간 구독 채널 활성화
+    subscribeToAllChats();
 });
 
 // ==========================================
