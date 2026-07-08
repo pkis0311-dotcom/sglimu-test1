@@ -674,28 +674,22 @@ button {
     padding: 60px 20px;
     font-size: 0.95rem;
     line-height: 1.8;
+    position: relative;
 }
 
 .footer-container {
     max-width: 1400px;
     margin: 0 auto;
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 20px;
-}
-
-.footer-info {
-    flex: 1;
-    min-width: 280px;
 }
 
 .footer-logo {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    margin-top: 10px;
 }
 
 .footer-logo img {
@@ -703,6 +697,15 @@ button {
     height: 68px;
     display: block;
     image-rendering: -webkit-optimize-contrast;
+}
+
+@media (min-width: 992px) {
+    .footer-logo {
+        position: absolute;
+        bottom: 50px;
+        right: 60px;
+        margin-top: 0;
+    }
 }
 
 .footer-info p {
