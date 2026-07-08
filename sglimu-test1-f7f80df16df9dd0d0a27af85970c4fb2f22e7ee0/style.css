@@ -84,6 +84,20 @@ button {
 .logo a {
     display: flex;
     align-items: center;
+    text-decoration: none;
+}
+
+.logo a img {
+    display: none !important;
+}
+
+.logo a::after {
+    content: "SGLIMU" !important;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    letter-spacing: 1px;
+    font-family: 'Pretendard', sans-serif;
 }
 
 .logo img {
@@ -666,8 +680,32 @@ button {
     max-width: 1400px;
     margin: 0 auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
     gap: 20px;
+}
+
+.footer-info {
+    flex: 1;
+    min-width: 280px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.footer-logo img {
+    max-height: 45px;
+    filter: grayscale(100%) opacity(40%);
+    transition: all 0.3s ease;
+}
+
+.footer-logo img:hover {
+    filter: grayscale(0%) opacity(80%);
 }
 
 .footer-info p {

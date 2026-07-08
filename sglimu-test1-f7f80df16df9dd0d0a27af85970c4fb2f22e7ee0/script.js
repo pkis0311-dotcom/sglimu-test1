@@ -1,6 +1,15 @@
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // [신규] 상단 로고 이미지 하단 우측으로 이동 동적 처리
+    const footerContainer = document.querySelector('.footer-container');
+    if (footerContainer && !document.querySelector('.footer-logo')) {
+        const footerLogo = document.createElement('div');
+        footerLogo.className = 'footer-logo';
+        footerLogo.innerHTML = `<img src="assets/logo.png" alt="에스지라이뮤">`;
+        footerContainer.appendChild(footerLogo);
+    }
+
     // ---------------------------------------------------------
     // 1. Search Logic (Should run first to be robust)
     // ---------------------------------------------------------
