@@ -109,14 +109,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectedIndex = -1;
     }
 
+    // 연관 검색어 정의 맵
+    const RELATED_KEYWORDS_MAP = {
+        "스티커": ["라벨용지", "분류용 라벨", "라벨키퍼", "양면테이프", "DLS라벨"],
+        "라벨용지": ["스티커", "분류용 라벨", "라벨키퍼", "바코드라벨", "책꽂이라벨"],
+        "라벨": ["스티커", "라벨키퍼", "바코드라벨", "분류용 라벨", "책꽂이라벨"],
+        "바코드": ["바코드라벨", "도서대출", "사서용 리더기"],
+        "책꽂이": ["북엔드", "서가", "책꽂이라벨"],
+        "북엔드": ["책꽂이", "서가", "다이나믹 책꽂이"],
+        "도서정리": ["분류용 라벨", "라벨키퍼", "북엔드", "색띠라벨"],
+        "도서관": ["도서대출", "도서반납기", "북엔드", "분류용 라벨", "책소독기"],
+        "소독": ["책소독기", "살균 소모품", "도서 소독"],
+        "살균": ["책소독기", "살균 소모품", "필터"],
+        "책소독기": ["살균 소모품", "책소독기 필터", "도서관 소독"],
+        "가구": ["서가", "테이블", "의자", "코아스", "포머스", "퍼시스"],
+        "서가": ["코아스 서가", "포머스 서가", "테이블", "의자"],
+        "분실방지": ["도서분실방지", "EM 감응테이프", "스피드게이트"]
+    };
+
+    function getExpandedKeywords(query) {
+        const keywords = [query];
+        const lowerQuery = query.toLowerCase();
+        
+        for (const [key, relatedList] of Object.entries(RELATED_KEYWORDS_MAP)) {
+            if (lowerQuery.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerQuery)) {
+                relatedList.forEach(item => {
+                    if (!keywords.some(k => k.toLowerCase() === item.toLowerCase())) {
+                        keywords.push(item);
+                    }
+                });
+            }
+        }
+        return keywords;
+    }
+
     async function fetchSuggestions(query) {
         if (!query) return;
         try {
+            // 연관 검색어 확장
+            const searchTerms = getExpandedKeywords(query);
+            const orFilter = searchTerms.map(term => `name.ilike.%${term}%,description.ilike.%${term}%`).join(',');
+
             // Fetch up to 6 products matching the query
             const { data: products, error } = await supabase
                 .from('products')
                 .select('id, name, price, image_url, short_comment')
-                .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+                .or(orFilter)
                 .limit(6);
 
             if (error) throw error;

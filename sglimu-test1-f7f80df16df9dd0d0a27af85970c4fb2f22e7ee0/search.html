@@ -73,6 +73,44 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        /* 연관 검색어 스타일 */
+        .related-keywords-container {
+            margin: 20px auto 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        .related-title {
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .related-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--color-text);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .related-badge:hover {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
 <body>
@@ -161,6 +199,40 @@
     <script type="module">
         import { supabase } from './supabase-client.js';
 
+        // 연관 검색어 정의 맵
+        const RELATED_KEYWORDS_MAP = {
+            "스티커": ["라벨용지", "분류용 라벨", "라벨키퍼", "양면테이프", "DLS라벨"],
+            "라벨용지": ["스티커", "분류용 라벨", "라벨키퍼", "바코드라벨", "책꽂이라벨"],
+            "라벨": ["스티커", "라벨키퍼", "바코드라벨", "분류용 라벨", "책꽂이라벨"],
+            "바코드": ["바코드라벨", "도서대출", "사서용 리더기"],
+            "책꽂이": ["북엔드", "서가", "책꽂이라벨"],
+            "북엔드": ["책꽂이", "서가", "다이나믹 책꽂이"],
+            "도서정리": ["분류용 라벨", "라벨키퍼", "북엔드", "색띠라벨"],
+            "도서관": ["도서대출", "도서반납기", "북엔드", "분류용 라벨", "책소독기"],
+            "소독": ["책소독기", "살균 소모품", "도서 소독"],
+            "살균": ["책소독기", "살균 소모품", "필터"],
+            "책소독기": ["살균 소모품", "책소독기 필터", "도서관 소독"],
+            "가구": ["서가", "테이블", "의자", "코아스", "포머스", "퍼시스"],
+            "서가": ["코아스 서가", "포머스 서가", "테이블", "의자"],
+            "분실방지": ["도서분실방지", "EM 감응테이프", "스피드게이트"]
+        };
+
+        function getExpandedKeywords(query) {
+            const keywords = [query];
+            const lowerQuery = query.toLowerCase();
+            
+            for (const [key, relatedList] of Object.entries(RELATED_KEYWORDS_MAP)) {
+                if (lowerQuery.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerQuery)) {
+                    relatedList.forEach(item => {
+                        if (!keywords.some(k => k.toLowerCase() === item.toLowerCase())) {
+                            keywords.push(item);
+                        }
+                    });
+                }
+            }
+            return keywords;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('q');
@@ -176,11 +248,30 @@
 
             resultCountElem.innerHTML = `<span class="search-query">"${query}"</span> 에 대한 검색 결과입니다.`;
 
+            // 연관 검색어 확장
+            const searchTerms = getExpandedKeywords(query);
+            
+            // 연관 검색어 배지 UI 렌더링
+            const relatedTerms = searchTerms.filter(term => term.toLowerCase() !== query.toLowerCase());
+            if (relatedTerms.length > 0) {
+                const headerContainer = document.querySelector('.search-header');
+                const relatedDiv = document.createElement('div');
+                relatedDiv.className = 'related-keywords-container';
+                relatedDiv.innerHTML = `
+                    <span class="related-title"><i class="fa-solid fa-link"></i> 연관 검색어:</span>
+                    ${relatedTerms.map(term => `<a href="search.html?q=${encodeURIComponent(term)}" class="related-badge">${term}</a>`).join('')}
+                `;
+                headerContainer.appendChild(relatedDiv);
+            }
+
             try {
+                // 다중 검색 조건을 위한 OR 필터 빌드
+                const orFilter = searchTerms.map(term => `name.ilike.%${term}%,description.ilike.%${term}%`).join(',');
+
                 const { data: products, error } = await supabase
                     .from('products')
                     .select('*')
-                    .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+                    .or(orFilter)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
