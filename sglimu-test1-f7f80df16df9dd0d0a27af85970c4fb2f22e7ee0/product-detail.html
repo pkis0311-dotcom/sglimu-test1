@@ -96,7 +96,7 @@
                     <span class="badge badge-best">BEST</span>
                 </div>
                 <h2 class="product-title">제품 로딩 중...</h2>
-                <p class="product-desc" id="dynamicDesc"></p>
+                <div class="product-desc ql-editor" id="dynamicDesc"></div>
                 
                 <div class="product-price">
                     0<span>원</span>
@@ -471,7 +471,7 @@
                         table.style.borderCollapse = 'collapse';
                         const tbody = document.createElement('tbody');
                         data.specs.forEach(s => {
-                            tbody.innerHTML += `<tr><th style="padding:15px; text-align:left; background:#f9f9f9; width:25%; border:1px solid #ddd;">${s.key}</th><td style="padding:15px; border:1px solid #ddd;">${s.val}</td></tr>`;
+                            tbody.innerHTML += `<tr><th style="padding:15px; text-align:left; background:#f9f9f9; width:25%; border:1px solid #ddd;">${s.key}</th><td class="ql-editor" style="padding:15px; border:1px solid #ddd;">${s.val}</td></tr>`;
                         });
                         table.appendChild(tbody);
                         specContainer.appendChild(table);
@@ -480,7 +480,7 @@
                             specContainer.innerHTML += `
                                 <div class="spec-item">
                                     <div class="spec-key">${s.key}</div>
-                                    <div class="spec-val">${s.val}</div>
+                                    <div class="spec-val ql-editor" style="padding:0;">${s.val}</div>
                                 </div>
                             `;
                         });
@@ -506,7 +506,7 @@
                                     <div class="feature-num">${num}</div>
                                     <div class="feature-content">
                                         <h5>${feat.title}</h5>
-                                        <p>${feat.desc.replace(/\n/g, '<br>')}</p>
+                                        <div class="ql-editor" style="padding:0; color:#666;">${feat.desc}</div>
                                     </div>
                                 </div>
                             `;
@@ -514,7 +514,7 @@
                             featureContainer.innerHTML += `
                                 <div class="feature-item">
                                     <h5>${feat.title}</h5>
-                                    <p>${feat.desc.replace(/\n/g, '<br>')}</p>
+                                    <div class="ql-editor" style="padding:0; color:#555;">${feat.desc}</div>
                                 </div>
                             `;
                         } else if (styleClass === 'type-c') {
@@ -523,8 +523,8 @@
                                     <div class="feature-title-box">
                                         <h5>${feat.title}</h5>
                                     </div>
-                                    <div class="feature-desc-box">
-                                        <p>${feat.desc.replace(/\n/g, '<br>')}</p>
+                                    <div class="feature-desc-box ql-editor" style="padding:0; color:#555; max-width:800px;">
+                                        ${feat.desc}
                                     </div>
                                 </div>
                             `;

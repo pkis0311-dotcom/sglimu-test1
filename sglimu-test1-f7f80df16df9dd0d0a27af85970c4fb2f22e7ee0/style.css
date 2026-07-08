@@ -1207,7 +1207,7 @@ button {
     width: 100% !important;
     border-collapse: collapse !important;
     border: 1px solid #d4d4d4 !important;
-    font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif !important;
+    font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif;
 }
 .spec-container.type-a th, .spec-table th {
     background: #f2f2f2 !important;
@@ -1760,9 +1760,8 @@ button {
 }
 
 /* --- Quill Editor Output Alignment & Size Styles & Excel Font Theme --- */
-.ql-editor,
-.ql-editor * {
-    font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif !important;
+.ql-editor {
+    font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif;
 }
 
 /* Quill text alignment classes */
@@ -1805,7 +1804,7 @@ button {
 .ql-editor table th, .ql-editor table td {
     border: 1px solid #d4d4d4 !important;
     padding: 8px 12px !important;
-    font-size: 0.95rem !important;
+    font-size: 0.95rem;
 }
 .ql-editor table th {
     background-color: #f2f2f2 !important;
