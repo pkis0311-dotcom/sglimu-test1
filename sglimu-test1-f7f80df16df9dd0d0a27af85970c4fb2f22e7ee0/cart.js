@@ -32,6 +32,16 @@ async function sha256(message) {
 
 // 전역 장바구니 팝업 HTML 템플릿 주입
 document.addEventListener('DOMContentLoaded', () => {
+    // 결제 완료 후 리다이렉트 처리 확인 (URL 파라미터가 ?payment=success 인 경우)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success') {
+        localStorage.removeItem('sg_limu_cart');
+        localStorage.removeItem('sg_limu_pending_order');
+        alert('결제가 완료되었습니다. 주문해 주셔서 감사합니다!');
+        // URL 파라미터 제거하여 주소창 정리
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     // 1. 장바구니 UI 주입
     const cartHTML = `
         <div id="cartOverlay" class="slide-cart-overlay">
@@ -257,8 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const NICEPAY_MID = 'SG1142086m';
                 const NICEPAY_KEY = 'AaJF/v+0i2QFScNpEl2pNs/5VqTk6rRyh2iwP1RlQ7Oxhta5jNNAitKJpY0Q15Lcm4p8jOD0UZ40ob9XgkJyoA==';
                 
-                // Return URL: 결제 결과를 수신할 Supabase Edge Function 주소
-                const NICEPAY_RETURN_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback';
+                // Return URL: 결제 결과를 수신할 Supabase Edge Function 주소 (현재 페이지 도메인을 redirect_url로 전달)
+                const NICEPAY_RETURN_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback?redirect_url=' + encodeURIComponent(window.location.origin + window.location.pathname);
 
                 const ediDate = getEdiDate();
                 
@@ -791,5 +801,15 @@ window.buyNowDirect = async function(item) {
         } catch (err) {
             console.error('Failed to pre-fill user info:', err);
         }
+    }
+};
+
+// NICEPAY 결제 인증 완료 후 호출되는 콜백 함수
+window.nicepaySubmit = function() {
+    const form = document.querySelector('form[name="payForm"]');
+    if (form) {
+        form.submit();
+    } else {
+        console.error('NICEPAY 결제 폼(payForm)을 찾을 수 없습니다.');
     }
 };

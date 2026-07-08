@@ -1,0 +1,543 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>�ھƽ� CAM ���� - ���������̹�</title>
+    <link rel="stylesheet" href="style.css?v=7">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+        .spec-table th, .spec-table td {
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        .spec-table th {
+            background-color: #f9f9f9;
+            width: 25%;
+            font-weight: 600;
+            color: #333;
+        }
+        .spec-table td {
+            color: #555;
+        }
+        .detail-features {
+            margin: 40px 0;
+        }
+        .feature-item {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #eee;
+        }
+        .feature-item h5 {
+            font-size: 1.2rem;
+            color: #222;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .feature-item h5 span {
+            display: inline-block;
+            background: #8ec342;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        .feature-item p {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+    <link rel="stylesheet" href="cart.css">
+    <link rel="stylesheet" href="inquiry.css">
+    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="auth.css">
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2Kes5Q39MW1SI6zWzwA88yCfL9Mi9SbpS7cwjLxS7fJ6" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <h1 class="logo"><a href="index.html"><img src="assets/logo.png" alt="에스지라이뮤"></a></h1>
+            <nav class="gnb">
+                <ul>
+                    <li class="has-submenu"><a href="#">�������� �ý���</a><ul class="submenu"><li><a href="rfid.html">RFID�ý���</a></li><li><a href="em.html">EM�ý���</a></li><li><a href="access.html">���������ý���</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">������ ��ǰ</a><ul class="submenu"><li><a href="supplies-arrange.html">�������� ��ǰ</a></li><li><a href="supplies-protect.html">������ȣ, ������ǰ</a></li><li><a href="supplies-lend.html">�����ǰ</a></li><li><a href="sterilizer.html">å�ҵ���</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">������ ����</a><ul class="submenu"><li><a href="furniture-koas.html">�ھƽ�</a></li><li><a href="furniture-fomus.html">���ӽ�</a></li><li><a href="furniture-fursys.html">�۽ý�</a></li><li><a href="furniture-custom.html">���۰���</a></li></ul></li>
+                    <li class="has-submenu"><a href="#">���ι�</a><ul class="submenu"><li><a href="sign-class.html">�ѱ������з�/��з�ǥ����</a></li><li><a href="sign-board.html">�Խ���/�̿�ȳ�</a></li><li><a href="sign-date.html">����ݳ��Ϸ�ǥ</a></li><li><a href="sign-custom.html">���ۻ��ι�</a></li></ul></li>
+                
+                    <li><a href="discount.html">���λ�ǰ</a></li>
+                </ul>
+            </nav>
+            <div class="header-utils">
+                <form action="search.html" method="get" class="search-wrapper">
+                    <input type="text" name="q" class="search-input" placeholder="검색어를 입력하세요">
+                    <button type="submit" class="search-btn" id="headerSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+                <a href="#"><i class="fa-regular fa-user"></i></a>
+                <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="product-detail-page">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
+            <a href="furniture-koas.html">������ ����</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
+            <strong>�ھƽ� ����</strong>
+        </div>
+
+        <div class="product-detail-top">
+            <!-- Left: Gallery -->
+            <div class="gallery-wrapper">
+                <div class="main-image-container" style="position: relative; cursor: pointer;" onclick="nextSlide(event)">
+                    <img src="cam-1.jpg" alt="�ھƽ� CAM ���� 1" id="mainImage" style="transition: opacity 0.3s ease; width: 100%;">
+                    <button onclick="prevSlide(event)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); color: #333; border: 1px solid #ddd; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button onclick="nextSlide(event)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); color: #333; border: 1px solid #ddd; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="thumbnail-list">
+                    <div class="thumb-item active" onclick="changeImage('cam-1.jpg', 0)">
+                        <img src="cam-1.jpg" alt="��ǰ 1">
+                    </div>
+                    <div class="thumb-item" onclick="changeImage('cam-2.jpg', 1)">
+                        <img src="cam-2.jpg" alt="��ǰ 2">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Info -->
+            <div class="info-wrapper">
+                <div class="product-badges">
+                    <span class="badge badge-best">BEST</span>
+                    <span class="badge badge-new" style="background:#8ec342;">KOAS</span>
+                </div>
+                <h2 class="product-title">�ھƽ� CAM �ٸ��� �޽� ����</h2>
+                <p class="product-desc">�ε巯�� ������ �پ �������� �����ϴ� �ھƽ� ����Ʈ���� ���Դϴ�. �޽� ����̿� ��ƿ�� ������� ������� �����մϴ�.</p>
+                
+                <div class="product-price">
+                    ��ȭ����
+                </div>
+
+                <div class="purchase-options">
+                    <div class="option-group">
+                        <label for="colorOption">��ǰ ����</label>
+                        <select id="colorOption" class="option-select" onchange="syncSlideWithOption(this)">
+                            <option value="">��ǰ�� �����ϼ���</option>
+                            <option value="0">CAM(�Ȱ���)</option>
+                            <option value="1">CAM(�Ȱ���, �޽�����)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group" style="margin-top: 20px;">
+                        <label>����</label>
+                        <div class="quantity-control">
+                            <button class="qty-btn" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <input type="text" class="qty-input" id="qtyInput" value="1" readonly>
+                            <button class="qty-btn" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="buy-btn-group" style="margin-top:30px;">
+                    <button class="btn-icon-large" title="���ɻ�ǰ"><i class="fa-regular fa-heart"></i></button>
+                    <button class="btn-large btn-cart">��ٱ���</button>
+                    <button class="btn-large btn-buy">��������</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="product-detail-bottom">
+            <div class="detail-tabs-nav">
+                <div class="detail-tab-btn active" onclick="switchTab(0, this)">������</div>
+                <div class="detail-tab-btn" onclick="switchTab(1, this)">���žȳ�</div>
+                <div class="detail-tab-btn" onclick="switchTab(2, this)">��ǰ�ı� (0)</div>
+                <div class="detail-tab-btn" onclick="switchTab(3, this)">Q&A (0)</div>
+            </div>
+
+            <div class="detail-tab-content active" id="tab0">
+                
+                <div class="spec-image-container" style="text-align: center; margin-bottom: 50px;">
+                    <img src="cam-detail.jpg" alt="CAM �󼼼��� �������� �̹���" style="max-width: 100%; height: auto; display: inline-block;">
+                </div>
+
+                <div class="info-text-box">
+                    <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 30px;">DETAIL VIEW</h4>
+                    <div class="detail-features">
+                        <div class="feature-item">
+                            <h5><span>01</span> �޽� ����</h5>
+                            <p>�޽� �� ������ ����� ü���� ���� �㸮�� ��� �����־� �ÿ��ϰ� ����� ������ �ݴϴ�.</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5><span>02</span> ��ƿ�� (Back Tilting)</h5>
+                            <p>�ټ� �������� ��ƿ��(Back Tilting) ������� ������ �������� ����ϰ� ���� �����ݴϴ�.</p>
+                        </div>
+                        <div class="feature-item" style="border-bottom: none;">
+                            <h5><span>03</span> ���� ���</h5>
+                            <p>������ �����Ǿ� ���� ������ ������ ���� ������ ȿ�������� Ȱ���� �� �ֽ��ϴ�.</p>
+                        </div>
+                    </div>
+
+                    <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; margin-top: 60px;">DIMENSION (��ǰ ���)</h4>
+                    <table class="spec-table">
+                        <tbody>
+                            <tr>
+                                <th>ũ��</th>
+                                <td>595 x 525 x 820 mm</td>
+                            </tr>
+                            <tr>
+                                <th>����</th>
+                                <td>�������� ���� (Mesh, Fabric ���ξ�)</td>
+                            </tr>
+                            <tr>
+                                <th>����</th>
+                                <td>��ƿ, �˷�̴�, �ö�ƽ, �޽�</td>
+                            </tr>
+                            <tr>
+                                <th>����ǰ</th>
+                                <td>���� 1EA</td>
+                            </tr>
+                            <tr>
+                                <th>������</th>
+                                <td>���ѹα�</td>
+                            </tr>
+                            <tr>
+                                <th>������</th>
+                                <td>(��)�ھƽ�</td>
+                            </tr>
+                            <tr>
+                                <th>ǰ����������</th>
+                                <td>���� A/S �Ⱓ 1��, ���� ���� A/S (1�� �̳����� ��������� ���� A/S)</td>
+                            </tr>
+                            <tr>
+                                <th>���/��ġ</th>
+                                <td>���� ��� / �Ϻ� �갣���� �� �����갣������ ��ۺҰ�</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="detail-tab-content" id="tab1">
+                <div class="info-text-box">
+                    <h4>���/��ȯ/��ǰ �ȳ�</h4>
+                    <p>
+                        <strong>��۾ȳ�</strong><br>
+                        - ���� �Ϸ� �� 3~5�� ���� ���˴ϴ�. (�ָ�/������ ����)<br>
+                        - �ھƽ� ���� ����� ��ǰ���� ������ ���� ������ ������ �� �ֽ��ϴ�.<br><br>
+                        
+                        <strong>��ȯ/��ǰ �ȳ�</strong><br>
+                        - ��ǰ ���� �� 7�� �̳��� ������͸� ���� ������ �ּž� �մϴ�.<br>
+                        - �ܼ� �������� ���� ��ǰ �� �պ� �ù��� ����� �δ��Դϴ�.<br>
+                        - ���� �Ѽ� �� ���� �Ŀ��� ��ǰ ��ġ ��Ƿ� ���� ��ȯ/��ǰ�� �Ұ��մϴ�.
+                    </p>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tab2">
+                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
+                    <i class="fa-regular fa-comment-dots" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666;">��ϵ� ��ǰ�ıⰡ �����ϴ�.</h3>
+                    <p style="color: #999;">ù ��° ���並 �����ּ���!</p>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tab3">
+                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
+                    <i class="fa-regular fa-circle-question" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666;">��ϵ� Q&A�� �����ϴ�.</h3>
+                    <p style="color: #999;">��ǰ�� ���� �ñ����� �����ֽø� ������ �亯�� �帳�ϴ�.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; 점심시간 (12:00~13:00) &nbsp;|&nbsp; E-Mail : limu101@nate.com &nbsp;|&nbsp; Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
+                <p>대표자명 : 강인숙 &nbsp;|&nbsp; 개인정보취급담당자 : 강인숙 &nbsp;|&nbsp; 사업자번호 : 621-81-42086 &nbsp;|&nbsp; 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
+                <p class="copyright">Copyright(c)2026 www.sglimu.com. All right Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <aside class="right-fixed-banner">
+        <ul class="banner-menu">
+            <li><a href="#" class="banner-btn search-btn-aside" title="�˻�"><i class="fa-solid fa-magnifying-glass"></i><span class="tooltip">�˻�</span></a></li>
+            <li><a href="#" class="banner-btn" title="�ֹ����"><i class="fa-solid fa-truck"></i><span class="tooltip">�ֹ����</span></a></li>
+            <li><a href="#" class="banner-btn" title="��ٱ���"><i class="fa-solid fa-cart-shopping"></i><span class="tooltip">��ٱ���</span></a></li>
+            <li><a href="#" class="banner-btn" title="���ɻ�ǰ"><i class="fa-regular fa-heart"></i><span class="tooltip">���ɻ�ǰ</span></a></li>
+            <li><a href="#" class="banner-btn chat-trigger" id="chatTriggerBtn" title="�ǽð� ä��"><i class="fa-solid fa-comments"></i><span class="tooltip">���̹�����</span></a></li>
+            <li class="scroll-btns">
+                <button class="banner-btn scroll-top" id="scrollTopBtn" title="����"><i class="fa-solid fa-chevron-up"></i></button>
+                <button class="banner-btn scroll-bottom" id="scrollBottomBtn" title="�Ʒ���"><i class="fa-solid fa-chevron-down"></i></button>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <button class="chat-fab" id="chatFab">
+            <i class="fa-solid fa-comment-dots"></i>
+        </button>
+        
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <h5>�ǽð� ���</h5>
+                <button id="chatCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="message system-msg">
+                    �ȳ��ϼ���! ���������̹��Դϴ�.<br>������ ���͵帱���?
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="�޽����� �Է��ϼ���...">
+                <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        const images = ['cam-1.jpg', 'cam-2.jpg'];
+        let currentIndex = 0;
+
+        function changeImage(src, index) {
+            currentIndex = index;
+            document.getElementById('mainImage').src = src;
+            const thumbs = document.querySelectorAll('.thumb-item');
+            thumbs.forEach(el => el.classList.remove('active'));
+            if(thumbs[index]) thumbs[index].classList.add('active');
+            
+            const select = document.getElementById('colorOption');
+            if (select) {
+                const optionExists = Array.from(select.options).some(opt => opt.value === index.toString());
+                if (optionExists && select.value !== index.toString()) {
+                    select.value = index.toString();
+                } else if (!optionExists) {
+                    select.value = ""; // Option does not correspond to a specific product
+                }
+            }
+        }
+
+        function prevSlide(event) {
+            if(event) event.stopPropagation();
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            changeImage(images[currentIndex], currentIndex);
+        }
+
+        function nextSlide(event) {
+            if(event) event.stopPropagation();
+            currentIndex = (currentIndex + 1) % images.length;
+            changeImage(images[currentIndex], currentIndex);
+        }
+        
+        function syncSlideWithOption(selectElem) {
+            if(selectElem.value !== "") {
+                const idx = parseInt(selectElem.value);
+                changeImage(images[idx], idx);
+            }
+        }
+
+        function updateQty(change) {
+            const input = document.getElementById('qtyInput');
+            let current = parseInt(input.value);
+            let newVal = current + change;
+            if (newVal < 1) newVal = 1;
+            input.value = newVal;
+        }
+
+        function switchTab(index, element) {
+            document.querySelectorAll('.detail-tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.detail-tab-content').forEach(el => el.classList.remove('active'));
+            
+            element.classList.add('active');
+            document.getElementById('tab' + index).classList.add('active');
+        }
+    </script>
+    <!-- SG LIMU Global Scripts -->
+    
+    
+            <!-- Auth Modal Overlay -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-modal">
+            <div class="auth-close" id="authClose">&times;</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-target="loginPane">로그인</div>
+                <div class="auth-tab" data-target="signupPane">회원가입</div>
+            </div>
+            <div class="auth-content">
+                <div class="auth-pane active" id="loginPane">
+                    <div class="auth-header"><h2>환영합니다!</h2><p>간편로그인으로 빠르게 시작하세요.</p></div>
+                    <div class="social-login-grid">
+                        <button class="social-btn btn-kakao" id="kakaoLoginBtn"><i class="fa-solid fa-comment"></i> 카카오 로그인</button>
+                        <button class="social-btn btn-naver" id="naverLoginBtn"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버 로그인</button>
+                        <div id="naverIdLogin" style="display:none;"></div> 
+                        <button class="social-btn btn-google" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google 로그인</button>
+                    </div>
+                    <div class="auth-divider"><span>또는</span></div>
+                    <form id="loginForm">
+                        <div class="auth-form-group"><label>이메일</label><input type="email" id="loginEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>비밀번호</label><input type="password" id="loginPassword" class="auth-input" placeholder="비밀번호를 입력하세요" required></div>
+                        <button type="submit" class="auth-submit-btn">로그인</button>
+                    </form>
+                    <div id="loginMsg" class="auth-message"></div>
+                    <div class="auth-sub-links">
+                        <a id="linkFindId">아이디 찾기</a>
+                        <span class="divider">|</span>
+                        <a id="linkFindPw">비밀번호 찾기</a>
+                    </div>
+                </div>
+                
+                <!-- Find ID Pane -->
+                <div class="auth-pane" id="findIdPane">
+                    <div class="auth-header"><h2>아이디 찾기</h2><p>가입 시 입력한 이름과 전화번호를 입력해주세요.</p></div>
+                    <form id="findIdForm">
+                        <div class="auth-form-group"><label>이름</label><input type="text" id="findIdName" class="auth-input" placeholder="이름을 입력하세요" required></div>
+                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findIdPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        <button type="submit" class="auth-submit-btn">아이디 찾기</button>
+                    </form>
+                    <div id="findIdMsg" class="auth-message"></div>
+                    <div id="findIdResult" class="auth-result-box">
+                        <h4>아이디 찾기 완료</h4>
+                        <p>회원님의 아이디(이메일)는 다음과 같습니다.</p>
+                        <div class="found-email" id="foundEmailDisplay"></div>
+                        <button class="auth-submit-btn" id="btnGoToLoginFromId">로그인하러 가기</button>
+                    </div>
+                    <div class="auth-sub-links">
+                        <a class="back-to-login">로그인으로 돌아가기</a>
+                    </div>
+                </div>
+
+                <!-- Find Password Pane -->
+                <div class="auth-pane" id="findPwPane">
+                    <div class="auth-header"><h2>비밀번호 찾기</h2><p>가입된 이메일과 이름, 전화번호를 입력하시면<br>비밀번호 재설정 링크를 보내드립니다.</p></div>
+                    <form id="findPwForm">
+                        <div class="auth-form-group"><label>이메일(아이디)</label><input type="email" id="findPwEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-form-group"><label>이름</label><input type="text" id="findPwName" class="auth-input" placeholder="이름을 입력하세요" required></div>
+                        <div class="auth-form-group"><label>전화번호</label><input type="tel" id="findPwPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        <button type="submit" class="auth-submit-btn">재설정 링크 발송</button>
+                    </form>
+                    <div id="findPwMsg" class="auth-message"></div>
+                    <div id="findPwResult" class="auth-result-box">
+                        <h4>이메일 발송 완료</h4>
+                        <p>입력하신 이메일로 비밀번호 재설정 링크가 발송되었습니다.<br>이메일을 확인해주세요.</p>
+                        <button class="auth-submit-btn back-to-login">로그인으로 돌아가기</button>
+                    </div>
+                    <div class="auth-sub-links">
+                        <a class="back-to-login">로그인으로 돌아가기</a>
+                    </div>
+                </div>
+
+                <!-- Reset Password Pane -->
+                <div class="auth-pane" id="resetPwPane">
+                    <div class="auth-header"><h2>비밀번호 재설정</h2><p>새로운 비밀번호를 입력해주세요.</p></div>
+                    <form id="resetPwForm">
+                        <div class="auth-form-group"><label>새 비밀번호</label><input type="password" id="resetPwInput" class="auth-input" placeholder="6자 이상 입력" minlength="6" required></div>
+                        <div class="auth-form-group"><label>새 비밀번호 확인</label><input type="password" id="resetPwConfirm" class="auth-input" placeholder="다시 한 번 입력" minlength="6" required></div>
+                        <button type="submit" class="auth-submit-btn">비밀번호 변경</button>
+                    </form>
+                    <div id="resetPwMsg" class="auth-message"></div>
+                </div>
+
+                <!-- Signup Pane -->
+                <div class="auth-pane" id="signupPane">
+                    <div class="auth-header"><h2>회원가입</h2><p>간단한 정보 입력으로 더 많은 혜택을 누리세요.</p></div>
+                    <div class="auth-social-signup">
+                        <div class="auth-social-signup-header"><span>간편 회원가입</span></div>
+                        <div class="social-login-grid">
+                            <button class="social-btn btn-kakao social-signup-btn" data-provider="kakao"><i class="fa-solid fa-comment"></i> 카카오로 시작</button>
+                            <button class="social-btn btn-naver social-signup-btn" data-provider="naver"><i class="fa-solid fa-n" style="font-size: 0.8rem;"></i> 네이버로 시작</button>
+                            <button class="social-btn btn-google social-signup-btn" data-provider="google"><i class="fa-brands fa-google"></i> Google로 시작</button>
+                        </div>
+                    </div>
+                    <div class="auth-divider"><span>또는 이메일로 가입</span></div>
+                    <div class="auth-type-selector" id="userTypeSelector">
+                        <div class="auth-type-btn active" data-type="individual">개인 회원</div>
+                        <div class="auth-type-btn" data-type="business">기관 / 사업자</div>
+                    </div>
+                    <form id="signupForm">
+                        <div class="auth-row">
+                            <div class="auth-form-group"><label>이름 *</label><input type="text" id="signupName" class="auth-input" placeholder="홍길동" required></div>
+                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="signupPhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                        </div>
+                        <div class="auth-form-group"><label>이메일 *</label><input type="email" id="signupEmail" class="auth-input" placeholder="example@email.com" required></div>
+                        <div class="auth-row">
+                            <div class="auth-form-group"><label>비밀번호 *</label><input type="password" id="signupPassword" class="auth-input" placeholder="6자 이상" minlength="6" required></div>
+                            <div class="auth-form-group"><label>비밀번호 확인 *</label><input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="한 번 더 입력" required></div>
+                        </div>
+                        <div class="auth-form-group" id="orgGroup"><label>소속기관 / 학교 / 도서관명</label><input type="text" id="signupOrg" class="auth-input" placeholder="예: 한국대학교 도서관"></div>
+                        <div class="auth-form-group" id="bizGroup" style="display: none;"><label>사업자 등록번호</label><input type="text" id="signupBizNumber" class="auth-input" placeholder="000-00-00000"></div>
+                        <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="signupAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
+                        <button type="submit" class="auth-submit-btn">가입하기</button>
+                    </form>
+                    <div id="signupMsg" class="auth-message"></div>
+                </div>
+                
+                <!-- Complete Profile Pane -->
+                <div class="auth-pane" id="completeProfilePane">
+                    <div class="auth-header"><h2>추가 정보 입력</h2><p>원활한 서비스 이용을 위해 필수 정보를 입력해 주세요.</p></div>
+                    <form id="completeProfileForm">
+                        <div class="highlight-box">
+                            <div class="auth-form-group"><label>전화번호 *</label><input type="tel" id="completePhone" class="auth-input" placeholder="010-0000-0000" required></div>
+                            <div class="auth-form-group"><label>소속기관 / 학교 / 도서관명 *</label><input type="text" id="completeOrg" class="auth-input" placeholder="예: 한국대학교 도서관" required></div>
+                            <div class="auth-form-group"><label>배송/방문용 주소</label><input type="text" id="completeAddress" class="auth-input" placeholder="전체 주소를 입력하세요"></div>
+                        </div>
+                        <button type="submit" class="auth-submit-btn">정보 저장 및 시작하기</button>
+                    </form>
+                    <div id="completeMsg" class="auth-message"></div>
+                </div>
+                
+                <!-- My Profile Pane -->
+                <div class="auth-pane" id="myProfilePane">
+                    <div class="auth-header">
+                        <h2>내 정보 관리</h2>
+                        <p>회원 정보를 확인하고 수정할 수 있습니다.</p>
+                    </div>
+                    <form id="myProfileForm">
+                        <div class="auth-form-group">
+                            <label>이름</label>
+                            <input type="text" id="myProfileName" class="auth-input" placeholder="이름" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>연락처</label>
+                            <input type="tel" id="myProfilePhone" class="auth-input" placeholder="010-0000-0000" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>소속 기관 / 학교명</label>
+                            <input type="text" id="myProfileOrg" class="auth-input" placeholder="예: 시립도서관" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>주소</label>
+                            <input type="text" id="myProfileAddress" class="auth-input" placeholder="주소를 입력하세요" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn">정보 수정하기</button>
+                    </form>
+                    <div id="myProfileMsg" class="auth-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="script.js"></script>
+    <script src="cart.js"></script>
+    <script type="module" src="inquiry.js"></script>
+    <script type="module" src="auth.js"></script>
+</body>
+
+</html>
+
