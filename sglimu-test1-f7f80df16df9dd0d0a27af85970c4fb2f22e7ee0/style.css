@@ -700,12 +700,7 @@ button {
 
 .footer-logo img {
     max-height: 45px;
-    filter: grayscale(100%) opacity(40%);
-    transition: all 0.3s ease;
-}
-
-.footer-logo img:hover {
-    filter: grayscale(0%) opacity(80%);
+    display: block;
 }
 
 .footer-info p {
