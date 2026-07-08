@@ -3458,40 +3458,71 @@ async function loadPageData() {
         });
     }
 
-    // [신규] 특징 및 규격 레이아웃 미리보기 이미지 갱신 함수
+    // [신규] 특징 및 규격 레이아웃 카드 선택 및 동기화 함수
     function updateFeatureStylePreview() {
         const select = document.getElementById('featureStyle');
-        const previewBox = document.getElementById('featureStylePreview');
-        if (!select || !previewBox) return;
+        if (!select) return;
         
         const val = select.value || 'type-a';
-        const img = previewBox.querySelector('img');
-        if (img) {
-            img.src = `assets/feature_preview_${val.replace('type-', '')}.png`;
-            previewBox.style.display = 'block';
-        }
+        document.querySelectorAll('.feature-style-cards .style-card').forEach(card => {
+            if (card.dataset.value === val) {
+                card.style.borderColor = '#2980b9';
+                card.style.boxShadow = '0 4px 12px rgba(41, 128, 185, 0.15)';
+                card.style.background = '#f1f8ff';
+            } else {
+                card.style.borderColor = '#e2e8f0';
+                card.style.boxShadow = 'none';
+                card.style.background = '#fff';
+            }
+        });
     }
 
     function updateSpecStylePreview() {
         const select = document.getElementById('specStyle');
-        const previewBox = document.getElementById('specStylePreview');
-        if (!select || !previewBox) return;
+        if (!select) return;
         
         const val = select.value || 'type-a';
-        const img = previewBox.querySelector('img');
-        if (img) {
-            img.src = `assets/spec_preview_${val.replace('type-', '')}.png`;
-            previewBox.style.display = 'block';
-        }
+        document.querySelectorAll('.spec-style-cards .style-card').forEach(card => {
+            if (card.dataset.value === val) {
+                card.style.borderColor = '#2980b9';
+                card.style.boxShadow = '0 4px 12px rgba(41, 128, 185, 0.15)';
+                card.style.background = '#f1f8ff';
+            } else {
+                card.style.borderColor = '#e2e8f0';
+                card.style.boxShadow = 'none';
+                card.style.background = '#fff';
+            }
+        });
     }
 
-    // 이벤트 바인딩 자동 수행 (일회성)
-    document.addEventListener('DOMContentLoaded', () => {
+    // 카드 클릭 이벤트 바인딩 함수
+    function bindStylePreviewEvents() {
         const fSelect = document.getElementById('featureStyle');
         const sSelect = document.getElementById('specStyle');
         if (fSelect) fSelect.addEventListener('change', updateFeatureStylePreview);
         if (sSelect) sSelect.addEventListener('change', updateSpecStylePreview);
-    });
+
+        document.querySelectorAll('.feature-style-cards .style-card').forEach(card => {
+            card.addEventListener('click', () => {
+                if (fSelect) {
+                    fSelect.value = card.dataset.value;
+                    fSelect.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        document.querySelectorAll('.spec-style-cards .style-card').forEach(card => {
+            card.addEventListener('click', () => {
+                if (sSelect) {
+                    sSelect.value = card.dataset.value;
+                    sSelect.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    }
+    
+    // 즉시 바인딩 실행
+    bindStylePreviewEvents();
 
     pageDescription.value = data.description || '';
     if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;

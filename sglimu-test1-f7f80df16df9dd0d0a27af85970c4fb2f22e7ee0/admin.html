@@ -635,42 +635,68 @@
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                             <label style="margin:0;"><i class="fa-solid fa-star"></i> 4. 제품 특징칸 (DETAIL VIEW)</label>
                             <div style="display:flex; gap:10px; align-items:center;">
-                                <span style="font-size:0.85rem; color:#666;">디자인:</span>
-                                <select id="featureStyle" class="form-control" style="width:120px; height:32px; padding:0 10px; font-size:0.85rem;">
-                                    <option value="type-a">Type A (표 형식)</option>
-                                    <option value="type-b">Type B (가독성 중심)</option>
-                                    <option value="type-c">Type C (프리미엄)</option>
+                                <select id="featureStyle" class="form-control" style="display: none;">
+                                    <option value="type-a">Type A</option>
+                                    <option value="type-b">Type B</option>
+                                    <option value="type-c">Type C</option>
                                 </select>
                                 <button type="button" class="btn-secondary" id="addFeatureBtn" style="padding:5px 10px; font-size:0.85rem;"><i class="fa-solid fa-plus"></i> 특징 추가</button>
                             </div>
                         </div>
                         <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">* 메쉬 소재, 백틸팅 기능 등 강조할 제품의 특징을 제목과 설명으로 입력하세요.</p>
-                        <div class="style-preview-box" id="featureStylePreview" style="margin-bottom:15px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:#f8fafc; text-align:center; padding:12px; display:none; transition: all 0.3s ease;">
-                            <span style="display:block; font-size:0.75rem; color:#64748b; margin-bottom:6px; font-weight:600;"><i class="fa-solid fa-eye"></i> 디자인 미리보기</span>
-                            <img src="" alt="특징 디자인 미리보기" style="max-height:140px; max-width:100%; border-radius:6px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+                        
+                        <!-- 제품 특징 레이아웃 카드 선택 및 미리보기 -->
+                        <div class="feature-style-cards" style="display:flex; gap:12px; margin-bottom:15px; flex-wrap:wrap;">
+                            <div class="style-card" data-value="type-a" style="flex:1; min-width:120px; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; background:#fff; cursor:pointer; transition:all 0.2s ease;">
+                                <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type A (표 형식)</span>
+                                <img src="assets/feature_preview_a.png" alt="Type A" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
+                            </div>
+                            <div class="style-card" data-value="type-b" style="flex:1; min-width:120px; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; background:#fff; cursor:pointer; transition:all 0.2s ease;">
+                                <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type B (가독성)</span>
+                                <img src="assets/feature_preview_b.png" alt="Type B" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
+                            </div>
+                            <div class="style-card" data-value="type-c" style="flex:1; min-width:120px; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; background:#fff; cursor:pointer; transition:all 0.2s ease;">
+                                <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type C (프리미엄)</span>
+                                <img src="assets/feature_preview_c.png" alt="Type C" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
+                            </div>
                         </div>
+
                         <div id="featureContainer" style="display:flex; flex-direction:column; gap:15px;">
                             <!-- Dynamic items will be added here -->
                         </div>
                     </div>
 
+                    <!-- 5. 제품 규격칸 -->
+                    <div class="page-manage-section" style="border-top:1px solid #eee; padding-top:20px; margin-top:20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                             <label style="margin:0;"><i class="fa-solid fa-table-list"></i> 5. 제품 규격칸 (DIMENSION)</label>
                             <div style="display:flex; gap:10px; align-items:center;">
-                                <span style="font-size:0.85rem; color:#666;">디자인:</span>
-                                <select id="specStyle" class="form-control" style="width:120px; height:32px; padding:0 10px; font-size:0.85rem;">
-                                    <option value="type-a">Type A (표 형식)</option>
-                                    <option value="type-b">Type B (가독성 중심)</option>
-                                    <option value="type-c">Type C (프리미엄)</option>
+                                <select id="specStyle" class="form-control" style="display: none;">
+                                    <option value="type-a">Type A</option>
+                                    <option value="type-b">Type B</option>
+                                    <option value="type-c">Type C</option>
                                 </select>
                                 <button type="button" class="btn-secondary" id="addSpecBtn" style="padding:5px 10px; font-size:0.85rem;"><i class="fa-solid fa-plus"></i> 항목 추가</button>
                             </div>
                         </div>
                         <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">* 크기, 색상, 소재 등 표 형식으로 노출될 내용을 입력하세요.</p>
-                        <div class="style-preview-box" id="specStylePreview" style="margin-bottom:15px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:#f8fafc; text-align:center; padding:12px; display:none; transition: all 0.3s ease;">
-                            <span style="display:block; font-size:0.75rem; color:#64748b; margin-bottom:6px; font-weight:600;"><i class="fa-solid fa-eye"></i> 디자인 미리보기</span>
-                            <img src="" alt="규격 디자인 미리보기" style="max-height:140px; max-width:100%; border-radius:6px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+                        
+                        <!-- 제품 규격 레이아웃 카드 선택 및 미리보기 -->
+                        <div class="spec-style-cards" style="display:flex; gap:12px; margin-bottom:15px; flex-wrap:wrap;">
+                            <div class="style-card" data-value="type-a" style="flex:1; min-width:120px; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; background:#fff; cursor:pointer; transition:all 0.2s ease;">
+                                <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type A (표 형식)</span>
+                                <img src="assets/spec_preview_a.png" alt="Type A" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
+                            </div>
+                            <div class="style-card" data-value="type-b" style="flex:1; min-width:120px; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; background:#fff; cursor:pointer; transition:all 0.2s ease;">
+                                <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type B (가독성)</span>
+                                <img src="assets/spec_preview_b.png" alt="Type B" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
+                            </div>
+                            <div class="style-card" data-value="type-c" style="flex:1; min-width:120px; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; background:#fff; cursor:pointer; transition:all 0.2s ease;">
+                                <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type C (프리미엄)</span>
+                                <img src="assets/spec_preview_c.png" alt="Type C" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
+                            </div>
                         </div>
+
                         <div id="specContainer" style="display:flex; flex-direction:column; gap:10px;">
                             <!-- Dynamic items will be added here -->
                         </div>
