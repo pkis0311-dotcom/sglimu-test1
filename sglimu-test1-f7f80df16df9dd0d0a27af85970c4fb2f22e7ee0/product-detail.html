@@ -338,8 +338,8 @@
             }
 
             // Update Basic Info
-            document.title = product.name + " - 에스지라이뮤";
-            document.querySelector('.product-title').innerText = product.name;
+            document.title = (product.name || '').replace(/<[^>]*>/g, '') + " - 에스지라이뮤";
+            document.querySelector('.product-title').innerHTML = product.name;
             const priceElem = document.querySelector('.product-price');
             if (product.price === '전화문의' || !product.price) {
                 priceElem.innerHTML = '전화문의';
@@ -349,7 +349,7 @@
                 window.basePrice = Number(product.price);
             }
             
-            document.getElementById('breadcrumbCurrent').innerText = product.name;
+            document.getElementById('breadcrumbCurrent').innerText = (product.name || '').replace(/<[^>]*>/g, '');
 
             // Main Image & Thumbnails
             const mainImgElem = document.getElementById('mainImage');

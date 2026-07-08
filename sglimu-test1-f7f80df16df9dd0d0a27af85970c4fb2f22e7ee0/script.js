@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const description = p.short_comment || '';
 
             // Highlight query string in name and description
-            const highlightedName = highlightKeyword(p.name, query);
+            const highlightedName = highlightKeyword((p.name || '').replace(/<[^>]*>/g, ''), query);
             const highlightedDesc = highlightKeyword(description, query);
 
             item.innerHTML = `

@@ -1881,3 +1881,12 @@ button {
         padding: 10px 15px !important;
     }
 }
+
+/* --- Prevent product title styling from breaking layouts in listings --- */
+.product-card h4 span,
+.search-results-grid h4 span,
+.suggestion-item span,
+.cart-item span {
+    font-size: inherit !important;
+    font-family: inherit !important;
+}

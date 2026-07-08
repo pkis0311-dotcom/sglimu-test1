@@ -520,6 +520,9 @@ const modalTitle = document.getElementById('modalTitle');
 
 const productIdInput = document.getElementById('productId');
 const productNameInput = document.getElementById('productName');
+const productNameSize = document.getElementById('productNameSize');
+const productNameColor = document.getElementById('productNameColor');
+const productNameColorPicker = document.getElementById('productNameColorPicker');
 const productCategoryInput = document.getElementById('productCategory');
 const productPriceInput = document.getElementById('productPrice');
 const productStockInput = document.getElementById('productStock');
@@ -527,6 +530,43 @@ const productDescInput = document.getElementById('productDesc');
 const productImageFile = document.getElementById('productImageFile');
 const productImageUrl = document.getElementById('productImageUrl');
 const imagePreview = document.getElementById('imagePreview');
+
+// [신규] 제품명 글꼴 종류/크기/색상 파싱 및 빌드 헬퍼 함수
+function parseStyledName(nameHtml) {
+    if (!nameHtml) return { text: '', size: '', color: '' };
+    if (nameHtml.startsWith('<span style="')) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = nameHtml;
+        const span = tempDiv.querySelector('span');
+        if (span) {
+            // hex 색상으로 깔끔하게 정돈하기 위해 브라우저 rgb() 출력을 hex로 변환
+            let colorVal = span.style.color || '';
+            if (colorVal.startsWith('rgb')) {
+                const rgb = colorVal.match(/\d+/g);
+                if (rgb && rgb.length === 3) {
+                    colorVal = "#" + rgb.map(x => {
+                        const hex = parseInt(x).toString(16);
+                        return hex.length === 1 ? "0" + hex : hex;
+                    }).join("");
+                }
+            }
+            return {
+                text: span.textContent || '',
+                size: span.style.fontSize || '',
+                color: colorVal
+            };
+        }
+    }
+    return { text: nameHtml, size: '', color: '' };
+}
+
+function buildStyledName(text, size, color) {
+    if (!size && !color) return text;
+    let style = '';
+    if (size) style += `font-size: ${size}; `;
+    if (color) style += `color: ${color}; `;
+    return `<span style="${style.trim()}">${text}</span>`;
+}
 
 // Inventory Modal Elements
 const inventoryModal = document.getElementById('inventoryModal');
@@ -1285,6 +1325,9 @@ function openModal(isEdit = false) {
     if (!isEdit) {
         modalTitle.textContent = '새 제품 등록';
         productIdInput.value = ''; productNameInput.value = ''; productPriceInput.value = '전화문의';
+        if (productNameSize) productNameSize.value = '';
+        if (productNameColor) productNameColor.value = '';
+        if (productNameColorPicker) productNameColorPicker.value = '#000000';
         productStockInput.value = '0'; productDescInput.value = ''; productImageUrl.value = ''; productImageFile.value = '';
         imagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
         const colorContainer = document.getElementById('colorContainer');
@@ -1649,10 +1692,23 @@ productImageFile.addEventListener('change', (e) => {
     }
 });
 
+// 제품명 색상 선택 동기화
+if (productNameColor && productNameColorPicker) {
+    productNameColorPicker.addEventListener('input', (e) => {
+        productNameColor.value = e.target.value;
+    });
+    productNameColor.addEventListener('input', (e) => {
+        if (e.target.value.startsWith('#') && e.target.value.length === 7) {
+            productNameColorPicker.value = e.target.value;
+        }
+    });
+}
+
 saveProductBtn.addEventListener('click', async () => {
     const shortCommentInput = document.getElementById('productShortComment');
+    const styledName = buildStyledName(productNameInput.value.trim(), productNameSize.value, productNameColor.value.trim());
     const payload = {
-        name: productNameInput.value.trim(), category: productCategoryInput.value,
+        name: styledName, category: productCategoryInput.value,
         price: productPriceInput.value.trim().replace(/,/g, ''), 
         description: productDescInput.value.trim(), image_url: productImageUrl.value,
         short_comment: shortCommentInput ? shortCommentInput.value.trim() : '',
@@ -1795,7 +1851,19 @@ window.editProduct = async (id) => {
     if (typeof fetchInventoryLogs === 'function') {
         fetchInventoryLogs(id);
     }
-    productIdInput.value = p.id; productNameInput.value = p.name; productCategoryInput.value = p.category;
+    productIdInput.value = p.id;
+    const parsed = parseStyledName(p.name || '');
+    productNameInput.value = parsed.text;
+    if (productNameSize) productNameSize.value = parsed.size || '';
+    if (productNameColor) productNameColor.value = parsed.color || '';
+    if (productNameColorPicker) {
+        if (parsed.color && parsed.color.startsWith('#')) {
+            productNameColorPicker.value = parsed.color;
+        } else {
+            productNameColorPicker.value = '#000000';
+        }
+    }
+    productCategoryInput.value = p.category;
     productPriceInput.value = formatPriceInput(p.price); productStockInput.value = p.stock; 
     
     // 상세 설명 로드 시 색상/사이즈 태그 제거 처리

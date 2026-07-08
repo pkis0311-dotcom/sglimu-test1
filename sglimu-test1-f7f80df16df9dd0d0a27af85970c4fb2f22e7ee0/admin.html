@@ -803,7 +803,27 @@
                     </div>
                     <div class="form-group full-width">
                         <label>제품명 *</label>
-                        <input type="text" id="productName" class="form-control">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="text" id="productName" class="form-control" style="flex: 2.5;" placeholder="제품명을 입력하세요">
+                            
+                            <select id="productNameSize" class="form-control" style="flex: 1.2; height: 38px; padding: 0 10px;">
+                                <option value="">글자 크기 (기본)</option>
+                                <option value="1.0rem">1.0rem</option>
+                                <option value="1.2rem">1.2rem</option>
+                                <option value="1.5rem">1.5rem</option>
+                                <option value="1.8rem">1.8rem</option>
+                                <option value="2.0rem">2.0rem</option>
+                                <option value="2.2rem">2.2rem (상세 기본)</option>
+                                <option value="2.5rem">2.5rem</option>
+                                <option value="2.8rem">2.8rem</option>
+                                <option value="3.0rem">3.0rem</option>
+                            </select>
+                            
+                            <div style="display:flex; align-items:center; gap:5px; flex: 1.5; min-width: 150px;">
+                                <input type="text" id="productNameColor" class="form-control" placeholder="색상 (기본)" style="height:38px; flex:1;">
+                                <input type="color" id="productNameColorPicker" style="width:38px; height:38px; border:1px solid #d4d4d4; border-radius:4px; padding:0; cursor:pointer; background:none;">
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>카테고리 구분 *</label>
