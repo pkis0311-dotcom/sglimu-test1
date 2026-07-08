@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/sglimu-test1-f7f80df16df9dd0d0a27af85970c4fb2f22e7ee0/$1"
+    }
+  ]
+}
