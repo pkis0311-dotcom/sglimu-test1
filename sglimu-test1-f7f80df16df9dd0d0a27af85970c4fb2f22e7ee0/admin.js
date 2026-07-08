@@ -3135,10 +3135,20 @@ function initPageManageTab() {
                 
                 featureContainer.querySelectorAll('.feature-block').forEach(block => {
                     const titleInput = block.querySelector('.feature-title');
+                    const titleEditor = block.querySelector('.feature-title-editor');
+                    
+                    let titleHTML = '';
+                    if (titleEditor && titleEditor.__quill) {
+                        titleHTML = titleEditor.__quill.root.innerHTML;
+                    } else if (titleInput) {
+                        titleHTML = titleInput.value;
+                    }
+                    
                     const editorContainer = block.querySelector('.feature-desc-editor');
-                    if(titleInput && titleInput.value) {
-                        const descHTML = editorContainer && editorContainer.__quill ? editorContainer.__quill.root.innerHTML : (block.querySelector('textarea') ? block.querySelector('textarea').value : '');
-                        data.features.push({ title: titleInput.value, desc: descHTML });
+                    const descHTML = editorContainer && editorContainer.__quill ? editorContainer.__quill.root.innerHTML : (block.querySelector('textarea') ? block.querySelector('textarea').value : '');
+                    
+                    if (titleHTML && titleHTML.trim() !== '' && titleHTML !== '<p><br></p>') {
+                        data.features.push({ title: titleHTML, desc: descHTML });
                     }
                 });
                 
@@ -3291,12 +3301,51 @@ function createFeatureBlock(title, desc) {
     
     const qId = 'feat_desc_' + Date.now() + Math.floor(Math.random()*1000);
     const tId = 'toolbar_' + qId;
+    const qId_title = 'feat_title_' + Date.now() + Math.floor(Math.random()*1000);
+    const tId_title = 'toolbar_' + qId_title;
     
     block.innerHTML = `
-        <div style="display:flex; justify-content:space-between;">
-            <input type="text" class="form-control feature-title" placeholder="특징 제목" value="${title}" style="font-weight:bold; width:85%;">
-            <button class="action-btn delete" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:0.85rem; font-weight:bold; color:#555;"><i class="fa-solid fa-heading"></i> 특징 제목</span>
+            <button class="action-btn delete" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-trash"></i> 삭제</button>
         </div>
+        
+        <!-- 특징 제목 에디터 -->
+        <div style="background:#fff; min-width:0; display:flex; flex-direction:column; border:1px solid #d4d4d4; border-radius:4px; overflow:hidden; margin-bottom: 8px;">
+            <div id="${tId_title}" class="excel-toolbar mini-toolbar" style="padding: 4px 8px; background: #f1f3f5; border-bottom: 1px solid #d4d4d4; display: flex; gap: 8px; align-items: center;">
+                <div class="excel-toolbar-group font-group" style="display: flex; gap: 4px; align-items: center;">
+                    <select class="ql-font excel-select font-select" style="height: 24px; font-size: 11px; padding: 0 4px;">
+                        <option value="Malgun Gothic" selected>맑은 고딕</option>
+                        <option value="Calibri">Calibri</option>
+                        <option value="Pretendard">Pretendard</option>
+                        <option value="Gulim">굴림</option>
+                        <option value="Dotum">돋움</option>
+                        <option value="Gungsuh">궁서</option>
+                    </select>
+                    <select class="ql-size excel-select size-select" style="height: 24px; font-size: 11px; padding: 0 4px;">
+                        <option value="12px">12</option>
+                        <option value="14px">14</option>
+                        <option value="16px" selected>16</option>
+                        <option value="18px">18</option>
+                        <option value="20px">20</option>
+                        <option value="24px">24</option>
+                        <option value="30px">30</option>
+                    </select>
+                </div>
+                <div style="width: 1px; height: 16px; background: #ddd; margin: 0 4px;"></div>
+                <div class="excel-toolbar-group style-group" style="display: flex; gap: 4px;">
+                    <button class="ql-bold excel-btn bold-btn" type="button" title="굵게" style="width: 24px; height: 24px; line-height: 22px; font-size: 11px; padding:0; border-radius:3px;">가</button>
+                </div>
+                <div style="width: 1px; height: 16px; background: #ddd; margin: 0 4px;"></div>
+                <div class="excel-toolbar-group color-group" style="display: flex; gap: 4px;">
+                    <select class="ql-color excel-color-picker" title="글꼴 색" style="height: 24px; font-size: 11px;"></select>
+                </div>
+                <div style="margin-left: auto; font-size: 10px; color: #888; font-weight: bold;">제목 편집기</div>
+            </div>
+            <div id="${qId_title}" class="feature-title-editor" style="min-height: 38px; border:none !important; padding: 8px 12px; font-weight: bold; font-size: 16px; background:#fff;">${title || ''}</div>
+        </div>
+
+        <div style="font-size:0.85rem; font-weight:bold; color:#555; margin-bottom:2px;"><i class="fa-solid fa-align-left"></i> 특징 설명</div>
         <div style="background:#fff; min-width:0; display:flex; flex-direction:column; border:1px solid #d4d4d4; border-radius:4px; overflow:hidden;">
             <div id="${tId}" class="excel-toolbar">
                 <div class="excel-toolbar-group font-group">
@@ -3344,6 +3393,18 @@ function createFeatureBlock(title, desc) {
     featureContainer.appendChild(block);
     
     if (typeof Quill !== 'undefined') {
+        // 제목 에디터 초기화
+        const quillTitle = new Quill('#' + qId_title, {
+            theme: 'snow',
+            modules: {
+                toolbar: {
+                    container: '#' + tId_title
+                }
+            }
+        });
+        block.querySelector('.feature-title-editor').__quill = quillTitle;
+
+        // 설명 에디터 초기화
         const quill = new Quill('#' + qId, {
             theme: 'snow',
             modules: {
