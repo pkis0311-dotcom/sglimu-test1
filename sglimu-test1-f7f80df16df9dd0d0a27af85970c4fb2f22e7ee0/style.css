@@ -699,8 +699,10 @@ button {
 }
 
 .footer-logo img {
-    max-height: 45px;
+    width: 270px;
+    height: 68px;
     display: block;
+    image-rendering: -webkit-optimize-contrast;
 }
 
 .footer-info p {
