@@ -2957,6 +2957,8 @@ async function saveBestProductDisplay() {
 // 8. [신규] 상세페이지 관리 로직 (멀티 제품 대응)
 // ------------------------------------------
 let currentPageDataKey = ''; // 기본값 비워둠 (targetPageId 값이 없을 수 있음)
+let specRowCounter = 0;      // [신규] Quill 에디터 고유 ID 발급용 카운터
+let featureBlockCounter = 0;  // [신규] Quill 에디터 고유 ID 발급용 카운터
 
 function initPageManageTab() {
     const targetSelect = document.getElementById('targetPageId');
@@ -3261,7 +3263,8 @@ function createSpecRow(key, val) {
     row.className = 'spec-row';
     row.style.cssText = "display:flex; gap:10px; align-items:flex-start; margin-bottom:10px;";
     
-    const qId = 'spec_val_' + Date.now() + Math.floor(Math.random()*1000);
+    specRowCounter++;
+    const qId = 'spec_val_' + Date.now() + '_' + specRowCounter + '_' + Math.floor(Math.random()*100000);
     const tId = 'toolbar_' + qId;
     
     row.innerHTML = `
@@ -3367,9 +3370,10 @@ function createFeatureBlock(title, desc) {
     block.className = 'feature-block';
     block.style.cssText = "background:#f9f9f9; padding:15px; border-radius:6px; border:1px solid #eee; display:flex; flex-direction:column; gap:8px;";
     
-    const qId = 'feat_desc_' + Date.now() + Math.floor(Math.random()*1000);
+    featureBlockCounter++;
+    const qId = 'feat_desc_' + Date.now() + '_' + featureBlockCounter + '_' + Math.floor(Math.random()*100000);
     const tId = 'toolbar_' + qId;
-    const qId_title = 'feat_title_' + Date.now() + Math.floor(Math.random()*1000);
+    const qId_title = 'feat_title_' + Date.now() + '_' + featureBlockCounter + '_' + Math.floor(Math.random()*100000);
     const tId_title = 'toolbar_' + qId_title;
     
     block.innerHTML = `
@@ -3587,81 +3591,88 @@ function createFeatureBlock(title, desc) {
     bindStylePreviewEvents();
 
     async function loadPageData() {
-    if(!currentPageDataKey) {
-        clearPageManageUI();
-        return;
+        if(!currentPageDataKey) {
+            clearPageManageUI();
+            return;
+        }
+
+        try {
+            // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+            const { data: configData, error } = await db.from('site_configs').select('value').eq('key', currentPageDataKey).single();
+            if (error && error.code !== 'PGRST116') {
+                console.warn('Failed to load page config:', error);
+            }
+            const rawData = configData ? configData.value : null;
+            
+            clearPageManageUI();
+
+            if(!rawData) return;
+            const data = rawData;
+            
+            const specContainer = document.getElementById('specContainer');
+            const featureContainer = document.getElementById('featureContainer');
+            const pageMainImagePreview = document.getElementById('pageMainImagePreview');
+            const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
+            const pageDescription = document.getElementById('pageDescription');
+
+            if(data.mainImages && data.mainImages.length > 0) {
+                pageMainImagePreview.innerHTML = '';
+                data.mainImages.forEach(src => {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
+                    const img = document.createElement('img');
+                    img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                    delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
+                    delBtn.onclick = () => {
+                        wrapper.remove();
+                        if (pageMainImagePreview.children.length === 0) {
+                            pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
+                        }
+                    };
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(delBtn);
+                    pageMainImagePreview.appendChild(wrapper);
+                });
+            }
+            if(data.detailImages || data.detailImage) {
+                pageDetailImagePreview.innerHTML = '';
+                const imgs = data.detailImages || [data.detailImage];
+                imgs.forEach(src => {
+                    if(!src) return;
+                    const wrapper = document.createElement('div');
+                    wrapper.style.cssText = "position: relative; display: inline-block; max-width: 100%; cursor: grab;";
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.style.cssText = "max-width:100%; border-radius:4px; border:1px solid #eee; display:block;";
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = '<i class="fa-solid fa-trash"></i> 삭제';
+                    delBtn.style.cssText = "position:absolute; top:10px; right:10px; background:rgba(255,0,0,0.8); color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index:1;";
+                    delBtn.onclick = () => {
+                        wrapper.remove();
+                        if (pageDetailImagePreview.children.length === 0) {
+                            pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+                        }
+                    };
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(delBtn);
+                    pageDetailImagePreview.appendChild(wrapper);
+                });
+            }
+
+            pageDescription.value = data.description || '';
+            if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
+            if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
+            updateFeatureStylePreview();
+            updateSpecStylePreview();
+            if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
+            if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
+        } catch (loadErr) {
+            console.error('Failed to load detail page data into UI:', loadErr);
+            alert('상세페이지 데이터를 화면에 불러오는 중 오류가 발생했습니다. 개발자 도구 콘솔 로그를 확인해 주세요.');
+        }
     }
-
-    // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
-    const { data: configData, error } = await db.from('site_configs').select('value').eq('key', currentPageDataKey).single();
-    const rawData = configData ? configData.value : null;
-    
-    clearPageManageUI();
-
-    if(!rawData) return;
-    const data = rawData;
-    
-    const specContainer = document.getElementById('specContainer');
-    const featureContainer = document.getElementById('featureContainer');
-    const pageMainImagePreview = document.getElementById('pageMainImagePreview');
-    const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
-    const pageDescription = document.getElementById('pageDescription');
-
-    if(data.mainImages && data.mainImages.length > 0) {
-        pageMainImagePreview.innerHTML = '';
-        data.mainImages.forEach(src => {
-            const wrapper = document.createElement('div');
-            wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
-            const img = document.createElement('img');
-            img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
-            const delBtn = document.createElement('button');
-            delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-            delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
-            delBtn.onclick = () => {
-                wrapper.remove();
-                if (pageMainImagePreview.children.length === 0) {
-                    pageMainImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc; margin:auto;"></i>';
-                }
-            };
-            wrapper.appendChild(img);
-            wrapper.appendChild(delBtn);
-            pageMainImagePreview.appendChild(wrapper);
-        });
-    }
-    if(data.detailImages || data.detailImage) {
-        pageDetailImagePreview.innerHTML = '';
-        const imgs = data.detailImages || [data.detailImage];
-        imgs.forEach(src => {
-            if(!src) return;
-            const wrapper = document.createElement('div');
-            wrapper.style.cssText = "position: relative; display: inline-block; max-width: 100%; cursor: grab;";
-            const img = document.createElement('img');
-            img.src = src;
-            img.style.cssText = "max-width:100%; border-radius:4px; border:1px solid #eee; display:block;";
-            const delBtn = document.createElement('button');
-            delBtn.innerHTML = '<i class="fa-solid fa-trash"></i> 삭제';
-            delBtn.style.cssText = "position:absolute; top:10px; right:10px; background:rgba(255,0,0,0.8); color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index:1;";
-            delBtn.onclick = () => {
-                wrapper.remove();
-                if (pageDetailImagePreview.children.length === 0) {
-                    pageDetailImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
-                }
-            };
-            wrapper.appendChild(img);
-            wrapper.appendChild(delBtn);
-            pageDetailImagePreview.appendChild(wrapper);
-        });
-    }
-
-
-    pageDescription.value = data.description || '';
-    if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
-    if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
-    updateFeatureStylePreview();
-    updateSpecStylePreview();
-    if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
-    if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
-}
 
 function clearPageManageUI() {
     const specContainer = document.getElementById('specContainer');
