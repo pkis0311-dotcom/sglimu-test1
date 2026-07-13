@@ -55,8 +55,9 @@ loadSDKSocial();
 // 📱 Dynamic Auth Modal Injection
 // ==========================================
 function ensureAuthModalInDOM() {
-    if (document.getElementById('authOverlay')) {
-        return; // 이미 있으면 삽입하지 않음
+    const existing = document.getElementById('authOverlay');
+    if (existing) {
+        existing.remove(); // 기존 하드코딩된 (구버전/불완전) 모달 제거
     }
 
     const modalHTML = `
