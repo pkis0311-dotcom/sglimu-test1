@@ -230,8 +230,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
                             if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
                             if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
-                            if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = profile.address || '';
-                            if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
+                            
+                            const rawAddress = profile.address || '';
+                            if (rawAddress.includes('||')) {
+                                const addrs = rawAddress.split('||');
+                                if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = addrs[0] || '';
+                                if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = addrs[1] || '';
+                            } else {
+                                if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = rawAddress;
+                                if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
+                            }
                         }
                     }
                 } catch (err) {
@@ -277,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const org = document.getElementById('checkoutOrg').value.trim();
                 const addressBase = document.getElementById('checkoutAddress').value.trim();
                 const addressDetail = document.getElementById('checkoutAddressDetail').value.trim();
-                const address = addressDetail ? `${addressBase} ${addressDetail}` : addressBase;
+                const address = addressDetail ? `${addressBase}||${addressDetail}` : addressBase;
                 
                 // 선택된 결제수단 가져오기 (디폴트는 CARD)
                 const paymentMethodEl = document.querySelector('input[name="paymentMethod"]:checked');

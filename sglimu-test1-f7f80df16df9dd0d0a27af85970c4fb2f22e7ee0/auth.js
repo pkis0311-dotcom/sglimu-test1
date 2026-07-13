@@ -736,8 +736,16 @@ async function openMyProfile() {
             if (document.getElementById('myProfileName')) document.getElementById('myProfileName').value = profile.full_name || '';
             if (document.getElementById('myProfilePhone')) document.getElementById('myProfilePhone').value = profile.phone || '';
             if (document.getElementById('myProfileOrg')) document.getElementById('myProfileOrg').value = profile.organization || '';
-            if (document.getElementById('myProfileAddress')) document.getElementById('myProfileAddress').value = profile.address || '';
-            if (document.getElementById('myProfileAddressDetail')) document.getElementById('myProfileAddressDetail').value = '';
+            
+            const rawAddress = profile.address || '';
+            if (rawAddress.includes('||')) {
+                const addrs = rawAddress.split('||');
+                if (document.getElementById('myProfileAddress')) document.getElementById('myProfileAddress').value = addrs[0] || '';
+                if (document.getElementById('myProfileAddressDetail')) document.getElementById('myProfileAddressDetail').value = addrs[1] || '';
+            } else {
+                if (document.getElementById('myProfileAddress')) document.getElementById('myProfileAddress').value = rawAddress;
+                if (document.getElementById('myProfileAddressDetail')) document.getElementById('myProfileAddressDetail').value = '';
+            }
         }
         if (myProfileMsg) myProfileMsg.textContent = '';
     } catch (err) {
@@ -757,7 +765,7 @@ if (myProfileForm) {
         const org = document.getElementById('myProfileOrg').value;
         const addressBase = document.getElementById('myProfileAddress').value;
         const addressDetail = document.getElementById('myProfileAddressDetail').value;
-        const address = addressDetail ? `${addressBase} ${addressDetail}` : addressBase;
+        const address = addressDetail ? `${addressBase}||${addressDetail}` : addressBase;
 
         if (myProfileMsg) {
             myProfileMsg.className = 'auth-message';
