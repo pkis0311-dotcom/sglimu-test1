@@ -144,3 +144,78 @@
     border-radius: 10px;
     display: none;
 }
+
+/* 결제수단 선택 영역 스타일 */
+.payment-method-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.payment-method-container > label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: #333;
+}
+.payment-method-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.payment-method-options .method-option {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+}
+.payment-method-options .method-option input[type="radio"] {
+    display: none;
+}
+.payment-method-options .method-option i {
+    font-size: 1.25rem;
+    color: #777;
+    transition: color 0.2s ease;
+}
+.payment-method-options .method-option span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+}
+.payment-method-options .method-option:hover {
+    border-color: #8ec342;
+    background: #fdfefb;
+}
+.payment-method-options .method-option.active {
+    border-color: #8ec342;
+    background: #f7faf0;
+    box-shadow: 0 0 0 1px #8ec342;
+}
+.payment-method-options .method-option.active i {
+    color: #8ec342;
+}
+.payment-method-options .method-option.active span {
+    color: #333;
+    font-weight: 600;
+}
+.direct-bank-info {
+    background: #f7f9fa;
+    border: 1px dashed #cfd8dc;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.5;
+}
+.direct-bank-info p {
+    margin: 4px 0;
+}
+

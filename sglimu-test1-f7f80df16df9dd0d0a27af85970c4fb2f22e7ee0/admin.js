@@ -4920,10 +4920,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const productName = order.product_name ? order.product_name.toLowerCase() : '';
             const orderId = order.id ? order.id.toString().toLowerCase() : '';
 
+            // 검색에서 결제수단 한글 검색 지원
+            let payMethodNameKo = '';
+            if (order.customer_name) {
+                const parts = order.customer_name.split('||');
+                if (parts.length > 1) {
+                    const m = parts[1];
+                    if (m === 'CARD') payMethodNameKo = '카드 신용카드';
+                    else if (m === 'BANK') payMethodNameKo = '계좌이체 실시간계좌';
+                    else if (m === 'DIRECT_BANK') payMethodNameKo = '무통장 무통장입금';
+                }
+            }
+
             const queryMatch = customerName.includes(query) || 
                                customerPhone.includes(query) || 
                                productName.includes(query) ||
-                               orderId.includes(query);
+                               orderId.includes(query) ||
+                               payMethodNameKo.includes(query);
 
             return queryMatch;
         });
@@ -4942,13 +4955,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let displayName = '익명';
             let isPhoneOrder = false;
+            let payMethodLabel = '';
+            let payMethodBadge = '';
+
             if (order.customer_name) {
                 if (order.customer_name.startsWith('[전화] ')) {
                     isPhoneOrder = true;
                     displayName = order.customer_name.split('||')[0];
                 } else {
-                    displayName = order.customer_name.split('||')[0];
+                    const parts = order.customer_name.split('||');
+                    displayName = parts[0];
+                    if (parts.length > 1) {
+                        const method = parts[1];
+                        if (method === 'CARD') payMethodLabel = '카드';
+                        else if (method === 'BANK') payMethodLabel = '계좌이체';
+                        else if (method === 'DIRECT_BANK') payMethodLabel = '무통장';
+                    }
                 }
+            }
+
+            if (payMethodLabel) {
+                let badgeBg = '#e0e0e0';
+                let badgeColor = '#333';
+                if (payMethodLabel === '카드') {
+                    badgeBg = '#e8f0fe';
+                    badgeColor = '#1a73e8';
+                } else if (payMethodLabel === '계좌이체') {
+                    badgeBg = '#f3e5f5';
+                    badgeColor = '#8e24aa';
+                } else if (payMethodLabel === '무통장') {
+                    badgeBg = '#fff3e0';
+                    badgeColor = '#fb8c00';
+                }
+                payMethodBadge = `<span style="font-size:0.75rem; background:${badgeBg}; color:${badgeColor}; padding:2px 4px; border-radius:3px; font-weight:bold; margin-left:5px;">${payMethodLabel}</span>`;
             }
 
             const createdAt = order.created_at ? new Date(order.created_at) : new Date();
@@ -5005,7 +5044,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tr.innerHTML = `
                 <td style="font-family:monospace; font-weight:bold; color:#555;" title="${fullId}">#${displayId}</td>
-                <td style="font-weight:600;">${displayName} ${isPhoneOrder ? '<span style="font-size:0.75rem; background:#78909c; color:#fff; padding:2px 4px; border-radius:3px; font-weight:normal; margin-left:5px;">전화</span>' : ''}</td>
+                <td style="font-weight:600;">${displayName}${payMethodBadge} ${isPhoneOrder ? '<span style="font-size:0.75rem; background:#78909c; color:#fff; padding:2px 4px; border-radius:3px; font-weight:normal; margin-left:5px;">전화</span>' : ''}</td>
                 <td>${order.customer_phone || '-'}</td>
                 <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${order.product_name || ''}">${order.product_name || '정보없음'}</td>
                 <td>${order.quantity || 1}개</td>

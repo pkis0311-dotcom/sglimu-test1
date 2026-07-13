@@ -97,6 +97,32 @@ document.addEventListener('DOMContentLoaded', () => {
                             <label>배송지 주소 *</label>
                             <input type="text" id="checkoutAddress" class="auth-input" placeholder="전체 주소를 입력하세요" required>
                         </div>
+                        <div class="payment-method-container">
+                            <label>결제 수단 *</label>
+                            <div class="payment-method-options" id="paymentMethodOptions">
+                                <label class="method-option active" data-method="CARD">
+                                    <input type="radio" name="paymentMethod" value="CARD" checked>
+                                    <i class="fa-solid fa-credit-card"></i>
+                                    <span>신용카드</span>
+                                </label>
+                                <label class="method-option" data-method="BANK">
+                                    <input type="radio" name="paymentMethod" value="BANK">
+                                    <i class="fa-solid fa-money-bill-transfer"></i>
+                                    <span>계좌이체</span>
+                                </label>
+                                <label class="method-option" data-method="DIRECT_BANK">
+                                    <input type="radio" name="paymentMethod" value="DIRECT_BANK">
+                                    <i class="fa-solid fa-wallet"></i>
+                                    <span>무통장입금</span>
+                                </label>
+                            </div>
+                            <div id="directBankInfo" class="direct-bank-info" style="display: none;">
+                                <p><strong>무통장 입금 안내</strong></p>
+                                <p>● 입금계좌: <strong>기업은행 096-058709-04-010</strong></p>
+                                <p>● 예금주: <strong>주식회사에스지라이뮤</strong></p>
+                                <p>● 주문자명으로 입금해 주셔야 빠른 확인이 가능합니다.</p>
+                            </div>
+                        </div>
                         <div class="total-price-box" style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight:600; font-size:1.1rem;">최종 결제 금액</span>
                             <span id="checkoutTotalPrice" style="font-weight:800; font-size:1.5rem; color:var(--color-primary);">0원</span>
@@ -118,6 +144,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkoutForm = document.getElementById('checkoutForm');
     const checkoutMsg = document.getElementById('checkoutMsg');
 
+    // 결제 수단 선택 이벤트 바인딩
+    const paymentMethodOptions = document.getElementById('paymentMethodOptions');
+    const directBankInfo = document.getElementById('directBankInfo');
+    
+    function resetPaymentMethod() {
+        if (paymentMethodOptions) {
+            const options = paymentMethodOptions.querySelectorAll('.method-option');
+            options.forEach(o => o.classList.remove('active'));
+            const defaultOption = paymentMethodOptions.querySelector('.method-option[data-method="CARD"]');
+            if (defaultOption) {
+                defaultOption.classList.add('active');
+                const radio = defaultOption.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+            }
+        }
+        if (directBankInfo) {
+            directBankInfo.style.display = 'none';
+        }
+    }
+
+    if (paymentMethodOptions) {
+        const options = paymentMethodOptions.querySelectorAll('.method-option');
+        options.forEach(opt => {
+            opt.addEventListener('click', () => {
+                options.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                const radio = opt.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    if (radio.value === 'DIRECT_BANK') {
+                        if (directBankInfo) directBankInfo.style.display = 'block';
+                    } else {
+                        if (directBankInfo) directBankInfo.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
+
     // 결제 모달 열기 이벤트
     if (btnCartCheckout) {
         btnCartCheckout.addEventListener('click', async (e) => {
@@ -135,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
             
             // 모달 초기화
+            if (typeof resetPaymentMethod === 'function') resetPaymentMethod();
             if (checkoutMsg) {
                 checkoutMsg.className = 'auth-message';
                 checkoutMsg.style.display = 'none';
@@ -206,6 +272,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const org = document.getElementById('checkoutOrg').value.trim();
                 const address = document.getElementById('checkoutAddress').value.trim();
                 
+                // 선택된 결제수단 가져오기 (디폴트는 CARD)
+                const paymentMethodEl = document.querySelector('input[name="paymentMethod"]:checked');
+                const paymentMethod = paymentMethodEl ? paymentMethodEl.value : 'CARD';
+
                 const cart = getCart();
                 if (cart.length === 0) {
                     throw new Error('장바구니가 비어 있습니다.');
@@ -229,7 +299,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Supabase client가 초기화되지 않았습니다.');
                 }
 
-                // 1. NICEPAY SDK 로드 여부 검증
+                // DB에 기록할 customer_name (이름||결제수단||소속기관)
+                const dbCustomerName = `${name}||${paymentMethod}||${org}`;
+
+                // 1. PG 결제창(신용카드/계좌이체) vs 무통장 직접 송금 분기 처리
+                if (paymentMethod === 'DIRECT_BANK') {
+                    // 2. 무통장입금 주문 등록 (상태: pending - 결제대기)
+                    const { data: orderData, error: orderError } = await window.supabase.from('orders').insert([
+                        {
+                            customer_name: dbCustomerName,
+                            customer_phone: phone,
+                            product_name: orderProductName,
+                            quantity: totalQuantity,
+                            total_price: totalPrice,
+                            status: 'pending' // 결제대기
+                        }
+                    ]).select();
+
+                    if (orderError) throw orderError;
+                    if (!orderData || orderData.length === 0) {
+                        throw new Error('주문 생성에 실패했습니다.');
+                    }
+
+                    // 로그인 회원인 경우 프로필의 주소/연락처 자동 갱신
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    if (user) {
+                        await window.supabase.from('profiles').update({
+                            phone: phone,
+                            organization: org,
+                            address: address
+                        }).eq('id', user.id);
+                    }
+
+                    // 카트 비우기 및 UI 정리
+                    localStorage.removeItem('sg_limu_cart');
+                    localStorage.removeItem('sg_limu_pending_order');
+                    renderCart();
+
+                    checkoutOverlay.style.display = 'none';
+
+                    alert(`주문이 성공적으로 완료되었습니다!\n\n[무통장 입금 계좌 안내]\n은행: 기업은행\n계좌번호: 096-058709-04-010\n예금주: 주식회사에스지라이뮤\n입금금액: ${totalPrice.toLocaleString()}원\n\n주문자명(${name})으로 입금해 주셔야 확인이 가능합니다.`);
+                    
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    location.reload();
+                    return;
+                }
+
+                // [카드결제 / 실시간 계좌이체 분기]
+                // NICEPAY SDK 로드 여부 검증
                 if (!window.goPay) {
                     throw new Error('나이스페이 결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.');
                 }
@@ -237,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 2. Supabase orders 테이블에 주문 추가 (상태: pending)
                 const { data: orderData, error: orderError } = await window.supabase.from('orders').insert([
                     {
-                        customer_name: name,
+                        customer_name: dbCustomerName,
                         customer_phone: phone,
                         product_name: orderProductName,
                         quantity: totalQuantity,
@@ -290,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 필드값 정의
                 const fields = {
-                    PayMethod: 'CARD', // 기본 결제 수단: 신용카드
+                    PayMethod: paymentMethod, // CARD 또는 BANK
                     GoodsName: orderProductName,
                     Amt: totalPrice,
                     MID: NICEPAY_MID,
@@ -723,7 +841,7 @@ async function generateQuotePDF() {
             <div style="margin-top:20px; border:1px solid #ddd; padding:15px; border-radius:5px; line-height:1.6; font-size:11px; color:#666;">
                 <p>● <strong>유효기간</strong>: ${validStr}</p>
                 <p>● <strong>기타문의</strong>: 고객센터 1544-5703으로 연락주시기 바랍니다.</p>
-                <p>● <strong>결제계좌</strong>: (예금주:주식회사에스지라이뮤) 기업은행 010-1544-5703-00</p>
+                <p>● <strong>결제계좌</strong>: (예금주:주식회사에스지라이뮤) 기업은행 096-058709-04-010</p>
             </div>
         `;
 
@@ -772,6 +890,7 @@ window.buyNowDirect = async function(item) {
     cart.forEach(x => total += x.price * x.qty);
     document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
     
+    if (typeof resetPaymentMethod === 'function') resetPaymentMethod();
     if (checkoutMsg) {
         checkoutMsg.className = 'auth-message';
         checkoutMsg.style.display = 'none';
