@@ -947,8 +947,15 @@ window.buyNowDirect = async function(item) {
                     if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
                     if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
                     if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
-                    if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = profile.address || '';
-                    if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
+                    const rawAddress = profile.address || '';
+                    if (rawAddress.includes('||')) {
+                        const addrs = rawAddress.split('||');
+                        if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = addrs[0] || '';
+                        if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = addrs[1] || '';
+                    } else {
+                        if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = rawAddress;
+                        if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
+                    }
                 }
             }
         } catch (err) {
