@@ -450,8 +450,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const NICEPAY_MID = 'SG1142086m';
                 const NICEPAY_KEY = 'AaJF/v+0i2QFScNpEl2pNs/5VqTk6rRyh2iwP1RlQ7Oxhta5jNNAitKJpY0Q15Lcm4p8jOD0UZ40ob9XgkJyoA==';
                 
-                // Return URL: 결제 결과를 수신할 Supabase Edge Function 주소 (현재 페이지 도메인을 redirect_url로 전달)
-                const NICEPAY_RETURN_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback?redirect_url=' + encodeURIComponent(window.location.origin + window.location.pathname);
+                // Return URL: 결제 결과를 수신할 Supabase Edge Function 주소 (현재 페이지 도메인 및 쿼리 스트링까지 온전히 redirect_url로 전달)
+                const NICEPAY_RETURN_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback?redirect_url=' + encodeURIComponent(window.location.origin + window.location.pathname + window.location.search);
 
                 const ediDate = getEdiDate();
                 
