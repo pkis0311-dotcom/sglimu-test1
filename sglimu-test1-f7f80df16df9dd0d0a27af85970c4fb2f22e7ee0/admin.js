@@ -3574,7 +3574,9 @@ function createFeatureBlock(title, desc) {
 
         try {
             // [변경] localStorage 대신 Supabase site_configs 테이블에서 로드
+            console.log('[DEBUG] loadPageData key:', currentPageDataKey);
             const { data: configData, error } = await db.from('site_configs').select('value').eq('key', currentPageDataKey).single();
+            console.log('[DEBUG] loadPageData raw:', configData, 'error:', error);
             if (error && error.code !== 'PGRST116') {
                 console.warn('Failed to load page config:', error);
             }
@@ -3651,6 +3653,7 @@ function createFeatureBlock(title, desc) {
     }
 
 function clearPageManageUI() {
+    console.log('[DEBUG] clearPageManageUI called. Stack:', new Error().stack);
     const specContainer = document.getElementById('specContainer');
     const featureContainer = document.getElementById('featureContainer');
     const pageMainImagePreview = document.getElementById('pageMainImagePreview');
