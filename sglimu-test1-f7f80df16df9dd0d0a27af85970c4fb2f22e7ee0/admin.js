@@ -3304,7 +3304,6 @@ function createSpecRow(key, val) {
                 </div>
                 <div class="excel-toolbar-divider"></div>
                 <div class="excel-toolbar-group color-group">
-                    <button class="ql-table excel-btn" type="button" title="표 삽입"><i class="fa-solid fa-table-cells" style="font-size: 11px;"></i></button>
                     <select class="ql-background excel-color-picker" title="채우기 색"></select>
                     <select class="ql-color excel-color-picker" title="글꼴 색"></select>
                 </div>
@@ -3320,18 +3319,7 @@ function createSpecRow(key, val) {
         const quill = new Quill('#' + qId, {
             theme: 'snow',
             modules: {
-                toolbar: {
-                    container: '#' + tId,
-                    handlers: {
-                        table: function() {
-                            const tableModule = this.quill.getModule('table');
-                            if (tableModule) {
-                                tableModule.insertTable(3, 3);
-                            }
-                        }
-                    }
-                },
-                table: true
+                toolbar: '#' + tId
             }
         });
         row.querySelector('.spec-val-editor').__quill = quill;
