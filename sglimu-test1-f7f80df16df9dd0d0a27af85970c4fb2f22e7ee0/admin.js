@@ -1866,8 +1866,8 @@ window.editProduct = async (id) => {
     productCategoryInput.value = p.category;
     productPriceInput.value = formatPriceInput(p.price); productStockInput.value = p.stock; 
     
-    // 상세 설명 로드 시 색상/사이즈 태그 제거 처리
-    productDescInput.value = (p.description || '').replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').trim();
+    // 상세 설명 로드 시 색상/사이즈 태그 제거 처리 (개행문자 포함)
+    productDescInput.value = (p.description || '').replace(/\[\[C:[\s\S]*?\]\]/g, '').replace(/\[\[S:[\s\S]*?\]\]/g, '').trim();
     
     // 한줄 코멘트 로드
     const shortCommentInput = document.getElementById('productShortComment');
@@ -1884,7 +1884,7 @@ window.editProduct = async (id) => {
         colorContainer.innerHTML = '';
         let colorData = p.colors;
         if(!colorData && p.description) {
-            const match = p.description.match(/\[\[C:(.*?)\]\]/);
+            const match = p.description.match(/\[\[C:([\s\S]*?)\]\]/);
             if(match) colorData = match[1];
         }
         if(colorData) {
@@ -1896,7 +1896,7 @@ window.editProduct = async (id) => {
         sizeContainer.innerHTML = '';
         let sizeData = p.sizes;
         if(!sizeData && p.description) {
-            const match = p.description.match(/\[\[S:(.*?)\]\]/);
+            const match = p.description.match(/\[\[S:([\s\S]*?)\]\]/);
             if(match) sizeData = match[1];
         }
         if(sizeData) {
