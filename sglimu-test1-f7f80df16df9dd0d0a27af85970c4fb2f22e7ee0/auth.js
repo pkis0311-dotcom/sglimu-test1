@@ -208,7 +208,11 @@ function ensureAuthModalInDOM() {
                         </div>
                         <div class="auth-form-group">
                             <label>주소</label>
-                            <input type="text" id="myProfileAddress" class="auth-input" placeholder="주소를 입력하세요" required>
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <input type="text" id="myProfileAddress" class="auth-input" placeholder="주소를 검색하세요" required readonly style="background: #f7f9fa; cursor: pointer;">
+                                <button type="button" id="btnSearchAddressProfile" class="auth-submit-btn" style="width: auto; margin-top: 0; padding: 0 15px; font-size: 0.85rem; white-space: nowrap;">주소 검색</button>
+                            </div>
+                            <input type="text" id="myProfileAddressDetail" class="auth-input" placeholder="상세 주소를 입력하세요">
                         </div>
                         <button type="submit" class="auth-submit-btn">정보 수정하기</button>
                     </form>
@@ -732,6 +736,7 @@ async function openMyProfile() {
             if (document.getElementById('myProfilePhone')) document.getElementById('myProfilePhone').value = profile.phone || '';
             if (document.getElementById('myProfileOrg')) document.getElementById('myProfileOrg').value = profile.organization || '';
             if (document.getElementById('myProfileAddress')) document.getElementById('myProfileAddress').value = profile.address || '';
+            if (document.getElementById('myProfileAddressDetail')) document.getElementById('myProfileAddressDetail').value = '';
         }
         if (myProfileMsg) myProfileMsg.textContent = '';
     } catch (err) {
@@ -749,7 +754,9 @@ if (myProfileForm) {
         const name = document.getElementById('myProfileName').value;
         const phone = document.getElementById('myProfilePhone').value;
         const org = document.getElementById('myProfileOrg').value;
-        const address = document.getElementById('myProfileAddress').value;
+        const addressBase = document.getElementById('myProfileAddress').value;
+        const addressDetail = document.getElementById('myProfileAddressDetail').value;
+        const address = addressDetail ? `${addressBase} ${addressDetail}` : addressBase;
 
         if (myProfileMsg) {
             myProfileMsg.className = 'auth-message';
@@ -1028,3 +1035,61 @@ async function handleNaverSocialLogin(naverUser) {
         window.history.replaceState(null, null, window.location.pathname);
     }
 }
+
+// Daum 우편번호 SDK 동적 로더 및 실행 헬퍼
+function loadPostcodeSDK(callback) {
+    if (window.daum && window.daum.Postcode) {
+        if (callback) callback();
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.onload = () => {
+        if (callback) callback();
+    };
+    document.head.appendChild(script);
+}
+
+function openDaumPostcode(addressInputId, detailInputId) {
+    loadPostcodeSDK(() => {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                let addr = '';
+                if (data.userSelectedType === 'R') {
+                    addr = data.roadAddress;
+                } else {
+                    addr = data.jibunAddress;
+                }
+                const addrInput = document.getElementById(addressInputId);
+                if (addrInput) {
+                    addrInput.value = addr;
+                }
+                const detailInput = document.getElementById(detailInputId);
+                if (detailInput) {
+                    detailInput.value = '';
+                    detailInput.focus();
+                }
+            }
+        }).open();
+    });
+}
+
+// 내 정보 수정 페이지 주소검색 리스너 바인딩
+document.addEventListener('DOMContentLoaded', () => {
+    const checkInterval = setInterval(() => {
+        const btnSearch = document.getElementById('btnSearchAddressProfile');
+        const addrInput = document.getElementById('myProfileAddress');
+        if (btnSearch && addrInput) {
+            btnSearch.addEventListener('click', (e) => {
+                e.preventDefault();
+                openDaumPostcode('myProfileAddress', 'myProfileAddressDetail');
+            });
+            addrInput.addEventListener('click', (e) => {
+                e.preventDefault();
+                openDaumPostcode('myProfileAddress', 'myProfileAddressDetail');
+            });
+            clearInterval(checkInterval);
+        }
+    }, 500);
+});
+

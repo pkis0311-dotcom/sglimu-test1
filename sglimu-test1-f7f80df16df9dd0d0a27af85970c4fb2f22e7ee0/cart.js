@@ -95,7 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="auth-form-group">
                             <label>배송지 주소 *</label>
-                            <input type="text" id="checkoutAddress" class="auth-input" placeholder="전체 주소를 입력하세요" required>
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <input type="text" id="checkoutAddress" class="auth-input" placeholder="배송지를 검색하세요" required readonly style="background: #f7f9fa; cursor: pointer;">
+                                <button type="button" id="btnSearchAddressCheckout" class="auth-submit-btn" style="width: auto; margin-top: 0; padding: 0 15px; font-size: 0.85rem; white-space: nowrap;">주소 검색</button>
+                            </div>
+                            <input type="text" id="checkoutAddressDetail" class="auth-input" placeholder="상세 주소를 입력하세요" required>
                         </div>
                         <div class="payment-method-container">
                             <label>결제 수단 *</label>
@@ -227,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
                             if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
                             if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = profile.address || '';
+                            if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
                         }
                     }
                 } catch (err) {
@@ -270,7 +275,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const phone = document.getElementById('checkoutPhone').value.trim();
                 const email = document.getElementById('checkoutEmail').value.trim();
                 const org = document.getElementById('checkoutOrg').value.trim();
-                const address = document.getElementById('checkoutAddress').value.trim();
+                const addressBase = document.getElementById('checkoutAddress').value.trim();
+                const addressDetail = document.getElementById('checkoutAddressDetail').value.trim();
+                const address = addressDetail ? `${addressBase} ${addressDetail}` : addressBase;
                 
                 // 선택된 결제수단 가져오기 (디폴트는 CARD)
                 const paymentMethodEl = document.querySelector('input[name="paymentMethod"]:checked');
@@ -915,6 +922,7 @@ window.buyNowDirect = async function(item) {
                     if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
                     if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
                     if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = profile.address || '';
+                    if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
                 }
             }
         } catch (err) {
@@ -932,3 +940,65 @@ window.nicepaySubmit = function() {
         console.error('NICEPAY 결제 폼(payForm)을 찾을 수 없습니다.');
     }
 };
+
+// Daum 우편번호 SDK 동적 로더 및 실행 헬퍼
+if (typeof window.loadPostcodeSDK !== 'function') {
+    window.loadPostcodeSDK = function(callback) {
+        if (window.daum && window.daum.Postcode) {
+            if (callback) callback();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+        script.onload = () => {
+            if (callback) callback();
+        };
+        document.head.appendChild(script);
+    }
+}
+
+if (typeof window.openDaumPostcode !== 'function') {
+    window.openDaumPostcode = function(addressInputId, detailInputId) {
+        window.loadPostcodeSDK(() => {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    let addr = '';
+                    if (data.userSelectedType === 'R') {
+                        addr = data.roadAddress;
+                    } else {
+                        addr = data.jibunAddress;
+                    }
+                    const addrInput = document.getElementById(addressInputId);
+                    if (addrInput) {
+                        addrInput.value = addr;
+                    }
+                    const detailInput = document.getElementById(detailInputId);
+                    if (detailInput) {
+                        detailInput.value = '';
+                        detailInput.focus();
+                    }
+                }
+            }).open();
+        });
+    }
+}
+
+// 주문서 작성 페이지 주소검색 리스너 바인딩
+document.addEventListener('DOMContentLoaded', () => {
+    const checkInterval = setInterval(() => {
+        const btnSearch = document.getElementById('btnSearchAddressCheckout');
+        const addrInput = document.getElementById('checkoutAddress');
+        if (btnSearch && addrInput) {
+            btnSearch.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.openDaumPostcode('checkoutAddress', 'checkoutAddressDetail');
+            });
+            addrInput.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.openDaumPostcode('checkoutAddress', 'checkoutAddressDetail');
+            });
+            clearInterval(checkInterval);
+        }
+    }, 500);
+});
+
