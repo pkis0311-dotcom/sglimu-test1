@@ -153,31 +153,44 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
 
-    // 기존 주문 정보 조회
+    // 1. 주문 ID 정수형 캐스팅
+    const numericMoid = parseInt(moid, 10)
+    if (isNaN(numericMoid)) {
+      throw new Error(`유효하지 않은 주문 ID (Moid): ${moid}`)
+    }
+
+    // 2. 기존 주문 정보 조회
     const { data: order, error: fetchErr } = await supabase
       .from('orders')
       .select('status, customer_name, product_name')
-      .eq('id', moid)
+      .eq('id', numericMoid)
       .single()
 
     if (fetchErr) {
       console.error('재고 차감을 위한 기존 주문 조회 실패:', fetchErr)
     } else {
-      const oldStatus = order?.status || 'pending'
+      // 3. 중복 재고 차감 여부를 inventory_logs 조회를 통해 확인
+      const searchReason = `#${numericMoid}`
+      const { data: existingLogs, error: logCheckErr } = await supabase
+        .from('inventory_logs')
+        .select('id')
+        .like('reason', `%${searchReason}%`)
 
-      // 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경
+      const isAlreadyDeducted = !logCheckErr && existingLogs && existingLogs.length > 0
+
+      // 4. 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경
       const { error: dbError } = await supabase
         .from('orders')
         .update({ status: '준비중' })
-        .eq('id', moid)
+        .eq('id', numericMoid)
 
       if (dbError) {
         console.error('주문 데이터베이스 업데이트 실패:', dbError)
       } else {
-        console.log(`주문 ID ${moid}의 상태가 '준비중'으로 변경되었습니다.`)
+        console.log(`주문 ID ${numericMoid}의 상태가 '준비중'으로 변경되었습니다.`)
 
-        // 상태가 pending -> 준비중으로 전환될 때 재고 차감 처리
-        if (oldStatus === 'pending') {
+        // 5. 이미 차감되지 않았고 메타데이터가 존재할 경우 재고 차감 실행
+        if (!isAlreadyDeducted) {
           const parts = order.customer_name ? order.customer_name.split('||') : []
           if (parts.length > 3) {
             const itemsJson = parts[3]
@@ -194,7 +207,7 @@ Deno.serve(async (req) => {
                     const { error: logErr } = await supabase.from('inventory_logs').insert([{
                       product_id: pid,
                       change_amount: -qty,
-                      reason: `[${pName}] 홈페이지 주문 결제완료 출고 (주문번호: #${moid.toString().substring(0,8).toUpperCase()})`,
+                      reason: `[${pName}] 홈페이지 주문 결제완료 출고 (주문번호: #${numericMoid})`,
                       manager_name: '시스템(NICEPAY)'
                     }])
                     if (logErr) {
@@ -209,6 +222,8 @@ Deno.serve(async (req) => {
               console.error('주문 품목 메타데이터 파싱 중 오류:', jsonErr)
             }
           }
+        } else {
+          console.log(`주문 ID ${numericMoid}는 이미 재고가 차감되어 작업을 건너뜁니다.`)
         }
       }
     }

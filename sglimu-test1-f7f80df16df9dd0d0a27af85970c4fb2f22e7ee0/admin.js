@@ -5091,9 +5091,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (updateErr) throw updateErr;
 
-            // 3. 상태가 pending -> 배송준비중/배송중/배송완료 로 전환될 때 재고 차감 처리
+            // 3. 재고 차감 여부를 inventory_logs 조회를 통해 확인
+            const searchReason = `#${orderId}`;
+            const { data: existingLogs, error: logCheckErr } = await db
+                .from('inventory_logs')
+                .select('id')
+                .like('reason', `%${searchReason}%`);
+
+            const isAlreadyDeducted = !logCheckErr && existingLogs && existingLogs.length > 0;
             const isCompletedStatus = (newStatus === '준비중' || newStatus === '배송중' || newStatus === '배송완료');
-            if (oldStatus === 'pending' && isCompletedStatus) {
+
+            // 4. 아직 차감되지 않았고, 완료 성격의 상태로 변경될 때 재고 차감 처리
+            if (!isAlreadyDeducted && isCompletedStatus) {
                 const parts = order.customer_name ? order.customer_name.split('||') : [];
                 if (parts.length > 3) {
                     const itemsJson = parts[3];
@@ -5110,7 +5119,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const { error: logErr } = await db.from('inventory_logs').insert([{
                                         product_id: pid,
                                         change_amount: -qty,
-                                        reason: `[${pName}] 홈페이지 주문 입금확인 출고 (주문번호: #${orderId.toString().substring(0,8).toUpperCase()})`,
+                                        reason: `[${pName}] 홈페이지 주문 입금확인 출고 (주문번호: #${orderId})`,
                                         manager_name: '관리자(수동확인)'
                                     }]);
                                     if (logErr) {
