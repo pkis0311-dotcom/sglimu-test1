@@ -30,16 +30,42 @@ async function sha256(message) {
     return hashHex;
 }
 
+// 결제 대상 품목을 조회하는 헬퍼 함수 (바로구매 vs 장바구니 결제 분기 지원)
+function getCheckoutItems() {
+    if (sessionStorage.getItem('is_direct_buy') === 'true') {
+        const directItem = sessionStorage.getItem('direct_buy_item');
+        if (directItem) {
+            try {
+                return [JSON.parse(directItem)];
+            } catch (e) {
+                console.error('Failed to parse direct buy item:', e);
+            }
+        }
+    }
+    return getCart();
+}
+
 // 전역 장바구니 팝업 HTML 템플릿 주입
 document.addEventListener('DOMContentLoaded', () => {
     // 결제 완료 후 리다이렉트 처리 확인 (URL 파라미터가 ?payment=success 인 경우)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
-        localStorage.removeItem('sg_limu_cart');
+        const isDirect = sessionStorage.getItem('is_direct_buy') === 'true';
+        if (!isDirect) {
+            localStorage.removeItem('sg_limu_cart'); // 장바구니 전체 결제였을 때만 카트 비우기
+        }
+        sessionStorage.removeItem('is_direct_buy');
+        sessionStorage.removeItem('direct_buy_item');
         localStorage.removeItem('sg_limu_pending_order');
         alert('결제가 완료되었습니다. 주문해 주셔서 감사합니다!');
-        // URL 파라미터 제거하여 주소창 정리
-        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // payment 파라미터만 제거하고 id 등 다른 파라미터는 온전히 보존
+        const cleanParams = new URLSearchParams(window.location.search);
+        cleanParams.delete('payment');
+        cleanParams.delete('message');
+        const newSearch = cleanParams.toString();
+        const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
+        window.history.replaceState({}, document.title, newUrl);
     }
 
     // 1. 장바구니 UI 주입
@@ -127,6 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <p>● 주문자명으로 입금해 주셔야 빠른 확인이 가능합니다.</p>
                             </div>
                         </div>
+                        <div class="checkout-product-info-box" style="margin-top:20px; padding:12px; background:#f8f9fa; border-radius:6px; font-size:0.9rem; border:1px solid #e9ecef;">
+                            <div style="font-weight:600; margin-bottom:6px; color:#495057;">주문 상품 정보</div>
+                            <div id="checkoutProductSummary" style="color:#212529; line-height:1.4;">-</div>
+                        </div>
                         <div class="total-price-box" style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight:600; font-size:1.1rem;">최종 결제 금액</span>
                             <span id="checkoutTotalPrice" style="font-weight:800; font-size:1.5rem; color:var(--color-primary);">0원</span>
@@ -191,6 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCartCheckout) {
         btnCartCheckout.addEventListener('click', async (e) => {
             e.preventDefault();
+            
+            // 일반 장바구니 결제이므로 바로구매 플래그 초기화
+            sessionStorage.setItem('is_direct_buy', 'false');
+            sessionStorage.removeItem('direct_buy_item');
+
             const cart = getCart();
             if (cart.length === 0) {
                 alert('장바구니가 비어 있습니다.');
@@ -198,10 +233,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             closeCart();
             
-            // 토탈 가격 표시
+            // 토탈 가격 표시 및 주문 상품 요약 렌더링
             let total = 0;
             cart.forEach(item => total += item.price * item.qty);
             document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
+
+            let summaryText = '';
+            if (cart.length === 1) {
+                summaryText = `${cart[0].name} (수량: ${cart[0].qty}개)`;
+            } else {
+                summaryText = `${cart[0].name} 외 ${cart.length - 1}건 (총 수량: ${cart.reduce((acc, x) => acc + x.qty, 0)}개)`;
+            }
+            const summaryEl = document.getElementById('checkoutProductSummary');
+            if (summaryEl) summaryEl.innerText = summaryText;
             
             // 모달 초기화
             if (typeof resetPaymentMethod === 'function') resetPaymentMethod();
@@ -291,9 +335,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const paymentMethodEl = document.querySelector('input[name="paymentMethod"]:checked');
                 const paymentMethod = paymentMethodEl ? paymentMethodEl.value : 'CARD';
 
-                const cart = getCart();
+                const cart = getCheckoutItems();
                 if (cart.length === 0) {
-                    throw new Error('장바구니가 비어 있습니다.');
+                    throw new Error('결제할 상품 정보가 없습니다.');
                 }
 
                 // 상품명 문자열 포맷팅
@@ -348,7 +392,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     // 카트 비우기 및 UI 정리
-                    localStorage.removeItem('sg_limu_cart');
+                    const isDirect = sessionStorage.getItem('is_direct_buy') === 'true';
+                    if (!isDirect) {
+                        localStorage.removeItem('sg_limu_cart');
+                    }
+                    sessionStorage.removeItem('is_direct_buy');
+                    sessionStorage.removeItem('direct_buy_item');
                     localStorage.removeItem('sg_limu_pending_order');
                     renderCart();
 
@@ -892,7 +941,8 @@ async function generateQuotePDF() {
 
 // [신규] 상세페이지 바로구매(결제창 즉시 이동) 처리용 전역 함수
 window.buyNowDirect = async function(item) {
-    let cart = getCart();
+    // 바로구매 플래그 및 임시 결제 상품 세팅
+    sessionStorage.setItem('is_direct_buy', 'true');
     
     // item.id가 원래 productId이므로 이를 productIdVal로 지정하고, id는 고유 식별자로 생성
     const productIdVal = item.productId || item.id;
@@ -906,22 +956,19 @@ window.buyNowDirect = async function(item) {
         qty: item.qty
     };
     
-    // 동일 상품 & 동일 옵션이 이미 장바구니에 있는지 검사할 때 productId와 name을 비교
-    const existing = cart.find(x => x.productId === cartItem.productId && x.name === cartItem.name);
-    if (existing) {
-        existing.qty += cartItem.qty;
-    } else {
-        cart.push(cartItem);
-    }
-    saveCart(cart);
-    renderCart();
+    sessionStorage.setItem('direct_buy_item', JSON.stringify(cartItem));
 
     const checkoutOverlay = document.getElementById('checkoutOverlay');
     const checkoutMsg = document.getElementById('checkoutMsg');
     
-    let total = 0;
-    cart.forEach(x => total += x.price * x.qty);
+    // 장바구니 총합 대신 바로구매하려는 단일 품목 가격 * 수량만 적용
+    let total = cartItem.price * cartItem.qty;
     document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
+
+    // 주문 상품 요약 렌더링
+    let summaryText = `${cartItem.name} (수량: ${cartItem.qty}개)`;
+    const summaryEl = document.getElementById('checkoutProductSummary');
+    if (summaryEl) summaryEl.innerText = summaryText;
     
     if (typeof resetPaymentMethod === 'function') resetPaymentMethod();
     if (checkoutMsg) {
