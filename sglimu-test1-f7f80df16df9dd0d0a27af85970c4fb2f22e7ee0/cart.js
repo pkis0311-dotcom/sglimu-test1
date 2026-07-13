@@ -306,8 +306,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Supabase client가 초기화되지 않았습니다.');
                 }
 
-                // DB에 기록할 customer_name (이름||결제수단||소속기관)
-                const dbCustomerName = `${name}||${paymentMethod}||${org}`;
+                // DB에 기록할 customer_name (이름||결제수단||소속기관||품목JSON)
+                const itemsJson = JSON.stringify(cart.map(x => ({ id: x.productId, name: x.name, qty: x.qty })));
+                const dbCustomerName = `${name}||${paymentMethod}||${org}||${itemsJson}`;
 
                 // 1. PG 결제창(신용카드/계좌이체) vs 무통장 직접 송금 분기 처리
                 if (paymentMethod === 'DIRECT_BANK') {
@@ -564,9 +565,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 displayName += ` (${selectedOptions.join(', ')})`;
             }
             
+            // URL 파라미터에서 진짜 productId 추출
+            const urlParams = new URLSearchParams(window.location.search);
+            const productIdVal = urlParams.get('id') || '';
+            
             const item = {
-                // 중복 방지를 위한 ID 생성 (옵션 조합별로 다른 장바구니 아이템으로 처리)
                 id: pName + '_' + optionKeyParts.join('_') + '_' + finalUnitPrice + '_' + new Date().getTime(),
+                productId: productIdVal,
                 name: displayName,
                 price: finalUnitPrice,
                 qty: qty
@@ -880,12 +885,25 @@ async function generateQuotePDF() {
 // [신규] 상세페이지 바로구매(결제창 즉시 이동) 처리용 전역 함수
 window.buyNowDirect = async function(item) {
     let cart = getCart();
-    // 동일 상품 및 동일 옵션 존재 여부 확인
-    const existing = cart.find(x => x.id === item.id && x.optionColor === item.optionColor && x.optionSize === item.optionSize);
+    
+    // item.id가 원래 productId이므로 이를 productIdVal로 지정하고, id는 고유 식별자로 생성
+    const productIdVal = item.productId || item.id;
+    const finalName = item.name + (item.optionColor || item.optionSize ? ` (${[item.optionColor, item.optionSize].filter(Boolean).join(', ')})` : '');
+    
+    const cartItem = {
+        id: productIdVal + '_' + (item.optionColor || '') + '_' + (item.optionSize || '') + '_' + new Date().getTime(),
+        productId: productIdVal,
+        name: finalName,
+        price: item.price,
+        qty: item.qty
+    };
+    
+    // 동일 상품 & 동일 옵션이 이미 장바구니에 있는지 검사할 때 productId와 name을 비교
+    const existing = cart.find(x => x.productId === cartItem.productId && x.name === cartItem.name);
     if (existing) {
-        existing.qty += item.qty;
+        existing.qty += cartItem.qty;
     } else {
-        cart.push(item);
+        cart.push(cartItem);
     }
     saveCart(cart);
     renderCart();

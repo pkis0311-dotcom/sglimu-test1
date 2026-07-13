@@ -5072,12 +5072,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const { error } = await db
+            // 1. 기존 주문 정보(기존 상태 및 품목 정보) 조회
+            const { data: order, error: fetchErr } = await db
+                .from('orders')
+                .select('status, customer_name, product_name')
+                .eq('id', orderId)
+                .single();
+
+            if (fetchErr) throw fetchErr;
+
+            const oldStatus = order.status || 'pending';
+
+            // 2. 주문 상태 업데이트 진행
+            const { error: updateErr } = await db
                 .from('orders')
                 .update({ status: newStatus })
                 .eq('id', orderId);
 
-            if (error) throw error;
+            if (updateErr) throw updateErr;
+
+            // 3. 상태가 pending -> 배송준비중/배송중/배송완료 로 전환될 때 재고 차감 처리
+            const isCompletedStatus = (newStatus === '준비중' || newStatus === '배송중' || newStatus === '배송완료');
+            if (oldStatus === 'pending' && isCompletedStatus) {
+                const parts = order.customer_name ? order.customer_name.split('||') : [];
+                if (parts.length > 3) {
+                    const itemsJson = parts[3];
+                    try {
+                        const items = JSON.parse(itemsJson);
+                        if (Array.isArray(items)) {
+                            for (const item of items) {
+                                const pid = item.id;
+                                const qty = parseInt(item.qty) || 0;
+                                const pName = item.name || order.product_name;
+
+                                if (pid && qty > 0) {
+                                    // inventory_logs 삽입 (트리거가 products 테이블 stock을 자동으로 차감함)
+                                    const { error: logErr } = await db.from('inventory_logs').insert([{
+                                        product_id: pid,
+                                        change_amount: -qty,
+                                        reason: `[${pName}] 홈페이지 주문 입금확인 출고 (주문번호: #${orderId.toString().substring(0,8).toUpperCase()})`,
+                                        manager_name: '관리자(수동확인)'
+                                    }]);
+                                    if (logErr) {
+                                        console.error(`재고 로그 생성 실패 (제품 ID: ${pid}):`, logErr);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (jsonErr) {
+                        console.error('주문 품목 메타데이터 파싱 중 오류:', jsonErr);
+                    }
+                }
+            }
 
             alert('배송 상태가 성공적으로 변경되었습니다.');
 

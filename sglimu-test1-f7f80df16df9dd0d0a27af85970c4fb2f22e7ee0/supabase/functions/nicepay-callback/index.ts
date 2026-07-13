@@ -153,16 +153,64 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
 
-    // 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경
-    const { error: dbError } = await supabase
+    // 기존 주문 정보 조회
+    const { data: order, error: fetchErr } = await supabase
       .from('orders')
-      .update({ status: '준비중' })
+      .select('status, customer_name, product_name')
       .eq('id', moid)
+      .single()
 
-    if (dbError) {
-      console.error('주문 데이터베이스 업데이트 실패:', dbError)
+    if (fetchErr) {
+      console.error('재고 차감을 위한 기존 주문 조회 실패:', fetchErr)
     } else {
-      console.log(`주문 ID ${moid}의 상태가 '준비중'으로 변경되었습니다.`)
+      const oldStatus = order?.status || 'pending'
+
+      // 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경
+      const { error: dbError } = await supabase
+        .from('orders')
+        .update({ status: '준비중' })
+        .eq('id', moid)
+
+      if (dbError) {
+        console.error('주문 데이터베이스 업데이트 실패:', dbError)
+      } else {
+        console.log(`주문 ID ${moid}의 상태가 '준비중'으로 변경되었습니다.`)
+
+        // 상태가 pending -> 준비중으로 전환될 때 재고 차감 처리
+        if (oldStatus === 'pending') {
+          const parts = order.customer_name ? order.customer_name.split('||') : []
+          if (parts.length > 3) {
+            const itemsJson = parts[3]
+            try {
+              const items = JSON.parse(itemsJson)
+              if (Array.isArray(items)) {
+                for (const item of items) {
+                  const pid = item.id
+                  const qty = parseInt(item.qty) || 0
+                  const pName = item.name || order.product_name
+
+                  if (pid && qty > 0) {
+                    // inventory_logs 삽입 (트리거가 products 테이블 stock을 자동으로 차감함)
+                    const { error: logErr } = await supabase.from('inventory_logs').insert([{
+                      product_id: pid,
+                      change_amount: -qty,
+                      reason: `[${pName}] 홈페이지 주문 결제완료 출고 (주문번호: #${moid.toString().substring(0,8).toUpperCase()})`,
+                      manager_name: '시스템(NICEPAY)'
+                    }])
+                    if (logErr) {
+                      console.error(`재고 로그 생성 실패 (제품 ID: ${pid}):`, logErr)
+                    } else {
+                      console.log(`제품 ID ${pid} 재고 차감 및 로그 생성 완료`)
+                    }
+                  }
+                }
+              }
+            } catch (jsonErr) {
+              console.error('주문 품목 메타데이터 파싱 중 오류:', jsonErr)
+            }
+          }
+        }
+      }
     }
 
   } catch (dbErr) {
