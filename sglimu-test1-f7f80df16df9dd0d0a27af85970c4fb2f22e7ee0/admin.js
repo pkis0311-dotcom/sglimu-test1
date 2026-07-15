@@ -4444,6 +4444,13 @@ async function fetchProfiles() {
         }
 
         const safeName = (p.full_name || '회원').replace(/'/g, "\\'");
+        const isSuperAdmin = (loggedInUser && loggedInUser.role === 'super_admin');
+        const deleteButtonHtml = isSuperAdmin 
+            ? `<button class="action-btn delete" onclick="deleteProfile('${p.id}', '${safeName}')" title="삭제"><i class="fa-solid fa-user-slash"></i></button>`
+            : '';
+        const delegateButtonHtml = isSuperAdmin
+            ? `<button class="action-btn delegate" onclick="delegateAdminRole('${p.id}', '${safeName}', '${p.role || ''}')" title="관리자 권한 위임"><i class="fa-solid fa-user-shield"></i></button>`
+            : '';
 
         tr.innerHTML = `
             <td style="font-size:0.8rem; color:#999;">${p.id.substring(0, 8)}</td>
@@ -4454,8 +4461,8 @@ async function fetchProfiles() {
             <td style="font-size:0.85rem; color:#666;">${dateStr}</td>
             <td>
                 <button class="action-btn" onclick="alert('프로필 상세 보기/수정 기능 준비 중')"><i class="fa-solid fa-eye"></i></button>
-                <button class="action-btn delegate" onclick="delegateAdminRole('${p.id}', '${safeName}', '${p.role || ''}')" title="관리자 권한 위임"><i class="fa-solid fa-user-shield"></i></button>
-                <button class="action-btn delete" onclick="deleteProfile('${p.id}', '${safeName}')" title="삭제"><i class="fa-solid fa-user-slash"></i></button>
+                ${delegateButtonHtml}
+                ${deleteButtonHtml}
             </td>
         `;
         tBody.appendChild(tr);
