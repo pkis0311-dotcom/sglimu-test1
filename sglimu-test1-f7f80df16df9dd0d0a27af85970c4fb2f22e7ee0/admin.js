@@ -4160,8 +4160,23 @@ function openCategoryModal(target, mKey, midKey, subId, label, order, icon = '')
     categoryModal.style.display = 'flex';
 }
 
+// 카테고리 설정 DB에 동기화 저장하는 공통 함수
+async function saveSiteCategories() {
+    try {
+        const { error } = await db.from('site_configs').upsert({ key: 'site_categories', value: SITE_CATEGORIES });
+        if (error) {
+            console.error('카테고리 변경 자동 저장 실패:', error);
+            alert('변경 사항 저장 실패: ' + error.message);
+        } else {
+            console.log('카테고리 변경 사항 자동 저장 성공');
+        }
+    } catch (err) {
+        console.error('카테고리 저장 중 예외 발생:', err);
+    }
+}
+
 // 9-3-2. 카테고리 모달 저장
-function saveCategoryEdit() {
+async function saveCategoryEdit() {
     const target = editCatTarget.value;
     const mKey = editCatMKey.value;
     const midKey = editCatMidKey.value;
@@ -4187,6 +4202,7 @@ function saveCategoryEdit() {
             SITE_CATEGORIES[newKey] = { label: label, order: order, icon: icon, middles: {} };
         }
     } else if (target === 'middle') {
+        if (!SITE_CATEGORIES[mKey].middles) SITE_CATEGORIES[mKey].middles = {};
         if (midKey) {
             // 수정
             SITE_CATEGORIES[mKey].middles[midKey].label = label;
@@ -4197,6 +4213,7 @@ function saveCategoryEdit() {
             SITE_CATEGORIES[mKey].middles[newMidKey] = { label: label, order: order, subs: [] };
         }
     } else if (target === 'sub') {
+        if (!SITE_CATEGORIES[mKey].middles[midKey].subs) SITE_CATEGORIES[mKey].middles[midKey].subs = [];
         if (subId) {
             // 수정
             const sub = SITE_CATEGORIES[mKey].middles[midKey].subs.find(s => s.id === subId);
@@ -4212,6 +4229,7 @@ function saveCategoryEdit() {
     }
 
     categoryModal.style.display = 'none';
+    await saveSiteCategories();
     renderCategoryManagement();
 }
 
@@ -4241,8 +4259,8 @@ function renderCategoryManagement() {
         let middlesHtml = '';
         
         // 중간분류 정렬
-        const sortedMiddles = Object.keys(major.middles).sort((a, b) => 
-            (major.middles[a].order || 0) - (major.middles[b].order || 0)
+        const sortedMiddles = Object.keys(major.middles || {}).sort((a, b) => 
+            ((major.middles[a] ? major.middles[a].order : 0) || 0) - ((major.middles[b] ? major.middles[b].order : 0) || 0)
         );
 
         for (const midKey of sortedMiddles) {
@@ -4300,7 +4318,7 @@ function renderCategoryManagement() {
             </div>
             <div class="major-card-body" data-mkey="${mKey}">
                 ${middlesHtml}
-                ${Object.keys(major.middles).length === 0 ? '<div style="color:#ccc; text-align:center; padding:30px; font-size:0.9rem;">중간분류가 없습니다.<br>상단의 버튼을 눌러 추가하세요.</div>' : ''}
+                ${Object.keys(major.middles || {}).length === 0 ? '<div style="color:#ccc; text-align:center; padding:30px; font-size:0.9rem;">중간분류가 없습니다.<br>상단의 버튼을 눌러 추가하세요.</div>' : ''}
             </div>
         `;
         container.appendChild(card);
@@ -4320,8 +4338,9 @@ function initSortableFeatures() {
         handle: '.major-card-header .drag-handle',
         animation: 150,
         ghostClass: 'sortable-ghost',
-        onEnd: function() {
+        onEnd: async function() {
             const cards = container.querySelectorAll('.major-card');
+            const promises = [];
             cards.forEach((card, index) => {
                 const mKey = card.getAttribute('data-mkey');
                 if (SITE_CATEGORIES[mKey]) {
@@ -4329,6 +4348,7 @@ function initSortableFeatures() {
                     card.querySelector('.major-card-header .cat-order-badge').textContent = index;
                 }
             });
+            await saveSiteCategories();
         }
     });
 
@@ -4338,7 +4358,7 @@ function initSortableFeatures() {
             handle: '.middle-header .drag-handle',
             animation: 150,
             ghostClass: 'sortable-ghost',
-            onEnd: function() {
+            onEnd: async function() {
                 const mKey = body.getAttribute('data-mkey');
                 const items = body.querySelectorAll('.middle-item');
                 items.forEach((item, index) => {
@@ -4348,6 +4368,7 @@ function initSortableFeatures() {
                         item.querySelector('.middle-header .cat-order-badge').textContent = index;
                     }
                 });
+                await saveSiteCategories();
             }
         });
     });
@@ -4358,7 +4379,7 @@ function initSortableFeatures() {
             handle: '.drag-handle',
             animation: 150,
             ghostClass: 'sortable-ghost',
-            onEnd: function() {
+            onEnd: async function() {
                 const mKey = list.getAttribute('data-mkey');
                 const midKey = list.getAttribute('data-midkey');
                 const badges = list.querySelectorAll('.sub-badge');
@@ -4376,6 +4397,7 @@ function initSortableFeatures() {
                     }
                 });
                 SITE_CATEGORIES[mKey].middles[midKey].subs = newSubs;
+                await saveSiteCategories();
             }
         });
     });
@@ -4386,9 +4408,10 @@ window.addMiddleCategory = (mKey) => {
     openCategoryModal('middle', mKey, null, null, '', 0);
 };
 
-window.deleteMiddleCategory = (mKey, midKey) => {
+window.deleteMiddleCategory = async (mKey, midKey) => {
     if (confirm(`중간분류 "${SITE_CATEGORIES[mKey].middles[midKey].label}"와 하위 소분류를 모두 삭제하시겠습니까?`)) {
         delete SITE_CATEGORIES[mKey].middles[midKey];
+        await saveSiteCategories();
         renderCategoryManagement();
     }
 };
@@ -4397,18 +4420,20 @@ window.addSubCategory = (mKey, midKey) => {
     openCategoryModal('sub', mKey, midKey, null, '', 0);
 };
 
-window.deleteSubCategory = (mKey, midKey, subId) => {
+window.deleteSubCategory = async (mKey, midKey, subId) => {
     const middle = SITE_CATEGORIES[mKey].middles[midKey];
     const sub = middle.subs.find(s => s.id === subId);
     if (confirm(`소분류 "${sub.label}"을(를) 삭제하시겠습니까?`)) {
         middle.subs = middle.subs.filter(s => s.id !== subId);
+        await saveSiteCategories();
         renderCategoryManagement();
     }
 };
 
-window.deleteMajorCategory = (mKey) => {
+window.deleteMajorCategory = async (mKey) => {
     if (confirm(`대분류 "${SITE_CATEGORIES[mKey].label}"와 하위의 모든 분류를 삭제하시겠습니까?`)) {
         delete SITE_CATEGORIES[mKey];
+        await saveSiteCategories();
         renderCategoryManagement();
     }
 };
