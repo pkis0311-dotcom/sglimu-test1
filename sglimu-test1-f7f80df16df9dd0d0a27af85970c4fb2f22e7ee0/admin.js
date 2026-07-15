@@ -649,10 +649,10 @@ async function checkSession() {
         }
 
         try {
-            // profiles 테이블에서 로그인한 관리자의 full_name과 role을 조회
+            // profiles 테이블에서 로그인한 관리자의 full_name, role, email을 조회
             const { data: profile, error: profileError } = await db
                 .from('profiles')
-                .select('full_name, role')
+                .select('full_name, role, email')
                 .eq('email', session.user.email)
                 .single();
 
@@ -720,7 +720,7 @@ loginBtn.addEventListener('click', async () => {
         try {
             const { data: profile, error: profileError } = await db
                 .from('profiles')
-                .select('full_name, role')
+                .select('full_name, role, email')
                 .eq('email', data.user.email)
                 .single();
 
@@ -1397,15 +1397,13 @@ if (openInventoryModalBtn) {
         inventoryChangeAmountInput.value = '';
         
         // 로그인한 관리자 성함 자동 채우기 및 읽기전용 처리
-        if (loggedInUser && loggedInUser.full_name) {
-            inventoryManagerNameInput.value = loggedInUser.full_name;
-            inventoryManagerNameInput.readOnly = true;
-            inventoryManagerNameInput.style.backgroundColor = '#f1f3f5';
-        } else {
-            inventoryManagerNameInput.value = '';
-            inventoryManagerNameInput.readOnly = false;
-            inventoryManagerNameInput.style.backgroundColor = '#fff';
-        }
+        const adminName = (loggedInUser && loggedInUser.full_name) 
+            ? loggedInUser.full_name 
+            : ((loggedInUser && loggedInUser.email) ? loggedInUser.email.split('@')[0] : '관리자');
+
+        inventoryManagerNameInput.value = adminName;
+        inventoryManagerNameInput.readOnly = true;
+        inventoryManagerNameInput.style.backgroundColor = '#f1f3f5';
         
         inventoryReasonInput.value = '';
         if (inventoryFileInput) inventoryFileInput.value = '';
@@ -4721,15 +4719,13 @@ document.addEventListener('DOMContentLoaded', () => {
             customerPhoneInput.value = '';
             
             // 로그인한 관리자 성함 자동 채우기 및 읽기전용 처리
-            if (loggedInUser && loggedInUser.full_name) {
-                managerNameInput.value = loggedInUser.full_name;
-                managerNameInput.readOnly = true;
-                managerNameInput.style.backgroundColor = '#f1f3f5';
-            } else {
-                managerNameInput.value = '';
-                managerNameInput.readOnly = false;
-                managerNameInput.style.backgroundColor = '#fff';
-            }
+            const adminName = (loggedInUser && loggedInUser.full_name) 
+                ? loggedInUser.full_name 
+                : ((loggedInUser && loggedInUser.email) ? loggedInUser.email.split('@')[0] : '관리자');
+
+            managerNameInput.value = adminName;
+            managerNameInput.readOnly = true;
+            managerNameInput.style.backgroundColor = '#f1f3f5';
 
             memoInput.value = '';
             if (fileInput) fileInput.value = '';
