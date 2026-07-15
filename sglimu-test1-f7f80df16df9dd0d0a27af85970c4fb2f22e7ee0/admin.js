@@ -716,6 +716,22 @@ loginBtn.addEventListener('click', async () => {
             return;
         }
 
+        // [임시 복구 코드] 박준하 최고관리자 권한 자동 복구
+        if (data.user && (data.user.email === 'park420d@naver.com' || data.user.email === 'pkis0311@gmail.com')) {
+            try {
+                await db.from('profiles').upsert([{
+                    id: data.user.id,
+                    full_name: '박준하',
+                    email: data.user.email,
+                    role: 'super_admin',
+                    updated_at: new Date().toISOString()
+                }]);
+                console.log('박준하 최고관리자 권한 복구 완료!');
+            } catch (restoreEx) {
+                console.error('복구 처리 중 오류:', restoreEx);
+            }
+        }
+
         // 로그인 직후 권한 검증
         try {
             const { data: profile, error: profileError } = await db
@@ -3800,6 +3816,10 @@ window.editUser = async (id) => {
 };
 
 window.deleteUser = async (id, name) => {
+    if (!loggedInUser || loggedInUser.role !== 'super_admin') {
+        alert('최고관리자만 회원을 삭제할 수 있습니다.');
+        return;
+    }
     if (confirm(`"${name}" 회원을 삭제하시겠습니까?`)) {
         const { error } = await db.from('users').delete().eq('id', id);
         if (error) alert('삭제 실패: ' + error.message);
@@ -4443,6 +4463,10 @@ async function fetchProfiles() {
 }
 
 window.deleteProfile = async (id, name) => {
+    if (!loggedInUser || loggedInUser.role !== 'super_admin') {
+        alert('최고관리자만 회원을 삭제할 수 있습니다.');
+        return;
+    }
     if (confirm(`"${name}" 회원을 관리 목록에서 제외(삭제)하시겠습니까?\n* 주의: Auth 계정 자체가 삭제되지는 않습니다.`)) {
         const { error } = await db.from('profiles').delete().eq('id', id);
         if (error) alert('삭제 실패: ' + error.message);
