@@ -4460,7 +4460,7 @@ async function fetchProfiles() {
             <td><span class="status-badge ${p.user_type === 'business' ? 'process' : ''}">${p.user_type === 'business' ? '기업/기관' : '개인'}</span></td>
             <td style="font-size:0.85rem; color:#666;">${dateStr}</td>
             <td>
-                <button class="action-btn" onclick="alert('프로필 상세 보기/수정 기능 준비 중')"><i class="fa-solid fa-eye"></i></button>
+                <button class="action-btn" onclick="openProfileEdit('${p.id}')" title="상세보기/수정"><i class="fa-solid fa-eye"></i></button>
                 ${delegateButtonHtml}
                 ${deleteButtonHtml}
             </td>
@@ -5293,5 +5293,87 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (homepageOrderSearchInput) {
         homepageOrderSearchInput.addEventListener('input', applyHomepageOrderFilters);
+    }
+});
+
+// ==========================================
+// 👤 일반 회원(Profiles) 상세 정보 및 수정
+// ==========================================
+window.openProfileEdit = async (id) => {
+    const profileModal = document.getElementById('profileModal');
+    const saveProfileMsg = document.getElementById('saveProfileMsg');
+    if (!profileModal) return;
+
+    if (saveProfileMsg) saveProfileMsg.textContent = '';
+
+    const { data: p, error } = await db.from('profiles').select('*').eq('id', id).single();
+    if (error || !p) {
+        alert('회원 프로필 정보를 가져올 수 없습니다: ' + (error ? error.message : '존재하지 않는 회원'));
+        return;
+    }
+
+    document.getElementById('profileEditId').value = p.id;
+    document.getElementById('profileEditName').value = p.full_name || '';
+    document.getElementById('profileEditEmail').value = p.email || '';
+    document.getElementById('profileEditPhone').value = p.phone || '';
+    document.getElementById('profileEditOrg').value = p.organization || '';
+    document.getElementById('profileEditUserType').value = p.user_type || 'individual';
+    document.getElementById('profileEditBizNumber').value = p.biz_number || '';
+    document.getElementById('profileEditAddress').value = p.address || '';
+
+    profileModal.style.display = 'flex';
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const profileModal = document.getElementById('profileModal');
+    if (profileModal) {
+        const closeBtn = document.getElementById('closeProfileModalBtn');
+        const cancelBtn = document.getElementById('cancelProfileModalBtn');
+        const saveBtn = document.getElementById('saveProfileBtn');
+
+        if (closeBtn) closeBtn.addEventListener('click', () => profileModal.style.display = 'none');
+        if (cancelBtn) cancelBtn.addEventListener('click', () => profileModal.style.display = 'none');
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                const id = document.getElementById('profileEditId').value;
+                const name = document.getElementById('profileEditName').value.trim();
+                const phone = document.getElementById('profileEditPhone').value.trim();
+                const org = document.getElementById('profileEditOrg').value.trim();
+                const userType = document.getElementById('profileEditUserType').value;
+                const bizNum = document.getElementById('profileEditBizNumber').value.trim();
+                const address = document.getElementById('profileEditAddress').value.trim();
+                const msgDiv = document.getElementById('saveProfileMsg');
+
+                if (!name) {
+                    if (msgDiv) msgDiv.textContent = '성함을 입력해 주세요.';
+                    return;
+                }
+
+                saveBtn.textContent = '저장 중...';
+                saveBtn.disabled = true;
+
+                const { error } = await db.from('profiles').update({
+                    full_name: name,
+                    phone: phone,
+                    organization: org,
+                    user_type: userType,
+                    biz_number: bizNum,
+                    address: address,
+                    updated_at: new Date().toISOString()
+                }).eq('id', id);
+
+                saveBtn.textContent = '저장하기';
+                saveBtn.disabled = false;
+
+                if (error) {
+                    if (msgDiv) msgDiv.textContent = '저장 실패: ' + error.message;
+                } else {
+                    alert('프로필이 성공적으로 수정되었습니다.');
+                    profileModal.style.display = 'none';
+                    if (typeof fetchProfiles === 'function') fetchProfiles();
+                }
+            });
+        }
     }
 });

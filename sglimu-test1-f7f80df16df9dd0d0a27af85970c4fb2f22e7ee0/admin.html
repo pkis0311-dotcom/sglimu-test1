@@ -953,6 +953,57 @@
             </div>
         </div>
     </div>
+ 
+    <!-- 일반 회원(프로필) 상세/수정 팝업(모달) -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>회원 프로필 상세/수정</h3>
+                <button class="close-modal" id="closeProfileModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="profileEditId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>성함 (또는 닉네임) *</label>
+                        <input type="text" id="profileEditName" class="form-control" placeholder="홍길동" required>
+                    </div>
+                    <div class="form-group">
+                        <label>이메일</label>
+                        <input type="email" id="profileEditEmail" class="form-control" placeholder="example@email.com" readonly style="background:#f1f3f5;">
+                    </div>
+                    <div class="form-group">
+                        <label>연락처</label>
+                        <input type="text" id="profileEditPhone" class="form-control" placeholder="010-0000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label>소속 기관 / 학교명</label>
+                        <input type="text" id="profileEditOrg" class="form-control" placeholder="예: 한국대학교">
+                    </div>
+                    <div class="form-group">
+                        <label>회원 유형</label>
+                        <select id="profileEditUserType" class="form-control">
+                            <option value="individual">개인 회원</option>
+                            <option value="business">기업 / 기관</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>사업자 등록번호</label>
+                        <input type="text" id="profileEditBizNumber" class="form-control" placeholder="000-00-00000">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>배송/방문 주소</label>
+                        <input type="text" id="profileEditAddress" class="form-control" placeholder="주소를 입력하세요">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelProfileModalBtn">취소</button>
+                <button type="button" class="btn-primary" id="saveProfileBtn">저장하기</button>
+                <div id="saveProfileMsg" style="color:var(--danger); margin-top:10px; text-align:right; font-size:0.9rem;"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- 카테고리 등록/수정 팝업(모달) -->
     <div id="categoryModal" class="modal-overlay">
