@@ -4418,16 +4418,26 @@ async function fetchProfiles() {
         const tr = document.createElement('tr');
         const dateStr = p.updated_at ? new Date(p.updated_at).toLocaleDateString('ko-KR') : '-';
         
+        let roleBadge = '';
+        if (p.role === 'super_admin') {
+            roleBadge = '<span class="status-badge" style="background:#e74c3c; color:#fff; margin-left:5px; font-size:0.75rem;">최고관리자</span>';
+        } else if (p.role === 'sub_admin') {
+            roleBadge = '<span class="status-badge" style="background:#f39c12; color:#fff; margin-left:5px; font-size:0.75rem;">부관리자</span>';
+        }
+
+        const safeName = (p.full_name || '회원').replace(/'/g, "\\'");
+
         tr.innerHTML = `
             <td style="font-size:0.8rem; color:#999;">${p.id.substring(0, 8)}</td>
-            <td style="font-weight:600;">${p.full_name || '회원'}</td>
+            <td style="font-weight:600;">${p.full_name || '회원'} ${roleBadge}</td>
             <td>${p.phone || '-'}</td>
             <td>${p.organization || '-'}</td>
             <td><span class="status-badge ${p.user_type === 'business' ? 'process' : ''}">${p.user_type === 'business' ? '기업/기관' : '개인'}</span></td>
             <td style="font-size:0.85rem; color:#666;">${dateStr}</td>
             <td>
                 <button class="action-btn" onclick="alert('프로필 상세 보기/수정 기능 준비 중')"><i class="fa-solid fa-eye"></i></button>
-                <button class="action-btn delete" onclick="deleteProfile('${p.id}', '${p.full_name}')" title="삭제"><i class="fa-solid fa-user-slash"></i></button>
+                <button class="action-btn delegate" onclick="delegateAdminRole('${p.id}', '${safeName}', '${p.role || ''}')" title="관리자 권한 위임"><i class="fa-solid fa-user-shield"></i></button>
+                <button class="action-btn delete" onclick="deleteProfile('${p.id}', '${safeName}')" title="삭제"><i class="fa-solid fa-user-slash"></i></button>
             </td>
         `;
         tBody.appendChild(tr);
@@ -4439,6 +4449,49 @@ window.deleteProfile = async (id, name) => {
         const { error } = await db.from('profiles').delete().eq('id', id);
         if (error) alert('삭제 실패: ' + error.message);
         else fetchProfiles();
+    }
+};
+
+window.delegateAdminRole = async (userId, name, currentRole) => {
+    if (!loggedInUser || loggedInUser.role !== 'super_admin') {
+        alert('최고관리자만 권한을 위임할 수 있습니다.');
+        return;
+    }
+
+    const roleMap = {
+        '일반 유저': 'user',
+        '부관리자': 'sub_admin',
+        '최고관리자': 'super_admin'
+    };
+
+    const currentRoleName = currentRole === 'super_admin' ? '최고관리자' : (currentRole === 'sub_admin' ? '부관리자' : '일반 유저');
+    const chosenRoleName = prompt(
+        `"${name}" 회원의 권한을 변경하시겠습니까?\n\n변경할 권한명을 입력해 주세요: [일반 유저, 부관리자, 최고관리자]\n(현재 권한: ${currentRoleName})`
+    );
+
+    if (chosenRoleName === null) return; // 취소 버튼
+
+    const trimmed = chosenRoleName.trim();
+    if (!roleMap.hasOwnProperty(trimmed)) {
+        alert('올바른 권한명을 입력해 주세요 (일반 유저, 부관리자, 최고관리자).');
+        return;
+    }
+
+    const targetRole = roleMap[trimmed];
+    const roleValue = targetRole === 'user' ? null : targetRole;
+
+    if (confirm(`"${name}" 회원의 권한을 [${trimmed}] 권한으로 변경하시겠습니까?`)) {
+        const { error } = await db
+            .from('profiles')
+            .update({ role: roleValue })
+            .eq('id', userId);
+
+        if (error) {
+            alert('권한 위임 실패: ' + error.message);
+        } else {
+            alert('권한이 성공적으로 위임되었습니다.');
+            fetchProfiles();
+        }
     }
 };
 

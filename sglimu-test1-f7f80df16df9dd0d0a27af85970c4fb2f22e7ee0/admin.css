@@ -273,6 +273,7 @@ td {
 
 .action-btn.edit:hover { color: #3498db; }
 .action-btn.delete:hover { color: var(--danger); }
+.action-btn.delegate:hover { color: #9b59b6; }
 
 /* -------------------------------------
    PRODUCT MODAL
