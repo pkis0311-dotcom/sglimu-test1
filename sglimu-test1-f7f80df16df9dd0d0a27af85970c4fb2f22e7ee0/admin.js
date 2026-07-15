@@ -5121,7 +5121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         product_id: pid,
                                         change_amount: -qty,
                                         reason: `[${pName}] 홈페이지 주문 입금확인 출고 (주문번호: #${orderId})`,
-                                        manager_name: '관리자(수동확인)'
+                                        manager_name: (loggedInUser && loggedInUser.full_name) ? loggedInUser.full_name : '관리자(수동확인)'
                                     }]);
                                     if (logErr) {
                                         console.error(`재고 로그 생성 실패 (제품 ID: ${pid}):`, logErr);
