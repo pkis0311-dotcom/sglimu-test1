@@ -1740,6 +1740,7 @@ saveProductBtn.addEventListener('click', async () => {
         }).filter(v => v).join(',')
     };
     if (!payload.name) { saveMsg.textContent = '제품명은 필수입니다!'; return; }
+    if (!payload.category) { saveMsg.textContent = '카테고리 구분은 필수입니다!'; return; }
 
     saveProductBtn.disabled = true; saveProductBtn.textContent = '저장 중...';
     const file = productImageFile.files[0];
