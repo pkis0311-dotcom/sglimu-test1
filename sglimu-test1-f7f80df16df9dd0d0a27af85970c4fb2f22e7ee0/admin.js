@@ -1756,7 +1756,7 @@ saveProductBtn.addEventListener('click', async () => {
         payload.image_url = publicUrl;
     }
 
-    const id = productIdInput.value;
+    let id = productIdInput.value;
     
     // [신규] colors/sizes 정보를 description 끝부분에 [[C:...]] [[S:...]] 형식의 태그로 결합
     const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]`;
@@ -1786,14 +1786,47 @@ saveProductBtn.addEventListener('click', async () => {
         }
     } else {
         // 2단계: colors/sizes 포함해서 먼저 시도
-        const { error: insertError } = await db.from('products').insert([{ ...corePayload, colors: payload.colors, sizes: payload.sizes }]);
+        const { data, error: insertError } = await db.from('products').insert([{ ...corePayload, colors: payload.colors, sizes: payload.sizes }]).select('id').single();
         if (insertError && (insertError.message.includes('colors') || insertError.message.includes('sizes'))) {
             // colors/sizes 컬럼이 없으면 핵심 필드만 저장
             console.warn('[폴백] colors/sizes 컬럼 없음 → 핵심 필드만 저장');
-            const { error: fallbackError } = await db.from('products').insert([corePayload]);
+            const { data: fallbackData, error: fallbackError } = await db.from('products').insert([corePayload]).select('id').single();
             error = fallbackError;
+            if (fallbackData) {
+                id = fallbackData.id;
+            }
         } else {
             error = insertError;
+            if (data) {
+                id = data.id;
+            }
+        }
+
+        // 신규 등록 시 해당 카테고리 전시에 자동 등록
+        if (id && !error) {
+            let configKey = null;
+            for (const mKey in SITE_CATEGORIES) {
+                const major = SITE_CATEGORIES[mKey];
+                if (!major || !major.middles) continue;
+                for (const midKey in major.middles) {
+                    const middle = major.middles[midKey];
+                    if (!middle || !Array.isArray(middle.subs)) continue;
+                    if (middle.subs.some(s => s.id === payload.category)) {
+                        configKey = `display_${midKey}-${payload.category}`;
+                        break;
+                    }
+                }
+                if (configKey) break;
+            }
+            if (payload.category === 'best_product') configKey = 'display_best_product';
+
+            if (configKey) {
+                if (!globalDisplayConfigs[configKey]) globalDisplayConfigs[configKey] = [];
+                if (!globalDisplayConfigs[configKey].includes(id)) {
+                    globalDisplayConfigs[configKey].push(id);
+                    await db.from('site_configs').upsert({ key: configKey, value: globalDisplayConfigs[configKey] });
+                }
+            }
         }
     }
 
@@ -1806,7 +1839,7 @@ saveProductBtn.addEventListener('click', async () => {
         saveMsg.textContent = '✅ 저장 완료!';
         saveMsg.style.color = 'green';
         // [수정] 제품 카테고리가 변경되었을 수 있으므로 다른 카테고리의 전시 설정에서 제거
-        if (id) {
+        if (productIdInput.value) { // 수정 모드일 때만 카테고리 변경 감지하여 이전 카테고리 제거
             let configKey = null;
             for (const mKey in SITE_CATEGORIES) {
                 const major = SITE_CATEGORIES[mKey];

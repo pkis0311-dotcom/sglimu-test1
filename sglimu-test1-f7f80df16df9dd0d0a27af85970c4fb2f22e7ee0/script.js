@@ -1426,15 +1426,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(!container) return;
 
         try {
-            // 1. 브라우저 세션 캐시 조회 (동일 탭 내 즉각 로드)
-            const cacheKey = 'sg_display_' + displayKey;
-            const cached = sessionStorage.getItem(cacheKey);
-            if (cached) {
-                const data = JSON.parse(cached);
-                renderProducts(container, data.products, data.configMap, data.selectedIds);
-                return;
-            }
-
             const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'display_' + displayKey).single();
             const selectedIds = configData ? configData.value : [];
 
@@ -1462,9 +1453,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error("Error loading site configs for products", err);
             }
 
-            // 2. 세션 캐시 저장
-            sessionStorage.setItem(cacheKey, JSON.stringify({ products, configMap, selectedIds }));
-
             renderProducts(container, products, configMap, selectedIds);
         } catch (err) {
             console.error("Load Products Error:", err);
@@ -1487,17 +1475,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            // 카테고리 구성 데이터 캐싱 처리 (1회 로드 후 재활용)
             let siteCategories = null;
-            const cachedCat = sessionStorage.getItem('sg_site_categories');
-            if (cachedCat) {
-                siteCategories = JSON.parse(cachedCat);
-            } else {
-                const { data: catData } = await supabase.from('site_configs').select('value').eq('key', 'site_categories').single();
-                if (catData) {
-                    siteCategories = catData.value;
-                    sessionStorage.setItem('sg_site_categories', JSON.stringify(siteCategories));
-                }
+            const { data: catData } = await supabase.from('site_configs').select('value').eq('key', 'site_categories').single();
+            if (catData) {
+                siteCategories = catData.value;
             }
 
             if (!siteCategories) return;
