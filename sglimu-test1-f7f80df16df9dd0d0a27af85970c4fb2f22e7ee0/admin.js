@@ -2405,6 +2405,18 @@ downloadExcelBtn.addEventListener('click', () => {
 // ==========================================
 // 5. 기타 제안 기능(견적, 배너, 회원) 더미 로드 함수
 // ==========================================
+let globalInquiries = [];
+
+window.showInquiryDetail = (id) => {
+    const inq = globalInquiries.find(item => String(item.id) === String(id));
+    if (!inq) {
+        alert('문의 정보를 찾을 수 없습니다.');
+        return;
+    }
+    const dateStr = new Date(inq.created_at).toLocaleString('ko-KR');
+    alert(`👤 고객명/기관: ${inq.author || ''}\n📞 연락처: ${inq.phone || ''}\n🕒 접수일시: ${dateStr}\n\n📋 [문의 및 요청내용]\n${inq.title || ''}`);
+};
+
 async function fetchInquiries() {
     const tBody = document.getElementById('inquiryTableBody');
     tBody.innerHTML = '<tr><td colspan="7" class="empty-state">고객 문의 데이터를 불러오는 중입니다...</td></tr>';
@@ -2415,6 +2427,8 @@ async function fetchInquiries() {
         tBody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#e74c3c;"><i class="fa-solid fa-triangle-exclamation"></i> 테이블 구조 불일치 또는 미생성 에러입니다.<br>${error.message}</td></tr>`;
         return;
     }
+    
+    globalInquiries = inquiries || [];
     
     // [신규] 문의 로드 시 뱃지 업데이트
     const openCount = inquiries.filter(inq => inq.status === 'open').length;
@@ -2448,7 +2462,7 @@ async function fetchInquiries() {
                     <option value="processing" ${inq.status === 'processing' ? 'selected' : ''}>확인(처리)중</option>
                     <option value="closed" ${inq.status === 'closed' ? 'selected' : ''}>답변완료</option>
                 </select>
-                <button class="action-btn" style="margin-left:10px; color:#3498db" onclick="alert('👤 고객명/기관: ${inq.author ? inq.author.replace(/'/g, "\\'") : ''}\\n📞 연락처: ${inq.phone || ''}\\n🕒 접수일시: ${dateStr}\\n\\n📋 [문의 및 요청내용]\\n${inq.title ? inq.title.replace(/'/g, "\\'") : ''}')" title="내용 전체보기"><i class="fa-solid fa-envelope-open-text"></i></button>
+                <button class="action-btn" style="margin-left:10px; color:#3498db" onclick="showInquiryDetail('${inq.id}')" title="내용 전체보기"><i class="fa-solid fa-envelope-open-text"></i></button>
             </td>
         `;
         tBody.appendChild(tr);
