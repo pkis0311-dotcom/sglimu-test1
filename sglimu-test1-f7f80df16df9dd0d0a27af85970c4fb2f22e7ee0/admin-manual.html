@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>에스지라이뮤 - 관리자 시스템 사용 매뉴얼</title>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #3498db;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --bg-light: #f8f9fa;
+            --border-color: #dddddd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            color: var(--text-main);
+            background-color: #ffffff;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 컨트롤 패널 (인쇄/다운로드) */
+        .control-panel {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-panel p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .btn-pdf {
+            background-color: var(--accent);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-pdf:hover {
+            background-color: #2980b9;
+        }
+
+        /* 헤더 섹션 */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* 목차 */
+        .toc {
+            background-color: var(--bg-light);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .toc h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .toc ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .toc a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* 매뉴얼 섹션 구조 */
+        .section {
+            margin-bottom: 60px;
+            page-break-after: always; /* PDF 변환 시 페이지 나눔 */
+        }
+
+        .section:last-child {
+            page-break-after: avoid;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-intro {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            background-color: var(--bg-light);
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* 와이어프레임/목업 UI 표현 */
+        .mockup-ui {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: #fff;
+        }
+
+        .mockup-header {
+            background-color: #34495e;
+            color: #fff;
+            padding: 10px 15px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mockup-body {
+            background-color: #f1f3f5;
+            padding: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* 실제 UI 요소 형태 복제 */
+        .admin-flex-layout {
+            display: flex;
+            gap: 15px;
+        }
+
+        .admin-sidebar {
+            width: 180px;
+            background: #2c3e50;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .admin-sidebar li {
+            list-style: none;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .admin-sidebar li.active {
+            background: #3498db;
+        }
+
+        .admin-main-panel {
+            flex: 1;
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .mockup-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+
+        .mockup-table th, .mockup-table td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        .mockup-table th {
+            background-color: #f8f9fa;
+        }
+
+        .badge-success { background: #2ecc71; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 0.75rem; }
+        .badge-danger { background: #e74c3c; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 0.75rem; }
+        .badge-warning { background: #f39c12; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 0.75rem; }
+
+        /* 사용 설명 세부 조항 */
+        .steps-list {
+            margin-left: 20px;
+            margin-bottom: 25px;
+        }
+
+        .steps-list li {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .steps-list strong {
+            color: var(--primary-light);
+        }
+
+        .alert-box {
+            background-color: #fffaf0;
+            border: 1px solid #ffe4b5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+        }
+
+        .alert-box h4 {
+            color: #d35400;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .alert-box p {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+            .control-panel {
+                display: none;
+            }
+        }
+    </style>
+    <!-- html2pdf.js CDN 불러오기 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="manual-content">
+
+    <!-- 컨트롤 패널 (인쇄 전용 제어부) -->
+    <div class="control-panel" data-html2canvas-ignore="true">
+        <div>
+            <p><strong>💡 PDF 변환 안내</strong></p>
+            <p>우측의 [PDF 다운로드] 버튼을 누르면 이 화면 그대로 A4 사이즈 규격의 PDF 문서로 저장됩니다.</p>
+        </div>
+        <button class="btn-pdf" onclick="generatePDF()"><i class="fa-solid fa-file-pdf"></i> PDF 다운로드</button>
+    </div>
+
+    <!-- 헤더 영역 -->
+    <header>
+        <h1>에스지라이뮤 관리자 시스템 매뉴얼</h1>
+        <p class="subtitle">홈페이지 및 백엔드 관리 기능 통합 가이드</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top:10px;">최종 업데이트: 2026. 07. 15</p>
+    </header>
+
+    <!-- 목차 영역 -->
+    <div class="toc" data-html2canvas-ignore="true">
+        <h2>📂 목차 (이동할 섹션을 클릭하세요)</h2>
+        <ul>
+            <li><a href="#sec-dashboard">1. 관리 시스템 대시보드</a></li>
+            <li><a href="#sec-product-info">2. 제품 정보 관리 (등록/수정)</a></li>
+            <li><a href="#sec-product-display">3. 제품 전시 관리 (카테고리 노출)</a></li>
+            <li><a href="#sec-phone-order">4. 전화 발주 등록/재고 차감</a></li>
+            <li><a href="#sec-home-order">5. 홈페이지 주문서 관리</a></li>
+            <li><a href="#sec-inquiry">6. 견적 및 상담 문의 관리</a></li>
+            <li><a href="#sec-member">7. 회원 관리 및 권한 위임</a></li>
+            <li><a href="#sec-category-config">8. 카테고리 구성 자동 관리</a></li>
+        </ul>
+    </div>
+
+    <!-- 1. 대시보드 -->
+    <div class="section" id="sec-dashboard">
+        <h2 class="section-title"><i class="fa-solid fa-chart-line"></i> 1. 관리 시스템 대시보드</h2>
+        <div class="feature-intro">
+            관리자 로그인 시 첫 화면으로 노출되는 종합 모니터링 영역입니다. 주문 실적 및 미처리 견적 문의 현황을 한눈에 요약합니다.
+        </div>
+
+        <!-- 목업 UI -->
+        <div class="mockup-ui">
+            <div class="mockup-header">
+                <span>에스지라이뮤 관리자 - 대시보드</span>
+                <span>접속자: 최고관리자(박준하)</span>
+            </div>
+            <div class="mockup-body">
+                <div class="admin-flex-layout">
+                    <div class="admin-sidebar">
+                        <ul>
+                            <li class="active"><i class="fa-solid fa-chart-line"></i> 대시보드</li>
+                            <li><i class="fa-solid fa-box"></i> 제품 정보 관리</li>
+                            <li><i class="fa-solid fa-rectangle-ad"></i> 제품 전시 관리</li>
+                            <li><i class="fa-solid fa-phone-volume"></i> 전화 발주 관리</li>
+                        </ul>
+                    </div>
+                    <div class="admin-main-panel">
+                        <div style="display:flex; gap:10px; margin-bottom:15px;">
+                            <div style="flex:1; background:#ebf5fb; padding:10px; border-radius:5px; text-align:center;">
+                                <p style="color:#555;">금일 전화발주</p>
+                                <h3 style="color:#2980b9;">₩450,000</h3>
+                            </div>
+                            <div style="flex:1; background:#ebf5fb; padding:10px; border-radius:5px; text-align:center;">
+                                <p style="color:#555;">금일 홈페이지 주문</p>
+                                <h3 style="color:#2980b9;">₩135,000</h3>
+                            </div>
+                            <div style="flex:1; background:#fdedec; padding:10px; border-radius:5px; text-align:center;">
+                                <p style="color:#555;">신규 견적 문의</p>
+                                <h3 style="color:#e74c3c;">3건</h3>
+                            </div>
+                        </div>
+                        <div style="background:#f8f9fa; border:1px solid #ddd; padding:10px; border-radius:4px; height: 100px; font-size:0.75rem;">
+                            <strong>📈 매출 분석 현황</strong> (차트 렌더링 영역)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>주요 모니터링 수치</strong>: 당일/누적 전화 주문 금액, 쇼핑몰 주문 금액, 대기 중인 문의 현황이 최상단에 요약됩니다.</li>
+            <li><strong>차트 연동</strong>: 당월 일별 매출 및 월별 추이가 꺾은선/막대 그래프 형태로 제공되어 매출 흐름을 시각적으로 파악 가능합니다.</li>
+            <li><strong>신규 알림 링크</strong>: 신규 접수된 문의 건수가 강조되며, 클릭 시 상담 관리 탭으로 직접 연동됩니다.</li>
+        </ul>
+    </div>
+
+    <!-- 2. 제품 정보 관리 -->
+    <div class="section" id="sec-product-info">
+        <h2 class="section-title"><i class="fa-solid fa-box"></i> 2. 제품 정보 관리 (등록/수정)</h2>
+        <div class="feature-intro">
+            쇼핑몰에 판매될 제품의 데이터베이스를 관리합니다. 단일 제품 등록뿐만 아니라 상세 사이즈/색상별 가산 가격 및 썸네일 업로드를 지원합니다.
+        </div>
+
+        <div class="mockup-ui">
+            <div class="mockup-header">
+                <span>새 제품 등록 팝업</span>
+                <span>* 필수 항목</span>
+            </div>
+            <div class="mockup-body" style="background:#fff;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.8rem;">
+                    <div>
+                        <label>제품명 *</label>
+                        <input type="text" value="도서분실방지시스템 DIAMOND" style="width:100%; padding:5px; border:1px solid #ccc; border-radius:3px;" readonly>
+                    </div>
+                    <div>
+                        <label>카테고리 구분 *</label>
+                        <select style="width:100%; padding:5px; border:1px solid #ccc; border-radius:3px;" disabled>
+                            <option>도서관리시스템 > RFID > 태그 (TAG)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>가격 표시</label>
+                        <input type="text" value="11,600,000" style="width:100%; padding:5px; border:1px solid #ccc; border-radius:3px;" readonly>
+                    </div>
+                    <div>
+                        <label>재고 수량 (수정불가)</label>
+                        <input type="text" value="999" style="width:100%; padding:5px; border:1px solid #ccc; border-radius:3px; background:#eee;" readonly>
+                    </div>
+                    <div style="grid-column: 1/-1;">
+                        <label>색상/사이즈 세부 가격 설정</label>
+                        <div style="background:#f8f9fa; border:1px solid #ddd; padding:8px; border-radius:4px; font-size:0.75rem;">
+                            🎨 화이트: +0원 | 🎨 블랙: +150,000원
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>새 제품 등록</strong>: 우측 상단의 [새 제품 등록]을 클릭한 후 제품명, 카테고리, 대표 가격, 썸네일 이미지를 입력합니다.</li>
+            <li><strong>안전장치 밸리데이션</strong>: 필수값인 제품명과 카테고리가 누락된 경우 저장이 차단되며 경고 메시지가 표시됩니다.</li>
+            <li><strong>세부 옵션 가산 설정</strong>: 단일 제품 하위에 다수의 컬러나 사이즈를 생성하고 옵션별 추가 가격(예: 블랙 추가 시 +150,000)을 매핑할 수 있으며, 이 정보는 제품 상세 화면에 자동 연동됩니다.</li>
+            <li><strong>재고 보호</strong>: 제품 정보 창에서 임의로 재고를 임의 수정할 수 없습니다. 재고 변경은 [입/출고 등록] 메뉴를 통해서만 트래킹되도록 잠금 처리되어 있습니다.</li>
+        </ul>
+    </div>
+
+    <!-- 3. 제품 전시 관리 -->
+    <div class="section" id="sec-product-display">
+        <h2 class="section-title"><i class="fa-solid fa-rectangle-ad"></i> 3. 제품 전시 관리 (카테고리 노출)</h2>
+        <div class="feature-intro">
+            쇼핑몰의 각 카테고리 페이지(RFID, EM, 도서관용품 등) 및 메인화면 베스트 영역에 실제로 상품을 노출할지 결정하고 전시 순서를 구성합니다.
+        </div>
+
+        <div class="mockup-ui">
+            <div class="mockup-header">
+                <span>제품 전시 관리</span>
+            </div>
+            <div class="mockup-body">
+                <div style="margin-bottom:10px; font-size:0.8rem;">
+                    <strong>선택된 카테고리:</strong> RFID > 분실 방지기
+                </div>
+                <table class="mockup-table">
+                    <thead>
+                        <tr>
+                            <th>우선순위</th>
+                            <th>이미지</th>
+                            <th>제품명</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td style="color:#aaa;">[이미지]</td>
+                            <td style="text-align:left;">도서대출반납시스템 EZ-2620HSC</td>
+                            <td><span class="badge-success">전시중</span></td>
+                            <td><button style="padding:2px 5px;">순서 변경</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>전시 타겟 매핑</strong>: 대분류/중분류/소분류를 선택하여 해당 페이지에 전시될 상품들의 목록을 불러옵니다.</li>
+            <li><strong>순서 정렬(Sortable)</strong>: 전시 중인 상품 리스트를 드래그 앤 드롭(Drag & Drop)하여 사용자 페이지에 표출될 우선순위 순서를 직관적으로 조정할 수 있습니다.</li>
+            <li><strong>베스트 상품 매핑</strong>: 별도 베스트 섹션에 상품 ID를 연결하면 메인 페이지의 메인 롤링이나 주요 추천 영역에 자동으로 전시됩니다.</li>
+        </ul>
+    </div>
+
+    <!-- 4. 전화 발주 등록 -->
+    <div class="section" id="sec-phone-order">
+        <h2 class="section-title"><i class="fa-solid fa-phone-volume"></i> 4. 전화 발주 등록/재고 차감</h2>
+        <div class="feature-intro">
+            쇼핑몰이 아닌 유선(전화)으로 인입된 오프라인 발주를 수동으로 등록하고, 출고 수량만큼 DB 재고를 자동으로 차감 기입하는 핵심 장치입니다.
+        </div>
+
+        <div class="mockup-ui">
+            <div class="mockup-header">
+                <span>전화 발주 신규 등록 모달</span>
+            </div>
+            <div class="mockup-body" style="background:#fff; font-size:0.8rem;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div>
+                        <label>고객사/기관명</label>
+                        <input type="text" value="부산대학교 도서관" style="width:100%; padding:5px; border:1px solid #ccc;" readonly>
+                    </div>
+                    <div>
+                        <label>담당자 성함 (자동 잠금) *</label>
+                        <input type="text" value="박준하 (park420d)" style="width:100%; padding:5px; border:1px solid #ccc; background:#eee;" readonly>
+                    </div>
+                    <div>
+                        <label>발주 제품 선택</label>
+                        <input type="text" value="DLS라벨 - 아트지 (10개)" style="width:100%; padding:5px; border:1px solid #ccc;" readonly>
+                    </div>
+                    <div>
+                        <label>결제 수단</label>
+                        <input type="text" value="세금계산서 영수" style="width:100%; padding:5px; border:1px solid #ccc;" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>담당자 고정 잠금(보안 강화)</strong>: 발주를 등록하는 행정 담당자의 투명성 확보를 위해, 현재 로그인 중인 관리자의 성함(이메일 ID 포함)이 **[담당자 성함] 칸에 자동으로 입력되며 임의 수정할 수 없도록 회색 잠금(ReadOnly) 처리**됩니다.</li>
+            <li><strong>재고 연동 자동 출고</strong>: 전화 발주가 저장되는 순간, 선택된 상품들의 수량만큼 `products` 테이블의 실시간 재고가 자동으로 차감 계산됩니다.</li>
+            <li><strong>변동 로그 생성</strong>: 재고가 차감됨과 동시에 `inventory_logs` 테이블에 어떤 관리자(담당자 성함)가 어떤 사유(예: 전화발주 #42)로 몇 개의 수량을 출고시켰는지 자동으로 이력 로그가 생성되어 기록됩니다.</li>
+        </ul>
+    </div>
+
+    <!-- 5. 홈페이지 주문서 관리 -->
+    <div class="section" id="sec-home-order">
+        <h2 class="section-title"><i class="fa-solid fa-cart-shopping"></i> 5. 홈페이지 주문서 관리</h2>
+        <div class="feature-intro">
+            고객들이 온라인 쇼핑몰에서 접수한 주문 건을 추적하고, 결제 확인 및 배송 정보를 기입하여 배송 완료 처리하는 기능입니다.
+        </div>
+
+        <div class="mockup-ui">
+            <div class="mockup-header">
+                <span>홈페이지 주문 목록</span>
+            </div>
+            <div class="mockup-body">
+                <table class="mockup-table">
+                    <thead>
+                        <tr>
+                            <th>주문번호</th>
+                            <th>주문자</th>
+                            <th>주문상품</th>
+                            <th>송장번호</th>
+                            <th>주문상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#37</td>
+                            <td>김개인</td>
+                            <td>책꽂이라벨 - 아트지 (2개)</td>
+                            <td>[CJ대한통운] 123-4567-890</td>
+                            <td><span class="badge-success">배송완료</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>상태 트래킹</strong>: [대기중 > 입금확인 > 배송중 > 배송완료] 단계로 주문 상태를 수정할 수 있습니다.</li>
+            <li><strong>운송장 정보 입력</strong>: 배송중 단계로 업데이트 시 택배사 및 등기/운송장 번호를 함께 기입할 수 있습니다.</li>
+            <li><strong>관리 실명 로그 기록</strong>: 단순 "관리자 수동확인"이 아닌, **해당 주문건의 배송처리를 누른 실제 관리자 계정 이름**이 입출고 변동로그(`inventory_logs`)에 실명으로 자동 영구 기입됩니다.</li>
+        </ul>
+    </div>
+
+    <!-- 6. 견적 및 상담 문의 관리 -->
+    <div class="section" id="sec-inquiry">
+        <h2 class="section-title"><i class="fa-solid fa-clipboard-question"></i> 6. 견적 및 상담 문의 관리</h2>
+        <div class="feature-intro">
+            대량 구매, 사양 맞춤 등 별도의 상담이 필요한 고객의 견적 요청글을 실시간으로 확인하고 진행 상태를 업데이트합니다.
+        </div>
+
+        <div class="mockup-ui">
+            <div class="mockup-header">
+                <span>견적 문의 상세 팝업</span>
+            </div>
+            <div class="mockup-body" style="background:#fff; font-size:0.8rem;">
+                <p><strong>👤 고객명/기관:</strong> 홍길동 (서울시립도서관)</p>
+                <p><strong>📞 연락처:</strong> 010-1234-5678</p>
+                <p><strong>🕒 접수일시:</strong> 2026. 07. 15 14:00</p>
+                <hr style="margin:8px 0; border:none; border-top:1px solid #ddd;">
+                <p><strong>📋 [문의 및 요청 내용]</strong></p>
+                <div style="background:#f8f9fa; padding:10px; border-radius:4px; margin-top:5px; white-space:pre-wrap;">
+RFID 도서관리 시스템용 태그 50,000장 견적서 요청합니다.
+수정 납기는 다음 달 초까지 가능할까요?
+                </div>
+            </div>
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>신규 유입 뱃지</strong>: 처리 상태가 "대기중"인 신규 상담글의 총개수가 좌측 사이드바 메뉴 뱃지에 빨간 숫자로 실시간 표기되어 미확인 유입을 놓치지 않게 방지합니다.</li>
+            <li><strong>전체 내용 상세 조회(줄바꿈 지원)</strong>: 우편물 모양 아이콘을 누르면 고객이 작성한 상세 요구 사항이 전체 보기 모달로 표출됩니다. 개행(엔터)이나 큰따옴표가 포함된 긴 본문 글도 누락 없이 표시됩니다.</li>
+            <li><strong>상태 전환</strong>: [대기중 > 확인(처리)중 > 답변완료] 상태를 관리자가 선택 업데이트하여 문의 진행률을 공동 모니터링할 수 있습니다.</li>
+        </ul>
+    </div>
+
+    <!-- 7. 회원 관리 및 권한 위임 -->
+    <div class="section" id="sec-member">
+        <h2 class="section-title"><i class="fa-solid fa-users"></i> 7. 회원 관리 및 권한 위임</h2>
+        <div class="feature-intro">
+            가입 유저의 신원 및 할인 등급(B2B 할인율)을 파악하고, 최고관리자가 타 계정에 관리자 자격을 차등 위임/제한하는 보안 중심 영역입니다.
+        </div>
+
+        <div class="mockup-ui">
+            <div class="mockup-header">
+                <span>회원 관리 목록 (부관리자 로그인 화면 예시)</span>
+            </div>
+            <div class="mockup-body">
+                <table class="mockup-table">
+                    <thead>
+                        <tr>
+                            <th>회원ID</th>
+                            <th>회원명</th>
+                            <th>이메일</th>
+                            <th>등급</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>8b29c91d</td>
+                            <td>이부관</td>
+                            <td>look0326@naver.com</td>
+                            <td><span class="badge-warning">부관리자</span></td>
+                            <td>
+                                <!-- 수정 버튼만 활성화되고, 권한 위임 및 삭제 버튼은 노출되지 않음 -->
+                                <button style="padding:2px 5px;"><i class="fa-solid fa-eye"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>프로필 상세보기 및 수정</strong>: 눈 모양 아이콘을 누르면 성함, 연락처, 소속 기관, 회원 유형(개인/기업), 사업자 등록번호, 주소를 상세 확인 및 직접 편집하여 저장할 수 있습니다.</li>
+            <li><strong>최고관리자(Super-Admin) 전용 권한</strong>:
+                <ul>
+                    <li><strong>관리자 권한 위임(User-Shield)</strong>: 타 일반 회원을 부관리자(`sub_admin`)로 등격하거나 강등할 수 있는 권한을 오직 최고관리자에게만 한정 제공합니다.</li>
+                    <li><strong>회원 영구 삭제(User-Slash)</strong>: 회원 명단 및 프로필 테이블에서 유저를 삭제/제외하는 기능을 최고관리자 권한으로 한정합니다.</li>
+                </ul>
+            </li>
+            <li><strong>부관리자(Sub-Admin) 통제 및 잠금</strong>:
+                <ul>
+                    <li>부관리자 권한으로 로그인할 경우, 회원 목록에서 **[삭제] 및 [권한 위임] 버튼 자체가 인터페이스(UI)상에서 완전히 삭제(숨김)**되어 접근할 수 없습니다.</li>
+                    <li>개발자 도구를 열어 API를 임의 호출하더라도 백엔드 코드 단의 검증에 의해 권한 에러(최고관리자만 가능)를 발생시키며 영구 차단됩니다.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 8. 카테고리 구성 자동 관리 -->
+    <div class="section" id="sec-category-config">
+        <h2 class="section-title"><i class="fa-solid fa-folder-tree"></i> 8. 카테고리 구성 자동 관리</h2>
+        <div class="feature-intro">
+            쇼핑몰의 대분류, 중간분류, 소분류 카테고리를 설정합니다. 순서 변경이나 분류의 추가/삭제가 즉시 서버로 반영되는 지능형 저장 기능이 포함되어 있습니다.
+        </div>
+
+        <ul class="steps-list">
+            <li><strong>직관적인 순서 드래그앤드롭</strong>: 드래그 핸들(<i class="fa-solid fa-grip-vertical"></i>)을 잡고 원하는 분류의 위아래 순서를 스왑(Swap)하면, 연동된 순서 번호(Order Badge)가 자동으로 재조정됩니다.</li>
+            <li><strong>카테고리 구성 실시간 자동 저장(Auto-save)</strong>:
+                <ul>
+                    <li>기존의 수동 [설정 영구 저장] 버튼을 매번 눌러야 했던 번거로움을 완전히 해결했습니다.</li>
+                    <li>새 대분류/중분류/소분류를 **추가**했을 때, 특정 분류를 **수정**하여 반영했을 때, 마우스 드래그로 **순서를 변경**했을 때, 카테고리를 **삭제**했을 때 **자동으로 즉각 DB에 저장 완료**됩니다.</li>
+                </ul>
+            </li>
+            <li><strong>안전장치(Defensive Setup)</strong>: 데이터 손상으로 특정 분류 객체가 유실되어도 스크립트 내부에서 즉시 안전한 빈 카테고리를 구성하여 에러 발생으로 인한 어드민 셧다운을 방지합니다.</li>
+        </ul>
+    </div>
+
+</div>
+
+<!-- PDF 생성 스크립트 -->
+<script>
+    function generatePDF() {
+        // 인쇄/다운로드 버튼 일시 가리기 (HTML에 ignore 설정됨)
+        const element = document.getElementById('manual-content');
+        
+        // pdf 옵션 설정
+        const opt = {
+            margin:       [15, 15, 15, 15],
+            filename:     '에스지라이뮤_관리자시스템_매뉴얼.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // PDF 생성 실행
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+
+</body>
+</html>
