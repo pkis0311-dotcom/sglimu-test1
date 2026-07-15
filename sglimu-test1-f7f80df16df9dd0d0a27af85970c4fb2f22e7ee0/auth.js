@@ -23,6 +23,33 @@ function initNaverSDK() {
         });
         naverLogin.init();
         console.log('Naver SDK Initialized');
+        checkNaverLoginCallback();
+    }
+}
+
+let naverCallbackChecked = false;
+async function checkNaverLoginCallback() {
+    if (naverCallbackChecked) return;
+    if (typeof naver !== 'undefined' && naverLogin) {
+        naverCallbackChecked = true;
+        naverLogin.getLoginStatus(async (status) => {
+            if (status) {
+                const naverUser = naverLogin.user;
+                console.log('네이버 로그인 성공:', naverUser);
+
+                // Supabase 유저 세션이 없는 경우에만 프로필 연동
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    if (window.location.hash.includes('access_token')) {
+                        await handleNaverSocialLogin(naverUser);
+                    } else {
+                        localStorage.removeItem('com.naver.nid.access_token');
+                    }
+                }
+            } else {
+                naverCallbackChecked = false;
+            }
+        });
     }
 }
 
@@ -49,7 +76,7 @@ function loadSDKSocial() {
     }
 }
 
-loadSDKSocial();
+
 
 // ==========================================
 // 📱 Dynamic Auth Modal Injection
@@ -228,6 +255,7 @@ function ensureAuthModalInDOM() {
 }
 
 ensureAuthModalInDOM();
+loadSDKSocial();
 
 // DOM Elements
 const authOverlay = document.getElementById('authOverlay');
@@ -954,27 +982,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // [네이버 추가] 페이지 로드 시 로그인 상태 확인 (Callback 처리)
-    if (typeof naver !== 'undefined' && naverLogin) {
-        naverLogin.getLoginStatus(async (status) => {
-            if (status) {
-                const naverUser = naverLogin.user;
-                console.log('네이버 로그인 성공:', naverUser);
-
-                // Supabase 유저 세션이 없는 경우에만 프로필 연동
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    // 무한 가입 시도(rate limit) 방지: 네이버에서 방금 넘어온 경우(해시 존재)에만 연동
-                    if (window.location.hash.includes('access_token')) {
-                        await handleNaverSocialLogin(naverUser);
-                    } else {
-                        // 세션은 없는데 네이버 토큰만 있는 경우(이메일 인증 미완료 등)
-                        // 네이버 로컬 토큰을 지워서 다시 로그인 버튼을 누를 수 있도록 초기화
-                        localStorage.removeItem('com.naver.nid.access_token');
-                    }
-                }
-            }
-        });
-    }
+    checkNaverLoginCallback();
 });
 
 // 네이버 정보를 이용한 프로필 연동 함수 (자동 가입/로그인 방식)
