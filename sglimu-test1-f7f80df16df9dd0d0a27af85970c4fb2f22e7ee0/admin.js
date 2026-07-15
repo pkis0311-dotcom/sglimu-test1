@@ -4666,7 +4666,18 @@ document.addEventListener('DOMContentLoaded', () => {
             totalPriceInput.value = '0원';
             customerNameInput.value = '';
             customerPhoneInput.value = '';
-            managerNameInput.value = '';
+            
+            // 로그인한 관리자 성함 자동 채우기 및 읽기전용 처리
+            if (loggedInUser && loggedInUser.full_name) {
+                managerNameInput.value = loggedInUser.full_name;
+                managerNameInput.readOnly = true;
+                managerNameInput.style.backgroundColor = '#f1f3f5';
+            } else {
+                managerNameInput.value = '';
+                managerNameInput.readOnly = false;
+                managerNameInput.style.backgroundColor = '#fff';
+            }
+
             memoInput.value = '';
             if (fileInput) fileInput.value = '';
 
