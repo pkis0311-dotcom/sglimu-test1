@@ -1352,6 +1352,8 @@ function openModal(isEdit = false) {
         if(sizeContainer) sizeContainer.innerHTML = ''; // 사이즈 초기화
         const shortCommentInput = document.getElementById('productShortComment');
         if(shortCommentInput) shortCommentInput.value = ''; // 한줄 코멘트 초기화
+        const keywordsInput = document.getElementById('productKeywords');
+        if(keywordsInput) keywordsInput.value = ''; // 키워드 초기화
         if (openInventoryModalBtn) openInventoryModalBtn.style.display = 'none';
         const logSection = document.getElementById('inventoryLogSection');
         if (logSection) logSection.style.display = 'none';
@@ -1758,8 +1760,12 @@ saveProductBtn.addEventListener('click', async () => {
 
     let id = productIdInput.value;
     
-    // [신규] colors/sizes 정보를 description 끝부분에 [[C:...]] [[S:...]] 형식의 태그로 결합
-    const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]`;
+    // 검색 키워드 값 읽기
+    const keywordsInput = document.getElementById('productKeywords');
+    const keywordsVal = keywordsInput ? keywordsInput.value.trim() : '';
+
+    // [신규] colors/sizes/keywords 정보를 description 끝부분에 [[C:...]] [[S:...]] [[K:...]] 형식의 태그로 결합
+    const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]\n[[K:${keywordsVal}]]`;
     
     // ── 저장 전략: 3단계 분리 ──────────────────────────────────────
     // 1단계: 반드시 저장해야 하는 핵심 필드 (short_comment 포함)
@@ -1774,9 +1780,9 @@ saveProductBtn.addEventListener('click', async () => {
 
     let error = null;
     if (id) {
-        // 2단계: colors/sizes 포함해서 먼저 시도
-        const { error: updateError } = await db.from('products').update({ ...corePayload, colors: payload.colors, sizes: payload.sizes }).eq('id', id);
-        if (updateError && (updateError.message.includes('colors') || updateError.message.includes('sizes'))) {
+        // 2단계: colors/sizes/keywords 포함해서 먼저 시도
+        const { error: updateError } = await db.from('products').update({ ...corePayload, colors: payload.colors, sizes: payload.sizes, keywords: keywordsVal }).eq('id', id);
+        if (updateError && (updateError.message.includes('colors') || updateError.message.includes('sizes') || updateError.message.includes('keywords'))) {
             // colors/sizes 컬럼이 없으면 핵심 필드만 저장
             console.warn('[폴백] colors/sizes 컬럼 없음 → 핵심 필드만 저장');
             const { error: fallbackError } = await db.from('products').update(corePayload).eq('id', id);
@@ -1785,9 +1791,9 @@ saveProductBtn.addEventListener('click', async () => {
             error = updateError;
         }
     } else {
-        // 2단계: colors/sizes 포함해서 먼저 시도
-        const { data, error: insertError } = await db.from('products').insert([{ ...corePayload, colors: payload.colors, sizes: payload.sizes }]).select('id').single();
-        if (insertError && (insertError.message.includes('colors') || insertError.message.includes('sizes'))) {
+        // 2단계: colors/sizes/keywords 포함해서 먼저 시도
+        const { data, error: insertError } = await db.from('products').insert([{ ...corePayload, colors: payload.colors, sizes: payload.sizes, keywords: keywordsVal }]).select('id').single();
+        if (insertError && (insertError.message.includes('colors') || insertError.message.includes('sizes') || insertError.message.includes('keywords'))) {
             // colors/sizes 컬럼이 없으면 핵심 필드만 저장
             console.warn('[폴백] colors/sizes 컬럼 없음 → 핵심 필드만 저장');
             const { data: fallbackData, error: fallbackError } = await db.from('products').insert([corePayload]).select('id').single();
@@ -1914,12 +1920,23 @@ window.editProduct = async (id) => {
     productCategoryInput.value = p.category;
     productPriceInput.value = formatPriceInput(p.price); productStockInput.value = p.stock; 
     
-    // 상세 설명 로드 시 색상/사이즈 태그 제거 처리 (개행문자 포함)
-    productDescInput.value = (p.description || '').replace(/\[\[C:[\s\S]*?\]\]/g, '').replace(/\[\[S:[\s\S]*?\]\]/g, '').trim();
+    // 상세 설명 로드 시 색상/사이즈/키워드 태그 제거 처리 (개행문자 포함)
+    productDescInput.value = (p.description || '').replace(/\[\[C:[\s\S]*?\]\]/g, '').replace(/\[\[S:[\s\S]*?\]\]/g, '').replace(/\[\[K:[\s\S]*?\]\]/g, '').trim();
     
     // 한줄 코멘트 로드
     const shortCommentInput = document.getElementById('productShortComment');
     if (shortCommentInput) shortCommentInput.value = p.short_comment || '';
+    
+    // 검색 키워드 로드
+    const keywordsInput = document.getElementById('productKeywords');
+    if (keywordsInput) {
+        let keywordData = p.keywords;
+        if (!keywordData && p.description) {
+            const match = p.description.match(/\[\[K:([\s\S]*?)\]\]/);
+            if (match) keywordData = match[1];
+        }
+        keywordsInput.value = keywordData || '';
+    }
     
     productImageUrl.value = p.image_url || '';
     imagePreview.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';

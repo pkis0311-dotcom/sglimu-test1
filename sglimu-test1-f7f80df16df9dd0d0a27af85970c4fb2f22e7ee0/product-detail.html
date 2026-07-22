@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -409,7 +409,7 @@
             // Description
             const descElem = document.getElementById('dynamicDesc');
             if(descElem && product.description) {
-                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
+                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\[\[K:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
             }
 
             // Page Data from site_configs
