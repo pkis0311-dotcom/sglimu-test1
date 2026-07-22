@@ -626,11 +626,6 @@
                         </div>
                     </div>
 
-                    <!-- 3. 설명칸 -->
-                    <div class="form-group full-width" style="border-top:1px solid #eee; padding-top:20px;">
-                        <label><i class="fa-solid fa-align-left"></i> 3. 제품 설명칸 (Summary)</label>
-                        <textarea id="pageDescription" class="form-control" rows="4" placeholder="제품에 대한 전반적인 설명을 입력하세요."></textarea>
-                    </div>
 
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                             <label style="margin:0;"><i class="fa-solid fa-star"></i> 4. 제품 특징칸 (DETAIL VIEW)</label>
@@ -846,6 +841,10 @@
                         <input type="text" id="productKeywords" class="form-control" placeholder="예) 분실방지기, EM시스템, 도서관용품">
                         <p style="font-size:0.82rem; color:#999; margin-top:5px;"><i class="fa-solid fa-circle-info"></i> 홈페이지에서 이 키워드로 상품을 찾을 수 있습니다. 쉼표(,)로 구분하여 입력하세요.</p>
                     </div>
+                    <div class="form-group full-width">
+                        <label><i class="fa-solid fa-align-left"></i> 제품 설명 (Summary) <span style="font-size:0.8rem; color:#999; font-weight:400;">(상세페이지 상단에 노출되는 설명문구입니다)</span></label>
+                        <textarea id="productDesc" class="form-control" rows="4" placeholder="제품에 대한 전반적인 설명을 입력하세요."></textarea>
+                    </div>
                     <div class="form-group">
                         <label>재고 수량</label>
                         <input type="number" id="productStock" class="form-control" value="999" readonly style="background-color: #f1f3f5; cursor: not-allowed;" title="재고는 직접 수정할 수 없습니다.">
@@ -853,10 +852,6 @@
                             <span style="font-size:0.8rem; color:#e74c3c;"><i class="fa-solid fa-circle-exclamation"></i> 재고 변경은 [입/출고 등록]으로만 가능합니다.</span>
                             <button type="button" class="btn-secondary" id="openInventoryModalBtn" style="padding: 4px 8px; font-size:0.8rem; background:#34495e; color:#fff; border:none; display:none;"><i class="fa-solid fa-boxes-stacked"></i> 입/출고 등록</button>
                         </div>
-                    </div>
-                    <div class="form-group full-width" style="display: none;">
-                        <label>상세 설명 표기 (메뉴 요약용)</label>
-                        <textarea id="productDesc" class="form-control" rows="3"></textarea>
                     </div>
                     
                     <!-- [신규] 제품 색상 선택 섹션 -->

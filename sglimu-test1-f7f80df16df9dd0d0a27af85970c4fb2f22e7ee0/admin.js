@@ -3274,7 +3274,7 @@ function initPageManageTab() {
                 const data = {
                     mainImages: mainImages,
                     detailImages: detailImages, // [변경] 다중 이미지 대응
-                    description: pageDescription.value,
+                    description: pageDescription ? pageDescription.value : '',
                     specStyle: document.getElementById('specStyle').value,
                     featureStyle: document.getElementById('featureStyle').value,
                     specs: [],
