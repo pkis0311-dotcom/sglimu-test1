@@ -1188,7 +1188,7 @@ function renderPageManageProducts() {
             }
             if (p.category === 'best_product') displayCategory = '★ 베스트 상품';
 
-            return `<option value="${p.id}">${p.name} [${displayCategory}]</option>`;
+            return `<option value="${p.id}">${cleanHTMLAttr(p.name)} [${displayCategory}]</option>`;
         }).join('');
         if (document.getElementById('tab-page-manage').classList.contains('active')) {
             targetSelect.dispatchEvent(new Event('change'));
@@ -1203,7 +1203,7 @@ function old_updateProductRelatedUI(products) {
     if (targetSelect) {
         if (products.length > 0) {
             targetSelect.innerHTML = products.map(p => 
-                `<option value="${p.id}">${p.name} (${p.category})</option>`
+                `<option value="${p.id}">${cleanHTMLAttr(p.name)} (${p.category})</option>`
             ).join('');
             
             // 만약 '상세페이지 관리' 탭이 활성화되어 있다면 즉시 이벤트 발생시켜 데이터 로드
@@ -4832,10 +4832,11 @@ document.addEventListener('DOMContentLoaded', () => {
             globalProducts.forEach(p => {
                 const opt = document.createElement('option');
                 opt.value = p.id;
-                opt.textContent = p.name;
+                const cleanName = cleanHTMLAttr(p.name);
+                opt.textContent = cleanName;
                 // 정상 가격이 숫자 형태인지 또는 '전화문의' 인지 파싱
                 opt.dataset.price = p.price;
-                opt.dataset.name = p.name;
+                opt.dataset.name = cleanName;
                 selectProduct.appendChild(opt);
             });
 

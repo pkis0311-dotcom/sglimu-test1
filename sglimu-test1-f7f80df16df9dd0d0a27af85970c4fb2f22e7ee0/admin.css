@@ -1311,3 +1311,10 @@ td {
     font-size: 8px !important;
     vertical-align: sub !important;
 }
+
+/* 관리자 페이지 내에서 제품명에 설정된 개별 글씨 크기(font-size)를 무시하고 일정한 크기로 강제 통일 */
+#productTableBody td a span,
+#productCheckboxGrid label div span,
+#bestProductCheckboxGrid label div span {
+    font-size: inherit !important;
+}
