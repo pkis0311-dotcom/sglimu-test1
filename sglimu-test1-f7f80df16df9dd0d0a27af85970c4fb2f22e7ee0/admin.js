@@ -19,6 +19,9 @@ if (typeof Quill !== 'undefined') {
 
 let db;
 
+// HTML 태그와 따옴표를 제거하여 HTML 속성값으로 안전하게 사용할 수 있도록 만드는 헬퍼 함수
+const cleanHTMLAttr = (html) => (html || '').replace(/<[^>]*>/g, '').replace(/"/g, '&quot;').replace(/'/g, '&#39;').trim();
+
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof supabase === 'undefined') {
         console.error("Supabase library is not loaded. Please check your internet connection and ensure the CDN script is included in admin.html.");
@@ -978,7 +981,8 @@ function renderProductTable(products) {
     productTableBody.innerHTML = '';
     products.forEach(p => {
         const tr = document.createElement('tr');
-        const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${p.name}">` : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
+        const cleanName = cleanHTMLAttr(p.name);
+        const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${cleanName}">` : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
         const dateStr = new Date(p.created_at).toLocaleDateString('ko-KR');
 
         // 카테고리 라벨 매핑 및 전시 설정 키(configKey) 구하기
@@ -1010,7 +1014,7 @@ function renderProductTable(products) {
             </td>
             <td>
                 <button class="action-btn edit" onclick="editProduct('${p.id}')" title="수정"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button class="action-btn delete" onclick="deleteProduct('${p.id}', '${p.name}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
+                <button class="action-btn delete" onclick="deleteProduct('${p.id}', '${cleanName.replace(/'/g, "\\'")}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         productTableBody.appendChild(tr);
@@ -1032,11 +1036,12 @@ function updateProductRelatedUI(products) {
         if (products.length > 0) {
             displayCheckboxGrid.innerHTML = products.map(p => {
                 const displayCategory = getProductCategoryPath(p);
+                const cleanName = cleanHTMLAttr(p.name);
 
                 return `
                 <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
                     <input type="checkbox" class="display-item-cb" id="cb_${p.id}" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
-                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
+                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${cleanName}">
                         <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${displayCategory}]</span><br>
                         ${p.name}
                     </div>
@@ -1211,19 +1216,21 @@ function old_updateProductRelatedUI(products) {
         }
     }
 
-    // [신규] '카테고리 전시 관리' 탭의 체크박스 그리드 동적 업데이트
     const displayCheckboxGrid = document.getElementById('productCheckboxGrid');
     if (displayCheckboxGrid) {
         if (products.length > 0) {
-            displayCheckboxGrid.innerHTML = products.map(p => `
+            displayCheckboxGrid.innerHTML = products.map(p => {
+                const cleanName = cleanHTMLAttr(p.name);
+                return `
                 <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
                     <input type="checkbox" class="display-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
-                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
+                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${cleanName}">
                         <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${p.category}]</span><br>
                         ${p.name}
                     </div>
                 </label>
-            `).join('');
+                `;
+            }).join('');
             
             // 카테고리 전시 관리 탭이 활성화된 상태라면 체크박스 상태 갱신
             if(document.getElementById('tab-category-display').classList.contains('active')) {
@@ -2860,10 +2867,11 @@ function renderBestProductCheckboxes() {
 
     grid.innerHTML = globalProducts.map(p => {
         const displayCategory = getProductCategoryPath(p);
+        const cleanName = cleanHTMLAttr(p.name);
         return `
         <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
             <input type="checkbox" class="best-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
-            <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
+            <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${cleanName}">
                 <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${displayCategory}]</span><br>
                 ${p.name}
             </div>
