@@ -3726,7 +3726,7 @@ function createFeatureBlock(title, desc) {
                 });
             }
 
-            pageDescription.value = data.description || '';
+            if (pageDescription) pageDescription.value = data.description || '';
             if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
             if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
             updateFeatureStylePreview();
