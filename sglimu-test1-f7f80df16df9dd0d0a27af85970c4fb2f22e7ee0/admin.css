@@ -128,6 +128,21 @@ body {
     letter-spacing: 1px;
 }
 
+.sidebar-brand-link {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.sidebar-brand-link:hover {
+    color: var(--admin-primary);
+    transform: translateY(-1px);
+}
+
 .sidebar-menu {
     list-style: none;
     flex-grow: 1;
