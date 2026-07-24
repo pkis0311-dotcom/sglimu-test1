@@ -3914,19 +3914,32 @@ function initCategoryDisplayTab() {
 
     // (Static majorBtns event binding removed, now handled by renderMajorButtons)
 
-    // 1. 대분류 렌더링 및 이벤트 바인딩
+    // 1. 대분류 렌더링 및 이벤트 바인딩 (순서 정렬 및 드래그 앤 드롭 지원)
     function renderMajorButtons() {
         const majorGrid = document.getElementById('majorCategoryGrid');
         if (!majorGrid) return;
 
+        // 대분류 order 순서에 따른 오름차순 정렬
+        const sortedKeys = Object.keys(SITE_CATEGORIES).sort((a, b) => 
+            ((SITE_CATEGORIES[a] ? SITE_CATEGORIES[a].order : 0) || 0) - ((SITE_CATEGORIES[b] ? SITE_CATEGORIES[b].order : 0) || 0)
+        );
+
         majorGrid.innerHTML = '';
         let firstKey = '';
-        for (const key in SITE_CATEGORIES) {
+
+        for (const key of sortedKeys) {
             if (!firstKey) firstKey = key;
             const major = SITE_CATEGORIES[key];
+            if (!major) continue;
+
             const btn = document.createElement('button');
             btn.className = 'major-btn';
-            btn.innerHTML = `<i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}`;
+            btn.setAttribute('data-mkey', key);
+            btn.innerHTML = `
+                <i class="fa-solid fa-grip-vertical drag-handle" title="드래그하여 순서 변경"></i>
+                <i class="fa-solid ${major.icon || 'fa-folder'}"></i>
+                <span>${major.label}</span>
+            `;
             btn.onclick = () => {
                 document.querySelectorAll('.major-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -3938,6 +3951,25 @@ function initCategoryDisplayTab() {
         // 초기 선택 (첫 번째 대분류)
         const firstBtn = majorGrid.querySelector('.major-btn');
         if (firstBtn) firstBtn.click();
+
+        // SortableJS 드래그 앤 드롭 활성화
+        if (typeof Sortable !== 'undefined') {
+            new Sortable(majorGrid, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: async function() {
+                    const buttons = majorGrid.querySelectorAll('.major-btn');
+                    buttons.forEach((btn, index) => {
+                        const mKey = btn.getAttribute('data-mkey');
+                        if (SITE_CATEGORIES[mKey]) {
+                            SITE_CATEGORIES[mKey].order = index;
+                        }
+                    });
+                    await saveSiteCategories();
+                }
+            });
+        }
     }
 
     // 2. 소분류 렌더링 함수 (3단계 대응)
