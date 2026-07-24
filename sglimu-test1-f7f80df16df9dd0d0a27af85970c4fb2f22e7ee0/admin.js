@@ -3161,7 +3161,7 @@ function initPageManageTab() {
                     wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
                     const img = document.createElement('img');
                     img.src = ev.target.result;
-                    img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
+                    img.style.cssText = "width:80px; height:80px; object-fit:contain; border-radius:4px; border:1px solid #ddd;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                     delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
@@ -3686,7 +3686,7 @@ function createFeatureBlock(title, desc) {
                     const wrapper = document.createElement('div');
                     wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
                     const img = document.createElement('img');
-                    img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
+                    img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:contain; border-radius:4px; border:1px solid #ddd;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                     delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
