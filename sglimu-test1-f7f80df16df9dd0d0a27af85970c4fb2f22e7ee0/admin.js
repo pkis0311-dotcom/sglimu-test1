@@ -4448,6 +4448,10 @@ window.addMiddleCategory = (mKey) => {
 };
 
 window.deleteMiddleCategory = async (mKey, midKey) => {
+    if (mKey === 'discount' && midKey === 'discount') {
+        alert('할인상품의 기본 중간분류는 삭제할 수 없습니다.');
+        return;
+    }
     if (confirm(`중간분류 "${SITE_CATEGORIES[mKey].middles[midKey].label}"와 하위 소분류를 모두 삭제하시겠습니까?`)) {
         delete SITE_CATEGORIES[mKey].middles[midKey];
         await saveSiteCategories();
@@ -4462,6 +4466,10 @@ window.addSubCategory = (mKey, midKey) => {
 window.deleteSubCategory = async (mKey, midKey, subId) => {
     const middle = SITE_CATEGORIES[mKey].middles[midKey];
     const sub = middle.subs.find(s => s.id === subId);
+    if (mKey === 'discount' && middle.subs.length <= 1) {
+        alert('할인상품은 최소한 하나의 소분류가 존재해야 합니다.');
+        return;
+    }
     if (confirm(`소분류 "${sub.label}"을(를) 삭제하시겠습니까?`)) {
         middle.subs = middle.subs.filter(s => s.id !== subId);
         await saveSiteCategories();
@@ -4470,6 +4478,10 @@ window.deleteSubCategory = async (mKey, midKey, subId) => {
 };
 
 window.deleteMajorCategory = async (mKey) => {
+    if (mKey === 'discount') {
+        alert('할인상품 대분류는 시스템 필수 카테고리이므로 삭제할 수 없습니다.');
+        return;
+    }
     if (confirm(`대분류 "${SITE_CATEGORIES[mKey].label}"와 하위의 모든 분류를 삭제하시겠습니까?`)) {
         delete SITE_CATEGORIES[mKey];
         await saveSiteCategories();

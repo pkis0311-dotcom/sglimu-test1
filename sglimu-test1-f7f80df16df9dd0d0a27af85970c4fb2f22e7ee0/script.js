@@ -1492,6 +1492,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            // 할인상품(discount) 예외 처리: 중간분류 ID가 'discount'가 아니더라도 대분류가 'discount'인 경우 첫 번째 중간분류를 매핑
+            if (!currentMiddle && pageId === 'discount' && siteCategories['discount'] && siteCategories['discount'].middles) {
+                const midKeys = Object.keys(siteCategories['discount'].middles);
+                if (midKeys.length > 0) {
+                    currentMiddle = siteCategories['discount'].middles[midKeys[0]];
+                }
+            }
+
             if (!currentMiddle || !currentMiddle.subs) return;
             
             const titleElem = document.querySelector('.category-title');
