@@ -47,6 +47,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilter = document.getElementById('categoryFilter');
     const productSortFilter = document.getElementById('productSortFilter');
 
+    function isCategoryMatch(selectedCat, pCat) {
+        if (!selectedCat || selectedCat === 'all') return true;
+        if (pCat === selectedCat) return true;
+
+        const major = SITE_CATEGORIES[selectedCat];
+        if (major && major.middles) {
+            for (const midKey in major.middles) {
+                if (pCat === midKey) return true;
+                const middle = major.middles[midKey];
+                if (middle && Array.isArray(middle.subs)) {
+                    if (middle.subs.some(s => s.id === pCat)) return true;
+                }
+            }
+        }
+
+        for (const mKey in SITE_CATEGORIES) {
+            const m = SITE_CATEGORIES[mKey];
+            if (!m || !m.middles) continue;
+            const middle = m.middles[selectedCat];
+            if (middle && Array.isArray(middle.subs)) {
+                if (middle.subs.some(s => s.id === pCat)) return true;
+            }
+        }
+
+        return false;
+    }
+    window.isCategoryMatch = isCategoryMatch;
+
     function applyProductFilters() {
         const query = productSearchInput ? productSearchInput.value.toLowerCase().trim() : '';
         const catValue = categoryFilter ? categoryFilter.value : 'all';
@@ -57,8 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 검색어에 카테고리 ID가 포함된 경우도 인정
             const categoryMatch = (p.category || '').toLowerCase().includes(query);
             
-            // 드롭다운 필터 적용
-            const catFilterMatch = (catValue === 'all' || p.category === catValue);
+            // 드롭다운 필터 적용 (대분류/중분류/소분류 단독 선택 지원)
+            const catFilterMatch = isCategoryMatch(catValue, p.category);
             
             return (nameMatch || categoryMatch) && catFilterMatch;
         });
@@ -891,10 +919,12 @@ function getProductConfigKey(p) {
     }
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
+        if (p.category === mKey) return `display_${mKey}`;
         if (!major || !major.middles) continue;
 
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
+            if (p.category === midKey) return `display_${midKey}`;
             if (!middle || !Array.isArray(middle.subs)) continue;
 
             const sub = middle.subs.find(s => s.id === p.category);
@@ -903,7 +933,7 @@ function getProductConfigKey(p) {
             }
         }
     }
-    return null;
+    return p.category ? `display_${p.category}` : null;
 }
 
 // 카테고리 전시 경로 라벨 헬퍼 함수
@@ -914,10 +944,12 @@ function getProductCategoryPath(p) {
     }
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
+        if (p.category === mKey) return major.label;
         if (!major || !major.middles) continue;
 
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
+            if (p.category === midKey) return `${major.label} > ${middle.label}`;
             if (!middle || !Array.isArray(middle.subs)) continue;
 
             const sub = middle.subs.find(s => s.id === p.category);
@@ -1148,20 +1180,18 @@ function renderPageManageProducts() {
             const pCat = p.category || '';
             if (subVal !== 'all') return pCat === subVal;
             if (middleVal !== 'all') {
+                if (pCat === middleVal) return true;
                 for (const mKey in SITE_CATEGORIES) {
-                    const middle = SITE_CATEGORIES[mKey].middles[middleVal];
-                    if (middle && middle.subs.some(s => s.id === pCat)) return true;
+                    const m = SITE_CATEGORIES[mKey];
+                    if (m && m.middles && m.middles[middleVal]) {
+                        const middle = m.middles[middleVal];
+                        if (middle && Array.isArray(middle.subs) && middle.subs.some(s => s.id === pCat)) return true;
+                    }
                 }
                 return false;
             }
             if (majorVal !== 'all') {
-                const major = SITE_CATEGORIES[majorVal];
-                if (major) {
-                    for (const midKey in major.middles) {
-                        if (major.middles[midKey].subs.some(s => s.id === pCat)) return true;
-                    }
-                }
-                return false;
+                return isCategoryMatch(majorVal, pCat);
             }
             return true;
         });
@@ -3161,7 +3191,7 @@ function initPageManageTab() {
                     wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
                     const img = document.createElement('img');
                     img.src = ev.target.result;
-                    img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
+                    img.style.cssText = "width:80px; height:80px; object-fit:contain; border-radius:4px; border:1px solid #ddd;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                     delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
@@ -3686,7 +3716,7 @@ function createFeatureBlock(title, desc) {
                     const wrapper = document.createElement('div');
                     wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
                     const img = document.createElement('img');
-                    img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
+                    img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:contain; border-radius:4px; border:1px solid #ddd;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                     delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
@@ -3914,19 +3944,32 @@ function initCategoryDisplayTab() {
 
     // (Static majorBtns event binding removed, now handled by renderMajorButtons)
 
-    // 1. 대분류 렌더링 및 이벤트 바인딩
+    // 1. 대분류 렌더링 및 이벤트 바인딩 (순서 정렬 및 드래그 앤 드롭 지원)
     function renderMajorButtons() {
         const majorGrid = document.getElementById('majorCategoryGrid');
         if (!majorGrid) return;
 
+        // 대분류 order 순서에 따른 오름차순 정렬
+        const sortedKeys = Object.keys(SITE_CATEGORIES).sort((a, b) => 
+            ((SITE_CATEGORIES[a] ? SITE_CATEGORIES[a].order : 0) || 0) - ((SITE_CATEGORIES[b] ? SITE_CATEGORIES[b].order : 0) || 0)
+        );
+
         majorGrid.innerHTML = '';
         let firstKey = '';
-        for (const key in SITE_CATEGORIES) {
+
+        for (const key of sortedKeys) {
             if (!firstKey) firstKey = key;
             const major = SITE_CATEGORIES[key];
+            if (!major) continue;
+
             const btn = document.createElement('button');
             btn.className = 'major-btn';
-            btn.innerHTML = `<i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}`;
+            btn.setAttribute('data-mkey', key);
+            btn.innerHTML = `
+                <i class="fa-solid fa-grip-vertical drag-handle" title="드래그하여 순서 변경"></i>
+                <i class="fa-solid ${major.icon || 'fa-folder'}"></i>
+                <span>${major.label}</span>
+            `;
             btn.onclick = () => {
                 document.querySelectorAll('.major-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -3938,31 +3981,74 @@ function initCategoryDisplayTab() {
         // 초기 선택 (첫 번째 대분류)
         const firstBtn = majorGrid.querySelector('.major-btn');
         if (firstBtn) firstBtn.click();
-    }
 
-    // 2. 소분류 렌더링 함수 (3단계 대응)
-    function renderMinorCategories(majorKey) {
-        const major = SITE_CATEGORIES[majorKey];
-        if (!major || !major.middles) return;
-
-        let html = '';
-        for (const midKey in major.middles) {
-            const middle = major.middles[midKey];
-            if (!middle || !Array.isArray(middle.subs)) continue;
-
-            middle.subs.forEach(sub => {
-                const displayName = `${middle.label} > ${sub.label}`;
-                const combinedId = `${midKey}-${sub.id}`;
-                html += `
-                    <button class="minor-btn ${currentSelectedSection === combinedId ? 'active' : ''}" 
-                            onclick="selectMinorCategory('${combinedId}', '${displayName}')">
-                        ${displayName}
-                    </button>
-                `;
+        // SortableJS 드래그 앤 드롭 활성화
+        if (typeof Sortable !== 'undefined') {
+            new Sortable(majorGrid, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: async function() {
+                    const buttons = majorGrid.querySelectorAll('.major-btn');
+                    buttons.forEach((btn, index) => {
+                        const mKey = btn.getAttribute('data-mkey');
+                        if (SITE_CATEGORIES[mKey]) {
+                            SITE_CATEGORIES[mKey].order = index;
+                        }
+                    });
+                    await saveSiteCategories();
+                }
             });
         }
+    }
+
+    // 2. 소분류 렌더링 함수 (3단계 대응 - 대분류 단독 지정 포함)
+    function renderMinorCategories(majorKey) {
+        const major = SITE_CATEGORIES[majorKey];
+        if (!major) return;
+
+        let html = '';
+        const defaultDisplayName = `[대분류 전체] ${major.label}`;
+        const defaultCombinedId = majorKey;
+
+        html += `
+            <button class="minor-btn ${currentSelectedSection === defaultCombinedId ? 'active' : ''}" 
+                    onclick="selectMinorCategory('${defaultCombinedId}', '${defaultDisplayName}')">
+                ${defaultDisplayName}
+            </button>
+        `;
+
+        if (major.middles) {
+            for (const midKey in major.middles) {
+                const middle = major.middles[midKey];
+                if (!middle) continue;
+
+                if (Array.isArray(middle.subs) && middle.subs.length > 0) {
+                    middle.subs.forEach(sub => {
+                        const displayName = `${middle.label} > ${sub.label}`;
+                        const combinedId = `${midKey}-${sub.id}`;
+                        html += `
+                            <button class="minor-btn ${currentSelectedSection === combinedId ? 'active' : ''}" 
+                                    onclick="selectMinorCategory('${combinedId}', '${displayName}')">
+                                ${displayName}
+                            </button>
+                        `;
+                    });
+                } else {
+                    const displayName = `[중분류] ${middle.label}`;
+                    const combinedId = midKey;
+                    html += `
+                        <button class="minor-btn ${currentSelectedSection === combinedId ? 'active' : ''}" 
+                                onclick="selectMinorCategory('${combinedId}', '${displayName}')">
+                            ${displayName}
+                        </button>
+                    `;
+                }
+            }
+        }
         
-        minorGrid.innerHTML = html || '<div style="color:#999; text-align:center; width:100%;">이 분류 아래에 등록된 소분류가 없습니다.</div>';
+        minorGrid.innerHTML = html;
+        selectMinorCategory(defaultCombinedId, defaultDisplayName);
     }
 
     // 3. 소분류 선택 함수 (전역 window 객체에 연결하여 onclick 대응)
@@ -4102,14 +4188,20 @@ function populateCategoryFilter() {
 
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
-        if (!major || !major.middles) continue;
+        if (!major) continue;
+
+        html += `<option value="${mKey}">[대분류] ${major.label}</option>`;
+        if (!major.middles) continue;
 
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
-            if (!middle || !Array.isArray(middle.subs)) continue;
+            if (!middle) continue;
+
+            html += `<option value="${midKey}">&nbsp;&nbsp;└ [중분류] ${middle.label}</option>`;
+            if (!Array.isArray(middle.subs)) continue;
 
             middle.subs.forEach(sub => {
-                html += `<option value="${sub.id}">${major.label} > ${middle.label} > ${sub.label}</option>`;
+                html += `<option value="${sub.id}">&nbsp;&nbsp;&nbsp;&nbsp;└ [소분류] ${sub.label}</option>`;
             });
         }
     }
@@ -4126,16 +4218,23 @@ function updateProductModalDropdown() {
     
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
-        if (!major || !major.middles) continue;
+        if (!major) continue;
 
         html += `<optgroup label="${major.label}">`;
-        for (const midKey in major.middles) {
-            const middle = major.middles[midKey];
-            if (!middle || !Array.isArray(middle.subs)) continue;
+        html += `<option value="${mKey}">[대분류 전체] ${major.label}</option>`;
+        if (major.middles) {
+            for (const midKey in major.middles) {
+                const middle = major.middles[midKey];
+                if (!middle) continue;
 
-            middle.subs.forEach(sub => {
-                html += `<option value="${sub.id}">${middle.label} > ${sub.label}</option>`;
-            });
+                if (Array.isArray(middle.subs) && middle.subs.length > 0) {
+                    middle.subs.forEach(sub => {
+                        html += `<option value="${sub.id}">${middle.label} > ${sub.label}</option>`;
+                    });
+                } else {
+                    html += `<option value="${midKey}">[중분류] ${middle.label}</option>`;
+                }
+            }
         }
         html += `</optgroup>`;
     }
@@ -4208,6 +4307,8 @@ async function saveSiteCategories() {
             alert('변경 사항 저장 실패: ' + error.message);
         } else {
             console.log('카테고리 변경 사항 자동 저장 성공');
+            populateCategoryFilter();
+            updateProductModalDropdown();
         }
     } catch (err) {
         console.error('카테고리 저장 중 예외 발생:', err);

@@ -542,11 +542,14 @@ button {
 .product-img {
     height: 250px;
     background: #eaeaea; /* Placeholder */
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
     transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .product-card:hover .product-img {
-    transform: scale(1.08);
+    transform: none;
 }
 
 .product-info {
@@ -899,13 +902,13 @@ button {
 .main-image-container img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    background-color: #fff; /* ?역 諻국제?潺 ??篧竾?瞘 */
+    object-fit: contain !important;
+    background-color: #fff;
     transition: transform 0.5s ease;
 }
 
 .main-image-container:hover img {
-    transform: scale(1.05);
+    transform: none;
 }
 
 .thumbnail-list {
@@ -927,7 +930,7 @@ button {
 .thumb-item img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain !important;
     background-color: #fff;
 }
 
@@ -1020,6 +1023,23 @@ button {
 }
 
 .option-select:focus {
+    border-color: var(--color-primary);
+}
+
+.selected-option-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    transition: all 0.2s ease;
+}
+
+.selected-option-card:hover {
     border-color: var(--color-primary);
 }
 
@@ -1752,8 +1772,9 @@ button {
     width: 44px;
     height: 44px;
     border-radius: 6px;
-    background-size: cover;
-    background-position: center;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
     border: 1px solid #eee;
     flex-shrink: 0;
 }

@@ -128,6 +128,21 @@ body {
     letter-spacing: 1px;
 }
 
+.sidebar-brand-link {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.sidebar-brand-link:hover {
+    color: var(--admin-primary);
+    transform: translateY(-1px);
+}
+
 .sidebar-menu {
     list-style: none;
     flex-grow: 1;
@@ -380,14 +395,14 @@ td {
 .image-preview img {
     max-width: 86%;
     max-height: 90%;
-    object-fit: cover;
+    object-fit: contain !important;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     transition: transform 0.3s;
 }
 
 .image-preview:hover img {
-    transform: scale(1.05);
+    transform: none;
 }
 
 .modal-footer {
@@ -452,7 +467,7 @@ td {
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
-    cursor: pointer;
+    cursor: grab;
     font-weight: 600;
     font-size: 1rem;
     color: #555;
@@ -462,9 +477,30 @@ td {
     align-items: center;
     gap: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    position: relative;
+    user-select: none;
 }
 
-.major-btn i {
+.major-btn:active {
+    cursor: grabbing;
+}
+
+.major-btn .drag-handle {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: -2px;
+    transition: color 0.2s;
+}
+
+.major-btn:hover .drag-handle {
+    color: #3498db;
+}
+
+.major-btn.active .drag-handle {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.major-btn i.fa-solid:not(.drag-handle) {
     font-size: 1.5rem;
     color: #95a5a6;
     transition: color 0.2s;
@@ -483,7 +519,7 @@ td {
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
-.major-btn.active i {
+.major-btn.active i.fa-solid:not(.drag-handle) {
     color: #fff;
 }
 
