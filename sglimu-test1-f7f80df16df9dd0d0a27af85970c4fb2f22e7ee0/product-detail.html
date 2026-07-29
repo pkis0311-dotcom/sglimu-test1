@@ -106,27 +106,24 @@
                     <div class="option-group" id="colorOptionGroup">
                         <label for="colorOption">색상 선택</label>
                         <select id="colorOption" class="option-select">
-                            <option value="0|">색상을 선택하세요</option>
+                            <option value="">색상을 선택하세요</option>
                         </select>
                     </div>
 
                     <div class="option-group" id="sizeOptionGroup" style="margin-top: 15px;">
                         <label for="sizeOption">사이즈 선택</label>
                         <select id="sizeOption" class="option-select">
-                            <option value="0|">사이즈를 선택하세요</option>
+                            <option value="">사이즈를 선택하세요</option>
                         </select>
                     </div>
                     
-                    <div class="option-group" id="defaultQtyGroup" style="margin-top: 20px;">
+                    <div class="option-group" style="margin-top: 20px;">
                         <label>수량</label>
                         <div class="quantity-control">
-                            <button class="qty-btn" type="button" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <button class="qty-btn" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
                             <input type="text" class="qty-input" id="qtyInput" value="1" readonly>
-                            <button class="qty-btn" type="button" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
+                            <button class="qty-btn" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
                         </div>
-                    </div>
-
-                    <div id="selectedOptionsContainer" style="margin-top: 20px; display: none; flex-direction: column; gap: 10px;">
                     </div>
                 </div>
 
@@ -208,7 +205,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-info">
-                <p><img src="assets/logo_green.png" alt="로고" style="height: 1.8em; vertical-align: middle; margin-right: 4px; position: relative; top: -1px;"><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; 점심시간 (12:00~13:00) &nbsp;|&nbsp; E-Mail : limu101@nate.com &nbsp;|&nbsp; Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
+                <p><strong>(주)에스지라이뮤</strong> &nbsp;|&nbsp; Tel : 1544-5703 &nbsp;|&nbsp; 팩스 : 051-518-5985 &nbsp;|&nbsp; 점심시간 (12:00~13:00) &nbsp;|&nbsp; E-Mail : limu101@nate.com &nbsp;|&nbsp; Address : 부산광역시 금정구 놀이마당로 29-1 (청룡동)</p>
                 <p>대표자명 : 강인숙 &nbsp;|&nbsp; 개인정보취급담당자 : 강인숙 &nbsp;|&nbsp; 사업자번호 : 621-81-42086 &nbsp;|&nbsp; 통신판매업신고번호 : 제 2018-부산금정-0045호</p>
                 <p class="copyright">Copyright(c)2026 www.sglimu.com. All right Reserved.</p>
             </div>
@@ -254,270 +251,38 @@
             element.classList.add('active');
         }
 
-        window.selectedOptionItems = [];
-
         function updateQty(change) {
             const input = document.getElementById('qtyInput');
-            if (!input) return;
-            let current = parseInt(input.value) || 1;
+            let current = parseInt(input.value);
             let newVal = current + change;
             if (newVal < 1) newVal = 1;
             input.value = newVal;
             
             calculateTotal();
         }
-        window.updateQty = updateQty;
-
-        function getSelectedOptionsState() {
-            const colorGroup = document.getElementById('colorOptionGroup');
-            const sizeGroup = document.getElementById('sizeOptionGroup');
-            
-            const colorVisible = colorGroup && colorGroup.style.display !== 'none';
-            const sizeVisible = sizeGroup && sizeGroup.style.display !== 'none';
-            
-            return { colorVisible, sizeVisible };
-        }
-
-        function checkAndAddSelectedOption() {
-            const { colorVisible, sizeVisible } = getSelectedOptionsState();
-            
-            if (!colorVisible && !sizeVisible) {
-                return;
-            }
-            
-            const colorSelect = document.getElementById('colorOption');
-            const sizeSelect = document.getElementById('sizeOption');
-            
-            const colorVal = colorSelect ? colorSelect.value : '';
-            const sizeVal = sizeSelect ? sizeSelect.value : '';
-            
-            let colorPrice = 0, colorName = '';
-            let sizePrice = 0, sizeName = '';
-            
-            if (colorVisible) {
-                if (!colorVal || colorVal === '0|' || colorVal === '0') return;
-                const parts = colorVal.split('|');
-                colorPrice = parseInt(parts[0]) || 0;
-                colorName = parts[1] || (colorSelect.options[colorSelect.selectedIndex]?.text || '').split(' (')[0];
-            }
-            
-            if (sizeVisible) {
-                if (!sizeVal || sizeVal === '0|' || sizeVal === '0') return;
-                const parts = sizeVal.split('|');
-                sizePrice = parseInt(parts[0]) || 0;
-                sizeName = parts[1] || (sizeSelect.options[sizeSelect.selectedIndex]?.text || '').split(' (')[0];
-            }
-            
-            let optionLabels = [];
-            let optionKeyParts = [];
-            if (colorVisible && colorName) {
-                optionLabels.push(`색상: ${colorName}`);
-                optionKeyParts.push(colorName);
-            }
-            if (sizeVisible && sizeName) {
-                optionLabels.push(`사이즈: ${sizeName}`);
-                optionKeyParts.push(sizeName);
-            }
-            
-            const optionText = optionLabels.join(' / ');
-            const optionKey = optionKeyParts.join('_');
-            const additionalPrice = colorPrice + sizePrice;
-            const unitPrice = (window.basePrice || 0) + additionalPrice;
-            
-            const productNameEl = document.querySelector('.product-title');
-            let pName = productNameEl ? productNameEl.innerText.trim() : document.title.replace(' - 에스지라이뮤', '');
-            const displayName = `${pName} (${optionText})`;
-            
-            const existing = window.selectedOptionItems.find(item => item.key === optionKey);
-            if (existing) {
-                alert('이미 선택하신 옵션입니다. 수량이 1개 추가됩니다.');
-                existing.qty += 1;
-            } else {
-                window.selectedOptionItems.push({
-                    id: 'opt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-                    key: optionKey,
-                    optionText: optionText,
-                    displayName: displayName,
-                    price: unitPrice,
-                    additionalPrice: additionalPrice,
-                    qty: 1
-                });
-            }
-            
-            if (colorSelect) colorSelect.value = colorSelect.options[0]?.value || '0|';
-            if (sizeSelect) sizeSelect.value = sizeSelect.options[0]?.value || '0|';
-            
-            renderSelectedOptions();
-            calculateTotal();
-        }
-
-        function renderSelectedOptions() {
-            const container = document.getElementById('selectedOptionsContainer');
-            const defaultQtyGroup = document.getElementById('defaultQtyGroup');
-            const { colorVisible, sizeVisible } = getSelectedOptionsState();
-            
-            const hasOptions = colorVisible || sizeVisible;
-            
-            if (!hasOptions) {
-                if (container) container.style.display = 'none';
-                if (defaultQtyGroup) defaultQtyGroup.style.display = 'block';
-                return;
-            }
-            
-            if (defaultQtyGroup) defaultQtyGroup.style.display = 'none';
-            if (!container) return;
-            
-            if (window.selectedOptionItems.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-            
-            container.style.display = 'flex';
-            container.innerHTML = window.selectedOptionItems.map(item => `
-                <div class="selected-option-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow:0 2px 5px rgba(0,0,0,0.03);">
-                    <div style="flex:1; min-width:0;">
-                        <div style="font-weight:600; font-size:0.95rem; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.optionText}</div>
-                        <div style="font-size:0.85rem; color:#718096; margin-top:3px;">${item.price.toLocaleString()}원</div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:14px; flex-shrink:0;">
-                        <div class="quantity-control" style="transform:scale(0.88); margin:0;">
-                            <button class="qty-btn" type="button" onclick="changeOptionItemQty('${item.id}', -1)"><i class="fa-solid fa-minus"></i></button>
-                            <input type="text" class="qty-input" value="${item.qty}" readonly style="font-size:0.9rem;">
-                            <button class="qty-btn" type="button" onclick="changeOptionItemQty('${item.id}', 1)"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <div style="font-weight:700; font-size:1.02rem; color:var(--color-primary); min-width:85px; text-align:right;">
-                            ${(item.price * item.qty).toLocaleString()}원
-                        </div>
-                        <button type="button" onclick="removeOptionItem('${item.id}')" style="background:none; border:none; color:#a0aec0; cursor:pointer; font-size:1.2rem; padding:2px 4px; transition:color 0.2s;" onmouseover="this.style.color='#e53e3e'" onmouseout="this.style.color='#a0aec0'" title="옵션 삭제">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function changeOptionItemQty(id, delta) {
-            const item = window.selectedOptionItems.find(x => x.id === id);
-            if (item) {
-                item.qty += delta;
-                if (item.qty < 1) item.qty = 1;
-                renderSelectedOptions();
-                calculateTotal();
-            }
-        }
-
-        function removeOptionItem(id) {
-            window.selectedOptionItems = window.selectedOptionItems.filter(x => x.id !== id);
-            renderSelectedOptions();
-            calculateTotal();
-        }
-        window.changeOptionItemQty = changeOptionItemQty;
-        window.removeOptionItem = removeOptionItem;
 
         function calculateTotal() {
-            const { colorVisible, sizeVisible } = getSelectedOptionsState();
-            const hasOptions = colorVisible || sizeVisible;
-            let total = 0;
-            
-            if (hasOptions) {
-                total = window.selectedOptionItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
-            } else {
-                const qty = parseInt(document.getElementById('qtyInput')?.value || 1);
-                total = (window.basePrice || 0) * qty;
+            let optPrice = 0;
+            const colorSelect = document.getElementById('colorOption');
+            if(colorSelect && colorSelect.value) {
+                const parts = colorSelect.value.split('|');
+                optPrice += parseInt(parts[0]) || 0;
             }
             
+            const sizeSelect = document.getElementById('sizeOption');
+            if(sizeSelect && sizeSelect.value) {
+                const parts = sizeSelect.value.split('|');
+                optPrice += parseInt(parts[0]) || 0;
+            }
+            
+            const qty = parseInt(document.getElementById('qtyInput').value);
+            const total = ((window.basePrice || 0) + optPrice) * qty;
             const totalPriceElem = document.getElementById('totalPrice');
             if (totalPriceElem) totalPriceElem.innerText = total.toLocaleString();
         }
-        window.calculateTotal = calculateTotal;
 
-        document.getElementById('colorOption')?.addEventListener('change', checkAndAddSelectedOption);
-        document.getElementById('sizeOption')?.addEventListener('change', checkAndAddSelectedOption);
-
-        window.handleAddToCart = function() {
-            const { colorVisible, sizeVisible } = getSelectedOptionsState();
-            const hasOptions = colorVisible || sizeVisible;
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const productIdVal = urlParams.get('id') || '';
-            const productNameEl = document.querySelector('.product-title');
-            let pName = productNameEl ? productNameEl.innerText.trim() : document.title.replace(' - 에스지라이뮤', '');
-
-            if (hasOptions) {
-                if (window.selectedOptionItems.length === 0) {
-                    alert('상품 옵션을 먼저 선택해주세요.');
-                    return;
-                }
-                
-                window.selectedOptionItems.forEach(item => {
-                    const cartItem = {
-                        id: pName + '_' + item.key + '_' + item.price + '_' + Date.now() + '_' + Math.random().toString(36).substring(2,5),
-                        productId: productIdVal,
-                        name: item.displayName,
-                        price: item.price,
-                        qty: item.qty
-                    };
-                    addToCart(cartItem);
-                });
-                openCart();
-            } else {
-                const qtyInput = document.getElementById('qtyInput');
-                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-                const cartItem = {
-                    id: pName + '_' + (window.basePrice || 0) + '_' + Date.now(),
-                    productId: productIdVal,
-                    name: pName,
-                    price: window.basePrice || 0,
-                    qty: qty
-                };
-                addToCart(cartItem);
-                openCart();
-            }
-        };
-
-        window.handleDirectBuy = function() {
-            const { colorVisible, sizeVisible } = getSelectedOptionsState();
-            const hasOptions = colorVisible || sizeVisible;
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const productIdVal = urlParams.get('id') || '';
-            const productNameEl = document.querySelector('.product-title');
-            let pName = productNameEl ? productNameEl.innerText.trim() : document.title.replace(' - 에스지라이뮤', '');
-
-            if (hasOptions) {
-                if (window.selectedOptionItems.length === 0) {
-                    alert('상품 옵션을 먼저 선택해주세요.');
-                    return;
-                }
-                
-                const directItems = window.selectedOptionItems.map(item => ({
-                    id: productIdVal + '_' + item.key + '_' + item.price + '_' + Date.now(),
-                    productId: productIdVal,
-                    name: item.displayName,
-                    price: item.price,
-                    qty: item.qty
-                }));
-                
-                if (typeof window.openCheckoutModal === 'function') {
-                    window.openCheckoutModal(directItems);
-                }
-            } else {
-                const qtyInput = document.getElementById('qtyInput');
-                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-                
-                const directItem = {
-                    id: productIdVal + '_' + (window.basePrice || 0) + '_' + Date.now(),
-                    productId: productIdVal,
-                    name: pName,
-                    price: window.basePrice || 0,
-                    qty: qty
-                };
-                
-                if (typeof window.openCheckoutModal === 'function') {
-                    window.openCheckoutModal([directItem]);
-                }
-            }
-        };
+        document.getElementById('colorOption')?.addEventListener('change', calculateTotal);
+        document.getElementById('sizeOption')?.addEventListener('change', calculateTotal);
 
         function switchTab(index, element) {
             document.querySelectorAll('.detail-tab-btn').forEach(el => el.classList.remove('active'));
@@ -644,7 +409,7 @@
             // Description
             const descElem = document.getElementById('dynamicDesc');
             if(descElem && product.description) {
-                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\[\[K:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
+                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
             }
 
             // Page Data from site_configs
@@ -655,6 +420,11 @@
             const featureSection = document.getElementById('dynamicFeatures')?.closest('.info-text-box');
 
             if(data) {
+                // Description Summary from Detail Page Config
+                if (data.description && descElem) {
+                    descElem.innerHTML = data.description.replace(/\n/g, '<br>').trim();
+                }
+
                 // Additional Main Images
                 if(data.mainImages && data.mainImages.length > 0) {
                     if (mainImgElem) {
@@ -894,4 +664,3 @@
     </div>
 </body>
 </html>
-

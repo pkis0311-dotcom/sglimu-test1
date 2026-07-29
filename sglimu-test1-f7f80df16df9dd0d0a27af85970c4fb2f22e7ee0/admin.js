@@ -19,9 +19,6 @@ if (typeof Quill !== 'undefined') {
 
 let db;
 
-// HTML 태그와 따옴표를 제거하여 HTML 속성값으로 안전하게 사용할 수 있도록 만드는 헬퍼 함수
-const cleanHTMLAttr = (html) => (html || '').replace(/<[^>]*>/g, '').replace(/"/g, '&quot;').replace(/'/g, '&#39;').trim();
-
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof supabase === 'undefined') {
         console.error("Supabase library is not loaded. Please check your internet connection and ensure the CDN script is included in admin.html.");
@@ -47,34 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilter = document.getElementById('categoryFilter');
     const productSortFilter = document.getElementById('productSortFilter');
 
-    function isCategoryMatch(selectedCat, pCat) {
-        if (!selectedCat || selectedCat === 'all') return true;
-        if (pCat === selectedCat) return true;
-
-        const major = SITE_CATEGORIES[selectedCat];
-        if (major && major.middles) {
-            for (const midKey in major.middles) {
-                if (pCat === midKey) return true;
-                const middle = major.middles[midKey];
-                if (middle && Array.isArray(middle.subs)) {
-                    if (middle.subs.some(s => s.id === pCat)) return true;
-                }
-            }
-        }
-
-        for (const mKey in SITE_CATEGORIES) {
-            const m = SITE_CATEGORIES[mKey];
-            if (!m || !m.middles) continue;
-            const middle = m.middles[selectedCat];
-            if (middle && Array.isArray(middle.subs)) {
-                if (middle.subs.some(s => s.id === pCat)) return true;
-            }
-        }
-
-        return false;
-    }
-    window.isCategoryMatch = isCategoryMatch;
-
     function applyProductFilters() {
         const query = productSearchInput ? productSearchInput.value.toLowerCase().trim() : '';
         const catValue = categoryFilter ? categoryFilter.value : 'all';
@@ -85,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 검색어에 카테고리 ID가 포함된 경우도 인정
             const categoryMatch = (p.category || '').toLowerCase().includes(query);
             
-            // 드롭다운 필터 적용 (대분류/중분류/소분류 단독 선택 지원)
-            const catFilterMatch = isCategoryMatch(catValue, p.category);
+            // 드롭다운 필터 적용
+            const catFilterMatch = (catValue === 'all' || p.category === catValue);
             
             return (nameMatch || categoryMatch) && catFilterMatch;
         });
@@ -919,12 +888,10 @@ function getProductConfigKey(p) {
     }
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
-        if (p.category === mKey) return `display_${mKey}`;
         if (!major || !major.middles) continue;
 
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
-            if (p.category === midKey) return `display_${midKey}`;
             if (!middle || !Array.isArray(middle.subs)) continue;
 
             const sub = middle.subs.find(s => s.id === p.category);
@@ -933,7 +900,7 @@ function getProductConfigKey(p) {
             }
         }
     }
-    return p.category ? `display_${p.category}` : null;
+    return null;
 }
 
 // 카테고리 전시 경로 라벨 헬퍼 함수
@@ -944,12 +911,10 @@ function getProductCategoryPath(p) {
     }
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
-        if (p.category === mKey) return major.label;
         if (!major || !major.middles) continue;
 
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
-            if (p.category === midKey) return `${major.label} > ${middle.label}`;
             if (!middle || !Array.isArray(middle.subs)) continue;
 
             const sub = middle.subs.find(s => s.id === p.category);
@@ -1013,8 +978,7 @@ function renderProductTable(products) {
     productTableBody.innerHTML = '';
     products.forEach(p => {
         const tr = document.createElement('tr');
-        const cleanName = cleanHTMLAttr(p.name);
-        const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${cleanName}">` : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
+        const imgHtml = p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${p.name}">` : `<div class="td-img" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">NO IMG</div>`;
         const dateStr = new Date(p.created_at).toLocaleDateString('ko-KR');
 
         // 카테고리 라벨 매핑 및 전시 설정 키(configKey) 구하기
@@ -1046,7 +1010,7 @@ function renderProductTable(products) {
             </td>
             <td>
                 <button class="action-btn edit" onclick="editProduct('${p.id}')" title="수정"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button class="action-btn delete" onclick="deleteProduct('${p.id}', '${cleanName.replace(/'/g, "\\'")}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
+                <button class="action-btn delete" onclick="deleteProduct('${p.id}', '${p.name}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         productTableBody.appendChild(tr);
@@ -1068,12 +1032,11 @@ function updateProductRelatedUI(products) {
         if (products.length > 0) {
             displayCheckboxGrid.innerHTML = products.map(p => {
                 const displayCategory = getProductCategoryPath(p);
-                const cleanName = cleanHTMLAttr(p.name);
 
                 return `
                 <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
                     <input type="checkbox" class="display-item-cb" id="cb_${p.id}" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
-                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${cleanName}">
+                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
                         <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${displayCategory}]</span><br>
                         ${p.name}
                     </div>
@@ -1180,18 +1143,20 @@ function renderPageManageProducts() {
             const pCat = p.category || '';
             if (subVal !== 'all') return pCat === subVal;
             if (middleVal !== 'all') {
-                if (pCat === middleVal) return true;
                 for (const mKey in SITE_CATEGORIES) {
-                    const m = SITE_CATEGORIES[mKey];
-                    if (m && m.middles && m.middles[middleVal]) {
-                        const middle = m.middles[middleVal];
-                        if (middle && Array.isArray(middle.subs) && middle.subs.some(s => s.id === pCat)) return true;
-                    }
+                    const middle = SITE_CATEGORIES[mKey].middles[middleVal];
+                    if (middle && middle.subs.some(s => s.id === pCat)) return true;
                 }
                 return false;
             }
             if (majorVal !== 'all') {
-                return isCategoryMatch(majorVal, pCat);
+                const major = SITE_CATEGORIES[majorVal];
+                if (major) {
+                    for (const midKey in major.middles) {
+                        if (major.middles[midKey].subs.some(s => s.id === pCat)) return true;
+                    }
+                }
+                return false;
             }
             return true;
         });
@@ -1218,7 +1183,7 @@ function renderPageManageProducts() {
             }
             if (p.category === 'best_product') displayCategory = '★ 베스트 상품';
 
-            return `<option value="${p.id}">${cleanHTMLAttr(p.name)} [${displayCategory}]</option>`;
+            return `<option value="${p.id}">${p.name} [${displayCategory}]</option>`;
         }).join('');
         if (document.getElementById('tab-page-manage').classList.contains('active')) {
             targetSelect.dispatchEvent(new Event('change'));
@@ -1233,7 +1198,7 @@ function old_updateProductRelatedUI(products) {
     if (targetSelect) {
         if (products.length > 0) {
             targetSelect.innerHTML = products.map(p => 
-                `<option value="${p.id}">${cleanHTMLAttr(p.name)} (${p.category})</option>`
+                `<option value="${p.id}">${p.name} (${p.category})</option>`
             ).join('');
             
             // 만약 '상세페이지 관리' 탭이 활성화되어 있다면 즉시 이벤트 발생시켜 데이터 로드
@@ -1246,21 +1211,19 @@ function old_updateProductRelatedUI(products) {
         }
     }
 
+    // [신규] '카테고리 전시 관리' 탭의 체크박스 그리드 동적 업데이트
     const displayCheckboxGrid = document.getElementById('productCheckboxGrid');
     if (displayCheckboxGrid) {
         if (products.length > 0) {
-            displayCheckboxGrid.innerHTML = products.map(p => {
-                const cleanName = cleanHTMLAttr(p.name);
-                return `
+            displayCheckboxGrid.innerHTML = products.map(p => `
                 <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
                     <input type="checkbox" class="display-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
-                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${cleanName}">
+                    <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
                         <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${p.category}]</span><br>
                         ${p.name}
                     </div>
                 </label>
-                `;
-            }).join('');
+            `).join('');
             
             // 카테고리 전시 관리 탭이 활성화된 상태라면 체크박스 상태 갱신
             if(document.getElementById('tab-category-display').classList.contains('active')) {
@@ -1389,8 +1352,6 @@ function openModal(isEdit = false) {
         if(sizeContainer) sizeContainer.innerHTML = ''; // 사이즈 초기화
         const shortCommentInput = document.getElementById('productShortComment');
         if(shortCommentInput) shortCommentInput.value = ''; // 한줄 코멘트 초기화
-        const keywordsInput = document.getElementById('productKeywords');
-        if(keywordsInput) keywordsInput.value = ''; // 키워드 초기화
         if (openInventoryModalBtn) openInventoryModalBtn.style.display = 'none';
         const logSection = document.getElementById('inventoryLogSection');
         if (logSection) logSection.style.display = 'none';
@@ -1797,12 +1758,8 @@ saveProductBtn.addEventListener('click', async () => {
 
     let id = productIdInput.value;
     
-    // 검색 키워드 값 읽기
-    const keywordsInput = document.getElementById('productKeywords');
-    const keywordsVal = keywordsInput ? keywordsInput.value.trim() : '';
-
-    // [신규] colors/sizes/keywords 정보를 description 끝부분에 [[C:...]] [[S:...]] [[K:...]] 형식의 태그로 결합
-    const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]\n[[K:${keywordsVal}]]`;
+    // [신규] colors/sizes 정보를 description 끝부분에 [[C:...]] [[S:...]] 형식의 태그로 결합
+    const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]`;
     
     // ── 저장 전략: 3단계 분리 ──────────────────────────────────────
     // 1단계: 반드시 저장해야 하는 핵심 필드 (short_comment 포함)
@@ -1817,9 +1774,9 @@ saveProductBtn.addEventListener('click', async () => {
 
     let error = null;
     if (id) {
-        // 2단계: colors/sizes/keywords 포함해서 먼저 시도
-        const { error: updateError } = await db.from('products').update({ ...corePayload, colors: payload.colors, sizes: payload.sizes, keywords: keywordsVal }).eq('id', id);
-        if (updateError && (updateError.message.includes('colors') || updateError.message.includes('sizes') || updateError.message.includes('keywords'))) {
+        // 2단계: colors/sizes 포함해서 먼저 시도
+        const { error: updateError } = await db.from('products').update({ ...corePayload, colors: payload.colors, sizes: payload.sizes }).eq('id', id);
+        if (updateError && (updateError.message.includes('colors') || updateError.message.includes('sizes'))) {
             // colors/sizes 컬럼이 없으면 핵심 필드만 저장
             console.warn('[폴백] colors/sizes 컬럼 없음 → 핵심 필드만 저장');
             const { error: fallbackError } = await db.from('products').update(corePayload).eq('id', id);
@@ -1828,9 +1785,9 @@ saveProductBtn.addEventListener('click', async () => {
             error = updateError;
         }
     } else {
-        // 2단계: colors/sizes/keywords 포함해서 먼저 시도
-        const { data, error: insertError } = await db.from('products').insert([{ ...corePayload, colors: payload.colors, sizes: payload.sizes, keywords: keywordsVal }]).select('id').single();
-        if (insertError && (insertError.message.includes('colors') || insertError.message.includes('sizes') || insertError.message.includes('keywords'))) {
+        // 2단계: colors/sizes 포함해서 먼저 시도
+        const { data, error: insertError } = await db.from('products').insert([{ ...corePayload, colors: payload.colors, sizes: payload.sizes }]).select('id').single();
+        if (insertError && (insertError.message.includes('colors') || insertError.message.includes('sizes'))) {
             // colors/sizes 컬럼이 없으면 핵심 필드만 저장
             console.warn('[폴백] colors/sizes 컬럼 없음 → 핵심 필드만 저장');
             const { data: fallbackData, error: fallbackError } = await db.from('products').insert([corePayload]).select('id').single();
@@ -1957,23 +1914,12 @@ window.editProduct = async (id) => {
     productCategoryInput.value = p.category;
     productPriceInput.value = formatPriceInput(p.price); productStockInput.value = p.stock; 
     
-    // 상세 설명 로드 시 색상/사이즈/키워드 태그 제거 처리 (개행문자 포함)
-    productDescInput.value = (p.description || '').replace(/\[\[C:[\s\S]*?\]\]/g, '').replace(/\[\[S:[\s\S]*?\]\]/g, '').replace(/\[\[K:[\s\S]*?\]\]/g, '').trim();
+    // 상세 설명 로드 시 색상/사이즈 태그 제거 처리 (개행문자 포함)
+    productDescInput.value = (p.description || '').replace(/\[\[C:[\s\S]*?\]\]/g, '').replace(/\[\[S:[\s\S]*?\]\]/g, '').trim();
     
     // 한줄 코멘트 로드
     const shortCommentInput = document.getElementById('productShortComment');
     if (shortCommentInput) shortCommentInput.value = p.short_comment || '';
-    
-    // 검색 키워드 로드
-    const keywordsInput = document.getElementById('productKeywords');
-    if (keywordsInput) {
-        let keywordData = p.keywords;
-        if (!keywordData && p.description) {
-            const match = p.description.match(/\[\[K:([\s\S]*?)\]\]/);
-            if (match) keywordData = match[1];
-        }
-        keywordsInput.value = keywordData || '';
-    }
     
     productImageUrl.value = p.image_url || '';
     imagePreview.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
@@ -2897,11 +2843,10 @@ function renderBestProductCheckboxes() {
 
     grid.innerHTML = globalProducts.map(p => {
         const displayCategory = getProductCategoryPath(p);
-        const cleanName = cleanHTMLAttr(p.name);
         return `
         <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#fff; border:1px solid #ddd; border-radius:4px; cursor:pointer; transition:background 0.2s;">
             <input type="checkbox" class="best-item-cb" value="${p.id}" style="transform:scale(1.3); margin-right:5px;">
-            <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${cleanName}">
+            <div style="font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">
                 <span style="color:#2980b9; font-size:0.75rem; font-weight:bold;">[${displayCategory}]</span><br>
                 ${p.name}
             </div>
@@ -3191,7 +3136,7 @@ function initPageManageTab() {
                     wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
                     const img = document.createElement('img');
                     img.src = ev.target.result;
-                    img.style.cssText = "width:80px; height:80px; object-fit:contain; border-radius:4px; border:1px solid #ddd;";
+                    img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                     delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
@@ -3304,7 +3249,7 @@ function initPageManageTab() {
                 const data = {
                     mainImages: mainImages,
                     detailImages: detailImages, // [변경] 다중 이미지 대응
-                    description: pageDescription ? pageDescription.value : '',
+                    description: pageDescription.value,
                     specStyle: document.getElementById('specStyle').value,
                     featureStyle: document.getElementById('featureStyle').value,
                     specs: [],
@@ -3716,7 +3661,7 @@ function createFeatureBlock(title, desc) {
                     const wrapper = document.createElement('div');
                     wrapper.style.cssText = "position: relative; display: inline-block; cursor: grab;";
                     const img = document.createElement('img');
-                    img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:contain; border-radius:4px; border:1px solid #ddd;";
+                    img.src = src; img.style.cssText = "width:80px; height:80px; object-fit:cover; border-radius:4px; border:1px solid #ddd;";
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                     delBtn.style.cssText = "position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; z-index:1;";
@@ -3756,7 +3701,7 @@ function createFeatureBlock(title, desc) {
                 });
             }
 
-            if (pageDescription) pageDescription.value = data.description || '';
+            pageDescription.value = data.description || '';
             if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
             if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
             updateFeatureStylePreview();
@@ -3944,32 +3889,19 @@ function initCategoryDisplayTab() {
 
     // (Static majorBtns event binding removed, now handled by renderMajorButtons)
 
-    // 1. 대분류 렌더링 및 이벤트 바인딩 (순서 정렬 및 드래그 앤 드롭 지원)
+    // 1. 대분류 렌더링 및 이벤트 바인딩
     function renderMajorButtons() {
         const majorGrid = document.getElementById('majorCategoryGrid');
         if (!majorGrid) return;
 
-        // 대분류 order 순서에 따른 오름차순 정렬
-        const sortedKeys = Object.keys(SITE_CATEGORIES).sort((a, b) => 
-            ((SITE_CATEGORIES[a] ? SITE_CATEGORIES[a].order : 0) || 0) - ((SITE_CATEGORIES[b] ? SITE_CATEGORIES[b].order : 0) || 0)
-        );
-
         majorGrid.innerHTML = '';
         let firstKey = '';
-
-        for (const key of sortedKeys) {
+        for (const key in SITE_CATEGORIES) {
             if (!firstKey) firstKey = key;
             const major = SITE_CATEGORIES[key];
-            if (!major) continue;
-
             const btn = document.createElement('button');
             btn.className = 'major-btn';
-            btn.setAttribute('data-mkey', key);
-            btn.innerHTML = `
-                <i class="fa-solid fa-grip-vertical drag-handle" title="드래그하여 순서 변경"></i>
-                <i class="fa-solid ${major.icon || 'fa-folder'}"></i>
-                <span>${major.label}</span>
-            `;
+            btn.innerHTML = `<i class="fa-solid ${major.icon || 'fa-folder'}"></i> ${major.label}`;
             btn.onclick = () => {
                 document.querySelectorAll('.major-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -3981,74 +3913,31 @@ function initCategoryDisplayTab() {
         // 초기 선택 (첫 번째 대분류)
         const firstBtn = majorGrid.querySelector('.major-btn');
         if (firstBtn) firstBtn.click();
-
-        // SortableJS 드래그 앤 드롭 활성화
-        if (typeof Sortable !== 'undefined') {
-            new Sortable(majorGrid, {
-                handle: '.drag-handle',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: async function() {
-                    const buttons = majorGrid.querySelectorAll('.major-btn');
-                    buttons.forEach((btn, index) => {
-                        const mKey = btn.getAttribute('data-mkey');
-                        if (SITE_CATEGORIES[mKey]) {
-                            SITE_CATEGORIES[mKey].order = index;
-                        }
-                    });
-                    await saveSiteCategories();
-                }
-            });
-        }
     }
 
-    // 2. 소분류 렌더링 함수 (3단계 대응 - 대분류 단독 지정 포함)
+    // 2. 소분류 렌더링 함수 (3단계 대응)
     function renderMinorCategories(majorKey) {
         const major = SITE_CATEGORIES[majorKey];
-        if (!major) return;
+        if (!major || !major.middles) return;
 
         let html = '';
-        const defaultDisplayName = `[대분류 전체] ${major.label}`;
-        const defaultCombinedId = majorKey;
+        for (const midKey in major.middles) {
+            const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
 
-        html += `
-            <button class="minor-btn ${currentSelectedSection === defaultCombinedId ? 'active' : ''}" 
-                    onclick="selectMinorCategory('${defaultCombinedId}', '${defaultDisplayName}')">
-                ${defaultDisplayName}
-            </button>
-        `;
-
-        if (major.middles) {
-            for (const midKey in major.middles) {
-                const middle = major.middles[midKey];
-                if (!middle) continue;
-
-                if (Array.isArray(middle.subs) && middle.subs.length > 0) {
-                    middle.subs.forEach(sub => {
-                        const displayName = `${middle.label} > ${sub.label}`;
-                        const combinedId = `${midKey}-${sub.id}`;
-                        html += `
-                            <button class="minor-btn ${currentSelectedSection === combinedId ? 'active' : ''}" 
-                                    onclick="selectMinorCategory('${combinedId}', '${displayName}')">
-                                ${displayName}
-                            </button>
-                        `;
-                    });
-                } else {
-                    const displayName = `[중분류] ${middle.label}`;
-                    const combinedId = midKey;
-                    html += `
-                        <button class="minor-btn ${currentSelectedSection === combinedId ? 'active' : ''}" 
-                                onclick="selectMinorCategory('${combinedId}', '${displayName}')">
-                            ${displayName}
-                        </button>
-                    `;
-                }
-            }
+            middle.subs.forEach(sub => {
+                const displayName = `${middle.label} > ${sub.label}`;
+                const combinedId = `${midKey}-${sub.id}`;
+                html += `
+                    <button class="minor-btn ${currentSelectedSection === combinedId ? 'active' : ''}" 
+                            onclick="selectMinorCategory('${combinedId}', '${displayName}')">
+                        ${displayName}
+                    </button>
+                `;
+            });
         }
         
-        minorGrid.innerHTML = html;
-        selectMinorCategory(defaultCombinedId, defaultDisplayName);
+        minorGrid.innerHTML = html || '<div style="color:#999; text-align:center; width:100%;">이 분류 아래에 등록된 소분류가 없습니다.</div>';
     }
 
     // 3. 소분류 선택 함수 (전역 window 객체에 연결하여 onclick 대응)
@@ -4188,20 +4077,14 @@ function populateCategoryFilter() {
 
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
-        if (!major) continue;
-
-        html += `<option value="${mKey}">[대분류] ${major.label}</option>`;
-        if (!major.middles) continue;
+        if (!major || !major.middles) continue;
 
         for (const midKey in major.middles) {
             const middle = major.middles[midKey];
-            if (!middle) continue;
-
-            html += `<option value="${midKey}">&nbsp;&nbsp;└ [중분류] ${middle.label}</option>`;
-            if (!Array.isArray(middle.subs)) continue;
+            if (!middle || !Array.isArray(middle.subs)) continue;
 
             middle.subs.forEach(sub => {
-                html += `<option value="${sub.id}">&nbsp;&nbsp;&nbsp;&nbsp;└ [소분류] ${sub.label}</option>`;
+                html += `<option value="${sub.id}">${major.label} > ${middle.label} > ${sub.label}</option>`;
             });
         }
     }
@@ -4218,23 +4101,16 @@ function updateProductModalDropdown() {
     
     for (const mKey in SITE_CATEGORIES) {
         const major = SITE_CATEGORIES[mKey];
-        if (!major) continue;
+        if (!major || !major.middles) continue;
 
         html += `<optgroup label="${major.label}">`;
-        html += `<option value="${mKey}">[대분류 전체] ${major.label}</option>`;
-        if (major.middles) {
-            for (const midKey in major.middles) {
-                const middle = major.middles[midKey];
-                if (!middle) continue;
+        for (const midKey in major.middles) {
+            const middle = major.middles[midKey];
+            if (!middle || !Array.isArray(middle.subs)) continue;
 
-                if (Array.isArray(middle.subs) && middle.subs.length > 0) {
-                    middle.subs.forEach(sub => {
-                        html += `<option value="${sub.id}">${middle.label} > ${sub.label}</option>`;
-                    });
-                } else {
-                    html += `<option value="${midKey}">[중분류] ${middle.label}</option>`;
-                }
-            }
+            middle.subs.forEach(sub => {
+                html += `<option value="${sub.id}">${middle.label} > ${sub.label}</option>`;
+            });
         }
         html += `</optgroup>`;
     }
@@ -4307,8 +4183,6 @@ async function saveSiteCategories() {
             alert('변경 사항 저장 실패: ' + error.message);
         } else {
             console.log('카테고리 변경 사항 자동 저장 성공');
-            populateCategoryFilter();
-            updateProductModalDropdown();
         }
     } catch (err) {
         console.error('카테고리 저장 중 예외 발생:', err);
@@ -4933,11 +4807,10 @@ document.addEventListener('DOMContentLoaded', () => {
             globalProducts.forEach(p => {
                 const opt = document.createElement('option');
                 opt.value = p.id;
-                const cleanName = cleanHTMLAttr(p.name);
-                opt.textContent = cleanName;
+                opt.textContent = p.name;
                 // 정상 가격이 숫자 형태인지 또는 '전화문의' 인지 파싱
                 opt.dataset.price = p.price;
-                opt.dataset.name = cleanName;
+                opt.dataset.name = p.name;
                 selectProduct.appendChild(opt);
             });
 

@@ -1,14 +1,14 @@
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // [신규] 상단 로고 이미지 하단 우측으로 이동 동적 처리 (사용자 요청으로 제거됨)
-    // const footerContainer = document.querySelector('.footer-container');
-    // if (footerContainer && !document.querySelector('.footer-logo')) {
-    //     const footerLogo = document.createElement('div');
-    //     footerLogo.className = 'footer-logo';
-    //     footerLogo.innerHTML = `<img src="assets/logo.png" alt="에스지라이뮤">`;
-    //     footerContainer.appendChild(footerLogo);
-    // }
+    // [신규] 상단 로고 이미지 하단 우측으로 이동 동적 처리
+    const footerContainer = document.querySelector('.footer-container');
+    if (footerContainer && !document.querySelector('.footer-logo')) {
+        const footerLogo = document.createElement('div');
+        footerLogo.className = 'footer-logo';
+        footerLogo.innerHTML = `<img src="assets/logo.png" alt="에스지라이뮤">`;
+        footerContainer.appendChild(footerLogo);
+    }
 
     // ---------------------------------------------------------
     // 1. Search Logic (Should run first to be robust)
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 el.onclick = () => window.location.href = `product-detail.html?id=${item.id}`;
                 
                 el.innerHTML = `
-                    <div style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:contain; background-repeat:no-repeat; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
+                    <div style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:cover; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
                     <div style="flex-grow:1; overflow:hidden;">
                         <div style="font-size:0.9rem; font-weight:600; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;">${item.name}</div>
                         <div style="font-size:0.85rem; color:#2980b9; font-weight:bold;">${priceStr}</div>
@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 el.onmouseout = () => el.style.transform = 'translateY(0)';
                 
                 el.innerHTML = `
-                    <div onclick="window.location.href='product-detail.html?id=${item.id}'" style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:contain; background-repeat:no-repeat; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
+                    <div onclick="window.location.href='product-detail.html?id=${item.id}'" style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:cover; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
                     <div onclick="window.location.href='product-detail.html?id=${item.id}'" style="flex-grow:1; overflow:hidden;">
                         <div style="font-size:0.9rem; font-weight:600; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;">${item.name}</div>
                         <div style="font-size:0.85rem; color:#e74c3c; font-weight:bold;">${priceStr}</div>
@@ -1408,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const optionsHtml = renderProductOptionsMarkup(options.colors, options.sizes);
             
             card.innerHTML = `
-                <div class="product-img" style="background-image: url('${displayImg}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
+                <div class="product-img" style="background-image: url('${displayImg}'); background-size: cover; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
                 <div class="product-info" style="text-align:center; padding:15px;">
                     <h4 style="margin-bottom:4px;">${p.name}</h4>
                     ${commentHtml}

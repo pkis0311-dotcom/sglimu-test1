@@ -12,11 +12,3 @@ major_version = 15
 
 [functions.nicepay-callback]
 verify_jwt = false
-
-[auth.email.template.confirmation]
-subject = "[에스지라이뮤] 회원가입을 위한 이메일 인증 메일입니다."
-content_path = "./supabase/templates/signup_confirmation.html"
-
-[auth.email.template.recovery]
-subject = "[에스지라이뮤] 비밀번호 재설정 안내 메일입니다."
-content_path = "./supabase/templates/reset_password.html"
