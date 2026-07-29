@@ -1026,23 +1026,6 @@ button {
     border-color: var(--color-primary);
 }
 
-.selected-option-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 14px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-    transition: all 0.2s ease;
-}
-
-.selected-option-card:hover {
-    border-color: var(--color-primary);
-}
-
 .quantity-control {
     display: flex;
     align-items: center;

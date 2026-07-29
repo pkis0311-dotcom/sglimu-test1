@@ -97,11 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!isConsultationOnly) {
                 // 가격이 측정되어 있는 상품 -> 바로 결제/주문서 작성 모달로 이동
-                if (typeof window.handleDirectBuy === 'function') {
-                    window.handleDirectBuy();
-                    return;
-                }
-                
                 const qtyInput = document.getElementById('qtyInput');
                 const qty = qtyInput ? parseInt(qtyInput.value) : 1;
                 

@@ -36,8 +36,7 @@ function getCheckoutItems() {
         const directItem = sessionStorage.getItem('direct_buy_item');
         if (directItem) {
             try {
-                const parsed = JSON.parse(directItem);
-                return Array.isArray(parsed) ? parsed : [parsed];
+                return [JSON.parse(directItem)];
             } catch (e) {
                 console.error('Failed to parse direct buy item:', e);
             }
@@ -570,10 +569,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addCartBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            if (typeof window.handleAddToCart === 'function') {
-                window.handleAddToCart();
-                return;
-            }
             // 상품 상세 페이지일 경우 정보 자동수집
             const TitleEl = document.querySelector('.product-title');
             const PriceEl = document.querySelector('.product-price');
@@ -943,62 +938,6 @@ async function generateQuotePDF() {
         btn.disabled = false;
     }
 }
-
-// [신규] 바로구매 주문서 모달 오픈용 전역 함수 (단일 또는 다중 옵션 품목 지원)
-window.openCheckoutModal = function(items) {
-    const itemList = Array.isArray(items) ? items : [items];
-    sessionStorage.setItem('is_direct_buy', 'true');
-    sessionStorage.setItem('direct_buy_item', JSON.stringify(itemList));
-
-    const checkoutOverlay = document.getElementById('checkoutOverlay');
-    const checkoutMsg = document.getElementById('checkoutMsg');
-    
-    let total = 0;
-    itemList.forEach(item => total += item.price * item.qty);
-    const checkoutTotalPriceEl = document.getElementById('checkoutTotalPrice');
-    if (checkoutTotalPriceEl) checkoutTotalPriceEl.innerText = total.toLocaleString() + '원';
-
-    let summaryText = '';
-    if (itemList.length === 1) {
-        summaryText = `${itemList[0].name} (수량: ${itemList[0].qty}개)`;
-    } else {
-        summaryText = `${itemList[0].name} 외 ${itemList.length - 1}건 (총 수량: ${itemList.reduce((acc, x) => acc + x.qty, 0)}개)`;
-    }
-    const summaryEl = document.getElementById('checkoutProductSummary');
-    if (summaryEl) summaryEl.innerText = summaryText;
-
-    if (checkoutMsg) {
-        checkoutMsg.className = 'auth-message';
-        checkoutMsg.style.display = 'none';
-        checkoutMsg.textContent = '';
-    }
-
-    if (checkoutOverlay) checkoutOverlay.style.display = 'flex';
-
-    if (window.supabase) {
-        window.supabase.auth.getUser().then(({ data: { user } }) => {
-            if (user) {
-                window.supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data: profile }) => {
-                    if (profile) {
-                        if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = profile.full_name || '';
-                        if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
-                        if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
-                        if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
-                        const rawAddress = profile.address || '';
-                        if (rawAddress.includes('||')) {
-                            const addrs = rawAddress.split('||');
-                            if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = addrs[0] || '';
-                            if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = addrs[1] || '';
-                        } else {
-                            if (document.getElementById('checkoutAddress')) document.getElementById('checkoutAddress').value = rawAddress;
-                            if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
-                        }
-                    }
-                });
-            }
-        }).catch(err => console.error('Failed to pre-fill user info:', err));
-    }
-};
 
 // [신규] 상세페이지 바로구매(결제창 즉시 이동) 처리용 전역 함수
 window.buyNowDirect = async function(item) {
