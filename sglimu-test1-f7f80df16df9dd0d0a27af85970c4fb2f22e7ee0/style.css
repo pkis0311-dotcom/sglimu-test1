@@ -541,7 +541,7 @@ button {
 
 .product-img {
     height: 250px;
-    background: #eaeaea; /* Placeholder */
+    background: #fff; /* Changed from #eaeaea to white to blend with product image backgrounds */
     background-size: contain !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
@@ -894,7 +894,7 @@ button {
     aspect-ratio: 1 / 1;
     border-radius: 24px;
     overflow: hidden;
-    background: #f7f9f8;
+    background: #fff; /* Changed from #f7f9f8 to white to blend with product image backgrounds */
     position: relative;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
@@ -924,7 +924,7 @@ button {
     cursor: pointer;
     border: 2px solid transparent;
     transition: var(--transition-smooth);
-    background: #f7f9f8;
+    background: #fff; /* Changed from #f7f9f8 to white to blend with product image backgrounds */
 }
 
 .thumb-item img {
@@ -1772,6 +1772,7 @@ button {
     width: 44px;
     height: 44px;
     border-radius: 6px;
+    background-color: #fff; /* Added background-color white to blend with search suggestions */
     background-size: contain !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
