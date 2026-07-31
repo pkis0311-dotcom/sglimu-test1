@@ -526,14 +526,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     throw new Error("Supabase client not loaded.");
                 }
 
-                const { data: orders, error } = await window.supabase
+                const { data: allOrders, error } = await window.supabase
                     .from('orders')
                     .select('*')
-                    .eq('customer_name', name)
                     .eq('customer_phone', phone)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
+
+                // DB에는 customer_name이 "이름||결제수단||소속기관||품목JSON" 형식으로 저장되어 있을 수 있으므로
+                // 이름 부분만 추출하여 입력받은 name과 대조합니다.
+                const orders = (allOrders || []).filter(order => {
+                    if (!order.customer_name) return false;
+                    const parts = order.customer_name.split('||');
+                    return parts[0] === name;
+                });
 
                 listContainer.innerHTML = '';
 

@@ -1,0 +1,16 @@
+﻿{
+    "value":  [
+                  {
+                      "id":  "4a2cfe2c-c5d1-4c68-ba6f-c9200ee6e1a7",
+                      "created_at":  "2026-04-19T03:46:29.459694+00:00",
+                      "name":  "비도서용케이스",
+                      "category":  "best_product",
+                      "price":  "전화문의",
+                      "stock":  999,
+                      "description":  "파손, 부상방지를 위하여 모서리를 라운드 처리하였습니다.\n\n폴리프로필렌 수지 사용으로 쉽게 파손되지 않으며 가볍습니다.\n\n연질케이스의 장점\n마모와 충격에 강하고 가벼운 특성의 원재료로 딱딱한 경질케이스와\n비교하여 파손의 위험이 매우 적으며 가벼워서 보관 및 이동에 \n더 편리합니다.\n\n[[C:]]\n[[S:]]",
+                      "image_url":  "https://xxvfgnoffomrhtxitqkj.supabase.co/storage/v1/object/public/product-images/products/1776570388496_v3vi.png",
+                      "short_comment":  ""
+                  }
+              ],
+    "Count":  1
+}
