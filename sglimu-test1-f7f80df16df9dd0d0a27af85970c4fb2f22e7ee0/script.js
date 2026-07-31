@@ -1492,22 +1492,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 현재 페이지(중간분류) 찾기
             let currentMiddle = null;
-            for (const mKey in siteCategories) {
-                if (siteCategories[mKey].middles && siteCategories[mKey].middles[pageId]) {
-                    currentMiddle = siteCategories[mKey].middles[pageId];
-                    break;
+            let targetMiddleId = pageId;
+
+            // pageId가 대분류 ID(예: 'discount')인 경우 예외 처리
+            if (siteCategories[pageId]) {
+                const major = siteCategories[pageId];
+                if (major.middles) {
+                    const sortedMidKeys = Object.keys(major.middles).sort((a, b) => 
+                        (major.middles[a].order || 0) - (major.middles[b].order || 0)
+                    );
+                    const firstMidKey = sortedMidKeys[0];
+                    if (firstMidKey) {
+                        currentMiddle = major.middles[firstMidKey];
+                        targetMiddleId = firstMidKey;
+                    }
+                }
+            } else {
+                // pageId가 중간분류 ID인 경우
+                for (const mKey in siteCategories) {
+                    if (siteCategories[mKey].middles && siteCategories[mKey].middles[pageId]) {
+                        currentMiddle = siteCategories[mKey].middles[pageId];
+                        break;
+                    }
                 }
             }
 
             if (!currentMiddle || !currentMiddle.subs) return;
             
             const titleElem = document.querySelector('.category-title');
-            if (titleElem && currentMiddle.label) {
-                titleElem.textContent = currentMiddle.label;
+            if (titleElem) {
+                const major = siteCategories[pageId];
+                titleElem.textContent = major ? major.label : currentMiddle.label;
             }
             const headerDescElem = document.querySelector('.category-header p');
-            if (headerDescElem && currentMiddle.label) {
-                headerDescElem.textContent = `${currentMiddle.label} 관련 정보를 확인하실 수 있습니다.`;
+            if (headerDescElem) {
+                const major = siteCategories[pageId];
+                headerDescElem.textContent = `${major ? major.label : currentMiddle.label} 관련 정보를 확인하실 수 있습니다.`;
             }
 
             // 탭 초기화
@@ -1552,7 +1572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // [병렬 핵심 최적화] Promise.all을 활용해 모든 소분류 상품 정보를 동시에 병렬 요청 로드
             const loadPromises = sortedSubs.map(sub => 
-                window.loadDisplayProducts(sub.id, pageId + '-' + sub.id)
+                window.loadDisplayProducts(sub.id, targetMiddleId + '-' + sub.id)
             );
             await Promise.all(loadPromises);
 
