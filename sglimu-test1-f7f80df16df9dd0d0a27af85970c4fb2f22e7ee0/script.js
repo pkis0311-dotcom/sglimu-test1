@@ -1201,12 +1201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const major = categories[mKey];
                 const li = document.createElement('li');
                 
-                // 할인상품(discount)은 대분류 자체를 링크로 처리 (서브메뉴 생략)
-                if (mKey === 'discount') {
-                    li.innerHTML = `<a href="category.html?id=discount">${major.label}</a>`;
-                    gnbUl.appendChild(li);
-                    continue;
-                }
+
                 
                 const middles = major.middles || {};
                 const middleKeys = Object.keys(middles);
