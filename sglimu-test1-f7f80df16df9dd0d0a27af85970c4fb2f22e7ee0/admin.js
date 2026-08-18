@@ -5745,14 +5745,17 @@ async function loadUserPointsAdmin() {
         let optionsHtml = '<option value="">-- 회원을 선택하세요 --</option>';
 
         if (profiles && profiles.length > 0) {
-            profiles.forEach(p => {
-                const pts = pointOverrides[p.id] !== undefined ? pointOverrides[p.id] : (p.points ?? 5000);
+            for (const p of profiles) {
+                let pts = (typeof window.getUserPoints === 'function')
+                    ? await window.getUserPoints(p.id)
+                    : (pointOverrides[p.id] !== undefined ? pointOverrides[p.id] : (p.points ?? 5000));
+                
                 totalPts += pts;
                 const nameStr = p.full_name || p.name || '이름없음';
                 const contactStr = p.email || p.phone || '연락처없음';
                 const label = `${nameStr} (${contactStr}) - 현재: ${pts.toLocaleString()} P`;
                 optionsHtml += `<option value="${p.id}" data-points="${pts}">${label}</option>`;
-            });
+            }
         } else {
             optionsHtml = '<option value="">가입된 회원이 없습니다.</option>';
         }
@@ -5809,24 +5812,19 @@ function setupCouponsTabEvents() {
             const delta = adjustType === 'add' ? amount : -amount;
             const finalPts = Math.max(0, currentPts + delta);
 
-            // 1) profiles 테이블 업데이트 시도
-            try {
-                await db.from('profiles').update({
-                    points: finalPts,
-                    updated_at: new Date().toISOString()
-                }).eq('id', userId);
-            } catch (upErr) {
-                console.warn('profiles update error:', upErr);
-            }
-
-            // 2) site_configs user_points 오버라이드 맵 업데이트 (이중 보장)
-            try {
-                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'user_points').single();
-                const userPointsMap = configData && configData.value ? configData.value : {};
-                userPointsMap[userId] = finalPts;
-                await db.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
-            } catch (cErr) {
-                console.error('user_points config upsert error:', cErr);
+            // 1) window.setUserPoints 전역 통합 함수로 동기화 저장
+            if (typeof window.setUserPoints === 'function') {
+                await window.setUserPoints(userId, finalPts);
+            } else {
+                try {
+                    await db.from('profiles').update({ points: finalPts }).eq('id', userId);
+                } catch (e) {}
+                try {
+                    const { data: configData } = await db.from('site_configs').select('value').eq('key', 'user_points').single();
+                    const userPointsMap = configData && configData.value ? configData.value : {};
+                    userPointsMap[userId] = finalPts;
+                    await db.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
+                } catch (e) {}
             }
 
             alert(`[성공] 회원 포인트가 ${adjustType === 'add' ? '추가' : '차감'}되었습니다!\n- 최종 보유 포인트: ${finalPts.toLocaleString()} P${reason ? '\n- 사유: ' + reason : ''}`);

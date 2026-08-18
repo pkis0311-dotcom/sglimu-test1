@@ -535,16 +535,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 로그인 회원인 경우 프로필의 주소/연락처 및 차감된 포인트 자동 갱신
                     const { data: { user } } = await window.supabase.auth.getUser();
                     if (user) {
-                        const { data: prof } = await window.supabase.from('profiles').select('points').eq('id', user.id).single();
-                        const currPts = prof ? (prof.points ?? 5000) : 5000;
-                        const newPts = Math.max(0, currPts - usedPoints);
-                        
-                        await window.supabase.from('profiles').update({
-                            phone: phone,
-                            organization: org,
-                            address: address,
-                            points: newPts
-                        }).eq('id', user.id);
+                        try {
+                            await window.supabase.from('profiles').update({
+                                phone: phone,
+                                organization: org,
+                                address: address
+                            }).eq('id', user.id);
+                        } catch (pErr) {}
+
+                        if (usedPoints > 0) {
+                            const currPts = await window.getUserPoints(user.id);
+                            const newPts = Math.max(0, currPts - usedPoints);
+                            await window.setUserPoints(user.id, newPts);
+                        }
                     }
 
                     // 카트 비우기 및 UI 정리

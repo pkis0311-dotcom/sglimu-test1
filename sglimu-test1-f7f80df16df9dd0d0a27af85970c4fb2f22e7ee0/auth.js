@@ -1,6 +1,79 @@
 import { supabase } from './supabase-client.js';
 
 // ==========================================
+// 🪙 전역 사용자 포인트 통합 조작 헬퍼 (getUserPoints & setUserPoints)
+// ==========================================
+window.getUserPoints = async function(userId) {
+    if (!userId) return 5000;
+    let pts = null;
+
+    // 1. site_configs user_points 맵 우선 조회 (관리자가 부여한 수동 포인트 포함)
+    try {
+        const client = window.supabase || supabase;
+        if (client) {
+            const { data } = await client.from('site_configs').select('value').eq('key', 'user_points').single();
+            if (data && data.value && data.value[userId] !== undefined) {
+                pts = parseInt(data.value[userId], 10);
+            }
+        }
+    } catch (e) {}
+
+    // 2. site_configs에 없으면 profiles 테이블 조회
+    if (pts === null) {
+        try {
+            const client = window.supabase || supabase;
+            if (client) {
+                const { data } = await client.from('profiles').select('points').eq('id', userId).single();
+                if (data && data.points !== undefined && data.points !== null) {
+                    pts = parseInt(data.points, 10);
+                }
+            }
+        } catch (e) {}
+    }
+
+    // 3. 둘 다 없으면 localStorage 또는 기본 5,000P
+    if (pts === null || isNaN(pts)) {
+        const localPts = localStorage.getItem(`user_pts_${userId}`);
+        pts = localPts !== null ? parseInt(localPts, 10) : 5000;
+    }
+
+    return pts;
+};
+
+window.setUserPoints = async function(userId, newPoints) {
+    if (!userId) return 5000;
+    const finalPts = Math.max(0, parseInt(newPoints, 10) || 0);
+
+    // localStorage 즉시 백업
+    localStorage.setItem(`user_pts_${userId}`, finalPts);
+
+    const client = window.supabase || supabase;
+    if (client) {
+        // site_configs user_points 맵 업데이트
+        try {
+            const { data: configData } = await client.from('site_configs').select('value').eq('key', 'user_points').single();
+            const userPointsMap = (configData && configData.value && typeof configData.value === 'object') ? configData.value : {};
+            userPointsMap[userId] = finalPts;
+            await client.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
+        } catch (e) {
+            console.error('setUserPoints site_configs upsert error:', e);
+        }
+
+        // profiles 테이블 update 시도
+        try {
+            await client.from('profiles').update({
+                points: finalPts,
+                updated_at: new Date().toISOString()
+            }).eq('id', userId);
+        } catch (e) {
+            console.warn('setUserPoints profiles update error:', e);
+        }
+    }
+
+    return finalPts;
+};
+
+// ==========================================
 // 📱 SNS SDK Dynamic Loading & Initialization
 // ==========================================
 const KAKAO_JS_KEY = 'afd6cc8f3b753cd6907f9eeadeac2342';
@@ -769,7 +842,9 @@ async function openMyProfile() {
             if (document.getElementById('myProfileName')) document.getElementById('myProfileName').value = profile.full_name || '';
             if (document.getElementById('myProfilePhone')) document.getElementById('myProfilePhone').value = profile.phone || '';
             if (document.getElementById('myProfileOrg')) document.getElementById('myProfileOrg').value = profile.organization || '';
-            if (document.getElementById('myProfilePoints')) document.getElementById('myProfilePoints').textContent = (profile.points ?? 5000).toLocaleString() + ' P';
+            
+            const pts = await window.getUserPoints(user.id);
+            if (document.getElementById('myProfilePoints')) document.getElementById('myProfilePoints').textContent = pts.toLocaleString() + ' P';
             
             const rawAddress = profile.address || '';
             if (rawAddress.includes('||')) {
@@ -917,17 +992,18 @@ function updateAuthUI(user) {
             </div>
         `;
 
-        // DB에서 최신 프로필 이름을 비동기로 가져와서 업데이트
-        supabase.from('profiles').select('full_name, points').eq('id', user.id).single().then(({ data }) => {
-            if (data) {
-                if (data.full_name && data.full_name !== '유저') {
-                    const nameEl = document.getElementById('topUserName');
-                    if (nameEl) nameEl.innerHTML = `<b>${data.full_name}</b> 님`;
-                }
-                const ptsEl = document.getElementById('topUserPoints');
-                if (ptsEl) ptsEl.textContent = (data.points ?? 5000).toLocaleString();
+        // DB 및 site_configs에서 통합 프로필 및 포인트 비동기 가져와서 업데이트
+        supabase.from('profiles').select('full_name').eq('id', user.id).single().then(({ data }) => {
+            if (data && data.full_name && data.full_name !== '유저') {
+                const nameEl = document.getElementById('topUserName');
+                if (nameEl) nameEl.innerHTML = `<b>${data.full_name}</b> 님`;
             }
         }).catch(err => console.error(err));
+
+        window.getUserPoints(user.id).then(pts => {
+            const ptsEl = document.getElementById('topUserPoints');
+            if (ptsEl) ptsEl.textContent = pts.toLocaleString();
+        });
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
