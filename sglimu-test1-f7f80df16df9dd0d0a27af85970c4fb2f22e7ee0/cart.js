@@ -46,6 +46,115 @@ function getCheckoutItems() {
     return getCart();
 }
 
+// 쿠폰 & 포인트 실시간 계산 글로벌 변수 및 헬퍼 함수
+let checkoutRawTotal = 0;
+let checkoutUserMaxPoints = 0;
+let checkoutSelectedCouponDisc = 0;
+
+window.initCheckoutDiscountUI = async function(totalAmount) {
+    checkoutRawTotal = totalAmount;
+    checkoutSelectedCouponDisc = 0;
+
+    const pointInputEl = document.getElementById('checkoutPointInput');
+    const couponSelectEl = document.getElementById('checkoutCouponSelect');
+    const userPointsEl = document.getElementById('checkoutUserPoints');
+    const subtotalEl = document.getElementById('checkoutSubtotalPrice');
+    const discountEl = document.getElementById('checkoutDiscountPrice');
+    const totalEl = document.getElementById('checkoutTotalPrice');
+    const btnUseAllPoints = document.getElementById('btnUseAllPoints');
+
+    if (pointInputEl) pointInputEl.value = 0;
+    if (couponSelectEl) couponSelectEl.value = '';
+
+    function recalcCheckoutTotals() {
+        let usedPts = parseInt(pointInputEl?.value || '0', 10);
+        if (isNaN(usedPts) || usedPts < 0) usedPts = 0;
+        
+        if (usedPts > checkoutUserMaxPoints) {
+            usedPts = checkoutUserMaxPoints;
+            if (pointInputEl) pointInputEl.value = usedPts;
+        }
+
+        const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
+        if (usedPts > maxDiscountForPoints) {
+            usedPts = maxDiscountForPoints;
+            if (pointInputEl) pointInputEl.value = usedPts;
+        }
+
+        const totalDisc = checkoutSelectedCouponDisc + usedPts;
+        const finalPay = Math.max(0, checkoutRawTotal - totalDisc);
+
+        if (subtotalEl) subtotalEl.innerText = checkoutRawTotal.toLocaleString() + '원';
+        if (discountEl) discountEl.innerText = '-' + totalDisc.toLocaleString() + '원';
+        if (totalEl) totalEl.innerText = finalPay.toLocaleString() + '원';
+    }
+
+    if (pointInputEl) pointInputEl.oninput = recalcCheckoutTotals;
+    if (btnUseAllPoints) {
+        btnUseAllPoints.onclick = (e) => {
+            e.preventDefault();
+            const maxPossible = Math.min(checkoutUserMaxPoints, Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc));
+            if (pointInputEl) pointInputEl.value = maxPossible;
+            recalcCheckoutTotals();
+        };
+    }
+    if (couponSelectEl) {
+        couponSelectEl.onchange = () => {
+            const selVal = couponSelectEl.value;
+            if (!selVal) {
+                checkoutSelectedCouponDisc = 0;
+            } else {
+                const opt = couponSelectEl.options[couponSelectEl.selectedIndex];
+                checkoutSelectedCouponDisc = parseInt(opt.dataset.discount || '0', 10);
+            }
+            recalcCheckoutTotals();
+        };
+    }
+
+    recalcCheckoutTotals();
+
+    // 포인트 및 유저 정보 / 쿠폰 목록 비동기 조회
+    if (window.supabase) {
+        try {
+            const { data: { user } } = await window.supabase.auth.getUser();
+            if (user) {
+                let userPts = 5000;
+                try {
+                    const { data: cData } = await window.supabase.from('site_configs').select('value').eq('key', 'user_points').single();
+                    if (cData && cData.value && cData.value[user.id] !== undefined) {
+                        userPts = cData.value[user.id];
+                    } else {
+                        const { data: profile } = await window.supabase.from('profiles').select('points').eq('id', user.id).single();
+                        if (profile) userPts = profile.points ?? 5000;
+                    }
+                } catch(e) {
+                    const { data: profile } = await window.supabase.from('profiles').select('points').eq('id', user.id).single();
+                    if (profile) userPts = profile.points ?? 5000;
+                }
+
+                checkoutUserMaxPoints = userPts;
+                if (userPointsEl) userPointsEl.innerText = checkoutUserMaxPoints.toLocaleString() + ' P';
+
+                // 쿠폰 목록
+                const { data: couponsConfig } = await window.supabase.from('site_configs').select('value').eq('key', 'coupons').single();
+                if (couponsConfig && Array.isArray(couponsConfig.value) && couponSelectEl) {
+                    const nowStr = new Date().toISOString().split('T')[0];
+                    let cpHtml = '<option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>';
+                    couponsConfig.value.forEach(cp => {
+                        if (cp.is_active && (!cp.expiration_date || cp.expiration_date >= nowStr)) {
+                            const discVal = cp.discount_value || 0;
+                            cpHtml += `<option value="${cp.id}" data-discount="${discVal}">[${cp.code}] ${cp.name} (${discVal.toLocaleString()}원 할인)</option>`;
+                        }
+                    });
+                    couponSelectEl.innerHTML = cpHtml;
+                }
+            }
+        } catch (err) {
+            console.error('Failed to load discount info:', err);
+        }
+    }
+};
+
 // 전역 장바구니 팝업 HTML 템플릿 주입
 document.addEventListener('DOMContentLoaded', () => {
     // 결제 완료 후 리다이렉트 처리 확인 (URL 파라미터가 ?payment=success 인 경우)
@@ -270,87 +379,43 @@ document.addEventListener('DOMContentLoaded', () => {
             // 토탈 가격 표시 및 주문 상품 요약 렌더링
             let total = 0;
             cart.forEach(item => total += item.price * item.qty);
-            // 쿠폰 & 포인트 실시간 계산 상태값 변수
-            let checkoutRawTotal = total;
-            let checkoutUserMaxPoints = 0;
-            let checkoutSelectedCouponDisc = 0;
 
-            const pointInputEl = document.getElementById('checkoutPointInput');
-            const couponSelectEl = document.getElementById('checkoutCouponSelect');
-            const userPointsEl = document.getElementById('checkoutUserPoints');
-            const subtotalEl = document.getElementById('checkoutSubtotalPrice');
-            const discountEl = document.getElementById('checkoutDiscountPrice');
-            const totalEl = document.getElementById('checkoutTotalPrice');
-            const btnUseAllPoints = document.getElementById('btnUseAllPoints');
-
-            function recalcCheckoutTotals() {
-                let usedPts = parseInt(pointInputEl?.value || '0', 10);
-                if (isNaN(usedPts) || usedPts < 0) usedPts = 0;
-                
-                // 사용자가 가질 수 있는 최대 포인트를 넘지 못함
-                if (usedPts > checkoutUserMaxPoints) {
-                    usedPts = checkoutUserMaxPoints;
-                    if (pointInputEl) pointInputEl.value = usedPts;
-                }
-
-                // 주문 금액을 초과하는 할인은 불가
-                const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
-                if (usedPts > maxDiscountForPoints) {
-                    usedPts = maxDiscountForPoints;
-                    if (pointInputEl) pointInputEl.value = usedPts;
-                }
-
-                const totalDisc = checkoutSelectedCouponDisc + usedPts;
-                const finalPay = Math.max(0, checkoutRawTotal - totalDisc);
-
-                if (subtotalEl) subtotalEl.innerText = checkoutRawTotal.toLocaleString() + '원';
-                if (discountEl) discountEl.innerText = '-' + totalDisc.toLocaleString() + '원';
-                if (totalEl) totalEl.innerText = finalPay.toLocaleString() + '원';
+            let summaryText = '';
+            if (cart.length === 1) {
+                summaryText = `${cart[0].name} (수량: ${cart[0].qty}개)`;
+            } else {
+                summaryText = `${cart[0].name} 외 ${cart.length - 1}건 (총 수량: ${cart.reduce((acc, x) => acc + x.qty, 0)}개)`;
+            }
+            const summaryEl = document.getElementById('checkoutProductSummary');
+            if (summaryEl) summaryEl.innerText = summaryText;
+            
+            // 모달 초기화
+            if (typeof resetPaymentMethod === 'function') resetPaymentMethod();
+            if (checkoutMsg) {
+                checkoutMsg.className = 'auth-message';
+                checkoutMsg.style.display = 'none';
+                checkoutMsg.textContent = '';
             }
 
-            if (pointInputEl) pointInputEl.oninput = recalcCheckoutTotals;
-            if (btnUseAllPoints) {
-                btnUseAllPoints.onclick = () => {
-                    const maxPossible = Math.min(checkoutUserMaxPoints, Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc));
-                    if (pointInputEl) pointInputEl.value = maxPossible;
-                    recalcCheckoutTotals();
-                };
-            }
-            if (couponSelectEl) {
-                couponSelectEl.onchange = () => {
-                    const selVal = couponSelectEl.value;
-                    if (!selVal) {
-                        checkoutSelectedCouponDisc = 0;
-                    } else {
-                        const opt = couponSelectEl.options[couponSelectEl.selectedIndex];
-                        checkoutSelectedCouponDisc = parseInt(opt.dataset.discount || '0', 10);
-                    }
-                    recalcCheckoutTotals();
-                };
+            // 포인트/쿠폰 할인 UI 초기화
+            if (typeof window.initCheckoutDiscountUI === 'function') {
+                window.initCheckoutDiscountUI(total);
             }
 
-            // 초기 가격 셋팅
-            recalcCheckoutTotals();
+            // 모달 열기
+            checkoutOverlay.style.display = 'flex';
 
-            // 로그인 사용자 정보 & 포인트 & 쿠폰 자동 조회
+            // 로그인 사용자 정보 자동 채우기
             if (window.supabase) {
                 try {
                     const { data: { user } } = await window.supabase.auth.getUser();
                     if (user) {
-                        const { data: profile } = await window.supabase
-                            .from('profiles')
-                            .select('*')
-                            .eq('id', user.id)
-                            .single();
-                        
+                        const { data: profile } = await window.supabase.from('profiles').select('*').eq('id', user.id).single();
                         if (profile) {
-                            checkoutUserMaxPoints = profile.points ?? 5000;
-                            if (userPointsEl) userPointsEl.innerText = checkoutUserMaxPoints.toLocaleString() + ' P';
                             if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = profile.full_name || '';
                             if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
                             if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
                             if (document.getElementById('checkoutOrg')) document.getElementById('checkoutOrg').value = profile.organization || '';
-                            
                             const rawAddress = profile.address || '';
                             if (rawAddress.includes('||')) {
                                 const addrs = rawAddress.split('||');
@@ -361,30 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
                             }
                         }
-
-                        // 쿠폰 목록 로드
-                        const { data: couponsConfig } = await window.supabase
-                            .from('site_configs')
-                            .select('value')
-                            .eq('key', 'coupons')
-                            .single();
-                        
-                        if (couponsConfig && Array.isArray(couponsConfig.value) && couponSelectEl) {
-                            const nowStr = new Date().toISOString().split('T')[0];
-                            let cpHtml = '<option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>';
-                            couponsConfig.value.forEach(cp => {
-                                if (cp.is_active && (!cp.expiration_date || cp.expiration_date >= nowStr)) {
-                                    const discVal = cp.discount_value || 0;
-                                    cpHtml += `<option value="${cp.id}" data-discount="${discVal}">[${cp.code}] ${cp.name} (${discVal.toLocaleString()}원 할인)</option>`;
-                                }
-                            });
-                            couponSelectEl.innerHTML = cpHtml;
-                        }
                     }
                 } catch (err) {
-                    console.error('Failed to pre-fill user info:', err);
-                }
-            }
                     console.error('Failed to pre-fill user info:', err);
                 }
             }
@@ -1067,8 +1110,6 @@ window.openCheckoutModal = function(items) {
     
     let total = 0;
     itemList.forEach(item => total += item.price * item.qty);
-    const checkoutTotalPriceEl = document.getElementById('checkoutTotalPrice');
-    if (checkoutTotalPriceEl) checkoutTotalPriceEl.innerText = total.toLocaleString() + '원';
 
     let summaryText = '';
     if (itemList.length === 1) {
@@ -1083,6 +1124,10 @@ window.openCheckoutModal = function(items) {
         checkoutMsg.className = 'auth-message';
         checkoutMsg.style.display = 'none';
         checkoutMsg.textContent = '';
+    }
+
+    if (typeof window.initCheckoutDiscountUI === 'function') {
+        window.initCheckoutDiscountUI(total);
     }
 
     if (checkoutOverlay) checkoutOverlay.style.display = 'flex';
@@ -1136,7 +1181,6 @@ window.buyNowDirect = async function(item) {
     
     // 장바구니 총합 대신 바로구매하려는 단일 품목 가격 * 수량만 적용
     let total = cartItem.price * cartItem.qty;
-    document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
 
     // 주문 상품 요약 렌더링
     let summaryText = `${cartItem.name} (수량: ${cartItem.qty}개)`;
@@ -1148,6 +1192,10 @@ window.buyNowDirect = async function(item) {
         checkoutMsg.className = 'auth-message';
         checkoutMsg.style.display = 'none';
         checkoutMsg.textContent = '';
+    }
+
+    if (typeof window.initCheckoutDiscountUI === 'function') {
+        window.initCheckoutDiscountUI(total);
     }
 
     checkoutOverlay.style.display = 'flex';
