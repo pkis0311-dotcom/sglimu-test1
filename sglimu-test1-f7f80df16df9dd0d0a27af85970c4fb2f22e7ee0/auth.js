@@ -221,6 +221,10 @@ function ensureAuthModalInDOM() {
                         <h2>내 정보 관리</h2>
                         <p>회원 정보를 확인하고 수정할 수 있습니다.</p>
                     </div>
+                    <div class="auth-form-group" style="background:#f0fdf4; border:1px solid #bbf7d0; padding:12px; border-radius:8px; margin-bottom:15px;">
+                        <label style="color:#166534; font-weight:700; margin-bottom:4px;"><i class="fa-solid fa-coins" style="color:#eab308;"></i> 나의 보유 포인트</label>
+                        <div style="font-size:1.4rem; font-weight:800; color:#15803d;" id="myProfilePoints">5,000 P</div>
+                    </div>
                     <form id="myProfileForm">
                         <div class="auth-form-group">
                             <label>이름</label>
@@ -467,7 +471,7 @@ if (signupForm) {
                 signupMsg.classList.add('error');
             }
         } else {
-            // [추가] 가입 성공 시 profiles 테이블에 기본 레코드 생성 시도
+            // [추가] 가입 성공 시 profiles 테이블에 기본 레코드 생성 시도 (5,000 포인트 기본 적립)
             if (data.user) {
                 const initialProfile = {
                     id: data.user.id,
@@ -477,6 +481,7 @@ if (signupForm) {
                     organization: organization,
                     address: address,
                     user_type: selectedUserType,
+                    points: 5000,
                     updated_at: new Date().toISOString()
                 };
                 supabase.from('profiles').upsert(initialProfile).then(({ error }) => {
@@ -485,7 +490,7 @@ if (signupForm) {
             }
 
             if (signupMsg) {
-                signupMsg.textContent = '가입 성공! 가입하신 이메일로 인증 메일이 발송되었습니다. 메일함의 인증 링크를 클릭한 후 로그인해 주세요.';
+                signupMsg.textContent = '가입 성공! 가입 축하 5,000 포인트가 적립되었습니다. 가입하신 이메일로 인증 메일이 발송되었습니다.';
                 signupMsg.classList.add('success');
             }
             signupForm.reset();
@@ -764,6 +769,7 @@ async function openMyProfile() {
             if (document.getElementById('myProfileName')) document.getElementById('myProfileName').value = profile.full_name || '';
             if (document.getElementById('myProfilePhone')) document.getElementById('myProfilePhone').value = profile.phone || '';
             if (document.getElementById('myProfileOrg')) document.getElementById('myProfileOrg').value = profile.organization || '';
+            if (document.getElementById('myProfilePoints')) document.getElementById('myProfilePoints').textContent = (profile.points ?? 5000).toLocaleString() + ' P';
             
             const rawAddress = profile.address || '';
             if (rawAddress.includes('||')) {
@@ -898,6 +904,7 @@ function updateAuthUI(user) {
                 <div class="user-info-badge">
                     <i class="fa-solid fa-circle-user"></i>
                     <span class="user-name" id="topUserName"><b>${userName}</b> 님</span>
+                    <span class="user-points-badge" style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:700; margin-left:6px; display:inline-flex; align-items:center; gap:4px;"><i class="fa-solid fa-coins" style="color:#eab308;"></i> <span id="topUserPoints">5,000</span> P</span>
                 </div>
                 <div class="user-nav-actions">
                     <button class="nav-icon-btn" id="myProfileBtn" title="내 정보 관리">
@@ -911,10 +918,14 @@ function updateAuthUI(user) {
         `;
 
         // DB에서 최신 프로필 이름을 비동기로 가져와서 업데이트
-        supabase.from('profiles').select('full_name').eq('id', user.id).single().then(({ data }) => {
-            if (data && data.full_name && data.full_name !== '유저') {
-                const nameEl = document.getElementById('topUserName');
-                if (nameEl) nameEl.innerHTML = `<b>${data.full_name}</b> 님`;
+        supabase.from('profiles').select('full_name, points').eq('id', user.id).single().then(({ data }) => {
+            if (data) {
+                if (data.full_name && data.full_name !== '유저') {
+                    const nameEl = document.getElementById('topUserName');
+                    if (nameEl) nameEl.innerHTML = `<b>${data.full_name}</b> 님`;
+                }
+                const ptsEl = document.getElementById('topUserPoints');
+                if (ptsEl) ptsEl.textContent = (data.points ?? 5000).toLocaleString();
             }
         }).catch(err => console.error(err));
         const logoutBtn = document.getElementById('logoutBtn');

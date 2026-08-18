@@ -154,13 +154,46 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <p>● 주문자명으로 입금해 주셔야 빠른 확인이 가능합니다.</p>
                             </div>
                         </div>
+                        <div class="discount-section" style="margin-top:15px; padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:0.9rem;">
+                            <div style="font-weight:700; color:#166534; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-coins" style="color:#eab308;"></i> 포인트 / 쿠폰 혜택 적용
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:0.8rem; color:#374151;">
+                                        <span>보유 포인트: <strong id="checkoutUserPoints" style="color:#15803d;">0 P</strong></span>
+                                        <button type="button" id="btnUseAllPoints" style="background:#16a34a; color:#fff; border:none; padding:2px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;">전액 사용</button>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <input type="number" id="checkoutPointInput" class="auth-input" placeholder="0" min="0" value="0" style="margin:0; text-align:right; font-weight:600;">
+                                        <span style="font-weight:600; color:#4b5563;">P</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; color:#374151; display:block; margin-bottom:4px;">쿠폰 선택</label>
+                                    <select id="checkoutCouponSelect" class="auth-input" style="margin:0; padding:6px 10px; font-size:0.85rem; background:#fff;">
+                                        <option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div class="checkout-product-info-box" style="margin-top:20px; padding:12px; background:#f8f9fa; border-radius:6px; font-size:0.9rem; border:1px solid #e9ecef;">
                             <div style="font-weight:600; margin-bottom:6px; color:#495057;">주문 상품 정보</div>
                             <div id="checkoutProductSummary" style="color:#212529; line-height:1.4;">-</div>
                         </div>
-                        <div class="total-price-box" style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:600; font-size:1.1rem;">최종 결제 금액</span>
-                            <span id="checkoutTotalPrice" style="font-weight:800; font-size:1.5rem; color:var(--color-primary);">0원</span>
+                        <div class="total-price-box" style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#666;">
+                                <span>주문 총 금액</span>
+                                <span id="checkoutSubtotalPrice">0원</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#dc2626;">
+                                <span>포인트 / 쿠폰 할인</span>
+                                <span id="checkoutDiscountPrice">-0원</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:8px; border-top:1px dashed #ddd;">
+                                <span style="font-weight:700; font-size:1.1rem;">최종 결제 금액</span>
+                                <span id="checkoutTotalPrice" style="font-weight:800; font-size:1.5rem; color:var(--color-primary);">0원</span>
+                            </div>
                         </div>
                         <button type="submit" class="auth-submit-btn" id="btnSubmitCheckout">결제 및 주문 완료하기</button>
                     </form>
@@ -237,29 +270,69 @@ document.addEventListener('DOMContentLoaded', () => {
             // 토탈 가격 표시 및 주문 상품 요약 렌더링
             let total = 0;
             cart.forEach(item => total += item.price * item.qty);
-            document.getElementById('checkoutTotalPrice').innerText = total.toLocaleString() + '원';
+            // 쿠폰 & 포인트 실시간 계산 상태값 변수
+            let checkoutRawTotal = total;
+            let checkoutUserMaxPoints = 0;
+            let checkoutSelectedCouponDisc = 0;
 
-            let summaryText = '';
-            if (cart.length === 1) {
-                summaryText = `${cart[0].name} (수량: ${cart[0].qty}개)`;
-            } else {
-                summaryText = `${cart[0].name} 외 ${cart.length - 1}건 (총 수량: ${cart.reduce((acc, x) => acc + x.qty, 0)}개)`;
+            const pointInputEl = document.getElementById('checkoutPointInput');
+            const couponSelectEl = document.getElementById('checkoutCouponSelect');
+            const userPointsEl = document.getElementById('checkoutUserPoints');
+            const subtotalEl = document.getElementById('checkoutSubtotalPrice');
+            const discountEl = document.getElementById('checkoutDiscountPrice');
+            const totalEl = document.getElementById('checkoutTotalPrice');
+            const btnUseAllPoints = document.getElementById('btnUseAllPoints');
+
+            function recalcCheckoutTotals() {
+                let usedPts = parseInt(pointInputEl?.value || '0', 10);
+                if (isNaN(usedPts) || usedPts < 0) usedPts = 0;
+                
+                // 사용자가 가질 수 있는 최대 포인트를 넘지 못함
+                if (usedPts > checkoutUserMaxPoints) {
+                    usedPts = checkoutUserMaxPoints;
+                    if (pointInputEl) pointInputEl.value = usedPts;
+                }
+
+                // 주문 금액을 초과하는 할인은 불가
+                const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
+                if (usedPts > maxDiscountForPoints) {
+                    usedPts = maxDiscountForPoints;
+                    if (pointInputEl) pointInputEl.value = usedPts;
+                }
+
+                const totalDisc = checkoutSelectedCouponDisc + usedPts;
+                const finalPay = Math.max(0, checkoutRawTotal - totalDisc);
+
+                if (subtotalEl) subtotalEl.innerText = checkoutRawTotal.toLocaleString() + '원';
+                if (discountEl) discountEl.innerText = '-' + totalDisc.toLocaleString() + '원';
+                if (totalEl) totalEl.innerText = finalPay.toLocaleString() + '원';
             }
-            const summaryEl = document.getElementById('checkoutProductSummary');
-            if (summaryEl) summaryEl.innerText = summaryText;
-            
-            // 모달 초기화
-            if (typeof resetPaymentMethod === 'function') resetPaymentMethod();
-            if (checkoutMsg) {
-                checkoutMsg.className = 'auth-message';
-                checkoutMsg.style.display = 'none';
-                checkoutMsg.textContent = '';
+
+            if (pointInputEl) pointInputEl.oninput = recalcCheckoutTotals;
+            if (btnUseAllPoints) {
+                btnUseAllPoints.onclick = () => {
+                    const maxPossible = Math.min(checkoutUserMaxPoints, Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc));
+                    if (pointInputEl) pointInputEl.value = maxPossible;
+                    recalcCheckoutTotals();
+                };
+            }
+            if (couponSelectEl) {
+                couponSelectEl.onchange = () => {
+                    const selVal = couponSelectEl.value;
+                    if (!selVal) {
+                        checkoutSelectedCouponDisc = 0;
+                    } else {
+                        const opt = couponSelectEl.options[couponSelectEl.selectedIndex];
+                        checkoutSelectedCouponDisc = parseInt(opt.dataset.discount || '0', 10);
+                    }
+                    recalcCheckoutTotals();
+                };
             }
 
-            // 모달 열기
-            checkoutOverlay.style.display = 'flex';
+            // 초기 가격 셋팅
+            recalcCheckoutTotals();
 
-            // 로그인 사용자 정보 자동 조회
+            // 로그인 사용자 정보 & 포인트 & 쿠폰 자동 조회
             if (window.supabase) {
                 try {
                     const { data: { user } } = await window.supabase.auth.getUser();
@@ -271,6 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             .single();
                         
                         if (profile) {
+                            checkoutUserMaxPoints = profile.points ?? 5000;
+                            if (userPointsEl) userPointsEl.innerText = checkoutUserMaxPoints.toLocaleString() + ' P';
                             if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = profile.full_name || '';
                             if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = profile.phone || '';
                             if (document.getElementById('checkoutEmail')) document.getElementById('checkoutEmail').value = user.email || '';
@@ -286,8 +361,30 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (document.getElementById('checkoutAddressDetail')) document.getElementById('checkoutAddressDetail').value = '';
                             }
                         }
+
+                        // 쿠폰 목록 로드
+                        const { data: couponsConfig } = await window.supabase
+                            .from('site_configs')
+                            .select('value')
+                            .eq('key', 'coupons')
+                            .single();
+                        
+                        if (couponsConfig && Array.isArray(couponsConfig.value) && couponSelectEl) {
+                            const nowStr = new Date().toISOString().split('T')[0];
+                            let cpHtml = '<option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>';
+                            couponsConfig.value.forEach(cp => {
+                                if (cp.is_active && (!cp.expiration_date || cp.expiration_date >= nowStr)) {
+                                    const discVal = cp.discount_value || 0;
+                                    cpHtml += `<option value="${cp.id}" data-discount="${discVal}">[${cp.code}] ${cp.name} (${discVal.toLocaleString()}원 할인)</option>`;
+                                }
+                            });
+                            couponSelectEl.innerHTML = cpHtml;
+                        }
                     }
                 } catch (err) {
+                    console.error('Failed to pre-fill user info:', err);
+                }
+            }
                     console.error('Failed to pre-fill user info:', err);
                 }
             }
@@ -347,13 +444,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     orderProductName += ` 외 ${cart.length - 1}건`;
                 }
 
-                // 총 수량 및 금액 계산
+                // 총 수량 및 최종 금액 계산 (포인트/쿠폰 차감 적용)
                 let totalQuantity = 0;
-                let totalPrice = 0;
+                let rawTotalPrice = 0;
                 cart.forEach(item => {
                     totalQuantity += item.qty;
-                    totalPrice += item.price * item.qty;
+                    rawTotalPrice += item.price * item.qty;
                 });
+
+                const usedPoints = parseInt(document.getElementById('checkoutPointInput')?.value || '0', 10) || 0;
+                const couponSel = document.getElementById('checkoutCouponSelect');
+                let couponDiscount = 0;
+                if (couponSel && couponSel.value) {
+                    const opt = couponSel.options[couponSel.selectedIndex];
+                    couponDiscount = parseInt(opt.dataset.discount || '0', 10) || 0;
+                }
+
+                const totalPrice = Math.max(0, rawTotalPrice - usedPoints - couponDiscount);
 
                 if (!window.supabase) {
                     throw new Error('Supabase client가 초기화되지 않았습니다.');
@@ -382,13 +489,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         throw new Error('주문 생성에 실패했습니다.');
                     }
 
-                    // 로그인 회원인 경우 프로필의 주소/연락처 자동 갱신
+                    // 로그인 회원인 경우 프로필의 주소/연락처 및 차감된 포인트 자동 갱신
                     const { data: { user } } = await window.supabase.auth.getUser();
                     if (user) {
+                        const { data: prof } = await window.supabase.from('profiles').select('points').eq('id', user.id).single();
+                        const currPts = prof ? (prof.points ?? 5000) : 5000;
+                        const newPts = Math.max(0, currPts - usedPoints);
+                        
                         await window.supabase.from('profiles').update({
                             phone: phone,
                             organization: org,
-                            address: address
+                            address: address,
+                            points: newPts
                         }).eq('id', user.id);
                     }
 

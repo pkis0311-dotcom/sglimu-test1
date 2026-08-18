@@ -848,6 +848,8 @@ window.switchAdminTab = function(targetId, pushState = true) {
         if (typeof fetchPhoneOrders === 'function') fetchPhoneOrders();
     } else if(targetId === 'tab-homepage-orders') {
         if (typeof fetchHomepageOrders === 'function') fetchHomepageOrders();
+    } else if(targetId === 'tab-coupons') {
+        if (typeof initCouponsTab === 'function') initCouponsTab();
     }
 
     if (pushState) {
@@ -5577,3 +5579,248 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// ==========================================
+// 🎟️ [신규] 쿠폰 & 포인트 설정 관리 모듈
+// ==========================================
+let globalCouponsList = [];
+
+window.initCouponsTab = async function() {
+    await loadSignupPointsAdmin();
+    await loadCouponsAdmin();
+    await loadUserPointsAdmin();
+    setupCouponsTabEvents();
+};
+
+// 1. 회원가입 기본 적립금 로드
+async function loadSignupPointsAdmin() {
+    try {
+        const { data } = await db.from('site_configs').select('value').eq('key', 'signup_points').single();
+        const pts = data ? (parseInt(data.value, 10) || 5000) : 5000;
+        const inputEl = document.getElementById('inputSignupPoints');
+        const summaryEl = document.getElementById('summarySignupPoints');
+        if (inputEl) inputEl.value = pts;
+        if (summaryEl) summaryEl.innerText = pts.toLocaleString() + ' P';
+    } catch (err) {
+        console.error('loadSignupPointsAdmin error:', err);
+    }
+}
+
+// 2. 발급 쿠폰 목록 로드
+window.loadCouponsAdmin = async function() {
+    const tableBody = document.getElementById('couponTableBody');
+    const summaryCoupons = document.getElementById('summaryTotalCoupons');
+    if (tableBody) tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">쿠폰 목록 로딩 중...</td></tr>';
+
+    try {
+        const { data, error } = await db.from('site_configs').select('value').eq('key', 'coupons').single();
+        if (error && error.code !== 'PGRST116') throw error;
+        globalCouponsList = data && Array.isArray(data.value) ? data.value : [
+            {
+                id: 'CPN_WELCOME5000',
+                name: '신규 회원가입 축하 할인 쿠폰',
+                code: 'WELCOME5000',
+                discount_value: 5000,
+                min_order: 0,
+                expiration_date: '2027-12-31',
+                is_active: true,
+                created_at: new Date().toISOString().split('T')[0]
+            }
+        ];
+
+        // 기본 데이터인 경우 DB 저장 시도
+        if (!data) {
+            await db.from('site_configs').upsert({ key: 'coupons', value: globalCouponsList });
+        }
+
+        if (summaryCoupons) summaryCoupons.innerText = globalCouponsList.length.toLocaleString() + ' 개';
+        renderCouponsTableAdmin(globalCouponsList);
+    } catch (err) {
+        console.error('loadCouponsAdmin error:', err);
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">쿠폰 목록을 불러오지 못했습니다.</td></tr>';
+    }
+};
+
+function renderCouponsTableAdmin(coupons) {
+    const tableBody = document.getElementById('couponTableBody');
+    if (!tableBody) return;
+
+    if (coupons.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">등록된 쿠폰이 없습니다. 새로운 쿠폰을 생성해 보세요.</td></tr>';
+        return;
+    }
+
+    const nowStr = new Date().toISOString().split('T')[0];
+    let html = '';
+
+    coupons.forEach(cp => {
+        const isExpired = cp.expiration_date && cp.expiration_date < nowStr;
+        const statusBadge = isExpired
+            ? '<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:700;">만료됨</span>'
+            : (cp.is_active
+                ? '<span style="background:#dcfce7; color:#16a34a; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:700;">사용 가능</span>'
+                : '<span style="background:#f3f4f6; color:#6b7280; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:700;">비활성</span>');
+
+        html += `
+            <tr>
+                <td style="font-weight:700; color:#2980b9;">${cp.code}</td>
+                <td style="font-weight:600;">${cp.name}</td>
+                <td style="font-weight:700; color:#27ae60;">${(cp.discount_value || 0).toLocaleString()}원</td>
+                <td style="color:#666;">${(cp.min_order || 0).toLocaleString()}원 이상</td>
+                <td style="font-size:0.85rem; color:#555;">${cp.expiration_date || '제한 없음'}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button class="btn-secondary" style="padding:4px 8px; font-size:0.75rem; color:#dc2626; border-color:#fca5a5; background:#fff5f5;" onclick="deleteCouponAdmin('${cp.id}')">
+                        <i class="fa-solid fa-trash-can"></i> 삭제
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tableBody.innerHTML = html;
+}
+
+window.deleteCouponAdmin = async function(couponId) {
+    if (!confirm('이 쿠폰을 삭제하시겠습니까?')) return;
+
+    globalCouponsList = globalCouponsList.filter(c => c.id !== couponId);
+    const { error } = await db.from('site_configs').upsert({ key: 'coupons', value: globalCouponsList });
+
+    if (error) {
+        alert('쿠폰 삭제 실패: ' + error.message);
+    } else {
+        alert('쿠폰이 성공적으로 삭제되었습니다.');
+        loadCouponsAdmin();
+    }
+};
+
+// 3. 회원별 보유 포인트 조회 및 셀렉터 셋팅
+async function loadUserPointsAdmin() {
+    const userSelect = document.getElementById('selectAdjustUser');
+    const summaryUserPoints = document.getElementById('summaryTotalUserPoints');
+
+    try {
+        const { data: profiles, error } = await db.from('profiles').select('id, full_name, email, phone, points');
+        if (error) throw error;
+
+        let totalPts = 0;
+        let optionsHtml = '<option value="">-- 회원을 선택하세요 --</option>';
+
+        if (profiles && profiles.length > 0) {
+            profiles.forEach(p => {
+                const pts = p.points ?? 5000;
+                totalPts += pts;
+                const label = `${p.full_name || '이름없음'} (${p.email || p.phone || '연락처없음'}) - 현재: ${pts.toLocaleString()} P`;
+                optionsHtml += `<option value="${p.id}" data-points="${pts}">${label}</option>`;
+            });
+        }
+
+        if (userSelect) userSelect.innerHTML = optionsHtml;
+        if (summaryUserPoints) summaryUserPoints.innerText = totalPts.toLocaleString() + ' P';
+    } catch (err) {
+        console.error('loadUserPointsAdmin error:', err);
+        if (userSelect) userSelect.innerHTML = '<option value="">회원 목록 불러오기 실패</option>';
+    }
+}
+
+// 4. 이벤트 연결
+let couponsEventsBound = false;
+function setupCouponsTabEvents() {
+    if (couponsEventsBound) return;
+    couponsEventsBound = true;
+
+    // 회원가입 포인트 저장
+    const formSignupPts = document.getElementById('formSignupPoints');
+    if (formSignupPts) {
+        formSignupPts.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const val = parseInt(document.getElementById('inputSignupPoints').value || '5000', 10);
+            const { error } = await db.from('site_configs').upsert({ key: 'signup_points', value: val });
+            if (error) {
+                alert('설정 저장 실패: ' + error.message);
+            } else {
+                alert('회원가입 기본 지급 포인트가 ' + val.toLocaleString() + ' P로 저장되었습니다.');
+                loadSignupPointsAdmin();
+            }
+        });
+    }
+
+    // 신규 쿠폰 등록
+    const formCoupon = document.getElementById('formCreateCoupon');
+    if (formCoupon) {
+        formCoupon.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('couponName').value.trim();
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const discount = parseInt(document.getElementById('couponDiscountValue').value || '0', 10);
+            const minOrder = parseInt(document.getElementById('couponMinOrder').value || '0', 10);
+            const expDate = document.getElementById('couponExpDate').value;
+
+            if (!name || !code || discount <= 0 || !expDate) {
+                alert('필수 입력 항목을 정확히 작성해주세요.');
+                return;
+            }
+
+            const newCoupon = {
+                id: 'CPN_' + Date.now(),
+                name: name,
+                code: code,
+                discount_value: discount,
+                min_order: minOrder,
+                expiration_date: expDate,
+                is_active: true,
+                created_at: new Date().toISOString().split('T')[0]
+            };
+
+            globalCouponsList.unshift(newCoupon);
+            const { error } = await db.from('site_configs').upsert({ key: 'coupons', value: globalCouponsList });
+
+            if (error) {
+                alert('쿠폰 생성 실패: ' + error.message);
+            } else {
+                alert(`[${code}] ${name} 쿠폰이 성공적으로 생성/발급되었습니다.`);
+                formCoupon.reset();
+                loadCouponsAdmin();
+            }
+        });
+    }
+
+    // 회원 포인트 수동 조정
+    const formAdjust = document.getElementById('formAdjustUserPoint');
+    if (formAdjust) {
+        formAdjust.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('selectAdjustUser').value;
+            const adjustType = document.getElementById('selectAdjustType').value;
+            const amount = parseInt(document.getElementById('inputAdjustAmount').value || '0', 10);
+            const reason = document.getElementById('inputAdjustReason').value.trim();
+
+            if (!userId || amount <= 0) {
+                alert('대상 회원과 유효한 포인트 금액을 선택하세요.');
+                return;
+            }
+
+            const userSelect = document.getElementById('selectAdjustUser');
+            const selectedOpt = userSelect.options[userSelect.selectedIndex];
+            const currentPts = parseInt(selectedOpt.dataset.points || '5000', 10);
+
+            const delta = adjustType === 'add' ? amount : -amount;
+            const finalPts = Math.max(0, currentPts + delta);
+
+            const { error } = await db.from('profiles').update({
+                points: finalPts,
+                updated_at: new Date().toISOString()
+            }).eq('id', userId);
+
+            if (error) {
+                alert('포인트 조정 실패: ' + error.message);
+            } else {
+                alert(`포인트가 성공적으로 ${adjustType === 'add' ? '추가' : '차감'}되었습니다. (변경 후: ${finalPts.toLocaleString()} P)`);
+                formAdjust.reset();
+                loadUserPointsAdmin();
+            }
+        });
+    }
+}
+
