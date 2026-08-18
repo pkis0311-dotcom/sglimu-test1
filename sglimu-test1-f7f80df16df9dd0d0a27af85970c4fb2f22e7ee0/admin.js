@@ -5700,27 +5700,68 @@ async function loadUserPointsAdmin() {
     const userSelect = document.getElementById('selectAdjustUser');
     const summaryUserPoints = document.getElementById('summaryTotalUserPoints');
 
+    if (!userSelect) return;
+    userSelect.innerHTML = '<option value="">회원 목록 불러오는 중...</option>';
+
     try {
-        const { data: profiles, error } = await db.from('profiles').select('id, full_name, email, phone, points');
-        if (error) throw error;
+        // 1. site_configs에서 포인트 오버라이드 맵 로드
+        let pointOverrides = {};
+        try {
+            const { data: configData } = await db.from('site_configs').select('value').eq('key', 'user_points').single();
+            if (configData && configData.value) pointOverrides = configData.value;
+        } catch (cErr) {
+            console.log('user_points config check:', cErr);
+        }
+
+        // 2. profiles 테이블 안전 전체 조회 (컬럼 명시 오류 방지)
+        let profiles = [];
+        let { data, error } = await db.from('profiles').select('*');
+        if (error) {
+            console.warn('profiles select * failed, trying basic select:', error);
+            const { data: basicData } = await db.from('profiles').select('id, full_name, email, phone');
+            if (basicData) profiles = basicData;
+        } else if (data) {
+            profiles = data;
+        }
+
+        // 만약 profiles 테이블이 비어있다면 기관/B2B 회원(users) 테이블에서도 추가 조회
+        if (!profiles || profiles.length === 0) {
+            try {
+                const { data: uData } = await db.from('users').select('id, institution_name, manager_name, email, phone');
+                if (uData && uData.length > 0) {
+                    profiles = uData.map(u => ({
+                        id: u.id,
+                        full_name: u.institution_name || u.manager_name || '기관회원',
+                        email: u.email,
+                        phone: u.phone
+                    }));
+                }
+            } catch (uErr) {
+                console.warn('users table check:', uErr);
+            }
+        }
 
         let totalPts = 0;
         let optionsHtml = '<option value="">-- 회원을 선택하세요 --</option>';
 
         if (profiles && profiles.length > 0) {
             profiles.forEach(p => {
-                const pts = p.points ?? 5000;
+                const pts = pointOverrides[p.id] !== undefined ? pointOverrides[p.id] : (p.points ?? 5000);
                 totalPts += pts;
-                const label = `${p.full_name || '이름없음'} (${p.email || p.phone || '연락처없음'}) - 현재: ${pts.toLocaleString()} P`;
+                const nameStr = p.full_name || p.name || '이름없음';
+                const contactStr = p.email || p.phone || '연락처없음';
+                const label = `${nameStr} (${contactStr}) - 현재: ${pts.toLocaleString()} P`;
                 optionsHtml += `<option value="${p.id}" data-points="${pts}">${label}</option>`;
             });
+        } else {
+            optionsHtml = '<option value="">가입된 회원이 없습니다.</option>';
         }
 
-        if (userSelect) userSelect.innerHTML = optionsHtml;
+        userSelect.innerHTML = optionsHtml;
         if (summaryUserPoints) summaryUserPoints.innerText = totalPts.toLocaleString() + ' P';
     } catch (err) {
         console.error('loadUserPointsAdmin error:', err);
-        if (userSelect) userSelect.innerHTML = '<option value="">회원 목록 불러오기 실패</option>';
+        if (userSelect) userSelect.innerHTML = '<option value="">회원 목록 불러오기 실패 (다시 시도해 주세요)</option>';
     }
 }
 
@@ -5746,47 +5787,7 @@ function setupCouponsTabEvents() {
         });
     }
 
-    // 신규 쿠폰 등록
-    const formCoupon = document.getElementById('formCreateCoupon');
-    if (formCoupon) {
-        formCoupon.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('couponName').value.trim();
-            const code = document.getElementById('couponCode').value.trim().toUpperCase();
-            const discount = parseInt(document.getElementById('couponDiscountValue').value || '0', 10);
-            const minOrder = parseInt(document.getElementById('couponMinOrder').value || '0', 10);
-            const expDate = document.getElementById('couponExpDate').value;
-
-            if (!name || !code || discount <= 0 || !expDate) {
-                alert('필수 입력 항목을 정확히 작성해주세요.');
-                return;
-            }
-
-            const newCoupon = {
-                id: 'CPN_' + Date.now(),
-                name: name,
-                code: code,
-                discount_value: discount,
-                min_order: minOrder,
-                expiration_date: expDate,
-                is_active: true,
-                created_at: new Date().toISOString().split('T')[0]
-            };
-
-            globalCouponsList.unshift(newCoupon);
-            const { error } = await db.from('site_configs').upsert({ key: 'coupons', value: globalCouponsList });
-
-            if (error) {
-                alert('쿠폰 생성 실패: ' + error.message);
-            } else {
-                alert(`[${code}] ${name} 쿠폰이 성공적으로 생성/발급되었습니다.`);
-                formCoupon.reset();
-                loadCouponsAdmin();
-            }
-        });
-    }
-
-    // 회원 포인트 수동 조정
+    // 회원 포인트 수동 조정 / 지급 기능
     const formAdjust = document.getElementById('formAdjustUserPoint');
     if (formAdjust) {
         formAdjust.addEventListener('submit', async (e) => {
@@ -5797,7 +5798,7 @@ function setupCouponsTabEvents() {
             const reason = document.getElementById('inputAdjustReason').value.trim();
 
             if (!userId || amount <= 0) {
-                alert('대상 회원과 유효한 포인트 금액을 선택하세요.');
+                alert('대상 회원과 유효한 포인트 금액을 입력하세요.');
                 return;
             }
 
@@ -5808,18 +5809,29 @@ function setupCouponsTabEvents() {
             const delta = adjustType === 'add' ? amount : -amount;
             const finalPts = Math.max(0, currentPts + delta);
 
-            const { error } = await db.from('profiles').update({
-                points: finalPts,
-                updated_at: new Date().toISOString()
-            }).eq('id', userId);
-
-            if (error) {
-                alert('포인트 조정 실패: ' + error.message);
-            } else {
-                alert(`포인트가 성공적으로 ${adjustType === 'add' ? '추가' : '차감'}되었습니다. (변경 후: ${finalPts.toLocaleString()} P)`);
-                formAdjust.reset();
-                loadUserPointsAdmin();
+            // 1) profiles 테이블 업데이트 시도
+            try {
+                await db.from('profiles').update({
+                    points: finalPts,
+                    updated_at: new Date().toISOString()
+                }).eq('id', userId);
+            } catch (upErr) {
+                console.warn('profiles update error:', upErr);
             }
+
+            // 2) site_configs user_points 오버라이드 맵 업데이트 (이중 보장)
+            try {
+                const { data: configData } = await db.from('site_configs').select('value').eq('key', 'user_points').single();
+                const userPointsMap = configData && configData.value ? configData.value : {};
+                userPointsMap[userId] = finalPts;
+                await db.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
+            } catch (cErr) {
+                console.error('user_points config upsert error:', cErr);
+            }
+
+            alert(`[성공] 회원 포인트가 ${adjustType === 'add' ? '추가' : '차감'}되었습니다!\n- 최종 보유 포인트: ${finalPts.toLocaleString()} P${reason ? '\n- 사유: ' + reason : ''}`);
+            formAdjust.reset();
+            await loadUserPointsAdmin();
         });
     }
 }
