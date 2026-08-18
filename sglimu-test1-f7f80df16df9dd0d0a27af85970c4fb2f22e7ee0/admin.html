@@ -825,8 +825,12 @@
                     </p>
                     <form id="formSignupPoints" style="display: flex; gap: 15px; align-items: flex-end;">
                         <div class="form-group" style="margin: 0; flex: 1;">
-                            <label style="font-weight: 600;">기본 지급 포인트 (P)</label>
+                            <label style="font-weight: 600;">기본 지급 포인트 (P) *</label>
                             <input type="number" id="inputSignupPoints" class="form-control" value="5000" min="0" step="500" required style="font-weight: 700; font-size: 1.1rem; color: #27ae60; height: 42px;">
+                        </div>
+                        <div class="form-group" style="margin: 0; flex: 1;">
+                            <label style="font-weight: 600;">작업 담당자 성함 *</label>
+                            <input type="text" id="inputSignupPointManager" class="form-control" placeholder="예: 김관리 담당자" required style="height: 42px;">
                         </div>
                         <button type="submit" class="btn-primary" style="background: #27ae60; border-color: #27ae60; height: 42px; padding: 0 25px; white-space: nowrap;">
                             <i class="fa-solid fa-check"></i> 적립금 설정 저장
@@ -860,11 +864,11 @@
             </div>
 
             <!-- 회원별 포인트 직접 관리 -->
-            <div class="table-card" style="padding: 24px;">
+            <div class="table-card" style="padding: 24px; margin-bottom: 30px;">
                 <h3 style="margin-top: 0; font-size: 1.1rem; color: #2c3e50; margin-bottom: 15px;">
                     <i class="fa-solid fa-hand-holding-dollar" style="color: #8e44ad;"></i> 회원별 포인트 수동 조정 / 지급
                 </h3>
-                <form id="formAdjustUserPoint" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: end;">
+                <form id="formAdjustUserPoint" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr 1.2fr auto; gap: 12px; align-items: end;">
                     <div class="form-group" style="margin: 0;">
                         <label style="font-weight: 600; font-size: 0.85rem;">대상 회원 선택 *</label>
                         <select id="selectAdjustUser" class="form-control" required style="height: 40px;">
@@ -884,12 +888,43 @@
                     </div>
                     <div class="form-group" style="margin: 0;">
                         <label style="font-weight: 600; font-size: 0.85rem;">사유</label>
-                        <input type="text" id="inputAdjustReason" class="form-control" placeholder="예: 이벤트 당첨 보상" style="height: 40px;">
+                        <input type="text" id="inputAdjustReason" class="form-control" placeholder="예: 이벤트 당첨" style="height: 40px;">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-weight: 600; font-size: 0.85rem;">담당자 성함 *</label>
+                        <input type="text" id="inputAdjustManager" class="form-control" placeholder="예: 홍길동 팀장" required style="height: 40px;">
                     </div>
                     <button type="submit" class="btn-primary" style="height: 40px; background: #8e44ad; border-color: #8e44ad; padding: 0 20px;">
                         <i class="fa-solid fa-paper-plane"></i> 적용
                     </button>
                 </form>
+            </div>
+
+            <!-- 적립금 및 포인트 변경 이력 로그 (담당자 기록) -->
+            <div class="table-card" style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; font-size: 1.1rem; color: #2c3e50;">
+                        <i class="fa-solid fa-clock-rotate-left" style="color: #8e44ad;"></i> 적립금 및 포인트 변경 이력 로그 (담당자 기록)
+                    </h3>
+                    <button class="btn-secondary" onclick="loadPointLogsAdmin()"><i class="fa-solid fa-rotate-right"></i> 이력 새로고침</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>일시</th>
+                                <th>구분</th>
+                                <th>대상</th>
+                                <th>변동 내역</th>
+                                <th>사유</th>
+                                <th>작업 담당자</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pointLogsTableBody">
+                            <tr><td colspan="6" class="empty-state">등록된 이력 로그가 없습니다.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>

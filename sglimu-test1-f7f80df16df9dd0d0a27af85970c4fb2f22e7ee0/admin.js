@@ -5589,6 +5589,7 @@ window.initCouponsTab = async function() {
     await loadSignupPointsAdmin();
     await loadCouponsAdmin();
     await loadUserPointsAdmin();
+    await loadPointLogsAdmin();
     setupCouponsTabEvents();
 };
 
@@ -5768,6 +5769,62 @@ async function loadUserPointsAdmin() {
     }
 }
 
+// 3-2. 포인트 변경 이력 로그 로드 및 렌더링
+window.loadPointLogsAdmin = async function() {
+    const tBody = document.getElementById('pointLogsTableBody');
+    if (!tBody) return;
+    tBody.innerHTML = '<tr><td colspan="6" class="empty-state">로그 불러오는 중...</td></tr>';
+
+    try {
+        const { data } = await db.from('site_configs').select('value').eq('key', 'point_logs').single();
+        const logs = data && Array.isArray(data.value) ? data.value : [];
+
+        if (logs.length === 0) {
+            tBody.innerHTML = '<tr><td colspan="6" class="empty-state">등록된 포인트 변경 이력 로그가 없습니다.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        logs.forEach(log => {
+            const isSignupConfig = log.type && log.type.includes('기본');
+            const isAdd = log.type && (log.type.includes('지급') || log.type.includes('추가'));
+            
+            const badge = isSignupConfig
+                ? '<span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; font-weight:700; font-size:0.78rem;">기본 적립금 설정</span>'
+                : (isAdd
+                    ? '<span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:12px; font-weight:700; font-size:0.78rem;">수동 지급 (+)</span>'
+                    : '<span style="background:#fee2e2; color:#b91c1c; padding:2px 8px; border-radius:12px; font-weight:700; font-size:0.78rem;">수동 차감 (-)</span>');
+
+            html += `
+                <tr>
+                    <td style="font-size:0.82rem; color:#666; font-weight:600;">${log.timestamp}</td>
+                    <td>${badge}</td>
+                    <td style="font-weight:600; color:#333;">${log.target || '-'}</td>
+                    <td style="font-weight:700; color:#27ae60;">${log.details || '-'}</td>
+                    <td style="font-size:0.85rem; color:#555;">${log.reason || '-'}</td>
+                    <td><span style="background:#f3e8ff; color:#6b21a8; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.8rem;"><i class="fa-solid fa-user-check"></i> ${log.manager || '알 수 없음'}</span></td>
+                </tr>
+            `;
+        });
+
+        tBody.innerHTML = html;
+    } catch (err) {
+        console.error('loadPointLogsAdmin error:', err);
+        tBody.innerHTML = '<tr><td colspan="6" class="empty-state">로그를 불러오지 못했습니다.</td></tr>';
+    }
+};
+
+async function addPointLogAdmin(newLog) {
+    try {
+        const { data } = await db.from('site_configs').select('value').eq('key', 'point_logs').single();
+        const logs = data && Array.isArray(data.value) ? data.value : [];
+        logs.unshift(newLog); // 최신순 정렬
+        await db.from('site_configs').upsert({ key: 'point_logs', value: logs });
+    } catch (err) {
+        console.error('addPointLogAdmin error:', err);
+    }
+}
+
 // 4. 이벤트 연결
 let couponsEventsBound = false;
 function setupCouponsTabEvents() {
@@ -5780,12 +5837,32 @@ function setupCouponsTabEvents() {
         formSignupPts.addEventListener('submit', async (e) => {
             e.preventDefault();
             const val = parseInt(document.getElementById('inputSignupPoints').value || '5000', 10);
+            const managerName = document.getElementById('inputSignupPointManager')?.value?.trim();
+
+            if (!managerName) {
+                alert('작업 담당자 성함을 입력해주세요.');
+                return;
+            }
+
             const { error } = await db.from('site_configs').upsert({ key: 'signup_points', value: val });
             if (error) {
                 alert('설정 저장 실패: ' + error.message);
             } else {
-                alert('회원가입 기본 지급 포인트가 ' + val.toLocaleString() + ' P로 저장되었습니다.');
+                const nowStr = new Date().toLocaleString('ko-KR');
+                await addPointLogAdmin({
+                    id: 'LOG_' + Date.now(),
+                    timestamp: nowStr,
+                    type: '기본 적립금 설정',
+                    target: '전체 신규 회원',
+                    details: `기본 지급 적립금 ${val.toLocaleString()} P 로 변경`,
+                    reason: '신규 가입 기본 적립금 정책 수정',
+                    manager: managerName
+                });
+
+                alert(`회원가입 기본 지급 포인트가 ${val.toLocaleString()} P로 저장되었습니다.\n(담당자: ${managerName})`);
+                document.getElementById('inputSignupPointManager').value = '';
                 loadSignupPointsAdmin();
+                loadPointLogsAdmin();
             }
         });
     }
@@ -5798,15 +5875,17 @@ function setupCouponsTabEvents() {
             const userId = document.getElementById('selectAdjustUser').value;
             const adjustType = document.getElementById('selectAdjustType').value;
             const amount = parseInt(document.getElementById('inputAdjustAmount').value || '0', 10);
-            const reason = document.getElementById('inputAdjustReason').value.trim();
+            const reason = document.getElementById('inputAdjustReason').value.trim() || '관리자 수동 조정';
+            const managerName = document.getElementById('inputAdjustManager')?.value?.trim();
 
-            if (!userId || amount <= 0) {
-                alert('대상 회원과 유효한 포인트 금액을 입력하세요.');
+            if (!userId || amount <= 0 || !managerName) {
+                alert('대상 회원, 유효한 포인트 금액 및 담당자 성함을 작성해주세요.');
                 return;
             }
 
             const userSelect = document.getElementById('selectAdjustUser');
             const selectedOpt = userSelect.options[userSelect.selectedIndex];
+            const targetLabel = selectedOpt.text ? selectedOpt.text.split(' - 현재:')[0] : '회원';
             const currentPts = parseInt(selectedOpt.dataset.points || '5000', 10);
 
             const delta = adjustType === 'add' ? amount : -amount;
@@ -5827,9 +5906,21 @@ function setupCouponsTabEvents() {
                 } catch (e) {}
             }
 
-            alert(`[성공] 회원 포인트가 ${adjustType === 'add' ? '추가' : '차감'}되었습니다!\n- 최종 보유 포인트: ${finalPts.toLocaleString()} P${reason ? '\n- 사유: ' + reason : ''}`);
+            const nowStr = new Date().toLocaleString('ko-KR');
+            await addPointLogAdmin({
+                id: 'LOG_' + Date.now(),
+                timestamp: nowStr,
+                type: adjustType === 'add' ? '수동 지급 (+)' : '수동 차감 (-)',
+                target: targetLabel,
+                details: `${adjustType === 'add' ? '+' : '-'}${amount.toLocaleString()} P (최종 보유: ${finalPts.toLocaleString()} P)`,
+                reason: reason,
+                manager: managerName
+            });
+
+            alert(`[성공] 회원 포인트가 ${adjustType === 'add' ? '추가' : '차감'}되었습니다!\n- 최종 보유 포인트: ${finalPts.toLocaleString()} P\n- 담당자: ${managerName}`);
             formAdjust.reset();
             await loadUserPointsAdmin();
+            await loadPointLogsAdmin();
         });
     }
 }

@@ -70,15 +70,48 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
         let usedPts = parseInt(pointInputEl?.value || '0', 10);
         if (isNaN(usedPts) || usedPts < 0) usedPts = 0;
         
-        if (usedPts > checkoutUserMaxPoints) {
-            usedPts = checkoutUserMaxPoints;
-            if (pointInputEl) pointInputEl.value = usedPts;
-        }
+        const MIN_POINT_ORDER_AMOUNT = 30000;
+        const pointNoticeEl = document.getElementById('checkoutPointNotice');
 
-        const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
-        if (usedPts > maxDiscountForPoints) {
-            usedPts = maxDiscountForPoints;
-            if (pointInputEl) pointInputEl.value = usedPts;
+        if (checkoutRawTotal < MIN_POINT_ORDER_AMOUNT) {
+            usedPts = 0;
+            if (pointInputEl) {
+                pointInputEl.value = 0;
+                pointInputEl.disabled = true;
+                pointInputEl.style.background = '#f3f4f6';
+            }
+            if (btnUseAllPoints) {
+                btnUseAllPoints.disabled = true;
+                btnUseAllPoints.style.opacity = '0.5';
+                btnUseAllPoints.style.cursor = 'not-allowed';
+            }
+            if (pointNoticeEl) {
+                pointNoticeEl.innerHTML = `<span style="color:#dc2626; font-size:0.75rem; font-weight:600;"><i class="fa-solid fa-circle-exclamation"></i> 포인트는 결제 금액 30,000원 이상 시에만 사용 가능합니다. (현재: ${checkoutRawTotal.toLocaleString()}원)</span>`;
+            }
+        } else {
+            if (pointInputEl) {
+                pointInputEl.disabled = false;
+                pointInputEl.style.background = '#fff';
+            }
+            if (btnUseAllPoints) {
+                btnUseAllPoints.disabled = false;
+                btnUseAllPoints.style.opacity = '1';
+                btnUseAllPoints.style.cursor = 'pointer';
+            }
+            if (pointNoticeEl) {
+                pointNoticeEl.innerHTML = `<span style="color:#16a34a; font-size:0.75rem; font-weight:600;"><i class="fa-solid fa-circle-check"></i> 30,000원 이상 결제 조건 만족 (포인트 사용 가능)</span>`;
+            }
+
+            if (usedPts > checkoutUserMaxPoints) {
+                usedPts = checkoutUserMaxPoints;
+                if (pointInputEl) pointInputEl.value = usedPts;
+            }
+
+            const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
+            if (usedPts > maxDiscountForPoints) {
+                usedPts = maxDiscountForPoints;
+                if (pointInputEl) pointInputEl.value = usedPts;
+            }
         }
 
         const totalDisc = checkoutSelectedCouponDisc + usedPts;
