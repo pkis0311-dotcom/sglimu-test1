@@ -697,6 +697,7 @@ async function checkSession() {
 
             loggedInUser = profile;
             window.currentUserRole = profile.role;
+            if (typeof syncAdminManagerInputs === 'function') syncAdminManagerInputs();
         } catch (e) {
             console.error('Admin session validation failed:', e);
             alert('로그인 권한 확인 중 오류가 발생했습니다.');
@@ -5585,7 +5586,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 let globalCouponsList = [];
 
+function getAdminManagerName() {
+    if (typeof loggedInUser !== 'undefined' && loggedInUser) {
+        return loggedInUser.full_name || loggedInUser.email || '관리자';
+    }
+    return '관리자';
+}
+
+function syncAdminManagerInputs() {
+    const mgrName = getAdminManagerName();
+    const input1 = document.getElementById('inputSignupPointManager');
+    const input2 = document.getElementById('inputAdjustManager');
+    if (input1) input1.value = mgrName;
+    if (input2) input2.value = mgrName;
+}
+
 window.initCouponsTab = async function() {
+    syncAdminManagerInputs();
     await loadSignupPointsAdmin();
     await loadCouponsAdmin();
     await loadUserPointsAdmin();
@@ -5837,12 +5854,7 @@ function setupCouponsTabEvents() {
         formSignupPts.addEventListener('submit', async (e) => {
             e.preventDefault();
             const val = parseInt(document.getElementById('inputSignupPoints').value || '5000', 10);
-            const managerName = document.getElementById('inputSignupPointManager')?.value?.trim();
-
-            if (!managerName) {
-                alert('작업 담당자 성함을 입력해주세요.');
-                return;
-            }
+            const managerName = getAdminManagerName();
 
             const { error } = await db.from('site_configs').upsert({ key: 'signup_points', value: val });
             if (error) {
@@ -5859,8 +5871,8 @@ function setupCouponsTabEvents() {
                     manager: managerName
                 });
 
-                alert(`회원가입 기본 지급 포인트가 ${val.toLocaleString()} P로 저장되었습니다.\n(담당자: ${managerName})`);
-                document.getElementById('inputSignupPointManager').value = '';
+                alert(`회원가입 기본 지급 포인트가 ${val.toLocaleString()} P로 저장되었습니다.\n(작업 담당자: ${managerName})`);
+                syncAdminManagerInputs();
                 loadSignupPointsAdmin();
                 loadPointLogsAdmin();
             }
@@ -5876,10 +5888,10 @@ function setupCouponsTabEvents() {
             const adjustType = document.getElementById('selectAdjustType').value;
             const amount = parseInt(document.getElementById('inputAdjustAmount').value || '0', 10);
             const reason = document.getElementById('inputAdjustReason').value.trim() || '관리자 수동 조정';
-            const managerName = document.getElementById('inputAdjustManager')?.value?.trim();
+            const managerName = getAdminManagerName();
 
-            if (!userId || amount <= 0 || !managerName) {
-                alert('대상 회원, 유효한 포인트 금액 및 담당자 성함을 작성해주세요.');
+            if (!userId || amount <= 0) {
+                alert('대상 회원과 유효한 포인트 금액을 선택하세요.');
                 return;
             }
 
@@ -5919,6 +5931,7 @@ function setupCouponsTabEvents() {
 
             alert(`[성공] 회원 포인트가 ${adjustType === 'add' ? '추가' : '차감'}되었습니다!\n- 최종 보유 포인트: ${finalPts.toLocaleString()} P\n- 담당자: ${managerName}`);
             formAdjust.reset();
+            syncAdminManagerInputs();
             await loadUserPointsAdmin();
             await loadPointLogsAdmin();
         });
