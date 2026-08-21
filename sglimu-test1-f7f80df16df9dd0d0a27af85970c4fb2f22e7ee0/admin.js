@@ -3,12 +3,13 @@
 
 // 나이스페이 전표/영수증 팝업 여는 전역 헬퍼 함수
 window.openNicepayReceipt = function(tid, type = '0') {
-    if (!tid) {
-        alert('영수증 정보(TID)가 존재하지 않는 결제 건입니다.');
-        return;
+    if (tid && tid !== 'null' && tid !== 'undefined' && tid.trim() !== '') {
+        const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(tid.trim())}&type=${type}`;
+        window.open(url, 'nicepayReceipt', 'width=460,height=680,scrollbars=yes,resizable=yes');
+    } else {
+        alert('나이스페이 결제 영수증 조회 페이지로 연결합니다.\n결제하신 카드번호 및 일자 입력 시 영수증 출력이 가능합니다.');
+        window.open('https://www.nicepay.co.kr/cs/transInfo/cardList.do', 'nicepayLookup', 'width=850,height=750,scrollbars=yes,resizable=yes');
     }
-    const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(tid)}&type=${type}`;
-    window.open(url, 'nicepayReceipt', 'width=460,height=680,scrollbars=yes,resizable=yes');
 };
 
 // 엑셀 스타일의 Quill 에디터 포맷 설정
@@ -5428,9 +5429,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (m) orderTid = m[1];
             }
 
+            const isPaid = order.status !== 'pending' && order.status !== '결제대기' && order.status !== 'cancel' && order.status !== '취소';
+            const isOnlinePay = order.customer_name && (order.customer_name.includes('||CARD||') || order.customer_name.includes('||BANK||'));
+
             let receiptBtnHtml = '';
-            if (orderTid) {
-                receiptBtnHtml = `<button class="minor-btn" onclick="openNicepayReceipt('${orderTid}')" title="나이스페이 영수증 출력" style="padding:2px 6px; font-size:0.75rem; margin-top:4px; display:inline-flex; align-items:center; gap:3px; background:#e8f0fe; color:#1a73e8; border:1px solid #aecbfa; cursor:pointer;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
+            if (orderTid || isPaid || isOnlinePay) {
+                receiptBtnHtml = `<button class="minor-btn" onclick="openNicepayReceipt('${orderTid || ''}')" title="나이스페이 영수증 출력/조회" style="padding:2px 6px; font-size:0.75rem; margin-top:4px; display:inline-flex; align-items:center; gap:3px; background:#e8f0fe; color:#1a73e8; border:1px solid #aecbfa; cursor:pointer;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
             }
 
             tr.innerHTML = `
