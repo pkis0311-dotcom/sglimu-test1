@@ -5446,12 +5446,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (m) orderTid = m[1];
             }
 
+            window.adminOrdersMap = window.adminOrdersMap || {};
+            window.adminOrdersMap[order.id] = order;
+
             const isPaid = order.status !== 'pending' && order.status !== '결제대기' && order.status !== 'cancel' && order.status !== '취소';
             const isOnlinePay = order.customer_name && (order.customer_name.includes('||CARD||') || order.customer_name.includes('||BANK||'));
 
             let receiptBtnHtml = '';
             if (orderTid || isPaid || isOnlinePay) {
-                receiptBtnHtml = `<button class="minor-btn" onclick="openNicepayReceipt('${orderTid || ''}', '0', '${order.created_at}', '${order.id}')" title="나이스페이 영수증 자동 출력" style="padding:2px 6px; font-size:0.75rem; margin-top:4px; display:inline-flex; align-items:center; gap:3px; background:#e8f0fe; color:#1a73e8; border:1px solid #aecbfa; cursor:pointer;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
+                receiptBtnHtml = `<button class="minor-btn" onclick="if(window.openOrderReceiptModal) window.openOrderReceiptModal(window.adminOrdersMap[${order.id}]); else openNicepayReceipt('${orderTid || ''}', '0', '${order.created_at}', '${order.id}');" title="영수증 자동 확인/출력" style="padding:2px 6px; font-size:0.75rem; margin-top:4px; display:inline-flex; align-items:center; gap:3px; background:#e8f0fe; color:#1a73e8; border:1px solid #aecbfa; cursor:pointer;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
             }
 
             tr.innerHTML = `

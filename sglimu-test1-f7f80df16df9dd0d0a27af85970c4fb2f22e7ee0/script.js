@@ -1,30 +1,134 @@
 import { supabase } from './supabase-client.js';
 
-// 나이스페이 전표/영수증 팝업 여는 전역 헬퍼 함수 (TID 자동 조립 지원)
-window.openNicepayReceipt = function(tid, type = '0', createdAt = null, orderId = null) {
-    let finalTid = (tid && tid !== 'null' && tid !== 'undefined') ? tid.trim() : '';
+window.customerOrdersMap = {};
 
-    // TID가 구체적으로 저장되어 있지 않더라도 결제 일시 및 주문 번호로 나이스페이 TID 자동 조합
-    if (!finalTid && createdAt) {
-        try {
-            const d = new Date(createdAt);
-            const yy = String(d.getFullYear()).slice(-2);
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            const hh = String(d.getHours()).padStart(2, '0');
-            const mi = String(d.getMinutes()).padStart(2, '0');
-            const ss = String(d.getSeconds()).padStart(2, '0');
-            const idPad = String(orderId || 0).padStart(4, '0').slice(-4);
-            finalTid = `SG1142086m01${yy}${mm}${dd}${hh}${mi}${ss}${idPad}`;
-        } catch (e) {}
+// 전전자 영수증/구매 확인증 모달 오픈 전역 헬퍼 함수
+window.openOrderReceiptModal = function(order) {
+    if (!order) {
+        alert('주문 데이터 정보를 찾을 수 없습니다.');
+        return;
+    }
+    
+    let modal = document.getElementById('sgReceiptModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'sgReceiptModal';
+        modal.className = 'receipt-modal-overlay';
+        modal.style.cssText = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999999; justify-content:center; align-items:center; backdrop-filter:blur(3px);";
+        modal.innerHTML = `
+            <div class="receipt-modal-card" style="background:#fff; width:92%; max-width:440px; border-radius:16px; padding:28px 24px; box-shadow:0 15px 35px rgba(0,0,0,0.25); position:relative; font-family:'Pretendard', sans-serif; box-sizing:border-box;">
+                <button onclick="document.getElementById('sgReceiptModal').style.display='none'" style="position:absolute; top:16px; right:18px; background:none; border:none; font-size:1.6rem; cursor:pointer; color:#888; line-height:1;">&times;</button>
+                
+                <div style="text-align:center; border-bottom:2px solid #111; padding-bottom:14px; margin-bottom:16px;">
+                    <div style="font-size:0.75rem; color:#888; font-weight:700; letter-spacing:1.5px; margin-bottom:4px;">ELECTRONIC RECEIPT</div>
+                    <h2 style="font-size:1.25rem; margin:0; color:#111; font-weight:800;">구매 영수증 / 거래 확인서</h2>
+                    <div style="font-size:0.8rem; color:#666; margin-top:4px; font-weight:600;">(주)에스지라이뮤 | SG LIMU</div>
+                </div>
+
+                <div style="font-size:0.85rem; display:flex; flex-direction:column; gap:9px; color:#333;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#777;">주문번호</span>
+                        <strong id="rcptDisplayId" style="font-family:monospace; font-weight:bold; color:#111;">-</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#777;">결제일시</span>
+                        <span id="rcptDate" style="color:#333;">-</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#777;">구매자</span>
+                        <span id="rcptBuyer" style="font-weight:600;">-</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#777;">결제수단</span>
+                        <span id="rcptPayMethod" style="font-weight:600; color:#1a73e8;">-</span>
+                    </div>
+                    
+                    <div style="border-top:1px dashed #ddd; margin:6px 0;"></div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:#777;">주문상품</span>
+                        <strong id="rcptProductName" style="max-width:230px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; color:#111;">-</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#777;">수량</span>
+                        <span id="rcptQty">-</span>
+                    </div>
+
+                    <div style="border-top:2px solid #111; margin:10px 0 4px 0;"></div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:1.15rem; font-weight:800; color:#111;">
+                        <span>총 결제금액</span>
+                        <span id="rcptTotalPrice" style="color:#1a73e8;">-</span>
+                    </div>
+                    <div style="font-size:0.72rem; color:#888; text-align:right;">(부가가치세 포함)</div>
+                </div>
+
+                <div style="margin-top:22px; display:flex; gap:8px;">
+                    <button onclick="window.print()" style="flex:1; padding:11px; background:#f5f7fa; border:1px solid #dcdfe6; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333; display:flex; align-items:center; justify-content:center; gap:5px;"><i class="fa-solid fa-print"></i> 영수증 인쇄</button>
+                    <button id="rcptBtnPg" style="flex:1; padding:11px; background:#1a73e8; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;"><i class="fa-solid fa-file-invoice"></i> PG 전표 보기</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
     }
 
-    if (finalTid) {
-        const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(finalTid)}&type=${type}`;
-        window.open(url, 'nicepayReceipt', 'width=460,height=680,scrollbars=yes,resizable=yes');
+    const displayId = order.id ? '#' + order.id.toString().substring(0, 8).toUpperCase() : '#N/A';
+    const createdAt = order.created_at ? new Date(order.created_at).toLocaleString('ko-KR') : new Date().toLocaleString('ko-KR');
+    
+    let buyerName = '구매자';
+    let payMethodName = '신용카드 (NICEPAY)';
+    if (order.customer_name) {
+        const parts = order.customer_name.split('||');
+        buyerName = parts[0] || '구매자';
+        if (parts.length > 1) {
+            const m = parts[1];
+            if (m === 'CARD') payMethodName = '신용카드 (NICEPAY)';
+            else if (m === 'BANK') payMethodName = '계좌이체 (NICEPAY)';
+            else if (m === 'DIRECT_BANK') payMethodName = '무통장 입금';
+        }
+    }
+
+    let orderTid = order.tid || null;
+    if (!orderTid && order.customer_name && order.customer_name.includes('||TID:')) {
+        const match = order.customer_name.match(/\|\|TID:([^|]+)/);
+        if (match) orderTid = match[1];
+    }
+
+    document.getElementById('rcptDisplayId').textContent = displayId;
+    document.getElementById('rcptDate').textContent = createdAt;
+    document.getElementById('rcptBuyer').textContent = buyerName;
+    document.getElementById('rcptPayMethod').textContent = payMethodName;
+    document.getElementById('rcptProductName').textContent = order.product_name || '주문 상품';
+    document.getElementById('rcptQty').textContent = (order.quantity || 1) + '개';
+    document.getElementById('rcptTotalPrice').textContent = (Number(order.total_price) || 0).toLocaleString() + '원';
+
+    const btnPg = document.getElementById('rcptBtnPg');
+    if (btnPg) {
+        btnPg.onclick = () => {
+            if (orderTid && !orderTid.startsWith('SG1142086m01260821152820')) {
+                const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(orderTid)}&type=0`;
+                window.open(url, 'nicepayReceipt', 'width=460,height=680,scrollbars=yes,resizable=yes');
+            } else {
+                alert('현재 나이스페이 테스트 가맹점(MID: SG1142086m) 환경 결제 건입니다.\n실제 운영 PG 환경에서 카드 결제 진행 시 PG 매출전표가 바로 출력됩니다.');
+                window.open('https://www.nicepay.co.kr/cs/transInfo/cardList.do', 'nicepayLookup', 'width=850,height=750,scrollbars=yes,resizable=yes');
+            }
+        };
+    }
+
+    modal.style.display = 'flex';
+};
+
+window.openNicepayReceipt = function(tid, type = '0', createdAt = null, orderId = null) {
+    if (orderId && window.customerOrdersMap && window.customerOrdersMap[orderId]) {
+        window.openOrderReceiptModal(window.customerOrdersMap[orderId]);
     } else {
-        alert('나이스페이 결제 영수증 조회 페이지로 연결합니다.\n결제하신 카드번호 및 일자 입력 시 영수증 출력이 가능합니다.');
-        window.open('https://www.nicepay.co.kr/cs/transInfo/cardList.do', 'nicepayLookup', 'width=850,height=750,scrollbars=yes,resizable=yes');
+        window.openOrderReceiptModal({
+            id: orderId,
+            tid: tid,
+            created_at: createdAt,
+            product_name: '주문 상품',
+            total_price: 0
+        });
     }
 };
 
@@ -593,13 +697,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (m) orderTid = m[1];
                     }
 
+                    window.customerOrdersMap[order.id] = order;
+
                     // 결제완료(준비중/배송중/배송완료 등) 또는 카드/계좌이체 결제건은 영수증 버튼 무조건 생성!
                     const isPaid = order.status !== 'pending' && order.status !== '결제대기' && order.status !== 'cancel' && order.status !== '취소';
                     const isOnlinePay = order.customer_name && (order.customer_name.includes('||CARD||') || order.customer_name.includes('||BANK||'));
 
                     let receiptBtnHtml = '';
                     if (orderTid || isPaid || isOnlinePay) {
-                        receiptBtnHtml = `<button onclick="openNicepayReceipt('${orderTid || ''}', '0', '${order.created_at}', '${order.id}')" title="나이스페이 영수증 자동 출력" style="background:#f0f7ff; border:1px solid #1a73e8; color:#1a73e8; font-size:0.75rem; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
+                        receiptBtnHtml = `<button onclick="openOrderReceiptModal(window.customerOrdersMap[${order.id}])" title="영수증 자동 확인/출력" style="background:#f0f7ff; border:1px solid #1a73e8; color:#1a73e8; font-size:0.75rem; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
                     }
 
                     // 주문 상태 텍스트 및 스타일 결정
