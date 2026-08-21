@@ -170,6 +170,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // 결제 완료 후 리다이렉트 처리 확인 (URL 파라미터가 ?payment=success 인 경우)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
+        const tid = urlParams.get('tid') || urlParams.get('TxTid') || urlParams.get('TID') || localStorage.getItem('sg_limu_pending_tid');
+        const pendingOrderId = localStorage.getItem('sg_limu_pending_order');
+        
+        if (pendingOrderId && window.supabase) {
+            const numId = parseInt(pendingOrderId, 10);
+            if (!isNaN(numId)) {
+                window.supabase.from('orders').select('customer_name').eq('id', numId).single().then(({ data: ord }) => {
+                    if (ord) {
+                        const updateObj = { status: '준비중' };
+                        let currentName = ord.customer_name || '';
+                        if (tid && !currentName.includes('||TID:')) {
+                            updateObj.customer_name = `${currentName}||TID:${tid}`;
+                        }
+                        window.supabase.from('orders').update(updateObj).eq('id', numId).then(() => {
+                            console.log('Order status & TID updated successfully via client JS:', tid);
+                        });
+                    }
+                }).catch(err => console.error('Failed to update TID in order:', err));
+            }
+        }
+
         const isDirect = sessionStorage.getItem('is_direct_buy') === 'true';
         if (!isDirect) {
             localStorage.removeItem('sg_limu_cart'); // 장바구니 전체 결제였을 때만 카트 비우기
@@ -177,12 +198,14 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.removeItem('is_direct_buy');
         sessionStorage.removeItem('direct_buy_item');
         localStorage.removeItem('sg_limu_pending_order');
+        localStorage.removeItem('sg_limu_pending_tid');
         alert('결제가 완료되었습니다. 주문해 주셔서 감사합니다!');
         
         // payment 파라미터만 제거하고 id 등 다른 파라미터는 온전히 보존
         const cleanParams = new URLSearchParams(window.location.search);
         cleanParams.delete('payment');
         cleanParams.delete('message');
+        cleanParams.delete('tid');
         const newSearch = cleanParams.toString();
         const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
         window.history.replaceState({}, document.title, newUrl);

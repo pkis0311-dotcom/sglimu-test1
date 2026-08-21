@@ -1,9 +1,26 @@
 import { supabase } from './supabase-client.js';
 
-// 나이스페이 전표/영수증 팝업 여는 전역 헬퍼 함수
-window.openNicepayReceipt = function(tid, type = '0') {
-    if (tid && tid !== 'null' && tid !== 'undefined' && tid.trim() !== '') {
-        const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(tid.trim())}&type=${type}`;
+// 나이스페이 전표/영수증 팝업 여는 전역 헬퍼 함수 (TID 자동 조립 지원)
+window.openNicepayReceipt = function(tid, type = '0', createdAt = null, orderId = null) {
+    let finalTid = (tid && tid !== 'null' && tid !== 'undefined') ? tid.trim() : '';
+
+    // TID가 구체적으로 저장되어 있지 않더라도 결제 일시 및 주문 번호로 나이스페이 TID 자동 조합
+    if (!finalTid && createdAt) {
+        try {
+            const d = new Date(createdAt);
+            const yy = String(d.getFullYear()).slice(-2);
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mi = String(d.getMinutes()).padStart(2, '0');
+            const ss = String(d.getSeconds()).padStart(2, '0');
+            const idPad = String(orderId || 0).padStart(4, '0').slice(-4);
+            finalTid = `SG1142086m01${yy}${mm}${dd}${hh}${mi}${ss}${idPad}`;
+        } catch (e) {}
+    }
+
+    if (finalTid) {
+        const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(finalTid)}&type=${type}`;
         window.open(url, 'nicepayReceipt', 'width=460,height=680,scrollbars=yes,resizable=yes');
     } else {
         alert('나이스페이 결제 영수증 조회 페이지로 연결합니다.\n결제하신 카드번호 및 일자 입력 시 영수증 출력이 가능합니다.');
@@ -582,7 +599,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     let receiptBtnHtml = '';
                     if (orderTid || isPaid || isOnlinePay) {
-                        receiptBtnHtml = `<button onclick="openNicepayReceipt('${orderTid || ''}')" title="나이스페이 영수증 출력/조회" style="background:#f0f7ff; border:1px solid #1a73e8; color:#1a73e8; font-size:0.75rem; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
+                        receiptBtnHtml = `<button onclick="openNicepayReceipt('${orderTid || ''}', '0', '${order.created_at}', '${order.id}')" title="나이스페이 영수증 자동 출력" style="background:#f0f7ff; border:1px solid #1a73e8; color:#1a73e8; font-size:0.75rem; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
                     }
 
                     // 주문 상태 텍스트 및 스타일 결정
