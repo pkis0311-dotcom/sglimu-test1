@@ -1787,15 +1787,17 @@ saveProductBtn.addEventListener('click', async () => {
     saveProductBtn.disabled = true; saveProductBtn.textContent = '저장 중...';
     const file = productImageFile.files[0];
 
-    // 스토리지 업로드
+    // 스토리지 업로드 (비율 및 크기별 고화질 최적화 처리)
     if (file) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `products/${fileName}`;
-        const { error: uploadError } = await db.storage.from('product-images').upload(filePath, file);
-        if (uploadError) { saveMsg.textContent = '업로드 오류: ' + uploadError.message; saveProductBtn.disabled=false; saveProductBtn.textContent='저장하기'; return; }
-        const { data: { publicUrl } } = db.storage.from('product-images').getPublicUrl(filePath);
-        payload.image_url = publicUrl;
+        try {
+            const publicUrl = await processAndUploadImage(file, 'product-images', 'products');
+            payload.image_url = publicUrl;
+        } catch (uploadErr) {
+            saveMsg.textContent = '업로드 오류: ' + uploadErr.message;
+            saveProductBtn.disabled = false;
+            saveProductBtn.textContent = '저장하기';
+            return;
+        }
     }
 
     let id = productIdInput.value;
@@ -2699,23 +2701,17 @@ saveBannerBtn.addEventListener('click', async () => {
         display_order: displayOrder
     };
 
-    // 이미지 파일 업로드 로직 (bucket명: banner-images)
+    // 이미지 파일 업로드 로직 (bucket명: banner-images, 비율 및 크기별 고화질 최적화 처리)
     if (file) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `banners/${fileName}`; // 폴더 지정 선택적
-        
-        const { error: uploadError } = await db.storage.from('banner-images').upload(filePath, file);
-        
-        if (uploadError) { 
-            saveBannerMsg.textContent = '이미지 업로드 오류: ' + uploadError.message; 
-            saveBannerBtn.disabled = false; 
-            saveBannerBtn.textContent = '저장하기'; 
-            return; 
+        try {
+            const publicUrl = await processAndUploadImage(file, 'banner-images', 'banners');
+            payload.image_url = publicUrl;
+        } catch (uploadErr) {
+            saveBannerMsg.textContent = '이미지 업로드 오류: ' + uploadErr.message;
+            saveBannerBtn.disabled = false;
+            saveBannerBtn.textContent = '저장하기';
+            return;
         }
-        
-        const { data: { publicUrl } } = db.storage.from('banner-images').getPublicUrl(filePath);
-        payload.image_url = publicUrl;
     } else {
         payload.image_url = bannerImageUrl.value;
     }
@@ -3247,24 +3243,114 @@ function initPageManageTab() {
         pageDetailImage.dataset.init = "true";
     }
 
-    // [개선] 데이터 URL을 Supabase Storage에 업로드하는 헬퍼 함수
+    // [개선] 이미지 크기(가로/세로 해상도)와 비율(Aspect Ratio)을 감지하여 화질 뭉개짐 없이 최적 크기로 변환 후 Storage에 업로드하는 헬퍼 함수
+    async function processAndUploadImage(inputSource, bucket, folder = 'details') {
+        return new Promise((resolve, reject) => {
+            if (!inputSource) {
+                return reject(new Error('업로드할 이미지 원본이 없습니다.'));
+            }
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+
+            img.onload = async () => {
+                try {
+                    const origW = img.naturalWidth || img.width;
+                    const origH = img.naturalHeight || img.height;
+                    if (!origW || !origH) {
+                        throw new Error('이미지 크기를 측정할 수 없습니다.');
+                    }
+                    const ratio = origW / origH;
+
+                    let maxW, maxH, quality = 0.94;
+
+                    if (ratio < 0.95) {
+                        // 세로형 상세페이지 이미지 (긴 통배너/상세 설명)
+                        // 텍스트 및 상세 사양 가독성을 위해 가로 해상도를 1600px 고화질로 확보
+                        maxW = 1600;
+                        maxH = 25000;
+                        quality = 0.95;
+                    } else if (ratio > 1.2) {
+                        // 가로형 배너/설명 이미지
+                        maxW = 1920;
+                        maxH = 1080;
+                        quality = 0.93;
+                    } else {
+                        // 정사각형 / 표준 비율 이미지 (상품 대표 이미지 등)
+                        maxW = 1200;
+                        maxH = 1200;
+                        quality = 0.93;
+                    }
+
+                    let targetW = origW;
+                    let targetH = origH;
+
+                    // 비율을 유지하면서 최대 해상도 내로 다운스케일링 (원본이 규격보다 작으면 축소 안함)
+                    if (origW > maxW || origH > maxH) {
+                        const widthRatio = maxW / origW;
+                        const heightRatio = maxH / origH;
+                        const scaleRatio = Math.min(widthRatio, heightRatio);
+                        targetW = Math.round(origW * scaleRatio);
+                        targetH = Math.round(origH * scaleRatio);
+                    }
+
+                    let blobToUpload;
+
+                    // 원본 규격 이내이며 File/Blob인 경우 재압축 없이 원본 그대로 저장하여 화질 저하 방지
+                    if (origW <= maxW && origH <= maxH && (inputSource instanceof Blob)) {
+                        blobToUpload = inputSource;
+                    } else {
+                        // 캔버스를 이용한 고화질 비구빅/스무딩 렌더링
+                        const canvas = document.createElement('canvas');
+                        canvas.width = targetW;
+                        canvas.height = targetH;
+                        const ctx = canvas.getContext('2d');
+
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        ctx.drawImage(img, 0, 0, targetW, targetH);
+
+                        const isPng = (inputSource.type === 'image/png') || (typeof inputSource === 'string' && inputSource.startsWith('data:image/png'));
+                        const mimeType = isPng ? 'image/png' : 'image/jpeg';
+
+                        blobToUpload = await new Promise((resBlob) => {
+                            canvas.toBlob((b) => resBlob(b), mimeType, quality);
+                        });
+                    }
+
+                    const fileExt = blobToUpload.type === 'image/png' ? 'png' : 'jpg';
+                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                    const filePath = `${folder}/${fileName}`;
+
+                    const { error: uploadError } = await db.storage.from(bucket).upload(filePath, blobToUpload, {
+                        contentType: blobToUpload.type,
+                        upsert: true
+                    });
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = db.storage.from(bucket).getPublicUrl(filePath);
+                    resolve(publicUrl);
+                } catch (err) {
+                    console.error('[processAndUploadImage Error]', err);
+                    reject(err);
+                }
+            };
+
+            img.onerror = (err) => reject(new Error('이미지 로드 중 오류가 발생했습니다.'));
+
+            if (typeof inputSource === 'string') {
+                img.src = inputSource;
+            } else if (inputSource instanceof Blob) {
+                img.src = URL.createObjectURL(inputSource);
+            } else {
+                reject(new Error('유효하지 않은 이미지 입력 형식입니다.'));
+            }
+        });
+    }
+
     async function uploadDataUrl(dataUrl, bucket, folder = 'details') {
-        try {
-            const response = await fetch(dataUrl);
-            const blob = await response.blob();
-            const fileExt = blob.type.split('/')[1] || 'png';
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-            const filePath = `${folder}/${fileName}`;
-            
-            const { error: uploadError } = await db.storage.from(bucket).upload(filePath, blob);
-            if (uploadError) throw uploadError;
-            
-            const { data: { publicUrl } } = db.storage.from(bucket).getPublicUrl(filePath);
-            return publicUrl;
-        } catch (err) {
-            console.error('Upload Error:', err);
-            throw new Error('이미지 업로드 중 오류가 발생했습니다: ' + err.message);
-        }
+        return processAndUploadImage(dataUrl, bucket, folder);
     }
 
     // 4. 저장 버튼

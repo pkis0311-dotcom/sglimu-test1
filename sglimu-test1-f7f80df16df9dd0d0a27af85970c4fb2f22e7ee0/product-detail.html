@@ -682,7 +682,7 @@
                         if(!src) return;
                         const img = document.createElement('img');
                         img.src = src;
-                        img.style.cssText = "max-width:100%; display:block; margin: 0 auto 10px auto;";
+                        img.style.cssText = "max-width:100%; height:auto; display:block; margin: 0 auto 15px auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;";
                         detailContainer.appendChild(img);
                     });
                 }
