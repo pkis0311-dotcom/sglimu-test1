@@ -178,16 +178,25 @@ Deno.serve(async (req) => {
 
       const isAlreadyDeducted = !logCheckErr && existingLogs && existingLogs.length > 0
 
-      // 4. 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경
+      // 4. 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경 및 TID 저장
+      const finalTid = approvalResData.TID || txTid || ''
+      const updateData: Record<string, any> = { status: '준비중' }
+      if (finalTid) {
+        updateData.tid = finalTid
+        if (order.customer_name && !order.customer_name.includes('||TID:')) {
+          updateData.customer_name = `${order.customer_name}||TID:${finalTid}`
+        }
+      }
+
       const { error: dbError } = await supabase
         .from('orders')
-        .update({ status: '준비중' })
+        .update(updateData)
         .eq('id', numericMoid)
 
       if (dbError) {
         console.error('주문 데이터베이스 업데이트 실패:', dbError)
       } else {
-        console.log(`주문 ID ${numericMoid}의 상태가 '준비중'으로 변경되었습니다.`)
+        console.log(`주문 ID ${numericMoid}의 상태가 '준비중'으로 변경되었습니다. (TID: ${finalTid})`)
 
         // 5. 이미 차감되지 않았고 메타데이터가 존재할 경우 재고 차감 실행
         if (!isAlreadyDeducted) {

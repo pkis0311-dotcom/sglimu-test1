@@ -1,6 +1,16 @@
 // admin.js - Integrated Admin Script
 // [MIGRATION] Switched from ES Module to Global Script for local file support.
 
+// 나이스페이 전표/영수증 팝업 여는 전역 헬퍼 함수
+window.openNicepayReceipt = function(tid, type = '0') {
+    if (!tid) {
+        alert('영수증 정보(TID)가 존재하지 않는 결제 건입니다.');
+        return;
+    }
+    const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(tid)}&type=${type}`;
+    window.open(url, 'nicepayReceipt', 'width=460,height=680,scrollbars=yes,resizable=yes');
+};
+
 // 엑셀 스타일의 Quill 에디터 포맷 설정
 if (typeof Quill !== 'undefined') {
     const SizeStyle = Quill.import('attributors/style/size');
@@ -5412,6 +5422,17 @@ document.addEventListener('DOMContentLoaded', () => {
                        onchange="updateHomepageOrderTracking('${order.id}', this.value)">
             `;
 
+            let orderTid = order.tid || null;
+            if (!orderTid && order.customer_name && order.customer_name.includes('||TID:')) {
+                const m = order.customer_name.match(/\|\|TID:([^|]+)/);
+                if (m) orderTid = m[1];
+            }
+
+            let receiptBtnHtml = '';
+            if (orderTid) {
+                receiptBtnHtml = `<button class="minor-btn" onclick="openNicepayReceipt('${orderTid}')" title="나이스페이 영수증 출력" style="padding:2px 6px; font-size:0.75rem; margin-top:4px; display:inline-flex; align-items:center; gap:3px; background:#e8f0fe; color:#1a73e8; border:1px solid #aecbfa; cursor:pointer;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
+            }
+
             tr.innerHTML = `
                 <td style="font-family:monospace; font-weight:bold; color:#555;" title="${fullId}">#${displayId}</td>
                 <td style="font-weight:600;">${displayName}${payMethodBadge} ${isPhoneOrder ? '<span style="font-size:0.75rem; background:#78909c; color:#fff; padding:2px 4px; border-radius:3px; font-weight:normal; margin-left:5px;">전화</span>' : ''}</td>
@@ -5426,7 +5447,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${trackingInputHtml}
                     </div>
                 </td>
-                <td>${statusBadge}</td>
+                <td>
+                    ${statusBadge}
+                    ${receiptBtnHtml ? `<div style="margin-top:4px;">${receiptBtnHtml}</div>` : ''}
+                </td>
                 <td>${selectHtml}</td>
             `;
 

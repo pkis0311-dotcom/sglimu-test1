@@ -1,5 +1,15 @@
 import { supabase } from './supabase-client.js';
 
+// 나이스페이 전표/영수증 팝업 여는 전역 헬퍼 함수
+window.openNicepayReceipt = function(tid, type = '0') {
+    if (!tid) {
+        alert('영수증 정보(TID)가 존재하지 않는 결제 건입니다.');
+        return;
+    }
+    const url = `https://npg.nicepay.co.kr/issue/IssueLoader.do?TID=${encodeURIComponent(tid)}&type=${type}`;
+    window.open(url, 'nicepayReceipt', 'width=460,height=680,scrollbars=yes,resizable=yes');
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     // [신규] 상단 로고 이미지 하단 우측으로 이동 동적 처리 (사용자 요청으로 제거됨)
     // const footerContainer = document.querySelector('.footer-container');
@@ -558,6 +568,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const dateObj = new Date(order.created_at);
                     const dateStr = `${dateObj.getFullYear()}-${(dateObj.getMonth()+1).toString().padStart(2,'0')}-${dateObj.getDate().toString().padStart(2,'0')}`;
                     
+                    // TID 추출 (order.tid 필드 또는 customer_name 내의 ||TID:... 파싱)
+                    let orderTid = order.tid || null;
+                    if (!orderTid && order.customer_name && order.customer_name.includes('||TID:')) {
+                        const m = order.customer_name.match(/\|\|TID:([^|]+)/);
+                        if (m) orderTid = m[1];
+                    }
+
+                    // 영수증 버튼 HTML
+                    let receiptBtnHtml = '';
+                    if (orderTid) {
+                        receiptBtnHtml = `<button onclick="openNicepayReceipt('${orderTid}')" style="background:#f0f7ff; border:1px solid #1a73e8; color:#1a73e8; font-size:0.75rem; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
+                    }
+
                     // 주문 상태 텍스트 및 스타일 결정
                     let statusLabel = '결제대기';
                     let statusColor = '#e67e22'; // orange
@@ -610,7 +633,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     card.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f7f7f7; padding-bottom:8px;">
                             <span style="font-size:0.78rem; color:#777; font-weight:600;">주문일: ${dateStr}</span>
-                            <span style="font-size:0.75rem; font-weight:700; color:${statusColor}; background:${statusBg}; padding:2px 8px; border-radius:20px;">${statusLabel}</span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                ${receiptBtnHtml}
+                                <span style="font-size:0.75rem; font-weight:700; color:${statusColor}; background:${statusBg}; padding:2px 8px; border-radius:20px;">${statusLabel}</span>
+                            </div>
                         </div>
                         <div style="font-size:0.9rem; font-weight:700; color:#333; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${order.product_name}">
                             ${order.product_name}
