@@ -55,8 +55,12 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
     checkoutRawTotal = totalAmount;
     checkoutSelectedCouponDisc = 0;
 
+    const MIN_COUPON_ORDER_AMOUNT = 30000;
+    const isCouponAllowed = checkoutRawTotal >= MIN_COUPON_ORDER_AMOUNT;
+
     const pointInputEl = document.getElementById('checkoutPointInput');
     const couponSelectEl = document.getElementById('checkoutCouponSelect');
+    const couponNoticeEl = document.getElementById('checkoutCouponNotice');
     const userPointsEl = document.getElementById('checkoutUserPoints');
     const subtotalEl = document.getElementById('checkoutSubtotalPrice');
     const discountEl = document.getElementById('checkoutDiscountPrice');
@@ -64,7 +68,29 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
     const btnUseAllPoints = document.getElementById('btnUseAllPoints');
 
     if (pointInputEl) pointInputEl.value = 0;
-    if (couponSelectEl) couponSelectEl.value = '';
+    
+    if (couponSelectEl) {
+        couponSelectEl.value = '';
+        if (!isCouponAllowed) {
+            couponSelectEl.disabled = true;
+            couponSelectEl.style.background = '#f3f4f6';
+            couponSelectEl.style.cursor = 'not-allowed';
+            couponSelectEl.innerHTML = `<option value="">3만원 이상 결제 시 쿠폰 선택 가능 (현재 ${checkoutRawTotal.toLocaleString()}원)</option>`;
+        } else {
+            couponSelectEl.disabled = false;
+            couponSelectEl.style.background = '#fff';
+            couponSelectEl.style.cursor = 'pointer';
+            couponSelectEl.innerHTML = `<option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>`;
+        }
+    }
+
+    if (couponNoticeEl) {
+        if (!isCouponAllowed) {
+            couponNoticeEl.innerHTML = `<span style="color:#dc2626; font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> 3만원 이상 결제 시 쿠폰 선택이 가능합니다. (현재: ${checkoutRawTotal.toLocaleString()}원)</span>`;
+        } else {
+            couponNoticeEl.innerHTML = `<span style="color:#166534;"><i class="fa-solid fa-circle-check"></i> 3만원 이상 결제 조건 충족 (쿠폰 적용 가능)</span>`;
+        }
+    }
 
     function recalcCheckoutTotals() {
         let usedPts = parseInt(pointInputEl?.value || '0', 10);
@@ -83,6 +109,11 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
         if (usedPts > checkoutUserMaxPoints) {
             usedPts = checkoutUserMaxPoints;
             if (pointInputEl) pointInputEl.value = usedPts;
+        }
+
+        if (!isCouponAllowed) {
+            checkoutSelectedCouponDisc = 0;
+            if (couponSelectEl) couponSelectEl.value = '';
         }
 
         const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
@@ -110,6 +141,13 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
     }
     if (couponSelectEl) {
         couponSelectEl.onchange = () => {
+            if (!isCouponAllowed) {
+                alert('쿠폰은 주문 금액 3만원 이상 결제 시에만 선택할 수 있습니다.');
+                couponSelectEl.value = '';
+                checkoutSelectedCouponDisc = 0;
+                recalcCheckoutTotals();
+                return;
+            }
             const selVal = couponSelectEl.value;
             if (!selVal) {
                 checkoutSelectedCouponDisc = 0;
@@ -148,15 +186,33 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
                 // 쿠폰 목록
                 const { data: couponsConfig } = await window.supabase.from('site_configs').select('value').eq('key', 'coupons').single();
                 if (couponsConfig && Array.isArray(couponsConfig.value) && couponSelectEl) {
-                    const nowStr = new Date().toISOString().split('T')[0];
-                    let cpHtml = '<option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>';
-                    couponsConfig.value.forEach(cp => {
-                        if (cp.is_active && (!cp.expiration_date || cp.expiration_date >= nowStr)) {
-                            const discVal = cp.discount_value || 0;
-                            cpHtml += `<option value="${cp.id}" data-discount="${discVal}">[${cp.code}] ${cp.name} (${discVal.toLocaleString()}원 할인)</option>`;
+                    if (!isCouponAllowed) {
+                        couponSelectEl.disabled = true;
+                        couponSelectEl.style.background = '#f3f4f6';
+                        couponSelectEl.style.cursor = 'not-allowed';
+                        couponSelectEl.innerHTML = `<option value="">3만원 이상 결제 시 쿠폰 선택 가능 (현재 ${checkoutRawTotal.toLocaleString()}원)</option>`;
+                    } else {
+                        const nowStr = new Date().toISOString().split('T')[0];
+                        let cpHtml = '<option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>';
+                        let countValid = 0;
+                        couponsConfig.value.forEach(cp => {
+                            if (cp.is_active && (!cp.expiration_date || cp.expiration_date >= nowStr)) {
+                                const minOrder = cp.min_order || MIN_COUPON_ORDER_AMOUNT;
+                                if (checkoutRawTotal >= minOrder) {
+                                    const discVal = cp.discount_value || 0;
+                                    cpHtml += `<option value="${cp.id}" data-discount="${discVal}">[${cp.code}] ${cp.name} (${discVal.toLocaleString()}원 할인)</option>`;
+                                    countValid++;
+                                }
+                            }
+                        });
+                        if (countValid === 0) {
+                            cpHtml = '<option value="">적용 가능한 쿠폰이 없습니다</option>';
                         }
-                    });
-                    couponSelectEl.innerHTML = cpHtml;
+                        couponSelectEl.innerHTML = cpHtml;
+                        couponSelectEl.disabled = false;
+                        couponSelectEl.style.background = '#fff';
+                        couponSelectEl.style.cursor = 'pointer';
+                    }
                 }
             }
         } catch (err) {
@@ -316,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <select id="checkoutCouponSelect" class="auth-input" style="margin:0; padding:6px 10px; font-size:0.85rem; background:#fff;">
                                         <option value="">적용 가능한 쿠폰 선택 (선택 안 함)</option>
                                     </select>
+                                    <div id="checkoutCouponNotice" style="font-size:0.75rem; margin-top:4px;"></div>
                                 </div>
                             </div>
                         </div>
