@@ -55,8 +55,8 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
     checkoutRawTotal = totalAmount;
     checkoutSelectedCouponDisc = 0;
 
-    const MIN_COUPON_ORDER_AMOUNT = 30000;
-    const isCouponAllowed = checkoutRawTotal >= MIN_COUPON_ORDER_AMOUNT;
+    const MIN_BENEFIT_ORDER_AMOUNT = 30000;
+    const isBenefitAllowed = checkoutRawTotal >= MIN_BENEFIT_ORDER_AMOUNT;
 
     const pointInputEl = document.getElementById('checkoutPointInput');
     const couponSelectEl = document.getElementById('checkoutCouponSelect');
@@ -67,15 +67,40 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
     const totalEl = document.getElementById('checkoutTotalPrice');
     const btnUseAllPoints = document.getElementById('btnUseAllPoints');
 
-    if (pointInputEl) pointInputEl.value = 0;
+    if (pointInputEl) {
+        pointInputEl.value = 0;
+        if (!isBenefitAllowed) {
+            pointInputEl.disabled = true;
+            pointInputEl.style.background = '#f3f4f6';
+            pointInputEl.style.cursor = 'not-allowed';
+            pointInputEl.placeholder = '3만원 이상 시 사용';
+        } else {
+            pointInputEl.disabled = false;
+            pointInputEl.style.background = '#fff';
+            pointInputEl.style.cursor = 'text';
+            pointInputEl.placeholder = '0';
+        }
+    }
+
+    if (btnUseAllPoints) {
+        if (!isBenefitAllowed) {
+            btnUseAllPoints.disabled = true;
+            btnUseAllPoints.style.opacity = '0.5';
+            btnUseAllPoints.style.cursor = 'not-allowed';
+        } else {
+            btnUseAllPoints.disabled = false;
+            btnUseAllPoints.style.opacity = '1';
+            btnUseAllPoints.style.cursor = 'pointer';
+        }
+    }
     
     if (couponSelectEl) {
         couponSelectEl.value = '';
-        if (!isCouponAllowed) {
+        if (!isBenefitAllowed) {
             couponSelectEl.disabled = true;
             couponSelectEl.style.background = '#f3f4f6';
             couponSelectEl.style.cursor = 'not-allowed';
-            couponSelectEl.innerHTML = `<option value="">3만원 이상 결제 시 쿠폰 선택 가능 (현재 ${checkoutRawTotal.toLocaleString()}원)</option>`;
+            couponSelectEl.innerHTML = `<option value="">3만원 이상 결제 시 사용 가능 (현재 ${checkoutRawTotal.toLocaleString()}원)</option>`;
         } else {
             couponSelectEl.disabled = false;
             couponSelectEl.style.background = '#fff';
@@ -85,41 +110,54 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
     }
 
     if (couponNoticeEl) {
-        if (!isCouponAllowed) {
-            couponNoticeEl.innerHTML = `<span style="color:#dc2626; font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> 3만원 이상 결제 시 쿠폰 선택이 가능합니다. (현재: ${checkoutRawTotal.toLocaleString()}원)</span>`;
+        if (!isBenefitAllowed) {
+            couponNoticeEl.innerHTML = `<span style="color:#dc2626; font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> 3만원 이상 결제 시 포인트 및 쿠폰 사용이 가능합니다. (현재: ${checkoutRawTotal.toLocaleString()}원)</span>`;
         } else {
-            couponNoticeEl.innerHTML = `<span style="color:#166534;"><i class="fa-solid fa-circle-check"></i> 3만원 이상 결제 조건 충족 (쿠폰 적용 가능)</span>`;
+            couponNoticeEl.innerHTML = `<span style="color:#166534;"><i class="fa-solid fa-circle-check"></i> 3만원 이상 결제 조건 충족 (포인트 & 쿠폰 사용 가능)</span>`;
         }
     }
 
     function recalcCheckoutTotals() {
         let usedPts = parseInt(pointInputEl?.value || '0', 10);
         if (isNaN(usedPts) || usedPts < 0) usedPts = 0;
-        
-        if (pointInputEl) {
-            pointInputEl.disabled = false;
-            pointInputEl.style.background = '#fff';
-        }
-        if (btnUseAllPoints) {
-            btnUseAllPoints.disabled = false;
-            btnUseAllPoints.style.opacity = '1';
-            btnUseAllPoints.style.cursor = 'pointer';
-        }
 
-        if (usedPts > checkoutUserMaxPoints) {
-            usedPts = checkoutUserMaxPoints;
-            if (pointInputEl) pointInputEl.value = usedPts;
-        }
-
-        if (!isCouponAllowed) {
+        if (!isBenefitAllowed) {
+            usedPts = 0;
             checkoutSelectedCouponDisc = 0;
-            if (couponSelectEl) couponSelectEl.value = '';
-        }
-
-        const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
-        if (usedPts > maxDiscountForPoints) {
-            usedPts = maxDiscountForPoints;
-            if (pointInputEl) pointInputEl.value = usedPts;
+            if (pointInputEl) {
+                pointInputEl.value = 0;
+                pointInputEl.disabled = true;
+                pointInputEl.style.background = '#f3f4f6';
+            }
+            if (btnUseAllPoints) {
+                btnUseAllPoints.disabled = true;
+                btnUseAllPoints.style.opacity = '0.5';
+                btnUseAllPoints.style.cursor = 'not-allowed';
+            }
+            if (couponSelectEl) {
+                couponSelectEl.value = '';
+                couponSelectEl.disabled = true;
+                couponSelectEl.style.background = '#f3f4f6';
+            }
+        } else {
+            if (pointInputEl) {
+                pointInputEl.disabled = false;
+                pointInputEl.style.background = '#fff';
+            }
+            if (btnUseAllPoints) {
+                btnUseAllPoints.disabled = false;
+                btnUseAllPoints.style.opacity = '1';
+                btnUseAllPoints.style.cursor = 'pointer';
+            }
+            if (usedPts > checkoutUserMaxPoints) {
+                usedPts = checkoutUserMaxPoints;
+                if (pointInputEl) pointInputEl.value = usedPts;
+            }
+            const maxDiscountForPoints = Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc);
+            if (usedPts > maxDiscountForPoints) {
+                usedPts = maxDiscountForPoints;
+                if (pointInputEl) pointInputEl.value = usedPts;
+            }
         }
 
         const totalDisc = checkoutSelectedCouponDisc + usedPts;
@@ -130,10 +168,24 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
         if (totalEl) totalEl.innerText = finalPay.toLocaleString() + '원';
     }
 
-    if (pointInputEl) pointInputEl.oninput = recalcCheckoutTotals;
+    if (pointInputEl) {
+        pointInputEl.oninput = () => {
+            if (!isBenefitAllowed) {
+                pointInputEl.value = 0;
+                alert('포인트 사용은 주문 금액 3만원 이상 결제 시에만 가능합니다.');
+                recalcCheckoutTotals();
+                return;
+            }
+            recalcCheckoutTotals();
+        };
+    }
     if (btnUseAllPoints) {
         btnUseAllPoints.onclick = (e) => {
             e.preventDefault();
+            if (!isBenefitAllowed) {
+                alert('포인트 사용은 주문 금액 3만원 이상 결제 시에만 가능합니다.');
+                return;
+            }
             const maxPossible = Math.min(checkoutUserMaxPoints, Math.max(0, checkoutRawTotal - checkoutSelectedCouponDisc));
             if (pointInputEl) pointInputEl.value = maxPossible;
             recalcCheckoutTotals();
@@ -141,7 +193,7 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
     }
     if (couponSelectEl) {
         couponSelectEl.onchange = () => {
-            if (!isCouponAllowed) {
+            if (!isBenefitAllowed) {
                 alert('쿠폰은 주문 금액 3만원 이상 결제 시에만 선택할 수 있습니다.');
                 couponSelectEl.value = '';
                 checkoutSelectedCouponDisc = 0;
@@ -186,7 +238,7 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
                 // 쿠폰 목록
                 const { data: couponsConfig } = await window.supabase.from('site_configs').select('value').eq('key', 'coupons').single();
                 if (couponsConfig && Array.isArray(couponsConfig.value) && couponSelectEl) {
-                    if (!isCouponAllowed) {
+                    if (!isBenefitAllowed) {
                         couponSelectEl.disabled = true;
                         couponSelectEl.style.background = '#f3f4f6';
                         couponSelectEl.style.cursor = 'not-allowed';
@@ -197,7 +249,7 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
                         let countValid = 0;
                         couponsConfig.value.forEach(cp => {
                             if (cp.is_active && (!cp.expiration_date || cp.expiration_date >= nowStr)) {
-                                const minOrder = cp.min_order || MIN_COUPON_ORDER_AMOUNT;
+                                const minOrder = cp.min_order || MIN_BENEFIT_ORDER_AMOUNT;
                                 if (checkoutRawTotal >= minOrder) {
                                     const discVal = cp.discount_value || 0;
                                     cpHtml += `<option value="${cp.id}" data-discount="${discVal}">[${cp.code}] ${cp.name} (${discVal.toLocaleString()}원 할인)</option>`;
@@ -585,12 +637,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     rawTotalPrice += item.price * item.qty;
                 });
 
-                const usedPoints = parseInt(document.getElementById('checkoutPointInput')?.value || '0', 10) || 0;
-                const couponSel = document.getElementById('checkoutCouponSelect');
+                const MIN_BENEFIT_ORDER_AMOUNT = 30000;
+                let usedPoints = 0;
                 let couponDiscount = 0;
-                if (couponSel && couponSel.value) {
-                    const opt = couponSel.options[couponSel.selectedIndex];
-                    couponDiscount = parseInt(opt.dataset.discount || '0', 10) || 0;
+
+                if (rawTotalPrice >= MIN_BENEFIT_ORDER_AMOUNT) {
+                    usedPoints = parseInt(document.getElementById('checkoutPointInput')?.value || '0', 10) || 0;
+                    const couponSel = document.getElementById('checkoutCouponSelect');
+                    if (couponSel && couponSel.value) {
+                        const opt = couponSel.options[couponSel.selectedIndex];
+                        couponDiscount = parseInt(opt.dataset.discount || '0', 10) || 0;
+                    }
                 }
 
                 const totalPrice = Math.max(0, rawTotalPrice - usedPoints - couponDiscount);
