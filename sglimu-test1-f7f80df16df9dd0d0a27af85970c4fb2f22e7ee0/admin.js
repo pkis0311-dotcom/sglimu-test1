@@ -3807,9 +3807,100 @@ function createFeatureBlock(title, desc) {
             });
         });
     }
+
+    function updateTableColorPreview() {
+        const headBg = document.getElementById('specTableHeadBg') ? document.getElementById('specTableHeadBg').value : '#f9f9f9';
+        const headColor = document.getElementById('specTableHeadColor') ? document.getElementById('specTableHeadColor').value : '#333333';
+        const border = document.getElementById('specTableBorderColor') ? document.getElementById('specTableBorderColor').value : '#dddddd';
+        const cellBg = document.getElementById('specTableCellBg') ? document.getElementById('specTableCellBg').value : '#ffffff';
+
+        const prevHead = document.getElementById('prevHead');
+        const prevCell = document.getElementById('prevCell');
+        const prevTable = document.getElementById('colorPreviewTable');
+
+        if (prevHead) {
+            prevHead.style.backgroundColor = headBg;
+            prevHead.style.color = headColor;
+            prevHead.style.borderColor = border;
+        }
+        if (prevCell) {
+            prevCell.style.backgroundColor = cellBg;
+            prevCell.style.borderColor = border;
+        }
+        if (prevTable) {
+            prevTable.style.borderColor = border;
+        }
+    }
+
+    function initTableColorControls() {
+        const pairs = [
+            ['specTableHeadBg', 'specTableHeadBgText'],
+            ['specTableHeadColor', 'specTableHeadColorText'],
+            ['specTableBorderColor', 'specTableBorderColorText'],
+            ['specTableCellBg', 'specTableCellBgText']
+        ];
+
+        pairs.forEach(([colorId, textId]) => {
+            const colorEl = document.getElementById(colorId);
+            const textEl = document.getElementById(textId);
+            if (!colorEl || !textEl) return;
+
+            colorEl.addEventListener('input', () => {
+                textEl.value = colorEl.value.toUpperCase();
+                updateTableColorPreview();
+            });
+            colorEl.addEventListener('change', () => {
+                textEl.value = colorEl.value.toUpperCase();
+                updateTableColorPreview();
+            });
+
+            textEl.addEventListener('input', () => {
+                let val = textEl.value.trim();
+                if (!val.startsWith('#') && (val.length === 3 || val.length === 6)) {
+                    val = '#' + val;
+                }
+                if (/^#[0-9A-F]{6}$/i.test(val) || /^#[0-9A-F]{3}$/i.test(val)) {
+                    colorEl.value = val;
+                    updateTableColorPreview();
+                }
+            });
+        });
+
+        // Preset buttons
+        document.querySelectorAll('.table-color-settings .preset-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const hBg = btn.dataset.headerBg;
+                const hColor = btn.dataset.headerColor;
+                const border = btn.dataset.border;
+                const cBg = btn.dataset.cellBg;
+
+                if (hBg && document.getElementById('specTableHeadBg')) {
+                    document.getElementById('specTableHeadBg').value = hBg;
+                    document.getElementById('specTableHeadBgText').value = hBg.toUpperCase();
+                }
+                if (hColor && document.getElementById('specTableHeadColor')) {
+                    document.getElementById('specTableHeadColor').value = hColor;
+                    document.getElementById('specTableHeadColorText').value = hColor.toUpperCase();
+                }
+                if (border && document.getElementById('specTableBorderColor')) {
+                    document.getElementById('specTableBorderColor').value = border;
+                    document.getElementById('specTableBorderColorText').value = border.toUpperCase();
+                }
+                if (cBg && document.getElementById('specTableCellBg')) {
+                    document.getElementById('specTableCellBg').value = cBg;
+                    document.getElementById('specTableCellBgText').value = cBg.toUpperCase();
+                }
+                updateTableColorPreview();
+            });
+        });
+        updateTableColorPreview();
+    }
     
     // 즉시 바인딩 실행
     bindStylePreviewEvents();
+    initTableColorControls();
+
 
     async function loadPageData() {
         if(!currentPageDataKey) {
@@ -3887,6 +3978,45 @@ function createFeatureBlock(title, desc) {
             if (pageDescription) pageDescription.value = data.description || '';
             if(data.specStyle) document.getElementById('specStyle').value = data.specStyle;
             if(data.featureStyle) document.getElementById('featureStyle').value = data.featureStyle;
+
+            if (data.tableColors) {
+                const tc = data.tableColors;
+                if (document.getElementById('specTableHeadBg')) {
+                    document.getElementById('specTableHeadBg').value = tc.headerBg || '#f9f9f9';
+                    document.getElementById('specTableHeadBgText').value = (tc.headerBg || '#f9f9f9').toUpperCase();
+                }
+                if (document.getElementById('specTableHeadColor')) {
+                    document.getElementById('specTableHeadColor').value = tc.headerColor || '#333333';
+                    document.getElementById('specTableHeadColorText').value = (tc.headerColor || '#333333').toUpperCase();
+                }
+                if (document.getElementById('specTableBorderColor')) {
+                    document.getElementById('specTableBorderColor').value = tc.borderColor || '#dddddd';
+                    document.getElementById('specTableBorderColorText').value = (tc.borderColor || '#dddddd').toUpperCase();
+                }
+                if (document.getElementById('specTableCellBg')) {
+                    document.getElementById('specTableCellBg').value = tc.cellBg || '#ffffff';
+                    document.getElementById('specTableCellBgText').value = (tc.cellBg || '#ffffff').toUpperCase();
+                }
+            } else {
+                if (document.getElementById('specTableHeadBg')) {
+                    document.getElementById('specTableHeadBg').value = '#f9f9f9';
+                    document.getElementById('specTableHeadBgText').value = '#F9F9F9';
+                }
+                if (document.getElementById('specTableHeadColor')) {
+                    document.getElementById('specTableHeadColor').value = '#333333';
+                    document.getElementById('specTableHeadColorText').value = '#333333';
+                }
+                if (document.getElementById('specTableBorderColor')) {
+                    document.getElementById('specTableBorderColor').value = '#dddddd';
+                    document.getElementById('specTableBorderColorText').value = '#DDDDDD';
+                }
+                if (document.getElementById('specTableCellBg')) {
+                    document.getElementById('specTableCellBg').value = '#ffffff';
+                    document.getElementById('specTableCellBgText').value = '#FFFFFF';
+                }
+            }
+            if (typeof updateTableColorPreview === 'function') updateTableColorPreview();
+
             updateFeatureStylePreview();
             updateSpecStylePreview();
             if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
@@ -3912,6 +4042,25 @@ function clearPageManageUI() {
     if (pageDescription) pageDescription.value = '';
     if (document.getElementById('specStyle')) document.getElementById('specStyle').value = 'type-a';
     if (document.getElementById('featureStyle')) document.getElementById('featureStyle').value = 'type-a';
+
+    if (document.getElementById('specTableHeadBg')) {
+        document.getElementById('specTableHeadBg').value = '#f9f9f9';
+        document.getElementById('specTableHeadBgText').value = '#F9F9F9';
+    }
+    if (document.getElementById('specTableHeadColor')) {
+        document.getElementById('specTableHeadColor').value = '#333333';
+        document.getElementById('specTableHeadColorText').value = '#333333';
+    }
+    if (document.getElementById('specTableBorderColor')) {
+        document.getElementById('specTableBorderColor').value = '#dddddd';
+        document.getElementById('specTableBorderColorText').value = '#DDDDDD';
+    }
+    if (document.getElementById('specTableCellBg')) {
+        document.getElementById('specTableCellBg').value = '#ffffff';
+        document.getElementById('specTableCellBgText').value = '#FFFFFF';
+    }
+    if (typeof updateTableColorPreview === 'function') updateTableColorPreview();
+
     updateFeatureStylePreview();
     updateSpecStylePreview();
     
@@ -3919,6 +4068,7 @@ function clearPageManageUI() {
     if (document.getElementById('pageMainImage')) document.getElementById('pageMainImage').value = '';
     if (document.getElementById('pageDetailImage')) document.getElementById('pageDetailImage').value = '';
 }
+
 
 async function fetchUsers() {
     const tBody = document.getElementById('userTableBody');
