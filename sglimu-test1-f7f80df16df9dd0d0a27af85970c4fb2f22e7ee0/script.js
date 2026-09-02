@@ -1773,8 +1773,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     cellBg: data.specCellBg || '#ffffff'
                 };
                 data.specs.forEach(s => {
-                    specBody.innerHTML += `<tr><th style="background:${tc.headerBg}; color:${tc.headerColor}; width:25%; padding:12px; border:1px solid ${tc.borderColor}; text-align:left;">${s.key}</th><td style="padding:12px; background:${tc.cellBg}; border:1px solid ${tc.borderColor};">${s.val}</td></tr>`;
+                    specBody.innerHTML += `<tr><th style="background:${tc.headerBg} !important; color:${tc.headerColor} !important; width:25%; padding:12px; border:1px solid ${tc.borderColor} !important; text-align:left;">${s.key}</th><td style="padding:12px; background:${tc.cellBg} !important; border:1px solid ${tc.borderColor} !important;">${s.val}</td></tr>`;
                 });
+
             }
 
 

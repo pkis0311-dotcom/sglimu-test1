@@ -1325,30 +1325,31 @@ button {
 .spec-container.type-a table, .spec-table {
     width: 100% !important;
     border-collapse: collapse !important;
-    border: 1px solid #d4d4d4 !important;
+    border: 1px solid #d4d4d4;
     font-family: 'Malgun Gothic', '맑은 고딕', Calibri, Segoe UI, sans-serif;
 }
 .spec-container.type-a th, .spec-table th {
-    background: #f2f2f2 !important;
+    background: #f2f2f2;
     padding: 10px 15px !important;
-    border: 1px solid #d4d4d4 !important;
+    border: 1px solid #d4d4d4;
     text-align: left !important;
     width: 30%;
-    color: #333 !important;
+    color: #333;
     font-weight: bold !important;
     font-size: 0.95rem;
 }
 .spec-container.type-a td, .spec-table td {
     padding: 10px 15px !important;
-    border: 1px solid #d4d4d4 !important;
-    color: #333 !important;
-    background: #fff !important;
+    border: 1px solid #d4d4d4;
+    color: #333;
+    background: #fff;
     font-weight: 400;
     font-size: 0.95rem;
 }
 .spec-container.type-a tr:hover, .spec-table tr:hover {
-    background-color: #f9fbfd !important;
+    background-color: transparent;
 }
+
 
 .spec-container.type-b {
     display: grid;
