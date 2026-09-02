@@ -3859,6 +3859,21 @@ function createFeatureBlock(title, desc) {
         }
     }
 
+    function syncRowsToGlobalColors() {
+        const headBg = document.getElementById('specTableHeadBg') ? document.getElementById('specTableHeadBg').value : '#f9f9f9';
+        const headColor = document.getElementById('specTableHeadColor') ? document.getElementById('specTableHeadColor').value : '#333333';
+        const cellBg = document.getElementById('specTableCellBg') ? document.getElementById('specTableCellBg').value : '#ffffff';
+
+        document.querySelectorAll('.spec-row').forEach(row => {
+            const hBgInput = row.querySelector('.spec-row-head-bg');
+            const hColorInput = row.querySelector('.spec-row-head-color');
+            const cBgInput = row.querySelector('.spec-row-cell-bg');
+            if (hBgInput) hBgInput.value = headBg;
+            if (hColorInput) hColorInput.value = headColor;
+            if (cBgInput) cBgInput.value = cellBg;
+        });
+    }
+
     function initTableColorControls() {
         const pairs = [
             ['specTableHeadBg', 'specTableHeadBgText'],
@@ -3875,10 +3890,12 @@ function createFeatureBlock(title, desc) {
             colorEl.addEventListener('input', () => {
                 textEl.value = colorEl.value.toUpperCase();
                 updateTableColorPreview();
+                syncRowsToGlobalColors();
             });
             colorEl.addEventListener('change', () => {
                 textEl.value = colorEl.value.toUpperCase();
                 updateTableColorPreview();
+                syncRowsToGlobalColors();
             });
 
             textEl.addEventListener('input', () => {
@@ -3889,6 +3906,7 @@ function createFeatureBlock(title, desc) {
                 if (/^#[0-9A-F]{6}$/i.test(val) || /^#[0-9A-F]{3}$/i.test(val)) {
                     colorEl.value = val;
                     updateTableColorPreview();
+                    syncRowsToGlobalColors();
                 }
             });
         });
@@ -3919,10 +3937,21 @@ function createFeatureBlock(title, desc) {
                     document.getElementById('specTableCellBgText').value = cBg.toUpperCase();
                 }
                 updateTableColorPreview();
+                syncRowsToGlobalColors();
             });
         });
+
+        const applyAllBtn = document.getElementById('applyAllRowsColorBtn');
+        if (applyAllBtn) {
+            applyAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                syncRowsToGlobalColors();
+            });
+        }
+
         updateTableColorPreview();
     }
+
     
     // 즉시 바인딩 실행
     bindStylePreviewEvents();

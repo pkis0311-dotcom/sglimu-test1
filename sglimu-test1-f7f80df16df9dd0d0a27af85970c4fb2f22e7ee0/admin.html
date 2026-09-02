@@ -692,6 +692,7 @@
                                 <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type C (프리미엄)</span>
                                 <img src="assets/spec_preview_c.png" alt="Type C" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
                             </div>
+                        </div>
                         <!-- 테이블 커스텀 색상 수동 지정 컨트롤 -->
                         <div class="table-color-settings" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:20px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
@@ -699,13 +700,15 @@
                                     <i class="fa-solid fa-palette" style="color:#3182ce;"></i> 상세페이지 테이블 색상 수동 지정
                                 </label>
                                 <!-- 프리셋 버튼 그룹 -->
-                                <div style="display:flex; gap:6px; flex-wrap:wrap;" class="color-preset-group">
+                                <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;" class="color-preset-group">
                                     <button type="button" class="preset-btn" data-header-bg="#f9f9f9" data-header-color="#333333" data-border="#dddddd" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #ccc; background:#fff; cursor:pointer; font-weight:600;">기본 모노</button>
                                     <button type="button" class="preset-btn" data-header-bg="#eef6fc" data-header-color="#1c497d" data-border="#cbdcf0" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #cbdcf0; background:#eef6fc; color:#1c497d; cursor:pointer; font-weight:600;">도서관 블루</button>
                                     <button type="button" class="preset-btn" data-header-bg="#eef9f5" data-header-color="#166547" data-border="#c3e7d8" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #c3e7d8; background:#eef9f5; color:#166547; cursor:pointer; font-weight:600;">그린 에머랄드</button>
                                     <button type="button" class="preset-btn" data-header-bg="#fbf7f2" data-header-color="#6e5235" data-border="#ebdccb" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #ebdccb; background:#fbf7f2; color:#6e5235; cursor:pointer; font-weight:600;">웜 베이지</button>
                                     <button type="button" class="preset-btn" data-header-bg="#2d3748" data-header-color="#ffffff" data-border="#4a5568" data-cell-bg="#f8fafc" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #4a5568; background:#2d3748; color:#fff; cursor:pointer; font-weight:600;">모던 다크</button>
+                                    <button type="button" id="applyAllRowsColorBtn" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #3182ce; background:#ebf8ff; color:#2b6cb0; cursor:pointer; font-weight:700; margin-left:6px;" title="현재 상단 색상을 등록된 모든 개별 항목에 동기화 적용"><i class="fa-solid fa-arrows-rotate"></i> 전체 항목에 색상 적용</button>
                                 </div>
+
                             </div>
                             
                             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
