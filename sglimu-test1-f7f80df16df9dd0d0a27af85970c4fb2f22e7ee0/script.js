@@ -1773,8 +1773,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     cellBg: data.specCellBg || '#ffffff'
                 };
                 data.specs.forEach(s => {
-                    specBody.innerHTML += `<tr><th style="background:${tc.headerBg} !important; color:${tc.headerColor} !important; width:25%; padding:12px; border:1px solid ${tc.borderColor} !important; text-align:left;">${s.key}</th><td style="padding:12px; background:${tc.cellBg} !important; border:1px solid ${tc.borderColor} !important;">${s.val}</td></tr>`;
+                    const itemHeadBg = s.headBg || tc.headerBg;
+                    const itemHeadColor = s.headColor || tc.headerColor;
+                    const itemCellBg = s.cellBg || tc.cellBg;
+                    specBody.innerHTML += `<tr><th style="background:${itemHeadBg} !important; color:${itemHeadColor} !important; width:25%; padding:12px; border:1px solid ${tc.borderColor} !important; text-align:left;">${s.key}</th><td style="padding:12px; background:${itemCellBg} !important; border:1px solid ${tc.borderColor} !important;">${s.val}</td></tr>`;
                 });
+
 
             }
 

@@ -723,20 +723,27 @@
                         table.style.borderColor = tc.borderColor;
                         const tbody = document.createElement('tbody');
                         data.specs.forEach(s => {
-                            tbody.innerHTML += `<tr><th style="padding:15px; text-align:left; background:${tc.headerBg} !important; color:${tc.headerColor} !important; width:25%; border:1px solid ${tc.borderColor} !important;">${s.key}</th><td class="ql-editor" style="padding:15px; background:${tc.cellBg} !important; border:1px solid ${tc.borderColor} !important;">${s.val}</td></tr>`;
+                            const itemHeadBg = s.headBg || tc.headerBg;
+                            const itemHeadColor = s.headColor || tc.headerColor;
+                            const itemCellBg = s.cellBg || tc.cellBg;
+                            tbody.innerHTML += `<tr><th style="padding:15px; text-align:left; background:${itemHeadBg} !important; color:${itemHeadColor} !important; width:25%; border:1px solid ${tc.borderColor} !important;">${s.key}</th><td class="ql-editor" style="padding:15px; background:${itemCellBg} !important; border:1px solid ${tc.borderColor} !important;">${s.val}</td></tr>`;
                         });
                         table.appendChild(tbody);
                         specContainer.appendChild(table);
                     } else {
                         data.specs.forEach(s => {
+                            const itemHeadBg = s.headBg || tc.headerBg;
+                            const itemHeadColor = s.headColor || tc.headerColor;
+                            const itemCellBg = s.cellBg || tc.cellBg;
                             specContainer.innerHTML += `
                                 <div class="spec-item" style="border:1px solid ${tc.borderColor} !important; border-radius:6px; margin-bottom:10px; overflow:hidden;">
-                                    <div class="spec-key" style="background:${tc.headerBg} !important; color:${tc.headerColor} !important; padding:10px 15px; font-weight:600;">${s.key}</div>
-                                    <div class="spec-val ql-editor" style="padding:15px; background:${tc.cellBg} !important;">${s.val}</div>
+                                    <div class="spec-key" style="background:${itemHeadBg} !important; color:${itemHeadColor} !important; padding:10px 15px; font-weight:600;">${s.key}</div>
+                                    <div class="spec-val ql-editor" style="padding:15px; background:${itemCellBg} !important;">${s.val}</div>
                                 </div>
                             `;
                         });
                     }
+
 
                     if (specSection) specSection.style.display = 'block';
                 } else {

@@ -3442,11 +3442,21 @@ function initPageManageTab() {
                 specContainer.querySelectorAll('.spec-row').forEach(row => {
                     const keyInput = row.querySelector('.spec-key');
                     const editorContainer = row.querySelector('.spec-val-editor');
+                    const headBgInput = row.querySelector('.spec-row-head-bg');
+                    const headColorInput = row.querySelector('.spec-row-head-color');
+                    const cellBgInput = row.querySelector('.spec-row-cell-bg');
                     if(keyInput && keyInput.value) {
                         const valHTML = editorContainer && editorContainer.__quill ? editorContainer.__quill.root.innerHTML : (row.querySelectorAll('input')[1] ? row.querySelectorAll('input')[1].value : '');
-                        data.specs.push({ key: keyInput.value, val: valHTML });
+                        data.specs.push({
+                            key: keyInput.value,
+                            val: valHTML,
+                            headBg: headBgInput ? headBgInput.value : null,
+                            headColor: headColorInput ? headColorInput.value : null,
+                            cellBg: cellBgInput ? cellBgInput.value : null
+                        });
                     }
                 });
+
                 
                 featureContainer.querySelectorAll('.feature-block').forEach(block => {
                     const titleInput = block.querySelector('.feature-title');
@@ -3502,19 +3512,35 @@ function initPageManageTab() {
     }
 }
 
-function createSpecRow(key, val) {
+function createSpecRow(key = '', val = '', headBg = null, headColor = null, cellBg = null) {
     const specContainer = document.getElementById('specContainer');
     const row = document.createElement('div');
     row.className = 'spec-row';
-    row.style.cssText = "display:flex; gap:10px; align-items:flex-start; margin-bottom:10px;";
+    row.style.cssText = "display:flex; gap:12px; align-items:flex-start; margin-bottom:12px; background:#f9fafb; padding:12px; border-radius:8px; border:1px solid #e2e8f0;";
     
     specRowCounter++;
     const qId = 'spec_val_' + Date.now() + '_' + specRowCounter + '_' + Math.floor(Math.random()*100000);
     const tId = 'toolbar_' + qId;
+
+    const defaultHeadBg = document.getElementById('specTableHeadBg') ? document.getElementById('specTableHeadBg').value : '#f9f9f9';
+    const defaultHeadColor = document.getElementById('specTableHeadColor') ? document.getElementById('specTableHeadColor').value : '#333333';
+    const defaultCellBg = document.getElementById('specTableCellBg') ? document.getElementById('specTableCellBg').value : '#ffffff';
+
+    const curHeadBg = headBg || defaultHeadBg;
+    const curHeadColor = headColor || defaultHeadColor;
+    const curCellBg = cellBg || defaultCellBg;
     
     row.innerHTML = `
-        <input type="text" class="form-control spec-key" placeholder="항목명" value="${key}" style="flex:1; margin-top:5px;">
-        <div style="flex:2; background:#fff; min-width:0; display:flex; flex-direction:column; border:1px solid #d4d4d4; border-radius:4px; overflow:hidden;">
+        <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+            <input type="text" class="form-control spec-key" placeholder="항목명 (예: 크기)" value="${key}" style="font-weight:600;">
+            <div style="display:flex; align-items:center; gap:6px; background:#fff; padding:5px 8px; border-radius:6px; border:1px solid #cbd5e0;" title="이 항목만 개별 색상 지정">
+                <span style="font-size:0.75rem; color:#4a5568; font-weight:700; white-space:nowrap;"><i class="fa-solid fa-palette" style="color:#3182ce;"></i> 개별색상:</span>
+                <input type="color" class="spec-row-head-bg" title="항목명 배경색" value="${curHeadBg}" style="width:24px; height:24px; border:1px solid #ccc; border-radius:4px; padding:1px; cursor:pointer;">
+                <input type="color" class="spec-row-head-color" title="항목명 글자색" value="${curHeadColor}" style="width:24px; height:24px; border:1px solid #ccc; border-radius:4px; padding:1px; cursor:pointer;">
+                <input type="color" class="spec-row-cell-bg" title="내용 셀 배경색" value="${curCellBg}" style="width:24px; height:24px; border:1px solid #ccc; border-radius:4px; padding:1px; cursor:pointer;">
+            </div>
+        </div>
+        <div style="flex:2; background:#fff; min-width:0; display:flex; flex-direction:column; border:1px solid #d4d4d4; border-radius:6px; overflow:hidden;">
             <div id="${tId}" class="excel-toolbar">
                 <div class="excel-toolbar-group font-group">
                     <select class="ql-font excel-select font-select">
@@ -3558,6 +3584,7 @@ function createSpecRow(key, val) {
         </div>
         <button class="action-btn delete" onclick="this.parentElement.remove()" style="margin-top:5px;"><i class="fa-solid fa-circle-minus"></i></button>
     `;
+
     specContainer.appendChild(row);
     
     if (typeof Quill !== 'undefined') {
@@ -4019,7 +4046,8 @@ function createFeatureBlock(title, desc) {
 
             updateFeatureStylePreview();
             updateSpecStylePreview();
-            if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val));
+            if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val, s.headBg, s.headColor, s.cellBg));
+
             if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
         } catch (loadErr) {
             console.error('Failed to load detail page data into UI:', loadErr);
