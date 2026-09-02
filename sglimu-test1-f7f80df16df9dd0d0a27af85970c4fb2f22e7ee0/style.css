@@ -748,7 +748,7 @@ button {
 .partner-logos {
     display: flex;
     align-items: center;
-    gap: 50px;
+    gap: 65px;
     flex-wrap: wrap;
 }
 
@@ -771,6 +771,11 @@ button {
     object-fit: contain;
     max-width: 100%;
 }
+
+.partner-item img[src*="nicepay"] {
+    height: 28px;
+}
+
 
 
 
