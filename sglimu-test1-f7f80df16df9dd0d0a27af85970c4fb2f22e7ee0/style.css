@@ -729,11 +729,11 @@ button {
 /* Footer Partners Section */
 .footer-partners {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 20px;
-    margin-top: 15px;
+    padding-top: 22px;
+    margin-top: 18px;
     display: flex;
     align-items: center;
-    gap: 28px;
+    gap: 36px;
     flex-wrap: wrap;
 }
 
@@ -748,7 +748,7 @@ button {
 .partner-logos {
     display: flex;
     align-items: center;
-    gap: 28px;
+    gap: 50px;
     flex-wrap: wrap;
 }
 
@@ -765,12 +765,13 @@ button {
 }
 
 .partner-item img {
-    height: 46px;
+    height: 44px;
     width: auto;
     display: block;
     object-fit: contain;
     max-width: 100%;
 }
+
 
 
 
