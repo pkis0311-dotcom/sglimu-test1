@@ -3428,9 +3428,16 @@ function initPageManageTab() {
                     description: pageDescription ? pageDescription.value : '',
                     specStyle: document.getElementById('specStyle').value,
                     featureStyle: document.getElementById('featureStyle').value,
+                    tableColors: {
+                        headerBg: document.getElementById('specTableHeadBg') ? document.getElementById('specTableHeadBg').value : '#f9f9f9',
+                        headerColor: document.getElementById('specTableHeadColor') ? document.getElementById('specTableHeadColor').value : '#333333',
+                        borderColor: document.getElementById('specTableBorderColor') ? document.getElementById('specTableBorderColor').value : '#dddddd',
+                        cellBg: document.getElementById('specTableCellBg') ? document.getElementById('specTableCellBg').value : '#ffffff'
+                    },
                     specs: [],
                     features: []
                 };
+
                 
                 specContainer.querySelectorAll('.spec-row').forEach(row => {
                     const keyInput = row.querySelector('.spec-key');

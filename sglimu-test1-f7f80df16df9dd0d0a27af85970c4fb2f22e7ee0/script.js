@@ -1766,10 +1766,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const specBody = document.getElementById('dynamicSpecTable');
             if (specBody && data.specs && data.specs.length > 0) {
                 specBody.innerHTML = '';
+                const tc = data.tableColors || {
+                    headerBg: data.specHeaderBg || '#f9f9f9',
+                    headerColor: data.specHeaderColor || '#333333',
+                    borderColor: data.specBorderColor || '#ddd',
+                    cellBg: data.specCellBg || '#ffffff'
+                };
                 data.specs.forEach(s => {
-                    specBody.innerHTML += `<tr><th style="background:#f9f9f9; width:25%; padding:12px; border:1px solid #ddd; text-align:left;">${s.key}</th><td style="padding:12px; border:1px solid #ddd;">${s.val}</td></tr>`;
+                    specBody.innerHTML += `<tr><th style="background:${tc.headerBg}; color:${tc.headerColor}; width:25%; padding:12px; border:1px solid ${tc.borderColor}; text-align:left;">${s.key}</th><td style="padding:12px; background:${tc.cellBg}; border:1px solid ${tc.borderColor};">${s.val}</td></tr>`;
                 });
             }
+
 
             // Features
             const featureContainer = document.getElementById('dynamicFeatures');

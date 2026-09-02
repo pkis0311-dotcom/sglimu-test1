@@ -1919,19 +1919,20 @@ button {
 .ql-editor table {
     width: 100% !important;
     border-collapse: collapse !important;
-    border: 1px solid #d4d4d4 !important;
+    border: 1px solid #d4d4d4;
     margin: 15px 0 !important;
 }
 .ql-editor table th, .ql-editor table td {
-    border: 1px solid #d4d4d4 !important;
+    border: 1px solid #d4d4d4;
     padding: 8px 12px !important;
     font-size: 0.95rem;
 }
 .ql-editor table th {
-    background-color: #f2f2f2 !important;
-    font-weight: bold !important;
-    color: #333 !important;
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #333;
 }
+
 
 /* --- Responsive Typography and Spacing Adjustments --- */
 @media (max-width: 768px) {

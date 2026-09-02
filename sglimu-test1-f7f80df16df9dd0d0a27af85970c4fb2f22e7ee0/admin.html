@@ -692,7 +692,74 @@
                                 <span style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:6px; color:#333;">Type C (프리미엄)</span>
                                 <img src="assets/spec_preview_c.png" alt="Type C" style="max-height:80px; max-width:100%; border-radius:4px; border:1px solid #eee;">
                             </div>
+                        <!-- 테이블 커스텀 색상 수동 지정 컨트롤 -->
+                        <div class="table-color-settings" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:20px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                <label style="margin:0; font-weight:700; color:#2c3e50; font-size:0.95rem; display:flex; align-items:center; gap:6px;">
+                                    <i class="fa-solid fa-palette" style="color:#3182ce;"></i> 상세페이지 테이블 색상 수동 지정
+                                </label>
+                                <!-- 프리셋 버튼 그룹 -->
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;" class="color-preset-group">
+                                    <button type="button" class="preset-btn" data-header-bg="#f9f9f9" data-header-color="#333333" data-border="#dddddd" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #ccc; background:#fff; cursor:pointer; font-weight:600;">기본 모노</button>
+                                    <button type="button" class="preset-btn" data-header-bg="#eef6fc" data-header-color="#1c497d" data-border="#cbdcf0" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #cbdcf0; background:#eef6fc; color:#1c497d; cursor:pointer; font-weight:600;">도서관 블루</button>
+                                    <button type="button" class="preset-btn" data-header-bg="#eef9f5" data-header-color="#166547" data-border="#c3e7d8" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #c3e7d8; background:#eef9f5; color:#166547; cursor:pointer; font-weight:600;">그린 에머랄드</button>
+                                    <button type="button" class="preset-btn" data-header-bg="#fbf7f2" data-header-color="#6e5235" data-border="#ebdccb" data-cell-bg="#ffffff" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #ebdccb; background:#fbf7f2; color:#6e5235; cursor:pointer; font-weight:600;">웜 베이지</button>
+                                    <button type="button" class="preset-btn" data-header-bg="#2d3748" data-header-color="#ffffff" data-border="#4a5568" data-cell-bg="#f8fafc" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; border:1px solid #4a5568; background:#2d3748; color:#fff; cursor:pointer; font-weight:600;">모던 다크</button>
+                                </div>
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+                                <!-- 1. 헤더 배경색 -->
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <span style="font-size:0.8rem; color:#4a5568; font-weight:600;">헤더(항목명) 배경색</span>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <input type="color" id="specTableHeadBg" value="#f9f9f9" style="width:36px; height:34px; padding:2px; border:1px solid #cbd5e0; border-radius:4px; cursor:pointer;">
+                                        <input type="text" id="specTableHeadBgText" value="#f9f9f9" class="form-control" style="height:34px; font-size:0.85rem; font-family:monospace; text-transform:uppercase;">
+                                    </div>
+                                </div>
+                                
+                                <!-- 2. 헤더 글자색 -->
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <span style="font-size:0.8rem; color:#4a5568; font-weight:600;">헤더(항목명) 글자색</span>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <input type="color" id="specTableHeadColor" value="#333333" style="width:36px; height:34px; padding:2px; border:1px solid #cbd5e0; border-radius:4px; cursor:pointer;">
+                                        <input type="text" id="specTableHeadColorText" value="#333333" class="form-control" style="height:34px; font-size:0.85rem; font-family:monospace; text-transform:uppercase;">
+                                    </div>
+                                </div>
+                                
+                                <!-- 3. 테두리 색상 -->
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <span style="font-size:0.8rem; color:#4a5568; font-weight:600;">테이블 테두리(선) 색상</span>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <input type="color" id="specTableBorderColor" value="#dddddd" style="width:36px; height:34px; padding:2px; border:1px solid #cbd5e0; border-radius:4px; cursor:pointer;">
+                                        <input type="text" id="specTableBorderColorText" value="#dddddd" class="form-control" style="height:34px; font-size:0.85rem; font-family:monospace; text-transform:uppercase;">
+                                    </div>
+                                </div>
+
+                                <!-- 4. 셀 배경색 -->
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <span style="font-size:0.8rem; color:#4a5568; font-weight:600;">내용(셀) 배경색</span>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <input type="color" id="specTableCellBg" value="#ffffff" style="width:36px; height:34px; padding:2px; border:1px solid #cbd5e0; border-radius:4px; cursor:pointer;">
+                                        <input type="text" id="specTableCellBgText" value="#ffffff" class="form-control" style="height:34px; font-size:0.85rem; font-family:monospace; text-transform:uppercase;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 실시간 테이블 미리보기 -->
+                            <div style="margin-top:14px; padding-top:10px; border-top:1px dashed #e2e8f0;">
+                                <span style="font-size:0.75rem; color:#718096; display:block; margin-bottom:6px;">실시간 색상 적용 미리보기:</span>
+                                <table id="colorPreviewTable" style="width:100%; border-collapse:collapse; font-size:0.85rem; border:1px solid #dddddd;">
+                                    <tbody>
+                                        <tr>
+                                            <th id="prevHead" style="padding:10px 14px; text-align:left; width:30%; font-weight:600; background:#f9f9f9; color:#333333; border:1px solid #dddddd;">제품 규격 (Key)</th>
+                                            <td id="prevCell" style="padding:10px 14px; background:#ffffff; border:1px solid #dddddd;">W1200 x D800 x H740 mm (Value)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+
 
                         <div id="specContainer" style="display:flex; flex-direction:column; gap:10px;">
                             <!-- Dynamic items will be added here -->
