@@ -1107,16 +1107,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            sections.forEach((s, index) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlTab = urlParams.get('tab') || (location.hash ? location.hash.replace('#', '') : null);
+            const savedTab = sessionStorage.getItem('activeHomeBestTab');
+            
+            let activeBestId = (sections.length > 0) ? sections[0].id : null;
+            if (urlTab && sections.some(s => s.id === urlTab)) {
+                activeBestId = urlTab;
+            } else if (savedTab && sections.some(s => s.id === savedTab)) {
+                activeBestId = savedTab;
+            }
+
+            sections.forEach((s) => {
+                const isSelected = (s.id === activeBestId);
                 // 탭 버튼
                 const btn = document.createElement('button');
-                btn.className = `tab-item ${index === 0 ? 'active' : ''}`;
+                btn.className = `tab-item ${isSelected ? 'active' : ''}`;
                 btn.setAttribute('data-tab', `tab-${s.id}`);
                 btn.textContent = s.label;
                 btn.onclick = () => {
                     document.querySelectorAll('#dynamic-best-tabs .tab-item').forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('#dynamic-best-contents .tab-content').forEach(c => c.classList.remove('active'));
                     btn.classList.add('active');
+                    sessionStorage.setItem('activeHomeBestTab', s.id);
+                    try {
+                        const newUrl = new URL(window.location.href);
+                        newUrl.searchParams.set('tab', s.id);
+                        history.replaceState(null, '', newUrl.toString());
+                    } catch(e) {}
+
                     const target = document.getElementById(`tab-${s.id}`);
                     if (target) {
                         target.classList.add('active');
@@ -1131,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 컨텐츠 (그리드)
                 const content = document.createElement('div');
                 content.id = `tab-${s.id}`;
-                content.className = `tab-content ${index === 0 ? 'active' : ''}`;
+                content.className = `tab-content ${isSelected ? 'active' : ''}`;
                 content.innerHTML = `<div class="product-grid" id="grid-${s.id}"><!-- Products will be loaded here --></div>`;
                 contentContainer.appendChild(content);
 
@@ -1411,6 +1430,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gnbUl.appendChild(li);
             }
             
+            // GNB 메뉴 직접 클릭 시 저장된 카테고리 탭 초기화
+            gnbUl.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link && link.getAttribute('href') && link.getAttribute('href') !== '#') {
+                    const href = link.getAttribute('href');
+                    const match = href.match(/(?:id=([^&]+)|([a-z0-9-]+)\.html)/i);
+                    if (match) {
+                        const targetId = match[1] || match[2];
+                        if (targetId) {
+                            sessionStorage.removeItem('activeSubTab_' + targetId);
+                        }
+                    }
+                }
+            });
+
             // 할인상품 메뉴는 상단 루프에서 mKey === 'discount' 조건으로 처리됨
 
         } catch (err) {
@@ -1682,11 +1716,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             subNav.innerHTML = '';
             const sortedSubs = [...currentMiddle.subs].sort((a, b) => (a.order || 0) - (b.order || 0));
 
+            // URL query `sub` 또는 location.hash 또는 sessionStorage에서 활성 탭 복원
+            const urlSub = urlParams.get('sub') || (location.hash ? location.hash.replace('#', '') : null);
+            const savedSub = sessionStorage.getItem('activeSubTab_' + pageId);
+            
+            let activeSubId = (sortedSubs.length > 0) ? sortedSubs[0].id : null;
+            if (urlSub && sortedSubs.some(s => s.id === urlSub)) {
+                activeSubId = urlSub;
+            } else if (savedSub && sortedSubs.some(s => s.id === savedSub)) {
+                activeSubId = savedSub;
+            }
+
             // DOM 탭 및 서브컨텐츠 컨테이너를 동기(동시) 생성
-            for (const [index, sub] of sortedSubs.entries()) {
+            for (const sub of sortedSubs) {
+                const isSelected = (sub.id === activeSubId);
+                
                 // 탭 생성
                 const li = document.createElement('li');
-                li.className = `subcategory-item ${index === 0 ? 'active' : ''}`;
+                li.className = `subcategory-item ${isSelected ? 'active' : ''}`;
                 li.setAttribute('data-target', sub.id);
                 li.textContent = sub.label;
                 li.onclick = () => {
@@ -1694,6 +1741,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
 
                     li.classList.add('active');
+                    sessionStorage.setItem('activeSubTab_' + pageId, sub.id);
+                    try {
+                        const newUrl = new URL(window.location.href);
+                        newUrl.searchParams.set('sub', sub.id);
+                        history.replaceState(null, '', newUrl.toString());
+                    } catch(e) {}
+
                     const targetContent = document.getElementById(sub.id);
                     if (targetContent) {
                         targetContent.classList.add('active');
@@ -1710,11 +1764,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!contentDiv) {
                     contentDiv = document.createElement('div');
                     contentDiv.id = sub.id;
-                    contentDiv.className = `sub-content ${index === 0 ? 'active' : ''}`;
+                    contentDiv.className = `sub-content ${isSelected ? 'active' : ''}`;
                     contentDiv.innerHTML = '<div class="product-list"></div>';
                     subNav.parentElement.appendChild(contentDiv);
                 } else {
-                    contentDiv.classList.toggle('active', index === 0);
+                    contentDiv.classList.toggle('active', isSelected);
                 }
             }
 

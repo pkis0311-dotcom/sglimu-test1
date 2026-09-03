@@ -74,9 +74,13 @@
     </header>
 
     <main class="product-detail-page">
-        <div class="breadcrumb">
+        <div class="breadcrumb" style="display: flex; align-items: center; gap: 8px;">
+            <a href="javascript:history.back()" style="display: inline-flex; align-items: center; gap: 5px; color: var(--color-primary); font-weight: 600; text-decoration: none; margin-right: 10px;">
+                <i class="fa-solid fa-arrow-left"></i> 뒤로가기
+            </a>
+            <span style="color:#ddd;">|</span>
             <a href="index.html">Home</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
-            <a href="#">도서관 가구</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
+            <a href="javascript:history.back()">목록으로</a> <span><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></span> 
             <strong id="breadcrumbCurrent">제품명</strong>
         </div>
 
