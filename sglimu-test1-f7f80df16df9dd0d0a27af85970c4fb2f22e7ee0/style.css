@@ -772,6 +772,14 @@ button {
     max-width: 100%;
 }
 
+.partner-item img[src*="dialog"] {
+    height: 32px;
+}
+
+.partner-item img[src*="nicepay"] {
+    height: 24px;
+}
+
 
 
 
