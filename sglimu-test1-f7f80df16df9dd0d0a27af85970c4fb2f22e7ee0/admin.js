@@ -3122,10 +3122,10 @@ async function processAndUploadImage(inputSource, bucket, folder = 'details') {
 
                 if (ratio < 0.95) {
                     // 세로형 상세페이지 이미지 (긴 통배너/상세 설명)
-                    // 텍스트 및 상세 사양 가독성을 위해 가로 해상도를 1600px 고화질로 확보
-                    maxW = 1600;
-                    maxH = 25000;
-                    quality = 0.95;
+                    // 텍스트 및 상세 사양 가독성을 위해 가로 해상도를 2560px 초고화질로 확보
+                    maxW = 2560;
+                    maxH = 40000;
+                    quality = 0.98;
                 } else if (ratio > 1.2) {
                     // 가로형 배너/설명 이미지
                     maxW = 2560;
