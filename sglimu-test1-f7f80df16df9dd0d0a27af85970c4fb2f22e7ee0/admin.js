@@ -3118,7 +3118,7 @@ async function processAndUploadImage(inputSource, bucket, folder = 'details') {
                 }
                 const ratio = origW / origH;
 
-                let maxW, maxH, quality = 0.94;
+                let maxW, maxH, quality = 0.96;
 
                 if (ratio < 0.95) {
                     // 세로형 상세페이지 이미지 (긴 통배너/상세 설명)
@@ -3128,14 +3128,14 @@ async function processAndUploadImage(inputSource, bucket, folder = 'details') {
                     quality = 0.95;
                 } else if (ratio > 1.2) {
                     // 가로형 배너/설명 이미지
-                    maxW = 1920;
-                    maxH = 1080;
-                    quality = 0.93;
+                    maxW = 2560;
+                    maxH = 1440;
+                    quality = 0.96;
                 } else {
                     // 정사각형 / 표준 비율 이미지 (상품 대표 이미지 등)
-                    maxW = 1200;
-                    maxH = 1200;
-                    quality = 0.93;
+                    maxW = 1600;
+                    maxH = 1600;
+                    quality = 0.96;
                 }
 
                 let targetW = origW;
