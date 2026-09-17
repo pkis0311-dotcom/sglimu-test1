@@ -852,6 +852,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         let slideInterval;
         const intervalTime = 5000;
 
+        function formatBannerLink(url) {
+            if (!url) return '';
+            const trimmed = String(url).trim();
+            if (!trimmed || trimmed === '#') return '';
+            if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.includes('.html') || trimmed.startsWith('#')) {
+                return trimmed;
+            }
+            return `https://${trimmed}`;
+        }
+
         let slidesData = [];
         let popupsData = [];
         try {
@@ -859,7 +869,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!error && data && data.length > 0) {
                 slidesData = data.filter(b => b.type === 'slide').map(b => ({
                     imgUrl: b.image_url,
-                    link: b.link_url || '#'
+                    link: formatBannerLink(b.link_url)
                 }));
                 popupsData = data.filter(b => b.type === 'popup');
             }
@@ -967,7 +977,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 popupEl.style.borderRadius = '8px';
                 popupEl.style.overflow = 'hidden';
 
-                const linkStr = (popup.link_url && popup.link_url !== '#') ? `href="${popup.link_url}" target="_blank"` : '';
+                const safePopupLink = formatBannerLink(popup.link_url);
+                const linkStr = safePopupLink ? `href="${safePopupLink}" target="_blank" rel="noopener noreferrer"` : '';
                 const aTagStart = linkStr ? `<a ${linkStr} style="display:block;">` : '<div>';
                 const aTagEnd = linkStr ? `</a>` : '</div>';
 

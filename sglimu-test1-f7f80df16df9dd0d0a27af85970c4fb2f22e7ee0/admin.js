@@ -2610,6 +2610,19 @@ function setupRealtimeListeners() {
       .subscribe();
 }
 
+let globalBanners = []; // 배너 데이터 캐시
+
+// 안전한 링크 URL 생성 함수 (href="#"로 제품전후관리 탭으로 튕기는 현상 방지)
+function getSafeLinkUrl(url) {
+    if (!url) return '';
+    const trimmed = String(url).trim();
+    if (!trimmed || trimmed === '#') return '';
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.includes('.html') || trimmed.startsWith('#')) {
+        return trimmed;
+    }
+    return `https://${trimmed}`;
+}
+
 async function fetchBanners() {
     // banners 테이블에서 데이터 가져오기 (순서 필드 기준 오름차순)
     const { data: banners, error } = await db.from('banners').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: false });
@@ -2619,36 +2632,63 @@ async function fetchBanners() {
         return;
     }
 
-    if (banners.length === 0) {
+    globalBanners = banners || [];
+
+    if (globalBanners.length === 0) {
         bannerTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">현재 등록된 배너/팝업이 없습니다.</td></tr>';
         return;
     }
 
     bannerTableBody.innerHTML = '';
-    banners.forEach(b => {
+    globalBanners.forEach(b => {
         const tr = document.createElement('tr');
-        const imgHtml = b.image_url ? `<img src="${b.image_url}" class="td-img" style="width:100px; height:auto; object-fit:contain;" alt="배너 이미지">` : `<div style="color:#999; font-size:0.8rem;">이미지 없음</div>`;
-        const typeBadge = b.type === 'slide' ? '<span style="background:#3498db; color:#fff; padding:3px 8px; border-radius:3px; font-size:0.8rem;">메인 슬라이드</span>' : '<span style="background:#9b59b6; color:#fff; padding:3px 8px; border-radius:3px; font-size:0.8rem;">팝업창</span>';
+        const imgHtml = b.image_url ? `<img src="${b.image_url}" class="td-img" style="width:100px; height:auto; object-fit:contain; border-radius:4px; border:1px solid #eee;" alt="배너 이미지">` : `<div style="color:#999; font-size:0.8rem;">이미지 없음</div>`;
+        const typeBadge = b.type === 'slide' ? '<span style="background:#3498db; color:#fff; padding:3px 8px; border-radius:3px; font-size:0.8rem; font-weight:600;">메인 슬라이드</span>' : '<span style="background:#9b59b6; color:#fff; padding:3px 8px; border-radius:3px; font-size:0.8rem; font-weight:600;">팝업창</span>';
         
         // 상태 토글 스위치 (활성/비활성)
         const statusHtml = `
-            <select onchange="updateBannerStatus('${b.id}', this.value)" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
+            <select onchange="updateBannerStatus('${b.id}', this.value)" style="padding:4px 8px; border-radius:4px; border:1px solid #ccc; font-size:0.85rem; background:#fff; cursor:pointer;">
                 <option value="true" ${b.is_active ? 'selected' : ''}>노출 중</option>
                 <option value="false" ${!b.is_active ? 'selected' : ''}>숨김</option>
             </select>
         `;
         
-        const dateStr = new Date(b.created_at).toLocaleDateString('ko-KR');
+        const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('ko-KR') : '-';
+
+        // 링크 컬럼: 링크가 없으면 링크 추가 버튼, 있으면 안전한 링크와 수정 버튼 노출
+        let linkCellHtml = '';
+        const safeUrl = getSafeLinkUrl(b.link_url);
+        if (safeUrl) {
+            linkCellHtml = `
+                <div style="display:flex; align-items:center; gap:6px; max-width:220px;">
+                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.85rem; font-weight:500;" title="${safeUrl}">
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem; margin-right:3px;"></i>${b.link_url}
+                    </a>
+                    <button class="action-btn edit" onclick="openBannerModal('${b.id}')" title="링크 수정" style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#fff; cursor:pointer;">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                </div>
+            `;
+        } else {
+            linkCellHtml = `
+                <button type="button" class="btn-secondary" onclick="openBannerModal('${b.id}')" style="font-size:0.8rem; padding:3px 8px; border-radius:4px; border:1px dashed #94a3b8; background:#f8fafc; color:#475569; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="이 배너에 링크를 추가합니다">
+                    <i class="fa-solid fa-plus"></i> 링크 추가
+                </button>
+            `;
+        }
 
         tr.innerHTML = `
             <td>${imgHtml}</td>
             <td>${typeBadge}</td>
-            <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><a href="${b.link_url || '#'}" target="_blank" style="color:var(--primary); text-decoration:none;">${b.link_url || '없음'}</a></td>
+            <td>${linkCellHtml}</td>
             <td style="font-weight:bold;">${b.display_order || 0}</td>
             <td>${dateStr}</td>
             <td>${statusHtml}</td>
             <td>
-                <button class="action-btn delete" onclick="deleteBanner('${b.id}')" title="삭제"><i class="fa-solid fa-trash"></i></button>
+                <div style="display:flex; gap:6px; justify-content:center;">
+                    <button class="action-btn edit" onclick="openBannerModal('${b.id}')" title="배너 및 링크 수정" style="cursor:pointer;"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-btn delete" onclick="deleteBanner('${b.id}')" title="삭제" style="cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                </div>
             </td>
         `;
         bannerTableBody.appendChild(tr);
@@ -2671,29 +2711,177 @@ window.deleteBanner = async function(id) {
 };
 
 // ==========================================
-// 6. 배너 모달 제어 및 수정 로직
+// 6. 배너 모달 제어 및 링크 도우미 로직
 // ==========================================
-function openBannerModal() {
-    bannerModalTitle.textContent = '새 배너/팝업 등록';
-    bannerIdInput.value = '';
-    bannerTypeInput.value = 'slide';
-    bannerIsActiveInput.value = 'true';
-    bannerLinkUrlInput.value = '';
-    bannerDisplayOrderInput.value = '0';
-    bannerImageUrl.value = '';
-    bannerImageFile.value = '';
-    bannerImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+window.populateBannerProductSelect = function() {
+    const pSelect = document.getElementById('bannerProductSelect');
+    if (!pSelect) return;
     
+    if (globalProducts && globalProducts.length > 0) {
+        let opts = '<option value="">-- 이동할 제품을 선택하세요 (' + globalProducts.length + '개) --</option>';
+        globalProducts.forEach(p => {
+            const name = (p.name || '무제한 상품').replace(/"/g, '&quot;');
+            opts += `<option value="product-detail.html?id=${p.id}">[${p.id}] ${name}</option>`;
+        });
+        pSelect.innerHTML = opts;
+    } else {
+        if (typeof fetchProducts === 'function') {
+            fetchProducts().then(() => {
+                if (globalProducts && globalProducts.length > 0) {
+                    let opts = '<option value="">-- 이동할 제품을 선택하세요 (' + globalProducts.length + '개) --</option>';
+                    globalProducts.forEach(p => {
+                        const name = (p.name || '무제한 상품').replace(/"/g, '&quot;');
+                        opts += `<option value="product-detail.html?id=${p.id}">[${p.id}] ${name}</option>`;
+                    });
+                    pSelect.innerHTML = opts;
+                }
+            });
+        }
+    }
+};
+
+window.populateBannerCategorySelect = function() {
+    const cSelect = document.getElementById('bannerCategorySelect');
+    if (!cSelect) return;
+
+    let opts = '<option value="">-- 카테고리 선택 --</option>';
+    if (SITE_CATEGORIES && typeof SITE_CATEGORIES === 'object') {
+        for (const mKey in SITE_CATEGORIES) {
+            const major = SITE_CATEGORIES[mKey];
+            if (!major) continue;
+            opts += `<option value="category.html?major=${mKey}">[대분류] ${major.label || mKey}</option>`;
+            if (major.middles) {
+                for (const midKey in major.middles) {
+                    const mid = major.middles[midKey];
+                    const midLabel = typeof mid === 'string' ? mid : (mid.label || midKey);
+                    opts += `<option value="category.html?major=${mKey}&middle=${midKey}">　└ [중분류] ${midLabel}</option>`;
+                }
+            }
+        }
+    }
+    cSelect.innerHTML = opts;
+};
+
+window.handleBannerLinkTypeChange = function(type) {
+    const pSelect = document.getElementById('bannerProductSelect');
+    const cSelect = document.getElementById('bannerCategorySelect');
+    const pageSelect = document.getElementById('bannerPageSelect');
+    
+    if (pSelect) pSelect.style.display = (type === 'product') ? 'block' : 'none';
+    if (cSelect) cSelect.style.display = (type === 'category') ? 'block' : 'none';
+    if (pageSelect) pageSelect.style.display = (type === 'page') ? 'block' : 'none';
+
+    if (type === 'product') {
+        populateBannerProductSelect();
+    } else if (type === 'category') {
+        populateBannerCategorySelect();
+    }
+};
+
+window.applyBannerProductLink = function(val) {
+    if (!val) return;
+    bannerLinkUrlInput.value = val;
+};
+
+window.applyBannerCategoryLink = function(val) {
+    if (!val) return;
+    bannerLinkUrlInput.value = val;
+};
+
+window.applyBannerPageLink = function(val) {
+    if (!val) return;
+    bannerLinkUrlInput.value = val;
+};
+
+window.testBannerLink = function() {
+    const val = bannerLinkUrlInput.value.trim();
+    if (!val) {
+        alert('이동할 링크 주소가 비어있습니다.');
+        return;
+    }
+    const safeUrl = getSafeLinkUrl(val);
+    window.open(safeUrl, '_blank');
+};
+
+window.clearBannerLink = function() {
+    bannerLinkUrlInput.value = '';
+    const typeSelect = document.getElementById('bannerLinkTypeSelect');
+    if (typeSelect) typeSelect.value = 'direct';
+    handleBannerLinkTypeChange('direct');
+};
+
+function openBannerModal(bannerId = null) {
+    populateBannerProductSelect();
+    populateBannerCategorySelect();
+
+    const typeSelect = document.getElementById('bannerLinkTypeSelect');
+    if (typeSelect) typeSelect.value = 'direct';
+    handleBannerLinkTypeChange('direct');
+
     saveBannerMsg.textContent = '';
     saveBannerBtn.disabled = false;
-    saveBannerBtn.textContent = '저장하기';
+
+    if (bannerId && typeof bannerId === 'string' && bannerId.trim() !== '') {
+        // 수정 모드
+        const b = globalBanners.find(item => String(item.id) === String(bannerId));
+        if (!b) {
+            alert('배너 정보를 찾을 수 없습니다.');
+            return;
+        }
+
+        bannerModalTitle.textContent = '배너/팝업 정보 및 링크 수정';
+        bannerIdInput.value = b.id;
+        bannerTypeInput.value = b.type || 'slide';
+        bannerIsActiveInput.value = b.is_active ? 'true' : 'false';
+        bannerLinkUrlInput.value = b.link_url || '';
+        bannerDisplayOrderInput.value = b.display_order || 0;
+        bannerImageUrl.value = b.image_url || '';
+        bannerImageFile.value = '';
+        
+        if (b.image_url) {
+            bannerImagePreview.innerHTML = `<img src="${b.image_url}" style="width:100%; height:100%; object-fit:contain;" alt="Banner Preview"><div style="font-size:0.75rem; color:#666; margin-top:4px;">* 새 이미지 선택 시에만 이미지가 교체됩니다.</div>`;
+        } else {
+            bannerImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+        }
+
+        // 링크 형태에 따라 셀렉트 박스 자동 선택
+        if (b.link_url && b.link_url.includes('product-detail.html?id=')) {
+            if (typeSelect) typeSelect.value = 'product';
+            handleBannerLinkTypeChange('product');
+            setTimeout(() => {
+                const pSelect = document.getElementById('bannerProductSelect');
+                if (pSelect) pSelect.value = b.link_url;
+            }, 100);
+        } else if (b.link_url && b.link_url.includes('category.html')) {
+            if (typeSelect) typeSelect.value = 'category';
+            handleBannerLinkTypeChange('category');
+            setTimeout(() => {
+                const cSelect = document.getElementById('bannerCategorySelect');
+                if (cSelect) cSelect.value = b.link_url;
+            }, 100);
+        }
+
+        saveBannerBtn.textContent = '수정 완료';
+    } else {
+        // 신규 등록 모드
+        bannerModalTitle.textContent = '새 배너/팝업 등록';
+        bannerIdInput.value = '';
+        bannerTypeInput.value = 'slide';
+        bannerIsActiveInput.value = 'true';
+        bannerLinkUrlInput.value = '';
+        bannerDisplayOrderInput.value = '0';
+        bannerImageUrl.value = '';
+        bannerImageFile.value = '';
+        bannerImagePreview.innerHTML = '<i class="fa-regular fa-image" style="font-size: 2rem; color: #ccc;"></i>';
+        saveBannerBtn.textContent = '저장하기';
+    }
     
     bannerModalOverlay.style.display = 'flex';
 }
 
 function closeBannerModal() { bannerModalOverlay.style.display = 'none'; }
 
-if (addBannerBtn) addBannerBtn.addEventListener('click', openBannerModal);
+if (addBannerBtn) addBannerBtn.addEventListener('click', () => openBannerModal());
 if (closeBannerModalBtn) closeBannerModalBtn.addEventListener('click', closeBannerModal);
 if (cancelBannerModalBtn) cancelBannerModalBtn.addEventListener('click', closeBannerModal);
 
@@ -2708,13 +2896,14 @@ bannerImageFile.addEventListener('change', (e) => {
 
 saveBannerBtn.addEventListener('click', async () => {
     const file = bannerImageFile.files[0];
+    const bId = bannerIdInput.value;
     const bType = bannerTypeInput.value;
     const isActive = bannerIsActiveInput.value === 'true';
     const linkUrl = bannerLinkUrlInput.value.trim();
     const displayOrder = parseInt(bannerDisplayOrderInput.value) || 0;
     
-    // 새 배너 등록 시 이미지는 필수
-    if(!file && !bannerImageUrl.value) {
+    // 신규 등록 시 이미지는 필수, 수정 시에는 기존 이미지가 있으면 됨
+    if (!bId && !file && !bannerImageUrl.value) {
         saveBannerMsg.textContent = '배너 이미지를 첨부해주세요.';
         return;
     }
@@ -2729,7 +2918,7 @@ saveBannerBtn.addEventListener('click', async () => {
         display_order: displayOrder
     };
 
-    // 이미지 파일 업로드 로직 (bucket명: banner-images, 비율 및 크기별 고화질 최적화 처리)
+    // 이미지 파일 업로드 로직 (bucket명: banner-images)
     if (file) {
         try {
             const publicUrl = await processAndUploadImage(file, 'banner-images', 'banners');
@@ -2737,20 +2926,28 @@ saveBannerBtn.addEventListener('click', async () => {
         } catch (uploadErr) {
             saveBannerMsg.textContent = '이미지 업로드 오류: ' + uploadErr.message;
             saveBannerBtn.disabled = false;
-            saveBannerBtn.textContent = '저장하기';
+            saveBannerBtn.textContent = bId ? '수정 완료' : '저장하기';
             return;
         }
-    } else {
+    } else if (bannerImageUrl.value) {
         payload.image_url = bannerImageUrl.value;
     }
 
-    // Insert
-    const { error } = await db.from('banners').insert([payload]);
+    let resultError = null;
+    if (bId) {
+        // 기존 배너 정보 및 링크 업데이트
+        const { error } = await db.from('banners').update(payload).eq('id', bId);
+        resultError = error;
+    } else {
+        // 신규 배너 등록
+        const { error } = await db.from('banners').insert([payload]);
+        resultError = error;
+    }
     
-    if (error) {
-        saveBannerMsg.textContent = '등록 실패: ' + error.message;
+    if (resultError) {
+        saveBannerMsg.textContent = (bId ? '수정 실패: ' : '등록 실패: ') + resultError.message;
         saveBannerBtn.disabled = false; 
-        saveBannerBtn.textContent = '저장하기';
+        saveBannerBtn.textContent = bId ? '수정 완료' : '저장하기';
     } else {
         closeBannerModal();
         fetchBanners();

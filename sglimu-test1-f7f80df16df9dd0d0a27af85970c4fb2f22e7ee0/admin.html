@@ -1294,9 +1294,54 @@
                             <option value="false">숨김 (비활성)</option>
                         </select>
                     </div>
-                    <div class="form-group full-width">
-                        <label>클릭 시 이동할 링크 URL (선택사항)</label>
-                        <input type="text" id="bannerLinkUrl" class="form-control" placeholder="클릭 시 이동할 주소 (ex: https://...)">
+                    <div class="form-group full-width" style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <label style="font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span><i class="fa-solid fa-link" style="color: #3b82f6;"></i> 클릭 시 이동할 링크 URL 설정</span>
+                            <span style="font-size: 0.8rem; font-weight: normal; color: #64748b;">(미입력 시 단순 이미지 노출)</span>
+                        </label>
+                        
+                        <!-- 링크 선택 도우미 -->
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+                            <select id="bannerLinkTypeSelect" class="form-control" style="flex: 1; min-width: 140px; font-size: 0.85rem;" onchange="handleBannerLinkTypeChange(this.value)">
+                                <option value="direct">직접 URL 입력</option>
+                                <option value="product">제품 상세페이지 연결</option>
+                                <option value="category">카테고리 페이지 연결</option>
+                                <option value="page">주요 메뉴/페이지 연결</option>
+                            </select>
+                            
+                            <!-- 상품 선택 (상품 선택 시 노출) -->
+                            <select id="bannerProductSelect" class="form-control" style="display: none; flex: 2; min-width: 200px; font-size: 0.85rem;" onchange="applyBannerProductLink(this.value)">
+                                <option value="">-- 이동할 제품을 선택하세요 --</option>
+                            </select>
+
+                            <!-- 카테고리 선택 (카테고리 선택 시 노출) -->
+                            <select id="bannerCategorySelect" class="form-control" style="display: none; flex: 2; min-width: 180px; font-size: 0.85rem;" onchange="applyBannerCategoryLink(this.value)">
+                                <option value="">-- 카테고리 선택 --</option>
+                            </select>
+
+                            <!-- 주요 페이지 선택 (페이지 선택 시 노출) -->
+                            <select id="bannerPageSelect" class="form-control" style="display: none; flex: 2; min-width: 180px; font-size: 0.85rem;" onchange="applyBannerPageLink(this.value)">
+                                <option value="">-- 주요 메뉴/섹션 선택 --</option>
+                                <option value="index.html">메인 홈페이지 (홈)</option>
+                                <option value="index.html#best-section">베스트 상품 섹션</option>
+                                <option value="inquiry.html">온라인 견적 및 문의상담</option>
+                                <option value="cart.html">장바구니</option>
+                            </select>
+                        </div>
+
+                        <!-- 최종 URL 입력 및 테스트/삭제 버튼 -->
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="bannerLinkUrl" class="form-control" placeholder="클릭 시 이동할 주소 (예: product-detail.html?id=... 또는 https://...)" style="flex: 1;">
+                            <button type="button" class="btn-secondary" onclick="testBannerLink()" style="white-space: nowrap; height: 38px; padding: 0 12px; font-size: 0.85rem;" title="입력된 링크 새창으로 테스트">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> 링크 확인
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="clearBannerLink()" style="white-space: nowrap; height: 38px; padding: 0 10px; font-size: 0.85rem; color: #e74c3c;" title="링크 삭제/비우기">
+                                <i class="fa-solid fa-xmark"></i> 삭제
+                            </button>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 6px;">
+                            <i class="fa-solid fa-circle-info"></i> 외부 사이트로 연결 시 <code style="background:#e2e8f0; padding:2px 5px; border-radius:3px; color:#333;">https://</code>를 포함해서 입력해주세요.
+                        </div>
                     </div>
                 </div>
             </div>
