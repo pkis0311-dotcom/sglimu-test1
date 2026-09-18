@@ -738,7 +738,7 @@ button {
 }
 
 .partner-label {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     color: #777;
     font-weight: 500;
     letter-spacing: 0.5px;
@@ -756,16 +756,17 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    filter: brightness(0) invert(1) opacity(0.45);
-    transition: opacity 0.3s ease, filter 0.3s ease;
+    filter: brightness(0) invert(1) opacity(0.6);
+    transition: opacity 0.3s ease, filter 0.3s ease, transform 0.2s ease;
 }
 
 .partner-item:hover {
-    filter: brightness(0) invert(1) opacity(0.85);
+    filter: brightness(0) invert(1) opacity(1);
+    transform: translateY(-2px);
 }
 
 .partner-item img {
-    height: 28px;
+    height: 42px;
     width: auto;
     display: block;
     object-fit: contain;
@@ -773,11 +774,34 @@ button {
 }
 
 .partner-item img[src*="dialog"] {
-    height: 28px;
+    height: 38px;
 }
 
 .partner-item img[src*="nicepay"] {
-    height: 20px;
+    height: 32px;
+}
+
+/* Footer Admin Discreet Button */
+.footer-admin-btn {
+    position: absolute;
+    bottom: 18px;
+    right: 24px;
+    color: rgba(255, 255, 255, 0.18);
+    font-size: 0.85rem;
+    padding: 6px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.footer-admin-btn:hover {
+    color: rgba(255, 255, 255, 0.65);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 
