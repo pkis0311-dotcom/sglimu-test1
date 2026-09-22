@@ -320,7 +320,8 @@
                         const pData = configMap['pageData_' + p.id];
                         const displayImg = (pData && pData.mainImages && pData.mainImages.length > 0) ? pData.mainImages[0] : 'assets/no-image.png';
 
-                        const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+                        const origPrice = window.parseOriginalPrice ? window.parseOriginalPrice(p) : '';
+                        const priceMarkup = window.renderProductPriceHtml ? window.renderProductPriceHtml(p.price, origPrice) : ((!p.price || p.price === '전화문의') ? '<p style="color:var(--color-primary); font-weight:bold; margin:0;">전화문의</p>' : `<p style="color:var(--color-primary); font-weight:bold; margin:0;">${Number(p.price).toLocaleString()}원</p>`);
                         const options = window.parseProductOptions ? window.parseProductOptions(p) : { colors: '', sizes: '' };
                         const optionsHtml = window.renderProductOptionsMarkup ? window.renderProductOptionsMarkup(options.colors, options.sizes) : '';
 
@@ -328,7 +329,7 @@
                             <div class="product-img" style="background-image: url('${displayImg}'); background-size: contain; background-repeat:no-repeat; background-position: center; border-bottom: 1px solid #eee; height: 250px;"></div>
                             <div class="product-info" style="text-align:center; padding:15px;">
                                 <h4 style="margin-bottom:8px; font-size:1.1rem;">${p.name}</h4>
-                                <p style="color:var(--color-primary); font-weight:bold; margin:0;">${priceStr}</p>
+                                ${priceMarkup}
                                 ${optionsHtml}
                             </div>
                         `;

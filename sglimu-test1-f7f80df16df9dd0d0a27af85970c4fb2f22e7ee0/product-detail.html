@@ -574,6 +574,20 @@
             return { colors, sizes };
         }
 
+        function parseOriginalPrice(product) {
+            if (!product) return '';
+            if (product.original_price && String(product.original_price).trim() !== '') {
+                return String(product.original_price).replace(/[^0-9]/g, '').trim();
+            }
+            if (product.description) {
+                const match = product.description.match(/\[\[OP:([\s\S]*?)\]\]/);
+                if (match && match[1]) {
+                    return String(match[1]).replace(/[^0-9]/g, '').trim();
+                }
+            }
+            return '';
+        }
+
         async function initProductDetail() {
             if(!productId) {
                 console.warn("Product ID missing in URL.");
@@ -599,8 +613,28 @@
                 priceElem.innerHTML = '전화문의';
                 window.basePrice = 0;
             } else {
-                priceElem.innerHTML = Number(product.price).toLocaleString() + '<span>원</span>';
-                window.basePrice = Number(product.price);
+                const priceNum = Number(String(product.price).replace(/[^0-9]/g, '')) || 0;
+                const origPrice = parseOriginalPrice(product);
+                const origNum = origPrice ? (Number(String(origPrice).replace(/[^0-9]/g, '')) || 0) : 0;
+
+                window.basePrice = priceNum;
+
+                if (origNum && priceNum && origNum > priceNum) {
+                    const discountRate = Math.round(((origNum - priceNum) / origNum) * 100);
+                    priceElem.innerHTML = `
+                        <div class="detail-price-box" style="display:flex; flex-direction:column; gap:2px; width:100%;">
+                            <div class="detail-orig-price" style="font-size:1.15rem; color:#95a5a6; text-decoration:line-through; font-weight:500;">
+                                ${origNum.toLocaleString('ko-KR')}원
+                            </div>
+                            <div class="detail-sale-row" style="display:flex; align-items:baseline; gap:10px;">
+                                <span class="detail-discount-rate" style="font-size:2rem; font-weight:800; color:#111;">${discountRate}%</span>
+                                <span class="detail-sale-price" style="font-size:2.5rem; font-weight:800; color:#e74c3c;">${priceNum.toLocaleString('ko-KR')}</span><span style="font-size:1.3rem; font-weight:700; color:#e74c3c;">원</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    priceElem.innerHTML = priceNum.toLocaleString('ko-KR') + '<span>원</span>';
+                }
             }
             
             document.getElementById('breadcrumbCurrent').innerText = (product.name || '').replace(/<[^>]*>/g, '');
@@ -817,6 +851,7 @@
                     id: product.id,
                     name: product.name,
                     price: product.price,
+                    originalPrice: parseOriginalPrice(product),
                     image: displayImg2,
                     timestamp: new Date().getTime()
                 });
@@ -836,6 +871,7 @@
                     id: product.id,
                     name: product.name,
                     price: product.price,
+                    originalPrice: parseOriginalPrice(product),
                     image: displayImg3,
                     timestamp: new Date().getTime()
                 };

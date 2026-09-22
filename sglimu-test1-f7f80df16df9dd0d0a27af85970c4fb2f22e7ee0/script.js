@@ -337,7 +337,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
 
             const imgUrl = p.image_url || 'assets/no-image.png';
-            const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+            const origPrice = parseOriginalPrice(p);
+            const priceMarkup = renderProductPriceHtml(p.price, origPrice);
             const description = p.short_comment || '';
 
             // Highlight query string in name and description
@@ -349,7 +350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="suggestion-info">
                     <div class="suggestion-name">${highlightedName}</div>
                     ${description ? `<div class="suggestion-desc">${highlightedDesc}</div>` : ''}
-                    <div class="suggestion-price">${priceStr}</div>
+                    <div class="suggestion-price" style="margin-top:2px;">${priceMarkup}</div>
                 </div>
             `;
             suggestionsContainer.appendChild(item);
@@ -406,7 +407,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             items.forEach(item => {
-                const priceStr = (!item.price || item.price === '전화문의') ? '전화문의' : Number(item.price).toLocaleString() + '원';
+                const origPrice = item.originalPrice || item.original_price || '';
+                const priceMarkup = renderProductPriceHtml(item.price, origPrice);
                 const el = document.createElement('div');
                 el.style.cssText = "display:flex; background:#fff; padding:10px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; gap:10px; align-items:center; transition:transform 0.2s;";
                 el.onmouseover = () => el.style.transform = 'translateY(-2px)';
@@ -417,7 +419,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:contain; background-repeat:no-repeat; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
                     <div style="flex-grow:1; overflow:hidden;">
                         <div style="font-size:0.9rem; font-weight:600; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;">${item.name}</div>
-                        <div style="font-size:0.85rem; color:#2980b9; font-weight:bold;">${priceStr}</div>
+                        <div>${priceMarkup}</div>
                     </div>
                 `;
                 recentBody.appendChild(el);
@@ -491,7 +493,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             items.forEach(item => {
-                const priceStr = (!item.price || item.price === '전화문의') ? '전화문의' : Number(item.price).toLocaleString() + '원';
+                const origPrice = item.originalPrice || item.original_price || '';
+                const priceMarkup = renderProductPriceHtml(item.price, origPrice);
                 const el = document.createElement('div');
                 el.style.cssText = "display:flex; background:#fff; padding:10px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; gap:10px; align-items:center; transition:transform 0.2s; position:relative;";
                 el.onmouseover = () => el.style.transform = 'translateY(-2px)';
@@ -501,7 +504,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div onclick="window.location.href='product-detail.html?id=${item.id}'" style="width:60px; height:60px; border-radius:4px; background-image:url('${item.image}'); background-size:contain; background-repeat:no-repeat; background-position:center; flex-shrink:0; border:1px solid #eee;"></div>
                     <div onclick="window.location.href='product-detail.html?id=${item.id}'" style="flex-grow:1; overflow:hidden;">
                         <div style="font-size:0.9rem; font-weight:600; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;">${item.name}</div>
-                        <div style="font-size:0.85rem; color:#e74c3c; font-weight:bold;">${priceStr}</div>
+                        <div>${priceMarkup}</div>
                     </div>
                     <button class="remove-wish-btn" style="border:none; background:transparent; color:#ccc; cursor:pointer; padding:5px;"><i class="fa-solid fa-xmark"></i></button>
                 `;
@@ -1585,7 +1588,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         return html;
     }
-    window.renderProductOptionsMarkup = renderProductOptionsMarkup;
+    // [신규 헬퍼] 정가 (할인 전 원래 가격) 파싱 함수
+    function parseOriginalPrice(product) {
+        if (!product) return '';
+        if (product.original_price && String(product.original_price).trim() !== '') {
+            return String(product.original_price).replace(/[^0-9]/g, '').trim();
+        }
+        if (product.description) {
+            const match = product.description.match(/\[\[OP:([\s\S]*?)\]\]/);
+            if (match && match[1]) {
+                return String(match[1]).replace(/[^0-9]/g, '').trim();
+            }
+        }
+        return '';
+    }
+    window.parseOriginalPrice = parseOriginalPrice;
+
+    // [신규 헬퍼] 제품 가격 및 할인율 HTML 생성 함수
+    function renderProductPriceHtml(price, originalPrice) {
+        if (!price || price === '전화문의') {
+            return `<p class="product-price-regular" style="color:var(--color-primary); font-weight:bold; margin:0;">전화문의</p>`;
+        }
+        const cleanPrice = String(price).replace(/[^0-9]/g, '');
+        const cleanOrig = originalPrice ? String(originalPrice).replace(/[^0-9]/g, '') : '';
+
+        const priceNum = Number(cleanPrice);
+        const origNum = cleanOrig ? Number(cleanOrig) : 0;
+
+        if (origNum && priceNum && origNum > priceNum) {
+            const discountRate = Math.round(((origNum - priceNum) / origNum) * 100);
+            return `
+                <div class="product-card-price-wrap" style="margin:4px 0 2px 0;">
+                    <div class="product-card-orig-price" style="font-size:0.82rem; color:#95a5a6; text-decoration:line-through; line-height:1.2;">
+                        ${origNum.toLocaleString('ko-KR')}원
+                    </div>
+                    <div class="product-card-sale-price" style="display:flex; align-items:center; justify-content:center; gap:5px; line-height:1.3; margin-top:1px;">
+                        <span class="product-discount-rate" style="font-size:1.05rem; font-weight:800; color:#111;">${discountRate}%</span>
+                        <span class="product-final-price" style="font-size:1.15rem; font-weight:800; color:#e74c3c;">${priceNum.toLocaleString('ko-KR')}원</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        return `<p class="product-price-regular" style="color:var(--color-primary); font-weight:bold; margin:0;">${priceNum ? priceNum.toLocaleString('ko-KR') + '원' : price}</p>`;
+    }
+    window.renderProductPriceHtml = renderProductPriceHtml;
 
     // [신규 헬퍼] 상품 리스트 HTML 렌더링 함수 (중복 배제 및 캐싱 데이터 복원용)
     function renderProducts(container, products, configMap, selectedIds) {
@@ -1602,7 +1649,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const pData = configMap['pageData_' + p.id];
             const displayImg = (pData && pData.mainImages && pData.mainImages.length > 0) ? pData.mainImages[0] : 'assets/no-image.png';
             
-            const priceStr = (!p.price || p.price === '전화문의') ? '전화문의' : Number(p.price).toLocaleString() + '원';
+            const origPrice = parseOriginalPrice(p);
+            const priceMarkup = renderProductPriceHtml(p.price, origPrice);
             const commentHtml = p.short_comment ? `<p style="font-size:0.78rem; color:#888; margin:0 0 4px 0; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.short_comment}</p>` : '';
             const options = parseProductOptions(p);
             const optionsHtml = renderProductOptionsMarkup(options.colors, options.sizes);
@@ -1612,7 +1660,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="product-info" style="text-align:center; padding:15px;">
                     <h4 style="margin-bottom:4px;">${p.name}</h4>
                     ${commentHtml}
-                    <p style="color:var(--color-primary); font-weight:bold; margin:0;">${priceStr}</p>
+                    ${priceMarkup}
                     ${optionsHtml}
                 </div>
             `;

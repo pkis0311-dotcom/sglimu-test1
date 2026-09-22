@@ -157,20 +157,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (productSortFilter) productSortFilter.addEventListener('change', applyProductFilters);
     window.applyProductFilters = applyProductFilters;
 
-    // 제품 가격 입력 시 실시간 천 단위 콤마 추가
+    // 제품 가격 및 정가 입력 시 실시간 천 단위 콤마 추가 및 할인율 실시간 미리보기
     const productPriceInput = document.getElementById('productPrice');
-    if (productPriceInput) {
-        productPriceInput.addEventListener('input', (e) => {
-            const val = e.target.value;
-            const cleanVal = val.replace(/[^0-9]/g, '');
-            if (cleanVal) {
-                // 숫자와 콤마/공백으로만 이루어진 입력인 경우만 자동 콤마 포맷팅 수행
-                const isNumeric = /^[0-9,\s]+$/.test(val);
-                if (isNumeric) {
-                    e.target.value = Number(cleanVal).toLocaleString('ko-KR');
-                }
+    const productOriginalPriceInput = document.getElementById('productOriginalPrice');
+    const productDiscountPreview = document.getElementById('productDiscountPreview');
+
+    function updateAdminDiscountPreview() {
+        if (!productDiscountPreview) return;
+        const origVal = productOriginalPriceInput ? productOriginalPriceInput.value.replace(/[^0-9]/g, '') : '';
+        const priceVal = productPriceInput ? productPriceInput.value.replace(/[^0-9]/g, '') : '';
+        
+        const origNum = Number(origVal);
+        const priceNum = Number(priceVal);
+
+        if (origNum && priceNum && origNum > priceNum) {
+            const discountRate = Math.round(((origNum - priceNum) / origNum) * 100);
+            productDiscountPreview.style.display = 'block';
+            productDiscountPreview.style.color = '#e74c3c';
+            productDiscountPreview.innerHTML = `🔥 <strong>${discountRate}% 할인 적용됨</strong> <span style="color:#666; font-weight:normal; margin-left:4px;">(정가 ${origNum.toLocaleString('ko-KR')}원 → 판매가 ${priceNum.toLocaleString('ko-KR')}원)</span>`;
+        } else if (origNum && priceNum && origNum <= priceNum) {
+            productDiscountPreview.style.display = 'block';
+            productDiscountPreview.style.color = '#888';
+            productDiscountPreview.innerHTML = `ℹ️ 정가가 판매가보다 높아야 할인이 적용됩니다. (현재 정상 판매가로 표시)`;
+        } else {
+            productDiscountPreview.style.display = 'none';
+            productDiscountPreview.innerHTML = '';
+        }
+    }
+    window.updateAdminDiscountPreview = updateAdminDiscountPreview;
+
+    function handlePriceInputComma(e) {
+        const val = e.target.value;
+        const cleanVal = val.replace(/[^0-9]/g, '');
+        if (cleanVal) {
+            const isNumeric = /^[0-9,\s]+$/.test(val);
+            if (isNumeric) {
+                e.target.value = Number(cleanVal).toLocaleString('ko-KR');
             }
-        });
+        }
+        updateAdminDiscountPreview();
+    }
+
+    if (productPriceInput) {
+        productPriceInput.addEventListener('input', handlePriceInputComma);
+    }
+    if (productOriginalPriceInput) {
+        productOriginalPriceInput.addEventListener('input', handlePriceInputComma);
     }
 
     // ---------------------------------------------------------
@@ -584,6 +616,8 @@ const productNameColor = document.getElementById('productNameColor');
 const productNameColorPicker = document.getElementById('productNameColorPicker');
 const productCategoryInput = document.getElementById('productCategory');
 const productPriceInput = document.getElementById('productPrice');
+const productOriginalPriceInput = document.getElementById('productOriginalPrice');
+const productDiscountPreview = document.getElementById('productDiscountPreview');
 const productStockInput = document.getElementById('productStock');
 const productDescInput = document.getElementById('productDesc');
 const productImageFile = document.getElementById('productImageFile');
@@ -922,12 +956,44 @@ function initDashboard() {
 // ==========================================
 let globalDisplayConfigs = {};
 
+// 정가 (할인 전 원래 가격) 파싱 헬퍼 함수
+function parseOriginalPrice(product) {
+    if (!product) return '';
+    if (product.original_price && String(product.original_price).trim() !== '') {
+        return String(product.original_price).replace(/[^0-9]/g, '').trim();
+    }
+    if (product.description) {
+        const match = product.description.match(/\[\[OP:([\s\S]*?)\]\]/);
+        if (match && match[1]) {
+            return String(match[1]).replace(/[^0-9]/g, '').trim();
+        }
+    }
+    return '';
+}
+window.parseOriginalPrice = parseOriginalPrice;
+
 // 가격 표시 포맷팅 헬퍼 함수
-function formatPriceDisplay(price) {
+function formatPriceDisplay(price, origPrice = '') {
     if (!price) return '0원';
-    const clean = price.toString().replace(/,/g, '').trim();
-    if (/^\d+$/.test(clean)) {
-        return Number(clean).toLocaleString('ko-KR') + '원';
+    const cleanPrice = price.toString().replace(/,/g, '').trim();
+    const cleanOrig = origPrice ? origPrice.toString().replace(/,/g, '').trim() : '';
+
+    if (/^\d+$/.test(cleanPrice)) {
+        const priceNum = Number(cleanPrice);
+        const origNum = cleanOrig && /^\d+$/.test(cleanOrig) ? Number(cleanOrig) : 0;
+        
+        if (origNum > priceNum) {
+            const discountRate = Math.round(((origNum - priceNum) / origNum) * 100);
+            return `
+                <div style="line-height:1.3;">
+                    <div style="font-size:0.75rem; color:#95a5a6; text-decoration:line-through;">${origNum.toLocaleString('ko-KR')}원</div>
+                    <div style="font-weight:700; color:#e74c3c;">
+                        <span style="color:#2c3e50; margin-right:3px;">${discountRate}%</span>${priceNum.toLocaleString('ko-KR')}원
+                    </div>
+                </div>
+            `;
+        }
+        return Number(cleanPrice).toLocaleString('ko-KR') + '원';
     }
     return price;
 }
@@ -1065,7 +1131,7 @@ function renderProductTable(products) {
             <td>${imgHtml}</td>
             <td style="font-weight:600;"><a href="#" onclick="event.preventDefault(); openPageManage('${p.id}')" style="color:#2980b9; text-decoration:underline; cursor:pointer;" title="상세페이지 관리">${p.name}</a></td>
             <td><span style="background:#eaf2f8; color:#2980b9; padding:3px 8px; border-radius:3px; font-size:0.8rem;">${displayCategory}</span></td>
-            <td>${formatPriceDisplay(p.price)}</td>
+            <td>${formatPriceDisplay(p.price, parseOriginalPrice(p))}</td>
             <td>${p.stock}개</td>
             <td style="color:#666; font-size:0.9rem;">${dateStr}</td>
             <td style="text-align:center; vertical-align:middle;">
@@ -1312,14 +1378,25 @@ function downloadProductExcel() {
     }
 
     // 엑셀에 들어갈 데이터 정리
-    const data = globalProducts.map(p => ({
-        '제품ID': p.id,
-        '제품명': p.name,
-        '카테고리': p.category,
-        '판매가격': p.price,
-        '현재고량': (p.stock || 0) + '개',
-        '등록일시': new Date(p.created_at).toLocaleString('ko-KR')
-    }));
+    const data = globalProducts.map(p => {
+        const origPrice = parseOriginalPrice(p);
+        const priceNum = Number(String(p.price).replace(/[^0-9]/g, '')) || 0;
+        const origNum = Number(String(origPrice).replace(/[^0-9]/g, '')) || 0;
+        let discountStr = '-';
+        if (origNum > priceNum && priceNum > 0) {
+            discountStr = Math.round(((origNum - priceNum) / origNum) * 100) + '%';
+        }
+        return {
+            '제품ID': p.id,
+            '제품명': p.name,
+            '카테고리': p.category,
+            '정가(원래가격)': origNum ? origNum.toLocaleString('ko-KR') + '원' : '-',
+            '할인율': discountStr,
+            '판매가격': p.price,
+            '현재고량': (p.stock || 0) + '개',
+            '등록일시': new Date(p.created_at).toLocaleString('ko-KR')
+        };
+    });
 
     // SheetJS를 사용하여 엑셀 생성
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -1331,7 +1408,9 @@ function downloadProductExcel() {
         {wch: 20}, // ID
         {wch: 35}, // 제품명
         {wch: 20}, // 카테고리
-        {wch: 15}, // 가격
+        {wch: 15}, // 정가
+        {wch: 10}, // 할인율
+        {wch: 15}, // 판매가격
         {wch: 10}, // 재고
         {wch: 25}  // 등록일
     ];
@@ -1409,6 +1488,8 @@ function openModal(isEdit = false) {
     if (!isEdit) {
         modalTitle.textContent = '새 제품 등록';
         productIdInput.value = ''; productNameInput.value = ''; productPriceInput.value = '전화문의';
+        if (productOriginalPriceInput) productOriginalPriceInput.value = '';
+        if (productDiscountPreview) { productDiscountPreview.style.display = 'none'; productDiscountPreview.innerHTML = ''; }
         if (productNameSize) productNameSize.value = '';
         if (productNameColor) productNameColor.value = '';
         if (productNameColorPicker) productNameColorPicker.value = '#000000';
@@ -1834,8 +1915,11 @@ saveProductBtn.addEventListener('click', async () => {
     const keywordsInput = document.getElementById('productKeywords');
     const keywordsVal = keywordsInput ? keywordsInput.value.trim() : '';
 
-    // [신규] colors/sizes/keywords 정보를 description 끝부분에 [[C:...]] [[S:...]] [[K:...]] 형식의 태그로 결합
-    const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]\n[[K:${keywordsVal}]]`;
+    // 정가(원래가격) 값 읽기
+    const origPriceVal = productOriginalPriceInput ? productOriginalPriceInput.value.trim().replace(/,/g, '') : '';
+
+    // [신규] colors/sizes/keywords/original_price 정보를 description 끝부분에 [[C:...]] [[S:...]] [[K:...]] [[OP:...]] 형식의 태그로 결합
+    const finalDescription = `${payload.description}\n\n[[C:${payload.colors}]]\n[[S:${payload.sizes}]]\n[[K:${keywordsVal}]]\n[[OP:${origPriceVal}]]`;
     
     // ── 저장 전략: 3단계 분리 ──────────────────────────────────────
     // 1단계: 반드시 저장해야 하는 핵심 필드 (short_comment 포함)
@@ -1988,10 +2072,24 @@ window.editProduct = async (id) => {
         }
     }
     productCategoryInput.value = p.category;
-    productPriceInput.value = formatPriceInput(p.price); productStockInput.value = p.stock; 
+    productPriceInput.value = formatPriceInput(p.price);
     
-    // 상세 설명 로드 시 색상/사이즈/키워드 태그 제거 처리 (개행문자 포함)
-    productDescInput.value = (p.description || '').replace(/\[\[C:[\s\S]*?\]\]/g, '').replace(/\[\[S:[\s\S]*?\]\]/g, '').replace(/\[\[K:[\s\S]*?\]\]/g, '').trim();
+    // 원래 가격(정가) 로드 및 할인 미리보기 갱신
+    const origPrice = parseOriginalPrice(p);
+    if (productOriginalPriceInput) {
+        productOriginalPriceInput.value = formatPriceInput(origPrice);
+    }
+    updateAdminDiscountPreview();
+
+    productStockInput.value = p.stock; 
+    
+    // 상세 설명 로드 시 색상/사이즈/키워드/원래가격 태그 제거 처리 (개행문자 포함)
+    productDescInput.value = (p.description || '')
+        .replace(/\[\[C:[\s\S]*?\]\]/g, '')
+        .replace(/\[\[S:[\s\S]*?\]\]/g, '')
+        .replace(/\[\[K:[\s\S]*?\]\]/g, '')
+        .replace(/\[\[OP:[\s\S]*?\]\]/g, '')
+        .trim();
     
     // 한줄 코멘트 로드
     const shortCommentInput = document.getElementById('productShortComment');
