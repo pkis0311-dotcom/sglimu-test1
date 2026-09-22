@@ -697,7 +697,10 @@
             // Description
             const descElem = document.getElementById('dynamicDesc');
             if(descElem && product.description) {
-                descElem.innerHTML = product.description.replace(/\[\[C:.*?\]\]/g, '').replace(/\[\[S:.*?\]\]/g, '').replace(/\[\[K:.*?\]\]/g, '').replace(/\n/g, '<br>').trim();
+                descElem.innerHTML = (product.description || '')
+                    .replace(/\[\[(C|S|K|OP):[\s\S]*?\]\]/g, '')
+                    .trim()
+                    .replace(/\n/g, '<br>');
             }
 
             // Page Data from site_configs

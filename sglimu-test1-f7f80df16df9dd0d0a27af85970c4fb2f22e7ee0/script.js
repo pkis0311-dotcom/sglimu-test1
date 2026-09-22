@@ -1860,7 +1860,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Description
             const descElem = document.getElementById('dynamicDesc');
             if (descElem && data.description) {
-                descElem.innerHTML = data.description.replace(/\n/g, '<br>');
+                descElem.innerHTML = (data.description || '')
+                    .replace(/\[\[(C|S|K|OP):[\s\S]*?\]\]/g, '')
+                    .trim()
+                    .replace(/\n/g, '<br>');
             }
 
             // Main Image
