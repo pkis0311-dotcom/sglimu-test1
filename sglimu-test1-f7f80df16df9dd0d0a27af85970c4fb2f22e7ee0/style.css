@@ -733,6 +733,7 @@ button {
     margin-top: 24px;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 40px;
     flex-wrap: wrap;
 }
@@ -778,7 +779,7 @@ button {
 }
 
 .partner-item img[src*="nicepay"] {
-    height: 32px;
+    height: 24px;
 }
 
 /* Footer Admin Discreet Button */
