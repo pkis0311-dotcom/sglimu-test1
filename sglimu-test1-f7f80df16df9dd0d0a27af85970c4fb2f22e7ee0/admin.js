@@ -3512,6 +3512,19 @@ window.uploadDataUrl = uploadDataUrl;
 let currentPageDataKey = ''; // 기본값 비워둠 (targetPageId 값이 없을 수 있음)
 let specRowCounter = 0;      // [신규] Quill 에디터 고유 ID 발급용 카운터
 let featureBlockCounter = 0;  // [신규] Quill 에디터 고유 ID 발급용 카운터
+let purchaseGuideQuill = null;
+let currentReviews = [];
+let currentQnas = [];
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 function initPageManageTab() {
     const targetSelect = document.getElementById('targetPageId');
@@ -3574,6 +3587,10 @@ function initPageManageTab() {
     const pageDetailImage = document.getElementById('pageDetailImage');
     const pageDetailImagePreview = document.getElementById('pageDetailImagePreview');
     const pageDescription = document.getElementById('pageDescription');
+
+    // 구매안내, 후기, Q&A 에디터 및 모달 초기화
+    initPurchaseGuideEditor();
+    initAdminReviewAndQnaModals();
 
     // 1. 제품 선택 변경 시 로드
     targetSelect.addEventListener('change', (e) => {
@@ -3717,9 +3734,11 @@ function initPageManageTab() {
                     }
                 }
 
+                const purchaseGuideContent = (purchaseGuideQuill && purchaseGuideQuill.getText().trim() !== '') ? purchaseGuideQuill.root.innerHTML : '';
+
                 const data = {
                     mainImages: mainImages,
-                    detailImages: detailImages, // [변경] 다중 이미지 대응
+                    detailImages: detailImages,
                     description: pageDescription ? pageDescription.value : '',
                     specStyle: document.getElementById('specStyle').value,
                     featureStyle: document.getElementById('featureStyle').value,
@@ -3730,7 +3749,10 @@ function initPageManageTab() {
                         cellBg: document.getElementById('specTableCellBg') ? document.getElementById('specTableCellBg').value : '#ffffff'
                     },
                     specs: [],
-                    features: []
+                    features: [],
+                    purchaseGuide: purchaseGuideContent,
+                    reviews: currentReviews,
+                    qnas: currentQnas
                 };
 
                 
@@ -3781,7 +3803,7 @@ function initPageManageTab() {
                 if (configError) throw configError;
                 
                 const productName = targetSelect.options[targetSelect.selectedIndex].text;
-                alert(`[${productName}] 상세페이지 설정이 성공적으로 저장되었습니다.`);
+                alert(`[${productName}] 상세페이지 설정(구매안내/후기/Q&A 포함)이 성공적으로 저장되었습니다.`);
                 
                 // 업로드 후 미리보기의 src를 새 URL로 교체 (다시 저장할 때 재업로드 방지)
                 loadPageData(); 
@@ -4373,6 +4395,20 @@ function createFeatureBlock(title, desc) {
             if(data.specs) data.specs.forEach(s => createSpecRow(s.key, s.val, s.headBg, s.headColor, s.cellBg));
 
             if(data.features) data.features.forEach(f => createFeatureBlock(f.title, f.desc));
+
+            // [추가] 구매안내 데이터 로드
+            if (purchaseGuideQuill) {
+                purchaseGuideQuill.root.innerHTML = data.purchaseGuide || '';
+            }
+
+            // [추가] 상품후기 데이터 로드
+            currentReviews = Array.isArray(data.reviews) ? data.reviews : [];
+            renderAdminReviews();
+
+            // [추가] Q&A 데이터 로드
+            currentQnas = Array.isArray(data.qnas) ? data.qnas : [];
+            renderAdminQnas();
+
         } catch (loadErr) {
             console.error('Failed to load detail page data into UI:', loadErr);
             alert('상세페이지 데이터를 화면에 불러오는 중 오류가 발생했습니다. 개발자 도구 콘솔 로그를 확인해 주세요.');
@@ -4416,10 +4452,390 @@ function clearPageManageUI() {
     updateFeatureStylePreview();
     updateSpecStylePreview();
     
+    // 구매안내, 상품후기, Q&A 초기화
+    if (purchaseGuideQuill) {
+        purchaseGuideQuill.root.innerHTML = '';
+    }
+    currentReviews = [];
+    renderAdminReviews();
+    currentQnas = [];
+    renderAdminQnas();
+
     // 파일 인풋도 초기화
     if (document.getElementById('pageMainImage')) document.getElementById('pageMainImage').value = '';
     if (document.getElementById('pageDetailImage')) document.getElementById('pageDetailImage').value = '';
 }
+
+// ------------------------------------------
+// [신규] 구매안내 / 상품후기 / Q&A 헬퍼 함수군
+// ------------------------------------------
+function initPurchaseGuideEditor() {
+    const editorElem = document.getElementById('pagePurchaseGuideEditor');
+    const toolbarElem = document.getElementById('toolbar_purchase_guide');
+    if (editorElem && toolbarElem && typeof Quill !== 'undefined' && !purchaseGuideQuill) {
+        purchaseGuideQuill = new Quill('#pagePurchaseGuideEditor', {
+            theme: 'snow',
+            modules: {
+                toolbar: '#toolbar_purchase_guide'
+            }
+        });
+    }
+
+    const loadDefaultBtn = document.getElementById('loadDefaultGuideBtn');
+    if (loadDefaultBtn && !loadDefaultBtn.dataset.init) {
+        loadDefaultBtn.addEventListener('click', () => {
+            if (purchaseGuideQuill) {
+                if (purchaseGuideQuill.getText().trim() && !confirm('현재 작성된 구매안내 내용이 기본 템플릿으로 대체됩니다. 계속하시겠습니까?')) {
+                    return;
+                }
+                purchaseGuideQuill.root.innerHTML = getDefaultPurchaseGuideHTML();
+            }
+        });
+        loadDefaultBtn.dataset.init = "true";
+    }
+
+    const clearBtn = document.getElementById('clearGuideBtn');
+    if (clearBtn && !clearBtn.dataset.init) {
+        clearBtn.addEventListener('click', () => {
+            if (purchaseGuideQuill && confirm('구매안내 내용을 비우시겠습니까? (비워둘 경우 기본 정책이 노출됩니다)')) {
+                purchaseGuideQuill.root.innerHTML = '';
+            }
+        });
+        clearBtn.dataset.init = "true";
+    }
+}
+
+function getDefaultPurchaseGuideHTML() {
+    return `<h3 style="color:#2c3e50; font-size:1.15rem; margin-bottom:12px;"><strong><i class="fa-solid fa-truck"></i> [배송 안내]</strong></h3>
+<ul style="padding-left:20px; line-height:1.8; color:#4a5568; margin-bottom:20px;">
+    <li><strong>배송 방법 :</strong> 본사 직배송 또는 제품별 전용 화물/택배 배송</li>
+    <li><strong>출고 기간 :</strong> 결제 확인 후 3~5일 이내 출고 (주말/공휴일 제외, 주문제작 가구의 경우 별도 납품일정 협의)</li>
+    <li><strong>배송 지역 :</strong> 전국 전 지역 (제주도 및 도서 산간 지역은 도선료/추가 배송비가 발생할 수 있습니다)</li>
+    <li><strong>설치 및 조립 :</strong> 도서관 가구 및 시스템 기기의 경우 전문 설치 기사 방문 설치 서비스를 지원합니다.</li>
+</ul>
+
+<h3 style="color:#2c3e50; font-size:1.15rem; margin-bottom:12px;"><strong><i class="fa-solid fa-arrows-rotate"></i> [교환 및 반품 안내]</strong></h3>
+<ul style="padding-left:20px; line-height:1.8; color:#4a5568; margin-bottom:20px;">
+    <li><strong>접수 기한 :</strong> 상품 수령 후 7일 이내에 고객센터(1544-5703)를 통해 접수해 주셔야 합니다.</li>
+    <li><strong>반품/교환 배송비 :</strong> 단순 변심 시 왕복 택배비는 고객님 부담이며, 제품 불량/파손 또는 오배송 시 당사에서 전액 부담합니다.</li>
+    <li><strong>교환/반품 불가 기준 :</strong> 포장 개봉 및 사용으로 상품 가치가 훼손된 경우, 조립/설치 완료 후 단순 변심, 맞춤 주문제작 상품으로 제작이 착수된 경우</li>
+</ul>
+
+<h3 style="color:#2c3e50; font-size:1.15rem; margin-bottom:12px;"><strong><i class="fa-solid fa-headset"></i> [A/S 및 고객상담 안내]</strong></h3>
+<ul style="padding-left:20px; line-height:1.8; color:#4a5568;">
+    <li><strong>고객센터 :</strong> 1544-5703 &nbsp;|&nbsp; <strong>팩스 :</strong> 051-518-5985</li>
+    <li><strong>운영시간 :</strong> 평일 09:00 ~ 18:00 (점심시간 12:00 ~ 13:00 / 토·일·공휴일 휴무)</li>
+    <li><strong>이메일 문의 :</strong> limu101@nate.com</li>
+</ul>`;
+}
+
+function renderAdminReviews() {
+    const container = document.getElementById('adminReviewContainer');
+    const statsElem = document.getElementById('adminReviewStats');
+    if (!container) return;
+
+    if (statsElem) {
+        statsElem.textContent = `(총 ${currentReviews.length}건)`;
+    }
+
+    if (currentReviews.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:30px 20px; background:#f8fafc; border:1px dashed #cbd5e0; border-radius:8px; color:#94a3b8;">
+                <i class="fa-regular fa-comment-dots" style="font-size:2rem; margin-bottom:8px; display:block;"></i>
+                등록된 상품후기가 없습니다. [새 상품후기 직접 등록] 버튼을 눌러 추가해보세요.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = currentReviews.map((rev) => {
+        const ratingStars = '⭐'.repeat(Math.max(1, Math.min(5, rev.rating || 5)));
+        const isBestBadge = rev.isBest ? `<span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;"><i class="fa-solid fa-crown"></i> BEST</span>` : '';
+        const adminReplyHTML = rev.adminReply ? `
+            <div style="margin-top:10px; background:#f0fdf4; border-left:4px solid #22c55e; padding:10px 14px; border-radius:4px; font-size:0.85rem;">
+                <div style="font-weight:700; color:#166534; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span><i class="fa-solid fa-reply"></i> 에스지라이뮤 관리자 답변</span>
+                    <button type="button" class="btn-secondary" onclick="openEditReviewAdmin('${rev.id}')" style="padding:2px 6px; font-size:0.75rem; height:auto;"><i class="fa-solid fa-pen"></i> 답변수정</button>
+                </div>
+                <div style="color:#374151; white-space:pre-wrap;">${escapeHtml(rev.adminReply)}</div>
+            </div>
+        ` : `
+            <div style="margin-top:8px;">
+                <button type="button" class="btn-secondary" onclick="openEditReviewAdmin('${rev.id}')" style="padding:3px 8px; font-size:0.8rem; color:#2563eb;"><i class="fa-solid fa-reply"></i> 관리자 답변 달기</button>
+            </div>
+        `;
+
+        return `
+            <div class="review-admin-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.05rem;">${ratingStars}</span>
+                        <strong style="color:#1e293b; font-size:0.95rem;">${escapeHtml(rev.author || '고객')}</strong>
+                        <span style="color:#94a3b8; font-size:0.8rem;">${rev.date || ''}</span>
+                        ${isBestBadge}
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="btn-secondary" onclick="openEditReviewAdmin('${rev.id}')" style="padding:4px 8px; font-size:0.8rem;"><i class="fa-solid fa-pen"></i> 수정</button>
+                        <button type="button" class="btn-secondary" onclick="deleteReviewAdmin('${rev.id}')" style="padding:4px 8px; font-size:0.8rem; color:#ef4444;"><i class="fa-solid fa-trash"></i> 삭제</button>
+                    </div>
+                </div>
+                <div style="font-size:0.9rem; color:#334155; line-height:1.6; white-space:pre-wrap;">${escapeHtml(rev.content || '')}</div>
+                ${adminReplyHTML}
+            </div>
+        `;
+    }).join('');
+}
+
+function renderAdminQnas() {
+    const container = document.getElementById('adminQnaContainer');
+    const statsElem = document.getElementById('adminQnaStats');
+    if (!container) return;
+
+    const pendingCount = currentQnas.filter(q => q.status === 'pending' || !q.answer).length;
+    if (statsElem) {
+        statsElem.textContent = `(총 ${currentQnas.length}건 / 대기 ${pendingCount}건)`;
+    }
+
+    if (currentQnas.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:30px 20px; background:#f8fafc; border:1px dashed #cbd5e0; border-radius:8px; color:#94a3b8;">
+                <i class="fa-regular fa-circle-question" style="font-size:2rem; margin-bottom:8px; display:block;"></i>
+                등록된 Q&A 문의가 없습니다. [새 Q&A 직접 등록] 버튼을 눌러 자주 묻는 질문을 추가해보세요.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = currentQnas.map(q => {
+        const isAnswered = q.status === 'answered' || (q.answer && q.answer.trim() !== '');
+        const statusBadge = isAnswered 
+            ? `<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">답변 완료</span>` 
+            : `<span style="background:#ffedd5; color:#c2410c; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">답변 대기</span>`;
+        const secretBadge = q.isSecret ? `<span style="background:#fee2e2; color:#b91c1c; padding:3px 6px; border-radius:4px; font-size:0.75rem; font-weight:600;"><i class="fa-solid fa-lock"></i> 비밀글</span>` : '';
+        
+        const answerHTML = isAnswered ? `
+            <div style="margin-top:10px; background:#eff6ff; border-left:4px solid #3b82f6; padding:10px 14px; border-radius:4px; font-size:0.85rem;">
+                <div style="font-weight:700; color:#1d4ed8; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span><i class="fa-solid fa-comment-dots"></i> 에스지라이뮤 공식 답변</span>
+                    <button type="button" class="btn-secondary" onclick="openEditQnaAdmin('${q.id}')" style="padding:2px 6px; font-size:0.75rem; height:auto;"><i class="fa-solid fa-pen"></i> 답변수정</button>
+                </div>
+                <div style="color:#374151; white-space:pre-wrap;">${escapeHtml(q.answer)}</div>
+            </div>
+        ` : `
+            <div style="margin-top:8px;">
+                <button type="button" class="btn-primary" onclick="openEditQnaAdmin('${q.id}')" style="padding:4px 10px; font-size:0.8rem; background:#3b82f6; border-color:#2563eb;"><i class="fa-solid fa-pen-to-square"></i> 지금 답변 작성하기</button>
+            </div>
+        `;
+
+        return `
+            <div class="qna-admin-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${statusBadge}
+                        ${secretBadge}
+                        <strong style="color:#0f172a; font-size:1rem;">${escapeHtml(q.title || '문의드립니다.')}</strong>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="btn-secondary" onclick="openEditQnaAdmin('${q.id}')" style="padding:4px 8px; font-size:0.8rem;"><i class="fa-solid fa-pen"></i> 수정/답변</button>
+                        <button type="button" class="btn-secondary" onclick="deleteQnaAdmin('${q.id}')" style="padding:4px 8px; font-size:0.8rem; color:#ef4444;"><i class="fa-solid fa-trash"></i> 삭제</button>
+                    </div>
+                </div>
+                <div style="font-size:0.82rem; color:#64748b; margin-bottom:8px;">
+                    작성자: <strong>${escapeHtml(q.author || '고객')}</strong> &nbsp;|&nbsp; 작성일: ${q.date || ''}
+                </div>
+                <div style="font-size:0.9rem; color:#334155; line-height:1.6; white-space:pre-wrap; background:#f8fafc; padding:10px 12px; border-radius:6px; border:1px solid #f1f5f9;">${escapeHtml(q.content || '')}</div>
+                ${answerHTML}
+            </div>
+        `;
+    }).join('');
+}
+
+function initAdminReviewAndQnaModals() {
+    // Review Modal Open
+    const openAddReviewBtn = document.getElementById('openAddReviewAdminBtn');
+    if (openAddReviewBtn && !openAddReviewBtn.dataset.init) {
+        openAddReviewBtn.addEventListener('click', () => {
+            document.getElementById('adminReviewId').value = '';
+            document.getElementById('adminReviewAuthor').value = '';
+            document.getElementById('adminReviewRating').value = '5';
+            document.getElementById('adminReviewDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('adminReviewIsBest').checked = false;
+            document.getElementById('adminReviewContent').value = '';
+            document.getElementById('adminReviewReply').value = '';
+            document.getElementById('adminReviewModalTitle').innerHTML = '<i class="fa-solid fa-comment-dots" style="color:#2ecc71;"></i> 새 상품후기 등록';
+            document.getElementById('adminReviewModal').classList.add('active');
+        });
+        openAddReviewBtn.dataset.init = "true";
+    }
+
+    const closeReviewModal = () => document.getElementById('adminReviewModal')?.classList.remove('active');
+    document.getElementById('closeAdminReviewModalBtn')?.addEventListener('click', closeReviewModal);
+    document.getElementById('cancelAdminReviewModalBtn')?.addEventListener('click', closeReviewModal);
+
+    // Save Review
+    const saveReviewBtn = document.getElementById('saveAdminReviewBtn');
+    if (saveReviewBtn && !saveReviewBtn.dataset.init) {
+        saveReviewBtn.addEventListener('click', () => {
+            const id = document.getElementById('adminReviewId').value;
+            const author = document.getElementById('adminReviewAuthor').value.trim();
+            const rating = parseInt(document.getElementById('adminReviewRating').value) || 5;
+            const date = document.getElementById('adminReviewDate').value || new Date().toISOString().split('T')[0];
+            const isBest = document.getElementById('adminReviewIsBest').checked;
+            const content = document.getElementById('adminReviewContent').value.trim();
+            const adminReply = document.getElementById('adminReviewReply').value.trim();
+
+            if (!author) {
+                alert('작성자 이름을 입력해주세요.');
+                return;
+            }
+            if (!content) {
+                alert('후기 내용을 입력해주세요.');
+                return;
+            }
+
+            if (id) {
+                const idx = currentReviews.findIndex(r => r.id === id);
+                if (idx !== -1) {
+                    currentReviews[idx] = {
+                        ...currentReviews[idx],
+                        author, rating, date, isBest, content, adminReply,
+                        adminReplyDate: adminReply ? (currentReviews[idx].adminReplyDate || new Date().toISOString().split('T')[0]) : null
+                    };
+                }
+            } else {
+                currentReviews.unshift({
+                    id: 'rev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                    author, rating, date, isBest, content, adminReply,
+                    adminReplyDate: adminReply ? new Date().toISOString().split('T')[0] : null
+                });
+            }
+
+            renderAdminReviews();
+            closeReviewModal();
+        });
+        saveReviewBtn.dataset.init = "true";
+    }
+
+    // QnA Modal Open
+    const openAddQnaBtn = document.getElementById('openAddQnaAdminBtn');
+    if (openAddQnaBtn && !openAddQnaBtn.dataset.init) {
+        openAddQnaBtn.addEventListener('click', () => {
+            document.getElementById('adminQnaId').value = '';
+            document.getElementById('adminQnaAuthor').value = '';
+            document.getElementById('adminQnaStatus').value = 'pending';
+            document.getElementById('adminQnaDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('adminQnaIsSecret').checked = false;
+            document.getElementById('adminQnaTitleInput').value = '';
+            document.getElementById('adminQnaContent').value = '';
+            document.getElementById('adminQnaAnswer').value = '';
+            document.getElementById('adminQnaModalTitle').innerHTML = '<i class="fa-solid fa-circle-question" style="color:#3498db;"></i> 새 Q&A 직접 등록';
+            document.getElementById('adminQnaModal').classList.add('active');
+        });
+        openAddQnaBtn.dataset.init = "true";
+    }
+
+    const closeQnaModal = () => document.getElementById('adminQnaModal')?.classList.remove('active');
+    document.getElementById('closeAdminQnaModalBtn')?.addEventListener('click', closeQnaModal);
+    document.getElementById('cancelAdminQnaModalBtn')?.addEventListener('click', closeQnaModal);
+
+    // Save QnA
+    const saveQnaBtn = document.getElementById('saveAdminQnaBtn');
+    if (saveQnaBtn && !saveQnaBtn.dataset.init) {
+        saveQnaBtn.addEventListener('click', () => {
+            const id = document.getElementById('adminQnaId').value;
+            const author = document.getElementById('adminQnaAuthor').value.trim();
+            const statusVal = document.getElementById('adminQnaStatus').value;
+            const date = document.getElementById('adminQnaDate').value || new Date().toISOString().split('T')[0];
+            const isSecret = document.getElementById('adminQnaIsSecret').checked;
+            const title = document.getElementById('adminQnaTitleInput').value.trim();
+            const content = document.getElementById('adminQnaContent').value.trim();
+            const answer = document.getElementById('adminQnaAnswer').value.trim();
+
+            if (!author) {
+                alert('문의 고객명을 입력해주세요.');
+                return;
+            }
+            if (!title) {
+                alert('문의 제목을 입력해주세요.');
+                return;
+            }
+            if (!content) {
+                alert('문의 상세 내용을 입력해주세요.');
+                return;
+            }
+
+            const finalStatus = (answer.length > 0) ? 'answered' : statusVal;
+
+            if (id) {
+                const idx = currentQnas.findIndex(q => q.id === id);
+                if (idx !== -1) {
+                    currentQnas[idx] = {
+                        ...currentQnas[idx],
+                        author, date, isSecret, title, content,
+                        status: finalStatus,
+                        answer: answer,
+                        answerDate: answer ? (currentQnas[idx].answerDate || new Date().toISOString().split('T')[0]) : null
+                    };
+                }
+            } else {
+                currentQnas.unshift({
+                    id: 'qna_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                    author, date, isSecret, title, content,
+                    status: finalStatus,
+                    answer: answer,
+                    answerDate: answer ? new Date().toISOString().split('T')[0] : null
+                });
+            }
+
+            renderAdminQnas();
+            closeQnaModal();
+        });
+        saveQnaBtn.dataset.init = "true";
+    }
+}
+
+window.openEditReviewAdmin = function(id) {
+    const rev = currentReviews.find(r => r.id === id);
+    if (!rev) return;
+    document.getElementById('adminReviewId').value = rev.id;
+    document.getElementById('adminReviewAuthor').value = rev.author || '';
+    document.getElementById('adminReviewRating').value = String(rev.rating || 5);
+    document.getElementById('adminReviewDate').value = rev.date || new Date().toISOString().split('T')[0];
+    document.getElementById('adminReviewIsBest').checked = !!rev.isBest;
+    document.getElementById('adminReviewContent').value = rev.content || '';
+    document.getElementById('adminReviewReply').value = rev.adminReply || '';
+    document.getElementById('adminReviewModalTitle').innerHTML = '<i class="fa-solid fa-comment-dots" style="color:#2ecc71;"></i> 상품후기 수정 / 답변 관리';
+    document.getElementById('adminReviewModal').classList.add('active');
+};
+
+window.deleteReviewAdmin = function(id) {
+    if (confirm('이 상품후기를 삭제하시겠습니까?')) {
+        currentReviews = currentReviews.filter(r => r.id !== id);
+        renderAdminReviews();
+    }
+};
+
+window.openEditQnaAdmin = function(id) {
+    const q = currentQnas.find(x => x.id === id);
+    if (!q) return;
+    document.getElementById('adminQnaId').value = q.id;
+    document.getElementById('adminQnaAuthor').value = q.author || '';
+    document.getElementById('adminQnaStatus').value = q.status || 'pending';
+    document.getElementById('adminQnaDate').value = q.date || new Date().toISOString().split('T')[0];
+    document.getElementById('adminQnaIsSecret').checked = !!q.isSecret;
+    document.getElementById('adminQnaTitleInput').value = q.title || '';
+    document.getElementById('adminQnaContent').value = q.content || '';
+    document.getElementById('adminQnaAnswer').value = q.answer || '';
+    document.getElementById('adminQnaModalTitle').innerHTML = '<i class="fa-solid fa-circle-question" style="color:#3498db;"></i> Q&A 답변 작성 및 수정';
+    document.getElementById('adminQnaModal').classList.add('active');
+};
+
+window.deleteQnaAdmin = function(id) {
+    if (confirm('이 Q&A 문의를 삭제하시겠습니까?')) {
+        currentQnas = currentQnas.filter(q => q.id !== id);
+        renderAdminQnas();
+    }
+};
 
 
 async function fetchUsers() {

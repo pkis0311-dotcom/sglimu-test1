@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -177,33 +177,50 @@
             
             <div class="detail-tab-content" id="tab1">
                 <div class="info-text-box">
-                    <h4>배송/교환/반품 안내</h4>
-                    <p>
-                        <strong>배송안내</strong><br>
-                        - 결제 완료 후 3~5일 이내에 출고됩니다. (주말/공휴일 제외)<br>
-                        - 제주 및 도서 산간 지역은 추가 배송비가 발생할 수 있습니다.<br><br>
-                        
-                        <strong>교환/반품 안내</strong><br>
-                        - 상품 수령 후 7일 이내에 고객센터를 통해 접수해 주셔야 합니다.<br>
-                        - 단순 변심으로 인한 반품 시 왕복 택배비는 고객님 부담입니다.<br>
-                        - 조립/설치 후에는 제품 하자를 제외하고 교환/반품이 불가능합니다.
-                    </p>
+                    <h4 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 25px;"><i class="fa-solid fa-truck-fast"></i> 배송 / 교환 / 반품 안내</h4>
+                    <div id="dynamicPurchaseGuide" class="ql-editor" style="padding:0; line-height: 1.8; color: #444;">
+                        <!-- JS에서 dynamicPurchaseGuide 주입 -->
+                    </div>
                 </div>
             </div>
 
             <div class="detail-tab-content" id="tab2">
-                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
-                    <i class="fa-regular fa-comment-dots" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
-                    <h3 style="color: #666;">등록된 상품후기가 없습니다.</h3>
-                    <p style="color: #999;">첫 번째 리뷰를 남겨주세요!</p>
+                <div class="info-text-box">
+                    <div class="review-header-wrap" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:25px; background:#f8fafc; padding:20px 25px; border-radius:12px; border:1px solid #e2e8f0;">
+                        <div style="display:flex; align-items:center; gap:20px;">
+                            <div style="text-align:center; padding-right:20px; border-right:1px solid #cbd5e0;">
+                                <div id="reviewAvgScore" style="font-size:2.2rem; font-weight:800; color:#1e293b; line-height:1;">5.0</div>
+                                <div id="reviewAvgStars" style="font-size:1.1rem; color:#f59e0b; margin-top:4px;">⭐⭐⭐⭐⭐</div>
+                            </div>
+                            <div>
+                                <h4 style="margin:0 0 4px 0; border:none; padding:0; font-size:1.15rem; color:#1e293b;">고객 상품 후기</h4>
+                                <p style="margin:0; font-size:0.88rem; color:#64748b;">에스지라이뮤를 이용해주신 고객님들의 솔직한 후기입니다. (총 <strong id="reviewCountDisplay" style="color:#27ae60;">0</strong>건)</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="openCustomerReviewModal()" style="padding:10px 20px; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-pen"></i> 후기 작성하기
+                        </button>
+                    </div>
+                    <div id="dynamicReviewsList" style="display:flex; flex-direction:column; gap:16px;">
+                        <!-- JS 동적 렌더링 -->
+                    </div>
                 </div>
             </div>
 
             <div class="detail-tab-content" id="tab3">
-                <div class="info-text-box" style="text-align:center; padding: 100px 0;">
-                    <i class="fa-regular fa-circle-question" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
-                    <h3 style="color: #666;">등록된 Q&A가 없습니다.</h3>
-                    <p style="color: #999;">상품에 대한 궁금증을 남겨주시면 빠르게 답변 드리겠습니다.</p>
+                <div class="info-text-box">
+                    <div class="qna-header-wrap" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:25px; background:#f8fafc; padding:20px 25px; border-radius:12px; border:1px solid #e2e8f0;">
+                        <div>
+                            <h4 style="margin:0 0 4px 0; border:none; padding:0; font-size:1.15rem; color:#1e293b;"><i class="fa-solid fa-circle-question" style="color:#3b82f6;"></i> 상품 Q&A</h4>
+                            <p style="margin:0; font-size:0.88rem; color:#64748b;">상품에 대해 궁금한 점을 질문하시면 담당자가 친절하게 답변해 드립니다. (총 <strong id="qnaCountDisplay" style="color:#3b82f6;">0</strong>건)</p>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="openCustomerQnaModal()" style="padding:10px 20px; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:8px; background:#3b82f6; border-color:#2563eb;">
+                            <i class="fa-solid fa-pen-to-square"></i> Q&A 문의하기
+                        </button>
+                    </div>
+                    <div id="dynamicQnaList" style="display:flex; flex-direction:column; gap:12px;">
+                        <!-- JS 동적 렌더링 -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -842,6 +859,298 @@
                 if (featureSection) featureSection.style.display = 'none';
             }
             
+            // [신규] 구매안내 렌더링
+            const purchaseGuideElem = document.getElementById('dynamicPurchaseGuide');
+            if (purchaseGuideElem) {
+                if (data && data.purchaseGuide && data.purchaseGuide.trim() !== '') {
+                    purchaseGuideElem.innerHTML = data.purchaseGuide;
+                } else {
+                    purchaseGuideElem.innerHTML = `
+                        <h4 style="color:#2c3e50; font-size:1.1rem; margin-bottom:12px;"><strong><i class="fa-solid fa-truck"></i> [배송 안내]</strong></h4>
+                        <ul style="padding-left:20px; line-height:1.8; color:#555; margin-bottom:20px;">
+                            <li><strong>배송 방법 :</strong> 본사 직배송 또는 제품별 전용 화물/택배 배송</li>
+                            <li><strong>출고 기간 :</strong> 결제 확인 후 3~5일 이내 출고 (주말/공휴일 제외, 맞춤 주문제작의 경우 별도 협의)</li>
+                            <li><strong>배송 지역 :</strong> 전국 (제주 및 도서 산간 지역은 추가 배송비가 발생할 수 있습니다)</li>
+                            <li><strong>설치/조립 :</strong> 가구 및 대형 기기의 경우 전문 기사 방문 설치 서비스를 지원합니다.</li>
+                        </ul>
+                        <h4 style="color:#2c3e50; font-size:1.1rem; margin-bottom:12px;"><strong><i class="fa-solid fa-arrows-rotate"></i> [교환 및 반품 안내]</strong></h4>
+                        <ul style="padding-left:20px; line-height:1.8; color:#555; margin-bottom:20px;">
+                            <li><strong>접수 기한 :</strong> 상품 수령 후 7일 이내에 고객센터(1544-5703)를 통해 접수해 주셔야 합니다.</li>
+                            <li><strong>반품/교환 배송비 :</strong> 단순 변심으로 인한 반품 시 왕복 택배비는 고객님 부담입니다. (상품 하자 시 당사 부담)</li>
+                            <li><strong>교환/반품 불가 기준 :</strong> 조립/설치 완료 후, 포장 훼손 시에는 제품 하자를 제외하고 교환/반품이 불가능합니다.</li>
+                        </ul>
+                        <h4 style="color:#2c3e50; font-size:1.1rem; margin-bottom:12px;"><strong><i class="fa-solid fa-headset"></i> [고객센터 및 A/S 안내]</strong></h4>
+                        <ul style="padding-left:20px; line-height:1.8; color:#555;">
+                            <li><strong>전화 문의 :</strong> 1544-5703 &nbsp;|&nbsp; <strong>팩스 :</strong> 051-518-5985</li>
+                            <li><strong>상담 시간 :</strong> 평일 09:00 ~ 18:00 (점심시간 12:00 ~ 13:00 / 주말·공휴일 휴무)</li>
+                        </ul>
+                    `;
+                }
+            }
+
+            // [신규] 상품후기 렌더링
+            const reviewsList = (data && Array.isArray(data.reviews)) ? data.reviews : [];
+            renderCustomerReviews(reviewsList);
+
+            // [신규] Q&A 렌더링
+            const qnasList = (data && Array.isArray(data.qnas)) ? data.qnas : [];
+            renderCustomerQnas(qnasList);
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function renderCustomerReviews(reviews) {
+                const container = document.getElementById('dynamicReviewsList');
+                const countDisplay = document.getElementById('reviewCountDisplay');
+                const avgScoreDisplay = document.getElementById('reviewAvgScore');
+                const avgStarsDisplay = document.getElementById('reviewAvgStars');
+                if (!container) return;
+
+                if (countDisplay) countDisplay.textContent = reviews.length;
+
+                if (reviews.length === 0) {
+                    if (avgScoreDisplay) avgScoreDisplay.textContent = '5.0';
+                    if (avgStarsDisplay) avgStarsDisplay.textContent = '⭐⭐⭐⭐⭐';
+                    container.innerHTML = `
+                        <div style="text-align:center; padding: 60px 0; background:#f9fafb; border-radius:10px; border:1px dashed #e2e8f0;">
+                            <i class="fa-regular fa-comment-dots" style="font-size: 2.8rem; color: #cbd5e0; margin-bottom: 12px; display:block;"></i>
+                            <h4 style="color: #475569; font-size:1.05rem; margin-bottom:4px;">등록된 상품후기가 없습니다.</h4>
+                            <p style="color: #94a3b8; font-size:0.9rem;">첫 번째로 상품의 생생한 리뷰를 남겨주세요!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const totalStars = reviews.reduce((acc, cur) => acc + (cur.rating || 5), 0);
+                const avg = (totalStars / reviews.length).toFixed(1);
+                if (avgScoreDisplay) avgScoreDisplay.textContent = avg;
+                if (avgStarsDisplay) {
+                    const rounded = Math.round(Number(avg));
+                    avgStarsDisplay.textContent = '⭐'.repeat(Math.max(1, Math.min(5, rounded)));
+                }
+
+                container.innerHTML = reviews.map(rev => {
+                    const stars = '⭐'.repeat(Math.max(1, Math.min(5, rev.rating || 5)));
+                    const bestBadge = rev.isBest ? `<span style="background:#fef3c7; color:#d97706; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="fa-solid fa-crown"></i> BEST</span>` : '';
+                    const authorName = rev.author ? (rev.author.length > 2 ? rev.author[0] + '*'.repeat(rev.author.length - 2) + rev.author[rev.author.length - 1] : rev.author[0] + '*') : '고객';
+                    
+                    const adminReply = rev.adminReply ? `
+                        <div style="margin-top:12px; background:#f0fdf4; border-left:4px solid #22c55e; padding:12px 16px; border-radius:6px; font-size:0.88rem;">
+                            <div style="font-weight:700; color:#166534; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-reply"></i> (주)에스지라이뮤 공식 답변
+                                <span style="font-size:0.75rem; color:#15803d; font-weight:normal;">${rev.adminReplyDate || ''}</span>
+                            </div>
+                            <div style="color:#374151; line-height:1.6; white-space:pre-wrap;">${escapeHtml(rev.adminReply)}</div>
+                        </div>
+                    ` : '';
+
+                    return `
+                        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:1.1rem;">${stars}</span>
+                                    <strong style="color:#1e293b; font-size:0.95rem;">${escapeHtml(authorName)}</strong>
+                                    ${bestBadge}
+                                </div>
+                                <span style="color:#94a3b8; font-size:0.85rem;">${rev.date || ''}</span>
+                            </div>
+                            <div style="color:#334155; line-height:1.7; font-size:0.95rem; white-space:pre-wrap;">${escapeHtml(rev.content || '')}</div>
+                            ${adminReply}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function renderCustomerQnas(qnas) {
+                const container = document.getElementById('dynamicQnaList');
+                const countDisplay = document.getElementById('qnaCountDisplay');
+                if (!container) return;
+
+                if (countDisplay) countDisplay.textContent = qnas.length;
+
+                if (qnas.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center; padding: 60px 0; background:#f9fafb; border-radius:10px; border:1px dashed #e2e8f0;">
+                            <i class="fa-regular fa-circle-question" style="font-size: 2.8rem; color: #cbd5e0; margin-bottom: 12px; display:block;"></i>
+                            <h4 style="color: #475569; font-size:1.05rem; margin-bottom:4px;">등록된 Q&A 문의가 없습니다.</h4>
+                            <p style="color: #94a3b8; font-size:0.9rem;">상품에 대한 질문이 있으시면 언제든지 남겨주세요!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = qnas.map((q, idx) => {
+                    const isAnswered = q.status === 'answered' || (q.answer && q.answer.trim() !== '');
+                    const statusBadge = isAnswered 
+                        ? `<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">답변 완료</span>` 
+                        : `<span style="background:#f1f5f9; color:#64748b; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">답변 대기</span>`;
+                    const secretBadge = q.isSecret ? `<span style="color:#ef4444; margin-right:4px;" title="비밀글"><i class="fa-solid fa-lock"></i></span>` : '';
+                    const authorName = q.author ? (q.author.length > 2 ? q.author[0] + '*'.repeat(q.author.length - 2) + q.author[q.author.length - 1] : q.author[0] + '*') : '고객';
+
+                    const answerBlock = isAnswered ? `
+                        <div style="margin-top:14px; background:#f0fdf4; border-left:4px solid #22c55e; padding:14px 16px; border-radius:6px; font-size:0.9rem;">
+                            <div style="font-weight:700; color:#166534; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-comment-dots"></i> (주)에스지라이뮤 답변
+                                <span style="font-size:0.75rem; color:#15803d; font-weight:normal;">${q.answerDate || ''}</span>
+                            </div>
+                            <div style="color:#1f2937; line-height:1.6; white-space:pre-wrap;">${escapeHtml(q.answer)}</div>
+                        </div>
+                    ` : `
+                        <div style="margin-top:10px; color:#94a3b8; font-size:0.85rem; font-style:italic;">
+                            <i class="fa-solid fa-clock"></i> 관리자 답변을 준비 중입니다.
+                        </div>
+                    `;
+
+                    return `
+                        <div class="qna-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
+                            <div onclick="toggleQnaDetail('qna_body_${idx}')" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:#fff; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                                <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                                    ${statusBadge}
+                                    <div style="font-weight:600; color:#1e293b; font-size:0.95rem;">
+                                        ${secretBadge}${escapeHtml(q.title || '상품 문의드립니다.')}
+                                    </div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:15px; color:#64748b; font-size:0.85rem;">
+                                    <span>${escapeHtml(authorName)}</span>
+                                    <span>${q.date || ''}</span>
+                                    <i class="fa-solid fa-chevron-down" style="font-size:0.8rem; color:#94a3b8;"></i>
+                                </div>
+                            </div>
+                            <div id="qna_body_${idx}" style="display:none; padding:18px 20px; background:#fafbfc; border-top:1px dashed #e2e8f0;">
+                                <div style="color:#334155; line-height:1.6; font-size:0.92rem; white-space:pre-wrap;">${escapeHtml(q.content || '')}</div>
+                                ${answerBlock}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            window.toggleQnaDetail = function(id) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                }
+            };
+
+            // 후기 작성 모달
+            window.openCustomerReviewModal = function() {
+                const currentUser = window.currentAuthUser;
+                const authorInput = document.getElementById('custReviewAuthor');
+                if (authorInput && currentUser && currentUser.name) {
+                    authorInput.value = currentUser.name;
+                }
+                document.getElementById('customerReviewModal')?.classList.add('active');
+            };
+
+            window.closeCustomerReviewModal = function() {
+                document.getElementById('customerReviewModal')?.classList.remove('active');
+            };
+
+            window.submitCustomerReview = async function() {
+                const author = document.getElementById('custReviewAuthor')?.value.trim();
+                const rating = parseInt(document.getElementById('custReviewRating')?.value) || 5;
+                const content = document.getElementById('custReviewContent')?.value.trim();
+
+                if (!author) { alert('작성자 이름을 입력해주세요.'); return; }
+                if (!content) { alert('후기 내용을 입력해주세요.'); return; }
+
+                const newRev = {
+                    id: 'rev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                    author: author,
+                    rating: rating,
+                    date: new Date().toISOString().split('T')[0],
+                    content: content,
+                    adminReply: null,
+                    isBest: false
+                };
+
+                // Save to Supabase config
+                try {
+                    const { data: latestConfig } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
+                    const pageVal = latestConfig ? latestConfig.value : {};
+                    pageVal.reviews = Array.isArray(pageVal.reviews) ? pageVal.reviews : [];
+                    pageVal.reviews.unshift(newRev);
+
+                    await supabase.from('site_configs').upsert({
+                        key: 'pageData_' + productId,
+                        value: pageVal
+                    });
+
+                    alert('소중한 후기가 성공적으로 등록되었습니다. 감사합니다!');
+                    renderCustomerReviews(pageVal.reviews);
+                    window.closeCustomerReviewModal();
+                    document.getElementById('custReviewContent').value = '';
+                } catch (e) {
+                    console.error(e);
+                    alert('후기 저장 중 오류가 발생했습니다.');
+                }
+            };
+
+            // Q&A 작성 모달
+            window.openCustomerQnaModal = function() {
+                const currentUser = window.currentAuthUser;
+                const authorInput = document.getElementById('custQnaAuthor');
+                if (authorInput && currentUser && currentUser.name) {
+                    authorInput.value = currentUser.name;
+                }
+                document.getElementById('customerQnaModal')?.classList.add('active');
+            };
+
+            window.closeCustomerQnaModal = function() {
+                document.getElementById('customerQnaModal')?.classList.remove('active');
+            };
+
+            window.submitCustomerQna = async function() {
+                const author = document.getElementById('custQnaAuthor')?.value.trim();
+                const title = document.getElementById('custQnaTitle')?.value.trim();
+                const isSecret = document.getElementById('custQnaIsSecret')?.checked;
+                const content = document.getElementById('custQnaContent')?.value.trim();
+
+                if (!author) { alert('작성자 이름을 입력해주세요.'); return; }
+                if (!title) { alert('문의 제목을 입력해주세요.'); return; }
+                if (!content) { alert('문의 내용을 입력해주세요.'); return; }
+
+                const newQna = {
+                    id: 'qna_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                    author: author,
+                    title: title,
+                    isSecret: isSecret,
+                    date: new Date().toISOString().split('T')[0],
+                    content: content,
+                    status: 'pending',
+                    answer: null
+                };
+
+                // Save to Supabase config
+                try {
+                    const { data: latestConfig } = await supabase.from('site_configs').select('value').eq('key', 'pageData_' + productId).single();
+                    const pageVal = latestConfig ? latestConfig.value : {};
+                    pageVal.qnas = Array.isArray(pageVal.qnas) ? pageVal.qnas : [];
+                    pageVal.qnas.unshift(newQna);
+
+                    await supabase.from('site_configs').upsert({
+                        key: 'pageData_' + productId,
+                        value: pageVal
+                    });
+
+                    alert('문의가 성공적으로 접수되었습니다. 담당자가 확인 후 신속히 답변 드리겠습니다.');
+                    renderCustomerQnas(pageVal.qnas);
+                    window.closeCustomerQnaModal();
+                    document.getElementById('custQnaTitle').value = '';
+                    document.getElementById('custQnaContent').value = '';
+                } catch (e) {
+                    console.error(e);
+                    alert('문의 저장 중 오류가 발생했습니다.');
+                }
+            };
+            
             // [신규] 최근 본 상품 저장
             try {
                 let recentItems = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
@@ -911,6 +1220,75 @@
 
         window.addEventListener('DOMContentLoaded', initProductDetail);
     </script>
+    
+    <!-- 사용자 후기 작성 모달 -->
+    <div class="modal-overlay" id="customerReviewModal">
+        <div class="modal-box" style="max-width:500px; background:#fff; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <h3 style="margin:0; font-size:1.2rem; color:#1e293b;"><i class="fa-solid fa-pen" style="color:#27ae60;"></i> 상품 후기 작성</h3>
+                <button type="button" onclick="closeCustomerReviewModal()" style="background:none; border:none; font-size:1.4rem; color:#94a3b8; cursor:pointer;">&times;</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label style="display:block; font-size:0.9rem; font-weight:600; color:#334155; margin-bottom:6px;">작성자명 *</label>
+                    <input type="text" id="custReviewAuthor" class="form-control" placeholder="성함 또는 닉네임" style="width:100%; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.9rem; font-weight:600; color:#334155; margin-bottom:6px;">평점 만족도 *</label>
+                    <select id="custReviewRating" class="form-control" style="width:100%; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px; font-weight:bold; color:#f59e0b;">
+                        <option value="5">⭐⭐⭐⭐⭐ 5점 (아주 만족해요)</option>
+                        <option value="4">⭐⭐⭐⭐ 4점 (만족해요)</option>
+                        <option value="3">⭐⭐⭐ 3점 (보통이에요)</option>
+                        <option value="2">⭐⭐ 2점 (그저 그래요)</option>
+                        <option value="1">⭐ 1점 (불만족해요)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.9rem; font-weight:600; color:#334155; margin-bottom:6px;">후기 내용 *</label>
+                    <textarea id="custReviewContent" class="form-control" rows="4" placeholder="상품을 사용하시면서 느끼신 점을 솔직하게 작성해주세요." style="width:100%; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px; resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid #e2e8f0; padding-top:16px;">
+                <button type="button" class="btn-secondary" onclick="closeCustomerReviewModal()" style="padding:8px 16px; border-radius:6px;">취소</button>
+                <button type="button" class="btn-primary" onclick="submitCustomerReview()" style="padding:8px 20px; border-radius:6px; background:#27ae60; border-color:#219653; font-weight:600;">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 Q&A 작성 모달 -->
+    <div class="modal-overlay" id="customerQnaModal">
+        <div class="modal-box" style="max-width:500px; background:#fff; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <h3 style="margin:0; font-size:1.2rem; color:#1e293b;"><i class="fa-solid fa-circle-question" style="color:#3b82f6;"></i> 상품 Q&A 문의하기</h3>
+                <button type="button" onclick="closeCustomerQnaModal()" style="background:none; border:none; font-size:1.4rem; color:#94a3b8; cursor:pointer;">&times;</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label style="display:block; font-size:0.9rem; font-weight:600; color:#334155; margin-bottom:6px;">작성자명 *</label>
+                    <input type="text" id="custQnaAuthor" class="form-control" placeholder="성함 또는 기관명" style="width:100%; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.9rem; font-weight:600; color:#334155; margin-bottom:6px;">문의 제목 *</label>
+                    <input type="text" id="custQnaTitle" class="form-control" placeholder="예: 납품 및 설치 일정 문의" style="width:100%; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px;">
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="custQnaIsSecret" style="width:18px; height:18px; cursor:pointer;">
+                    <label for="custQnaIsSecret" style="margin:0; cursor:pointer; font-size:0.9rem; color:#e74c3c; font-weight:600;">
+                        <i class="fa-solid fa-lock"></i> 비밀글로 등록 (비공개)
+                    </label>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.9rem; font-weight:600; color:#334155; margin-bottom:6px;">문의 상세 내용 *</label>
+                    <textarea id="custQnaContent" class="form-control" rows="4" placeholder="궁금하신 내용을 구체적으로 작성해 주시면 담당자가 빠르게 안내해 드립니다." style="width:100%; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px; resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid #e2e8f0; padding-top:16px;">
+                <button type="button" class="btn-secondary" onclick="closeCustomerQnaModal()" style="padding:8px 16px; border-radius:6px;">취소</button>
+                <button type="button" class="btn-primary" onclick="submitCustomerQna()" style="padding:8px 20px; border-radius:6px; background:#3b82f6; border-color:#2563eb; font-weight:600;">문의 등록</button>
+            </div>
+        </div>
+    </div>
+
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-modal">
             <div class="auth-close" id="authClose">&times;</div>

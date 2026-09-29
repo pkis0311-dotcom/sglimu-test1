@@ -768,6 +768,85 @@
                             <!-- Dynamic items will be added here -->
                         </div>
                     </div>
+
+                    <!-- 5. 구매안내 관리 (배송/교환/반품 안내) -->
+                    <div class="page-manage-section" style="border-top:1px solid #eee; padding-top:20px; margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                            <label style="margin:0;"><i class="fa-solid fa-truck-fast"></i> 5. 구매안내 관리 (배송 / 교환 / 반품 안내)</label>
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" class="btn-secondary" id="loadDefaultGuideBtn" style="padding:5px 12px; font-size:0.85rem;"><i class="fa-solid fa-file-lines"></i> 기본 안내 템플릿 불러오기</button>
+                                <button type="button" class="btn-secondary" id="clearGuideBtn" style="padding:5px 12px; font-size:0.85rem; color:#e74c3c;"><i class="fa-solid fa-eraser"></i> 비우기</button>
+                            </div>
+                        </div>
+                        <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">* 상세페이지 2번째 탭인 [구매안내]에 노출될 배송/교환/반품 정책을 작성합니다. (미입력 시 기본 표준 정책이 자동 표시됩니다)</p>
+                        <div style="background:#fff; border:1px solid #d4d4d4; border-radius:6px; overflow:hidden;">
+                            <div id="toolbar_purchase_guide" class="excel-toolbar">
+                                <div class="excel-toolbar-group font-group">
+                                    <select class="ql-font excel-select font-select">
+                                        <option value="Malgun Gothic" selected>맑은 고딕</option>
+                                        <option value="Calibri">Calibri</option>
+                                        <option value="Pretendard">Pretendard</option>
+                                    </select>
+                                    <select class="ql-size excel-select size-select">
+                                        <option value="12px">12</option>
+                                        <option value="14px" selected>14</option>
+                                        <option value="16px">16</option>
+                                        <option value="18px">18</option>
+                                        <option value="20px">20</option>
+                                    </select>
+                                </div>
+                                <div class="excel-toolbar-divider"></div>
+                                <div class="excel-toolbar-group style-group">
+                                    <button class="ql-bold excel-btn bold-btn" type="button" title="굵게">가</button>
+                                    <button class="ql-italic excel-btn italic-btn" type="button" title="기울임꼴">가</button>
+                                    <button class="ql-underline excel-btn underline-btn" type="button" title="밑줄">가</button>
+                                </div>
+                                <div class="excel-toolbar-divider"></div>
+                                <div class="excel-toolbar-group color-group">
+                                    <select class="ql-color excel-color-picker" title="글꼴 색"></select>
+                                    <select class="ql-background excel-color-picker" title="배경 색"></select>
+                                </div>
+                                <div class="excel-toolbar-divider"></div>
+                                <div class="excel-toolbar-group">
+                                    <button class="ql-list excel-btn" value="ordered" type="button" title="번호 목록"><i class="fa-solid fa-list-ol"></i></button>
+                                    <button class="ql-list excel-btn" value="bullet" type="button" title="글머리 기호"><i class="fa-solid fa-list-ul"></i></button>
+                                </div>
+                            </div>
+                            <div id="pagePurchaseGuideEditor" style="min-height: 160px; padding: 15px; background: #fff;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 6. 상품후기 (Reviews) 관리 -->
+                    <div class="page-manage-section" style="border-top:1px solid #eee; padding-top:20px; margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <label style="margin:0;"><i class="fa-solid fa-comment-dots"></i> 6. 상품후기 (Reviews) 관리</label>
+                                <span id="adminReviewStats" style="font-size:0.85rem; color:#666; margin-left:10px; font-weight:600;">(총 0건)</span>
+                            </div>
+                            <button type="button" class="btn-secondary" id="openAddReviewAdminBtn" style="padding:6px 14px; font-size:0.85rem; background:#2ecc71; color:#fff; border-color:#27ae60; font-weight:600;"><i class="fa-solid fa-plus"></i> 새 상품후기 직접 등록</button>
+                        </div>
+                        <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">* 등록된 상품 후기를 조회/수정/삭제하거나, 관리자 답글(댓글)을 달 수 있습니다.</p>
+                        
+                        <div id="adminReviewContainer" style="display:flex; flex-direction:column; gap:12px; min-height:60px;">
+                            <!-- Dynamic review cards -->
+                        </div>
+                    </div>
+
+                    <!-- 7. 상품 Q&A (문의사항) 관리 -->
+                    <div class="page-manage-section" style="border-top:1px solid #eee; padding-top:20px; margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <label style="margin:0;"><i class="fa-solid fa-circle-question"></i> 7. 상품 Q&A (문의사항) 관리</label>
+                                <span id="adminQnaStats" style="font-size:0.85rem; color:#666; margin-left:10px; font-weight:600;">(총 0건)</span>
+                            </div>
+                            <button type="button" class="btn-secondary" id="openAddQnaAdminBtn" style="padding:6px 14px; font-size:0.85rem; background:#3498db; color:#fff; border-color:#2980b9; font-weight:600;"><i class="fa-solid fa-plus"></i> 새 Q&A 직접 등록</button>
+                        </div>
+                        <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">* 고객 질문에 답변을 작성/수정하거나, 자주 묻는 질문을 미리 등록해 둘 수 있습니다.</p>
+                        
+                        <div id="adminQnaContainer" style="display:flex; flex-direction:column; gap:12px; min-height:60px;">
+                            <!-- Dynamic Q&A cards -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1505,6 +1584,112 @@
         </div>
     </div>
     
+    <!-- 상품 후기 등록/수정 팝업(모달) -->
+    <div id="adminReviewModal" class="modal-overlay" style="z-index: 1050;">
+        <div class="modal-box" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3 id="adminReviewModalTitle"><i class="fa-solid fa-comment-dots" style="color:#2ecc71;"></i> 상품후기 등록 / 수정</h3>
+                <button class="close-modal" id="closeAdminReviewModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="adminReviewId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>작성자 / 고객명 *</label>
+                        <input type="text" id="adminReviewAuthor" class="form-control" placeholder="예: 김*수 (부산초등학교)">
+                    </div>
+                    <div class="form-group">
+                        <label>평점 (별점) *</label>
+                        <select id="adminReviewRating" class="form-control" style="font-weight:bold; color:#f39c12;">
+                            <option value="5">⭐⭐⭐⭐⭐ (5점 - 최고예요)</option>
+                            <option value="4">⭐⭐⭐⭐ (4점 - 좋아요)</option>
+                            <option value="3">⭐⭐⭐ (3점 - 보통이에요)</option>
+                            <option value="2">⭐⭐ (2점 - 아쉬워요)</option>
+                            <option value="1">⭐ (1점 - 별로예요)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>작성일시</label>
+                        <input type="date" id="adminReviewDate" class="form-control">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:8px; padding-top:28px;">
+                        <input type="checkbox" id="adminReviewIsBest" style="width:18px; height:18px; cursor:pointer;">
+                        <label for="adminReviewIsBest" style="margin:0; cursor:pointer; font-weight:600; color:#e67e22;">
+                            <i class="fa-solid fa-crown"></i> 베스트(BEST) 후기로 지정
+                        </label>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>후기 내용 *</label>
+                        <textarea id="adminReviewContent" class="form-control" rows="4" placeholder="고객의 실제 구매 및 사용 후기 내용을 입력하세요."></textarea>
+                    </div>
+                    <div class="form-group full-width" style="border-top:1px dashed #cbd5e0; padding-top:15px; margin-top:5px;">
+                        <label style="color:#2980b9; font-weight:700;"><i class="fa-solid fa-reply"></i> 관리자 공식 답변 (선택)</label>
+                        <textarea id="adminReviewReply" class="form-control" rows="3" placeholder="고객 후기에 대한 감사 인사 또는 공식 피드백을 입력하세요."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelAdminReviewModalBtn">취소</button>
+                <button type="button" class="btn-primary" id="saveAdminReviewBtn" style="background-color:#2ecc71; border-color:#27ae60;">후기 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상품 Q&A 등록/수정/답변 팝업(모달) -->
+    <div id="adminQnaModal" class="modal-overlay" style="z-index: 1050;">
+        <div class="modal-box" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3 id="adminQnaModalTitle"><i class="fa-solid fa-circle-question" style="color:#3498db;"></i> 상품 Q&A 관리 / 답변 작성</h3>
+                <button class="close-modal" id="closeAdminQnaModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="adminQnaId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>문의 고객명 *</label>
+                        <input type="text" id="adminQnaAuthor" class="form-control" placeholder="예: 이*진">
+                    </div>
+                    <div class="form-group">
+                        <label>처리 상태</label>
+                        <select id="adminQnaStatus" class="form-control" style="font-weight:600;">
+                            <option value="pending" style="color:#e67e22;">답변 대기</option>
+                            <option value="answered" style="color:#27ae60;">답변 완료</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>문의 작성일시</label>
+                        <input type="date" id="adminQnaDate" class="form-control">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:8px; padding-top:28px;">
+                        <input type="checkbox" id="adminQnaIsSecret" style="width:18px; height:18px; cursor:pointer;">
+                        <label for="adminQnaIsSecret" style="margin:0; cursor:pointer; font-weight:600; color:#e74c3c;">
+                            <i class="fa-solid fa-lock"></i> 비밀글 (비공개 문의)
+                        </label>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>문의 제목 *</label>
+                        <input type="text" id="adminQnaTitleInput" class="form-control" placeholder="예: 대량 구매 시 납품 일정 문의드립니다.">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>문의 상세 내용 *</label>
+                        <textarea id="adminQnaContent" class="form-control" rows="4" placeholder="고객의 질문 내용을 입력하세요."></textarea>
+                    </div>
+                    <div class="form-group full-width" style="border-top:1px dashed #cbd5e0; padding-top:15px; margin-top:5px; background:#f0f9ff; padding:15px; border-radius:8px;">
+                        <label style="color:#1d4ed8; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+                            <span><i class="fa-solid fa-comment-dots"></i> 관리자 답변 작성/수정</span>
+                            <span style="font-size:0.8rem; font-weight:normal; color:#6b7280;">(입력 시 자동으로 '답변 완료'로 변경됩니다)</span>
+                        </label>
+                        <textarea id="adminQnaAnswer" class="form-control" rows="4" placeholder="고객에게 안내할 친절하고 정확한 공식 답변을 입력하세요." style="background:#fff;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelAdminQnaModalBtn">취소</button>
+                <button type="button" class="btn-primary" id="saveAdminQnaBtn" style="background-color:#3498db; border-color:#2980b9;">Q&A 저장</button>
+            </div>
+        </div>
+    </div>
+
     <script src="admin.js?v=3"></script>
 </body>
 </html>
