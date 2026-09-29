@@ -767,7 +767,7 @@ button {
 }
 
 .partner-item img {
-    height: 24px;
+    height: 31px;
     width: auto;
     display: block;
     object-fit: contain;
@@ -775,11 +775,11 @@ button {
 }
 
 .partner-item img[src*="dialog"] {
-    height: 22px;
+    height: 28px;
 }
 
 .partner-item img[src*="nicepay"] {
-    height: 15px;
+    height: 19px;
 }
 
 /* Footer Admin Discreet Button */
