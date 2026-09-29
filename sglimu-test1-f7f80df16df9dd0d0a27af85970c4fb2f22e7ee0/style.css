@@ -729,17 +729,17 @@ button {
 /* Footer Partners Section */
 .footer-partners {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 24px;
-    margin-top: 24px;
+    padding-top: 18px;
+    margin-top: 20px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 40px;
+    gap: 20px;
     flex-wrap: wrap;
 }
 
 .partner-label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #777;
     font-weight: 500;
     letter-spacing: 0.5px;
@@ -749,7 +749,7 @@ button {
 .partner-logos {
     display: flex;
     align-items: center;
-    gap: 48px;
+    gap: 20px;
     flex-wrap: wrap;
 }
 
@@ -767,7 +767,7 @@ button {
 }
 
 .partner-item img {
-    height: 42px;
+    height: 24px;
     width: auto;
     display: block;
     object-fit: contain;
@@ -775,11 +775,11 @@ button {
 }
 
 .partner-item img[src*="dialog"] {
-    height: 38px;
+    height: 22px;
 }
 
 .partner-item img[src*="nicepay"] {
-    height: 24px;
+    height: 15px;
 }
 
 /* Footer Admin Discreet Button */
