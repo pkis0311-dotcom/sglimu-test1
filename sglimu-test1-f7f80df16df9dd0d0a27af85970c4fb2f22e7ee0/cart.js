@@ -30,6 +30,39 @@ async function sha256(message) {
     return hashHex;
 }
 
+// 전역 포인트 헬퍼 안전 초기화 (auth.js 로딩 전 방어)
+if (typeof window.getUserPoints !== 'function') {
+    window.getUserPoints = async function(userId) {
+        if (!userId) return 5000;
+        try {
+            if (window.supabase) {
+                const { data } = await window.supabase.from('site_configs').select('value').eq('key', 'user_points').single();
+                if (data && data.value && typeof data.value === 'object' && data.value[userId] !== undefined) {
+                    return parseInt(data.value[userId], 10);
+                }
+            }
+        } catch (e) {}
+        const localPts = localStorage.getItem(`user_pts_${userId}`);
+        return localPts !== null ? parseInt(localPts, 10) : 5000;
+    };
+}
+if (typeof window.setUserPoints !== 'function') {
+    window.setUserPoints = async function(userId, newPoints) {
+        if (!userId) return 5000;
+        const finalPts = Math.max(0, parseInt(newPoints, 10) || 0);
+        localStorage.setItem(`user_pts_${userId}`, finalPts);
+        try {
+            if (window.supabase) {
+                const { data: configData } = await window.supabase.from('site_configs').select('value').eq('key', 'user_points').single();
+                const userPointsMap = (configData && configData.value && typeof configData.value === 'object') ? configData.value : {};
+                userPointsMap[userId] = finalPts;
+                await window.supabase.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
+            }
+        } catch (e) {}
+        return finalPts;
+    };
+}
+
 // 결제 대상 품목을 조회하는 헬퍼 함수 (바로구매 vs 장바구니 결제 분기 지원)
 function getCheckoutItems() {
     if (sessionStorage.getItem('is_direct_buy') === 'true') {
@@ -219,21 +252,16 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
             const { data: { user } } = await window.supabase.auth.getUser();
             if (user) {
                 let userPts = 5000;
-                try {
-                    const { data: cData } = await window.supabase.from('site_configs').select('value').eq('key', 'user_points').single();
-                    if (cData && cData.value && cData.value[user.id] !== undefined) {
-                        userPts = cData.value[user.id];
-                    } else {
-                        const { data: profile } = await window.supabase.from('profiles').select('points').eq('id', user.id).single();
-                        if (profile) userPts = profile.points ?? 5000;
-                    }
-                } catch(e) {
-                    const { data: profile } = await window.supabase.from('profiles').select('points').eq('id', user.id).single();
-                    if (profile) userPts = profile.points ?? 5000;
+                if (typeof window.getUserPoints === 'function') {
+                    userPts = await window.getUserPoints(user.id);
+                } else {
+                    const localPts = localStorage.getItem(`user_pts_${user.id}`);
+                    userPts = localPts !== null ? parseInt(localPts, 10) : 5000;
                 }
 
                 checkoutUserMaxPoints = userPts;
                 if (userPointsEl) userPointsEl.innerText = checkoutUserMaxPoints.toLocaleString() + ' P';
+                recalcCheckoutTotals();
 
                 // 쿠폰 목록
                 const { data: couponsConfig } = await window.supabase.from('site_configs').select('value').eq('key', 'coupons').single();
@@ -274,28 +302,87 @@ window.initCheckoutDiscountUI = async function(totalAmount) {
 };
 
 // 전역 장바구니 팝업 HTML 템플릿 주입
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 결제 완료 후 리다이렉트 처리 확인 (URL 파라미터가 ?payment=success 인 경우)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
         const tid = urlParams.get('tid') || urlParams.get('TxTid') || urlParams.get('TID') || localStorage.getItem('sg_limu_pending_tid');
         const pendingOrderId = localStorage.getItem('sg_limu_pending_order');
+        const pendingUsedPoints = parseInt(localStorage.getItem('sg_limu_pending_used_points') || '0', 10);
+        const pendingUserId = localStorage.getItem('sg_limu_pending_user_id') || '';
         
         if (pendingOrderId && window.supabase) {
             const numId = parseInt(pendingOrderId, 10);
             if (!isNaN(numId)) {
-                window.supabase.from('orders').select('customer_name').eq('id', numId).single().then(({ data: ord }) => {
+                try {
+                    const { data: ord } = await window.supabase.from('orders').select('id, customer_name, product_name').eq('id', numId).single();
                     if (ord) {
-                        const updateObj = { status: '준비중' };
                         let currentName = ord.customer_name || '';
-                        if (tid && !currentName.includes('||TID:')) {
-                            updateObj.customer_name = `${currentName}||TID:${tid}`;
+                        let usedPts = pendingUsedPoints;
+                        let targetUid = pendingUserId;
+
+                        // customer_name에서 USED_POINTS와 USER_ID 확인 (Fallback)
+                        if (!usedPts && currentName.includes('||USED_POINTS:')) {
+                            const mPts = currentName.match(/\|\|USED_POINTS:(\d+)/);
+                            if (mPts) usedPts = parseInt(mPts[1], 10);
                         }
-                        window.supabase.from('orders').update(updateObj).eq('id', numId).then(() => {
-                            console.log('Order status & TID updated successfully via client JS:', tid);
-                        });
+                        if (!targetUid && currentName.includes('||USER_ID:')) {
+                            const mUid = currentName.match(/\|\|USER_ID:([^|]+)/);
+                            if (mUid) targetUid = mUid[1];
+                        }
+
+                        // 포인트 차감 처리 (아직 차감 완료 표기가 없는 경우)
+                        if (usedPts > 0 && !currentName.includes('||PTS_DEDUCTED')) {
+                            const { data: { user } } = await window.supabase.auth.getUser();
+                            const activeUid = (user && user.id) ? user.id : targetUid;
+                            if (activeUid) {
+                                const currPts = (typeof window.getUserPoints === 'function') 
+                                    ? await window.getUserPoints(activeUid) 
+                                    : 5000;
+                                const newPts = Math.max(0, currPts - usedPts);
+                                if (typeof window.setUserPoints === 'function') {
+                                    await window.setUserPoints(activeUid, newPts);
+                                } else {
+                                    localStorage.setItem(`user_pts_${activeUid}`, newPts);
+                                    try {
+                                        const { data: configData } = await window.supabase.from('site_configs').select('value').eq('key', 'user_points').single();
+                                        const userPointsMap = (configData && configData.value && typeof configData.value === 'object') ? configData.value : {};
+                                        userPointsMap[activeUid] = newPts;
+                                        await window.supabase.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
+                                    } catch (e) {}
+                                }
+
+                                // 포인트 로그 기록
+                                try {
+                                    const { data: logCfg } = await window.supabase.from('site_configs').select('value').eq('key', 'point_logs').single();
+                                    const logs = logCfg && Array.isArray(logCfg.value) ? logCfg.value : [];
+                                    logs.unshift({
+                                        id: 'LOG_' + Date.now(),
+                                        timestamp: new Date().toLocaleString('ko-KR'),
+                                        type: '결제 사용 (-)',
+                                        target: `${currentName.split('||')[0]}`,
+                                        details: `-${usedPts.toLocaleString()} P (최종 보유: ${newPts.toLocaleString()} P)`,
+                                        reason: `온라인 결제 포인트 사용 (주문번호: #${numId})`,
+                                        manager: '시스템(NICEPAY)'
+                                    });
+                                    await window.supabase.from('site_configs').upsert({ key: 'point_logs', value: logs });
+                                } catch (le) {}
+                            }
+                            currentName += '||PTS_DEDUCTED';
+                        }
+
+                        const updateObj = { status: '준비중' };
+                        if (tid && !currentName.includes('||TID:')) {
+                            currentName += `||TID:${tid}`;
+                        }
+                        updateObj.customer_name = currentName;
+
+                        await window.supabase.from('orders').update(updateObj).eq('id', numId);
+                        console.log('Order status, TID & point deduction updated successfully via client JS:', tid);
                     }
-                }).catch(err => console.error('Failed to update TID in order:', err));
+                } catch (err) {
+                    console.error('Failed to update order on payment success:', err);
+                }
             }
         }
 
@@ -307,6 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.removeItem('direct_buy_item');
         localStorage.removeItem('sg_limu_pending_order');
         localStorage.removeItem('sg_limu_pending_tid');
+        localStorage.removeItem('sg_limu_pending_used_points');
+        localStorage.removeItem('sg_limu_pending_user_id');
         alert('결제가 완료되었습니다. 주문해 주셔서 감사합니다!');
         
         // payment 파라미터만 제거하고 id 등 다른 파라미터는 온전히 보존
@@ -650,22 +739,123 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                const totalPrice = Math.max(0, rawTotalPrice - usedPoints - couponDiscount);
-
                 if (!window.supabase) {
                     throw new Error('Supabase client가 초기화되지 않았습니다.');
                 }
 
-                // DB에 기록할 customer_name (이름||결제수단||소속기관||품목JSON)
-                const itemsJson = JSON.stringify(cart.map(x => ({ id: x.productId, name: x.name, qty: x.qty })));
-                const dbCustomerName = `${name}||${paymentMethod}||${org}||${itemsJson}`;
+                // 포인트 사용 시 유효성 검증
+                if (usedPoints > 0) {
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    if (!user) {
+                        alert('포인트를 사용하려면 로그인이 필요합니다.');
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
+                    const currPts = (typeof window.getUserPoints === 'function') 
+                        ? await window.getUserPoints(user.id) 
+                        : checkoutUserMaxPoints;
+                    if (usedPoints > currPts) {
+                        alert(`보유 포인트(${currPts.toLocaleString()} P)를 초과하여 사용할 수 없습니다.`);
+                        if (document.getElementById('checkoutPointInput')) {
+                            document.getElementById('checkoutPointInput').value = currPts;
+                        }
+                        recalcCheckoutTotals();
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
+                }
 
-                // 1. PG 결제창(신용카드/계좌이체) vs 무통장 직접 송금 분기 처리
-                if (paymentMethod === 'DIRECT_BANK') {
-                    // 2. 무통장입금 주문 등록 (상태: pending - 결제대기)
+                const totalPrice = Math.max(0, rawTotalPrice - usedPoints - couponDiscount);
+
+                // DB에 기록할 품목 JSON
+                const itemsJson = JSON.stringify(cart.map(x => ({ id: x.productId, name: x.name, qty: x.qty })));
+
+                // 0. 전액 포인트/할인 결제 분기 (PG/무통장 불필요)
+                if (totalPrice === 0) {
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    const uid = user ? user.id : '';
+                    const dbCustomerNameZero = `${name}||POINT||${org}||${itemsJson}${usedPoints > 0 ? `||USED_POINTS:${usedPoints}||USER_ID:${uid}||PTS_DEDUCTED` : ''}`;
+
                     const { data: orderData, error: orderError } = await window.supabase.from('orders').insert([
                         {
-                            customer_name: dbCustomerName,
+                            customer_name: dbCustomerNameZero,
+                            customer_phone: phone,
+                            product_name: orderProductName,
+                            quantity: totalQuantity,
+                            total_price: 0,
+                            status: '준비중'
+                        }
+                    ]).select();
+
+                    if (orderError) throw orderError;
+                    if (!orderData || orderData.length === 0) {
+                        throw new Error('주문 생성에 실패했습니다.');
+                    }
+
+                    const orderId = orderData[0].id;
+
+                    if (user) {
+                        try {
+                            await window.supabase.from('profiles').update({
+                                phone: phone,
+                                organization: org,
+                                address: address
+                            }).eq('id', user.id);
+                        } catch (pErr) {}
+
+                        if (usedPoints > 0) {
+                            const currPts = (typeof window.getUserPoints === 'function') ? await window.getUserPoints(user.id) : checkoutUserMaxPoints;
+                            const newPts = Math.max(0, currPts - usedPoints);
+                            if (typeof window.setUserPoints === 'function') {
+                                await window.setUserPoints(user.id, newPts);
+                            }
+
+                            try {
+                                const { data: logCfg } = await window.supabase.from('site_configs').select('value').eq('key', 'point_logs').single();
+                                const logs = logCfg && Array.isArray(logCfg.value) ? logCfg.value : [];
+                                logs.unshift({
+                                    id: 'LOG_' + Date.now(),
+                                    timestamp: new Date().toLocaleString('ko-KR'),
+                                    type: '결제 사용 (-)',
+                                    target: `${name} (${user.email || phone})`,
+                                    details: `-${usedPoints.toLocaleString()} P (최종 보유: ${newPts.toLocaleString()} P)`,
+                                    reason: `전액 포인트 결제 사용 (주문번호: #${orderId})`,
+                                    manager: '시스템'
+                                });
+                                await window.supabase.from('site_configs').upsert({ key: 'point_logs', value: logs });
+                            } catch (le) {}
+                        }
+                    }
+
+                    const isDirect = sessionStorage.getItem('is_direct_buy') === 'true';
+                    if (!isDirect) {
+                        localStorage.removeItem('sg_limu_cart');
+                    }
+                    sessionStorage.removeItem('is_direct_buy');
+                    sessionStorage.removeItem('direct_buy_item');
+                    localStorage.removeItem('sg_limu_pending_order');
+                    renderCart();
+
+                    checkoutOverlay.style.display = 'none';
+                    alert(`포인트(할인)로 전액 결제되었습니다!\n주문이 정상적으로 접수되었습니다.\n\n주문번호: #${orderId}`);
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    location.reload();
+                    return;
+                }
+
+                // 1. 무통장 직접 송금 분기 처리
+                if (paymentMethod === 'DIRECT_BANK') {
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    const uid = user ? user.id : '';
+                    const dbCustomerNameBank = `${name}||${paymentMethod}||${org}||${itemsJson}${usedPoints > 0 ? `||USED_POINTS:${usedPoints}||USER_ID:${uid}||PTS_DEDUCTED` : ''}`;
+
+                    // 무통장입금 주문 등록 (상태: pending - 결제대기)
+                    const { data: orderData, error: orderError } = await window.supabase.from('orders').insert([
+                        {
+                            customer_name: dbCustomerNameBank,
                             customer_phone: phone,
                             product_name: orderProductName,
                             quantity: totalQuantity,
@@ -679,8 +869,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         throw new Error('주문 생성에 실패했습니다.');
                     }
 
+                    const orderId = orderData[0].id;
+
                     // 로그인 회원인 경우 프로필의 주소/연락처 및 차감된 포인트 자동 갱신
-                    const { data: { user } } = await window.supabase.auth.getUser();
                     if (user) {
                         try {
                             await window.supabase.from('profiles').update({
@@ -691,9 +882,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         } catch (pErr) {}
 
                         if (usedPoints > 0) {
-                            const currPts = await window.getUserPoints(user.id);
+                            const currPts = (typeof window.getUserPoints === 'function') ? await window.getUserPoints(user.id) : 5000;
                             const newPts = Math.max(0, currPts - usedPoints);
-                            await window.setUserPoints(user.id, newPts);
+                            if (typeof window.setUserPoints === 'function') {
+                                await window.setUserPoints(user.id, newPts);
+                            }
+
+                            try {
+                                const { data: logCfg } = await window.supabase.from('site_configs').select('value').eq('key', 'point_logs').single();
+                                const logs = logCfg && Array.isArray(logCfg.value) ? logCfg.value : [];
+                                logs.unshift({
+                                    id: 'LOG_' + Date.now(),
+                                    timestamp: new Date().toLocaleString('ko-KR'),
+                                    type: '결제 사용 (-)',
+                                    target: `${name} (${user.email || phone})`,
+                                    details: `-${usedPoints.toLocaleString()} P (최종 보유: ${newPts.toLocaleString()} P)`,
+                                    reason: `무통장 주문 포인트 사용 (주문번호: #${orderId})`,
+                                    manager: '시스템'
+                                });
+                                await window.supabase.from('site_configs').upsert({ key: 'point_logs', value: logs });
+                            } catch (le) {}
                         }
                     }
 
@@ -717,16 +925,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // [카드결제 / 실시간 계좌이체 분기]
+                // 2. PG 결제창(신용카드/실시간 계좌이체) 분기 처리
                 // NICEPAY SDK 로드 여부 검증
                 if (!window.goPay) {
                     throw new Error('나이스페이 결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.');
                 }
 
-                // 2. Supabase orders 테이블에 주문 추가 (상태: pending)
+                const { data: { user } } = await window.supabase.auth.getUser();
+                const uid = user ? user.id : '';
+                const dbCustomerNamePg = `${name}||${paymentMethod}||${org}||${itemsJson}${usedPoints > 0 ? `||USED_POINTS:${usedPoints}||USER_ID:${uid}` : ''}`;
+
+                // Supabase orders 테이블에 주문 추가 (상태: pending)
                 const { data: orderData, error: orderError } = await window.supabase.from('orders').insert([
                     {
-                        customer_name: dbCustomerName,
+                        customer_name: dbCustomerNamePg,
                         customer_phone: phone,
                         product_name: orderProductName,
                         quantity: totalQuantity,
@@ -743,7 +955,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const orderId = orderData[0].id; // 생성된 주문 ID (Moid로 사용)
 
                 // 로그인 회원인 경우 프로필의 주소/연락처 자가 치유(자동 저장)
-                const { data: { user } } = await window.supabase.auth.getUser();
                 if (user) {
                     await window.supabase.from('profiles').update({
                         phone: phone,
@@ -805,8 +1016,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 document.body.appendChild(form);
 
-                // 결제 완료 시 로컬 카트를 지우기 위한 임시 세션 마킹 (NICEPAY는 Iframe으로 결제되므로 완료 후 페이지 전환 전 카트 정리용)
+                // 결제 완료 시 로컬 카트 및 사용 포인트 정리를 위한 임시 세션 마킹
                 localStorage.setItem('sg_limu_pending_order', orderId);
+                localStorage.setItem('sg_limu_pending_used_points', usedPoints.toString());
+                localStorage.setItem('sg_limu_pending_user_id', uid);
 
                 // 5. NICEPAY 결제창 시작
                 goPay(form);

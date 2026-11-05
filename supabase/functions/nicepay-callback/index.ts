@@ -153,16 +153,130 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
 
-    // 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경
-    const { error: dbError } = await supabase
-      .from('orders')
-      .update({ status: '준비중' })
-      .eq('id', moid)
+    // 1. 주문 ID 정수형 캐스팅
+    const numericMoid = parseInt(moid, 10)
+    if (isNaN(numericMoid)) {
+      throw new Error(`유효하지 않은 주문 ID (Moid): ${moid}`)
+    }
 
-    if (dbError) {
-      console.error('주문 데이터베이스 업데이트 실패:', dbError)
+    // 2. 기존 주문 정보 조회
+    const { data: order, error: fetchErr } = await supabase
+      .from('orders')
+      .select('status, customer_name, product_name')
+      .eq('id', numericMoid)
+      .single()
+
+    if (fetchErr) {
+      console.error('재고 차감을 위한 기존 주문 조회 실패:', fetchErr)
     } else {
-      console.log(`주문 ID ${moid}의 상태가 '준비중'으로 변경되었습니다.`)
+      // 3. 중복 재고 차감 여부를 inventory_logs 조회를 통해 확인
+      const searchReason = `#${numericMoid}`
+      const { data: existingLogs, error: logCheckErr } = await supabase
+        .from('inventory_logs')
+        .select('id')
+        .like('reason', `%${searchReason}%`)
+
+      const isAlreadyDeducted = !logCheckErr && existingLogs && existingLogs.length > 0
+
+      // 4. 주문번호(Moid)를 데이터베이스의 주문 ID(id)와 대조하여 주문 상태를 '준비중'으로 변경 및 TID 저장
+      const finalTid = approvalResData.TID || txTid || ''
+      const updateData: Record<string, any> = { status: '준비중' }
+      if (finalTid) {
+        updateData.tid = finalTid
+        if (order.customer_name && !order.customer_name.includes('||TID:')) {
+          updateData.customer_name = `${order.customer_name}||TID:${finalTid}`
+        }
+      }
+
+      const { error: dbError } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', numericMoid)
+
+      if (dbError) {
+        console.error('주문 데이터베이스 업데이트 실패:', dbError)
+      } else {
+        console.log(`주문 ID ${numericMoid}의 상태가 '준비중'으로 변경되었습니다. (TID: ${finalTid})`)
+
+        // 5. 이미 차감되지 않았고 메타데이터가 존재할 경우 재고 차감 실행
+        if (!isAlreadyDeducted) {
+          const parts = order.customer_name ? order.customer_name.split('||') : []
+          if (parts.length > 3) {
+            const itemsJson = parts[3]
+            try {
+              const items = JSON.parse(itemsJson)
+              if (Array.isArray(items)) {
+                for (const item of items) {
+                  const pid = item.id
+                  const qty = parseInt(item.qty) || 0
+                  const pName = item.name || order.product_name
+
+                  if (pid && qty > 0) {
+                    // inventory_logs 삽입 (트리거가 products 테이블 stock을 자동으로 차감함)
+                    const { error: logErr } = await supabase.from('inventory_logs').insert([{
+                      product_id: pid,
+                      change_amount: -qty,
+                      reason: `[${pName}] 홈페이지 주문 결제완료 출고 (주문번호: #${numericMoid})`,
+                      manager_name: '시스템(NICEPAY)'
+                    }])
+                    if (logErr) {
+                      console.error(`재고 로그 생성 실패 (제품 ID: ${pid}):`, logErr)
+                    } else {
+                      console.log(`제품 ID ${pid} 재고 차감 및 로그 생성 완료`)
+                    }
+                  }
+                }
+              }
+            } catch (jsonErr) {
+              console.error('주문 품목 메타데이터 파싱 중 오류:', jsonErr)
+            }
+          }
+        } else {
+          console.log(`주문 ID ${numericMoid}는 이미 재고가 차감되어 작업을 건너뜁니다.`)
+        }
+
+        // 6. 사용 포인트 차감 처리 (아직 차감되지 않은 경우)
+        if (order.customer_name && order.customer_name.includes('||USED_POINTS:') && !order.customer_name.includes('||PTS_DEDUCTED')) {
+          try {
+            const mPts = order.customer_name.match(/\|\|USED_POINTS:(\d+)/)
+            const mUid = order.customer_name.match(/\|\|USER_ID:([^|]+)/)
+            const usedPts = mPts ? parseInt(mPts[1], 10) : 0
+            const uid = mUid ? mUid[1] : ''
+
+            if (usedPts > 0 && uid) {
+              const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'user_points').single()
+              const userPointsMap = (configData && configData.value && typeof configData.value === 'object') ? configData.value : {}
+              const currentPts = userPointsMap[uid] !== undefined ? parseInt(userPointsMap[uid], 10) : 5000
+              const newPts = Math.max(0, currentPts - usedPts)
+              userPointsMap[uid] = newPts
+              await supabase.from('site_configs').upsert({ key: 'user_points', value: userPointsMap })
+
+              // 포인트 로그 기록
+              try {
+                const { data: logCfg } = await supabase.from('site_configs').select('value').eq('key', 'point_logs').single()
+                const logs = logCfg && Array.isArray(logCfg.value) ? logCfg.value : []
+                logs.unshift({
+                  id: 'LOG_' + Date.now(),
+                  timestamp: new Date().toLocaleString('ko-KR'),
+                  type: '결제 사용 (-)',
+                  target: `${order.customer_name.split('||')[0]}`,
+                  details: `-${usedPts.toLocaleString()} P (최종 보유: ${newPts.toLocaleString()} P)`,
+                  reason: `온라인 결제 포인트 사용 (주문번호: #${numericMoid})`,
+                  manager: '시스템(NICEPAY-EDGE)'
+                })
+                await supabase.from('site_configs').upsert({ key: 'point_logs', value: logs })
+              } catch (le) {}
+
+              await supabase.from('orders').update({
+                customer_name: `${order.customer_name}||PTS_DEDUCTED`
+              }).eq('id', numericMoid)
+              console.log(`주문 ID ${numericMoid} 포인트 ${usedPts}P 차감 완료 (유저: ${uid})`)
+            }
+          } catch (pErr) {
+            console.error('포인트 차감 처리 중 오류:', pErr)
+          }
+        }
+      }
     }
 
   } catch (dbErr) {

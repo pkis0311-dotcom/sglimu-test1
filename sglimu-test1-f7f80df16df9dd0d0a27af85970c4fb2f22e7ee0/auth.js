@@ -7,36 +7,57 @@ window.getUserPoints = async function(userId) {
     if (!userId) return 5000;
     let pts = null;
 
-    // 1. site_configs user_points 맵 우선 조회 (관리자가 부여한 수동 포인트 포함)
+    // 1. site_configs user_points 맵 우선 조회 (관리자가 부여한 포인트 또는 차감된 포인트)
     try {
         const client = window.supabase || supabase;
         if (client) {
             const { data } = await client.from('site_configs').select('value').eq('key', 'user_points').single();
-            if (data && data.value && data.value[userId] !== undefined) {
+            if (data && data.value && typeof data.value === 'object' && data.value[userId] !== undefined) {
                 pts = parseInt(data.value[userId], 10);
             }
         }
-    } catch (e) {}
+    } catch (e) {
+        console.warn('getUserPoints site_configs lookup error:', e);
+    }
 
-    // 2. site_configs에 없으면 profiles 테이블 조회
-    if (pts === null) {
+    // 2. localStorage 조회
+    if (pts === null || isNaN(pts)) {
+        const localPts = localStorage.getItem(`user_pts_${userId}`);
+        if (localPts !== null && !isNaN(parseInt(localPts, 10))) {
+            pts = parseInt(localPts, 10);
+        }
+    }
+
+    // 3. 없으면 기본 가입 포인트(signup_points) 조회 후 초기화
+    if (pts === null || isNaN(pts)) {
+        let defaultPts = 5000;
         try {
             const client = window.supabase || supabase;
             if (client) {
-                const { data } = await client.from('profiles').select('points').eq('id', userId).single();
-                if (data && data.points !== undefined && data.points !== null) {
-                    pts = parseInt(data.points, 10);
+                const { data: sData } = await client.from('site_configs').select('value').eq('key', 'signup_points').single();
+                if (sData && typeof sData.value === 'number') {
+                    defaultPts = sData.value;
+                }
+            }
+        } catch (e) {}
+        pts = defaultPts;
+
+        // DB에 초기 포인트 자동 등록 (비동기)
+        try {
+            const client = window.supabase || supabase;
+            if (client) {
+                const { data: configData } = await client.from('site_configs').select('value').eq('key', 'user_points').single();
+                const userPointsMap = (configData && configData.value && typeof configData.value === 'object') ? configData.value : {};
+                if (userPointsMap[userId] === undefined) {
+                    userPointsMap[userId] = pts;
+                    await client.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
                 }
             }
         } catch (e) {}
     }
 
-    // 3. 둘 다 없으면 localStorage 또는 기본 5,000P
-    if (pts === null || isNaN(pts)) {
-        const localPts = localStorage.getItem(`user_pts_${userId}`);
-        pts = localPts !== null ? parseInt(localPts, 10) : 5000;
-    }
-
+    // localStorage 동기화
+    localStorage.setItem(`user_pts_${userId}`, pts);
     return pts;
 };
 
@@ -47,6 +68,15 @@ window.setUserPoints = async function(userId, newPoints) {
     // localStorage 즉시 백업
     localStorage.setItem(`user_pts_${userId}`, finalPts);
 
+    // 현재 페이지 내 포인트 표시 UI 실시간 갱신
+    const ptsText = finalPts.toLocaleString();
+    const topPtsEl = document.getElementById('topUserPoints');
+    if (topPtsEl) topPtsEl.textContent = ptsText;
+    const myProfPtsEl = document.getElementById('myProfilePoints');
+    if (myProfPtsEl) myProfPtsEl.textContent = ptsText + ' P';
+    const checkoutPtsEl = document.getElementById('checkoutUserPoints');
+    if (checkoutPtsEl) checkoutPtsEl.textContent = ptsText + ' P';
+
     const client = window.supabase || supabase;
     if (client) {
         // site_configs user_points 맵 업데이트
@@ -54,19 +84,12 @@ window.setUserPoints = async function(userId, newPoints) {
             const { data: configData } = await client.from('site_configs').select('value').eq('key', 'user_points').single();
             const userPointsMap = (configData && configData.value && typeof configData.value === 'object') ? configData.value : {};
             userPointsMap[userId] = finalPts;
-            await client.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
+            const { error: upsertErr } = await client.from('site_configs').upsert({ key: 'user_points', value: userPointsMap });
+            if (upsertErr) {
+                console.error('setUserPoints site_configs upsert error:', upsertErr);
+            }
         } catch (e) {
             console.error('setUserPoints site_configs upsert error:', e);
-        }
-
-        // profiles 테이블 update 시도
-        try {
-            await client.from('profiles').update({
-                points: finalPts,
-                updated_at: new Date().toISOString()
-            }).eq('id', userId);
-        } catch (e) {
-            console.warn('setUserPoints profiles update error:', e);
         }
     }
 
@@ -544,7 +567,7 @@ if (signupForm) {
                 signupMsg.classList.add('error');
             }
         } else {
-            // [추가] 가입 성공 시 profiles 테이블에 기본 레코드 생성 시도 (5,000 포인트 기본 적립)
+            // [추가] 가입 성공 시 profiles 테이블에 기본 레코드 생성 시도 및 신규 회원 포인트 지급
             if (data.user) {
                 const initialProfile = {
                     id: data.user.id,
@@ -554,11 +577,18 @@ if (signupForm) {
                     organization: organization,
                     address: address,
                     user_type: selectedUserType,
-                    points: 5000,
                     updated_at: new Date().toISOString()
                 };
-                supabase.from('profiles').upsert(initialProfile).then(({ error }) => {
+                supabase.from('profiles').upsert(initialProfile).then(async ({ error }) => {
                     if (error) console.error('Initial profile creation error:', error);
+                    let initialPts = 5000;
+                    try {
+                        const { data: sData } = await supabase.from('site_configs').select('value').eq('key', 'signup_points').single();
+                        if (sData && typeof sData.value === 'number') initialPts = sData.value;
+                    } catch (e) {}
+                    if (typeof window.setUserPoints === 'function') {
+                        await window.setUserPoints(data.user.id, initialPts);
+                    }
                 });
             }
 

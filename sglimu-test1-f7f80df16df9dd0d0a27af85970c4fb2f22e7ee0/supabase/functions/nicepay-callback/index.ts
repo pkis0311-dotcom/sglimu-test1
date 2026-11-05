@@ -234,6 +234,48 @@ Deno.serve(async (req) => {
         } else {
           console.log(`주문 ID ${numericMoid}는 이미 재고가 차감되어 작업을 건너뜁니다.`)
         }
+
+        // 6. 사용 포인트 차감 처리 (아직 차감되지 않은 경우)
+        if (order.customer_name && order.customer_name.includes('||USED_POINTS:') && !order.customer_name.includes('||PTS_DEDUCTED')) {
+          try {
+            const mPts = order.customer_name.match(/\|\|USED_POINTS:(\d+)/)
+            const mUid = order.customer_name.match(/\|\|USER_ID:([^|]+)/)
+            const usedPts = mPts ? parseInt(mPts[1], 10) : 0
+            const uid = mUid ? mUid[1] : ''
+
+            if (usedPts > 0 && uid) {
+              const { data: configData } = await supabase.from('site_configs').select('value').eq('key', 'user_points').single()
+              const userPointsMap = (configData && configData.value && typeof configData.value === 'object') ? configData.value : {}
+              const currentPts = userPointsMap[uid] !== undefined ? parseInt(userPointsMap[uid], 10) : 5000
+              const newPts = Math.max(0, currentPts - usedPts)
+              userPointsMap[uid] = newPts
+              await supabase.from('site_configs').upsert({ key: 'user_points', value: userPointsMap })
+
+              // 포인트 로그 기록
+              try {
+                const { data: logCfg } = await supabase.from('site_configs').select('value').eq('key', 'point_logs').single()
+                const logs = logCfg && Array.isArray(logCfg.value) ? logCfg.value : []
+                logs.unshift({
+                  id: 'LOG_' + Date.now(),
+                  timestamp: new Date().toLocaleString('ko-KR'),
+                  type: '결제 사용 (-)',
+                  target: `${order.customer_name.split('||')[0]}`,
+                  details: `-${usedPts.toLocaleString()} P (최종 보유: ${newPts.toLocaleString()} P)`,
+                  reason: `온라인 결제 포인트 사용 (주문번호: #${numericMoid})`,
+                  manager: '시스템(NICEPAY-EDGE)'
+                })
+                await supabase.from('site_configs').upsert({ key: 'point_logs', value: logs })
+              } catch (le) {}
+
+              await supabase.from('orders').update({
+                customer_name: `${order.customer_name}||PTS_DEDUCTED`
+              }).eq('id', numericMoid)
+              console.log(`주문 ID ${numericMoid} 포인트 ${usedPts}P 차감 완료 (유저: ${uid})`)
+            }
+          } catch (pErr) {
+            console.error('포인트 차감 처리 중 오류:', pErr)
+          }
+        }
       }
     }
 
