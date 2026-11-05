@@ -167,7 +167,6 @@ export default async function handler(req, res) {
         method: 'PATCH',
         body: JSON.stringify({
           status: '준비중',
-          tid: finalTid,
           customer_name: updatedName
         })
       });

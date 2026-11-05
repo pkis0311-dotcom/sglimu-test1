@@ -277,7 +277,6 @@ Deno.serve(async (req) => {
       const finalTid = approvalResData.TID || txTid || ''
       const updateData: Record<string, any> = { status: '준비중' }
       if (finalTid) {
-        updateData.tid = finalTid
         if (order.customer_name && !order.customer_name.includes('||TID:')) {
           updateData.customer_name = `${order.customer_name}||TID:${finalTid}`
         }

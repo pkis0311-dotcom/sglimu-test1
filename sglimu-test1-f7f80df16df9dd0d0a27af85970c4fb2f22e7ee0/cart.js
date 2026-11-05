@@ -373,7 +373,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         const updateObj = { status: '준비중' };
                         if (tid) {
-                            updateObj.tid = tid;
                             if (!currentName.includes('||TID:')) {
                                 currentName += `||TID:${tid}`;
                             }
