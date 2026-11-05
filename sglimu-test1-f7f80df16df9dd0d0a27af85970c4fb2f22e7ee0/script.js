@@ -652,7 +652,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
+        let lastTrackingName = '';
+        let lastTrackingPhone = '';
+
         async function fetchAndRenderOrders(name, phone) {
+            lastTrackingName = name;
+            lastTrackingPhone = phone;
             const listContainer = document.getElementById('trackingListContainer');
             if (!listContainer) return;
 
@@ -711,6 +716,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         receiptBtnHtml = `<button onclick="openOrderReceiptModal(window.customerOrdersMap[${order.id}])" title="영수증 자동 확인/출력" style="background:#f0f7ff; border:1px solid #1a73e8; color:#1a73e8; font-size:0.75rem; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-receipt"></i> 영수증</button>`;
                     }
 
+                    // 주문 취소 버튼: 오직 '준비중' 또는 '배송준비중' 상태일 때만 노출
+                    let cancelBtnHtml = '';
+                    const isCancellable = (order.status === '준비중' || order.status === '배송준비중');
+                    if (isCancellable) {
+                        cancelBtnHtml = `<button onclick="cancelCustomerOrder(${order.id})" title="주문 취소하기" style="background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; font-size:0.75rem; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-xmark"></i> 주문취소</button>`;
+                    }
+
                     // 주문 상태 텍스트 및 스타일 결정
                     let statusLabel = '결제대기';
                     let statusColor = '#e67e22'; // orange
@@ -765,6 +777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span style="font-size:0.78rem; color:#777; font-weight:600;">주문일: ${dateStr}</span>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 ${receiptBtnHtml}
+                                ${cancelBtnHtml}
                                 <span style="font-size:0.75rem; font-weight:700; color:${statusColor}; background:${statusBg}; padding:2px 8px; border-radius:20px;">${statusLabel}</span>
                             </div>
                         </div>
@@ -785,6 +798,147 @@ document.addEventListener('DOMContentLoaded', async () => {
                 listContainer.innerHTML = `<div style="text-align:center; padding:30px 0; color:#e74c3c;"><p>조회 실패: ${err.message || '오류 발생'}</p></div>`;
             }
         }
+
+        // 고객 주문 직접 취소 처리 함수 (주문배송준비중 상태일 때만 허용)
+        window.cancelCustomerOrder = async function(orderId) {
+            if (!orderId) return;
+
+            if (!confirm('정말 주문을 취소하시겠습니까?\n취소 시 결제 및 사용된 포인트가 환불 처리되며 복구할 수 없습니다.')) {
+                return;
+            }
+
+            try {
+                const client = window.supabase || supabase;
+                if (!client) {
+                    alert('데이터베이스 연결에 실패했습니다.');
+                    return;
+                }
+
+                // 1. 최신 주문 데이터 조회 및 상태 검증
+                const { data: order, error: fetchErr } = await client
+                    .from('orders')
+                    .select('*')
+                    .eq('id', orderId)
+                    .single();
+
+                if (fetchErr || !order) {
+                    alert('주문 정보를 확인할 수 없습니다.');
+                    return;
+                }
+
+                // 주문배송준비중(준비중, 배송준비중) 일 때만 취소 가능
+                if (order.status !== '준비중' && order.status !== '배송준비중') {
+                    alert('현재 상태(' + (order.status || '확인불가') + ')에서는 주문을 취소할 수 없습니다.\n주문배송준비중 상태일 때만 취소가 가능합니다.');
+                    return;
+                }
+
+                // 2. 주문 상태를 '취소'로 변경
+                let newCustomerName = order.customer_name || '';
+                if (!newCustomerName.includes('||CANCELED_BY_USER:')) {
+                    newCustomerName += '||CANCELED_BY_USER:' + new Date().toISOString();
+                }
+
+                const { error: updateErr } = await client
+                    .from('orders')
+                    .update({
+                        status: '취소',
+                        customer_name: newCustomerName
+                    })
+                    .eq('id', orderId);
+
+                if (updateErr) throw updateErr;
+
+                // 3. 포인트 사용 여부 확인 후 환불 처리
+                let usedPoints = 0;
+                if (order.customer_name && order.customer_name.includes('||USED_POINTS:')) {
+                    const m = order.customer_name.match(/\|\|USED_POINTS:(\d+)/);
+                    if (m) usedPoints = parseInt(m[1], 10) || 0;
+                }
+
+                let targetUid = null;
+                if (order.customer_name && order.customer_name.includes('||USER_ID:')) {
+                    const um = order.customer_name.match(/\|\|USER_ID:([^|]+)/);
+                    if (um) targetUid = um[1];
+                }
+                if (!targetUid && client.auth) {
+                    try {
+                        const { data: { user } } = await client.auth.getUser();
+                        if (user) targetUid = user.id;
+                    } catch (e) {}
+                }
+
+                if (usedPoints > 0 && targetUid) {
+                    try {
+                        const currentPts = (typeof window.getUserPoints === 'function')
+                            ? await window.getUserPoints(targetUid)
+                            : 0;
+                        const refundedPts = currentPts + usedPoints;
+
+                        if (typeof window.setUserPoints === 'function') {
+                            await window.setUserPoints(targetUid, refundedPts);
+                        }
+
+                        // 포인트 환불 로그 기록
+                        const { data: logCfg } = await client.from('site_configs').select('value').eq('key', 'point_logs').single();
+                        const logs = logCfg && Array.isArray(logCfg.value) ? logCfg.value : [];
+                        const customerDisplayName = (order.customer_name ? order.customer_name.split('||')[0] : '고객');
+                        logs.unshift({
+                            id: 'LOG_' + Date.now(),
+                            timestamp: new Date().toLocaleString('ko-KR'),
+                            type: '환불 지급 (+)',
+                            target: customerDisplayName,
+                            details: '+' + usedPoints.toLocaleString() + ' P (최종 보유: ' + refundedPts.toLocaleString() + ' P)',
+                            reason: '고객 직접 주문 취소 포인트 환불 (주문번호: #' + orderId + ')',
+                            manager: '시스템(고객취소)'
+                        });
+                        await client.from('site_configs').upsert({ key: 'point_logs', value: logs });
+                    } catch (ptErr) {
+                        console.error('포인트 환불 중 오류:', ptErr);
+                    }
+                }
+
+                // 4. 재고 복구 처리 (inventory_logs에 차감된 내역이 있을 시)
+                try {
+                    const searchReason = '#' + orderId;
+                    const { data: deductedLogs } = await client
+                        .from('inventory_logs')
+                        .select('*')
+                        .like('reason', '%' + searchReason + '%');
+
+                    if (deductedLogs && deductedLogs.length > 0) {
+                        const alreadyRestored = deductedLogs.some(l => l.change_amount > 0 && (l.reason || '').includes('주문취소'));
+                        if (!alreadyRestored) {
+                            for (const dLog of deductedLogs) {
+                                if (dLog.change_amount < 0) {
+                                    const restoreQty = Math.abs(dLog.change_amount);
+                                    await client.from('inventory_logs').insert([{
+                                        product_id: dLog.product_id,
+                                        change_amount: restoreQty,
+                                        reason: '[주문취소] 고객 직접 주문 취소로 인한 재고 복구 (주문번호: #' + orderId + ')',
+                                        manager_name: '고객(주문취소)'
+                                    }]);
+                                }
+                            }
+                        }
+                    }
+                } catch (invErr) {
+                    console.error('재고 복구 처리 중 오류:', invErr);
+                }
+
+                let refundNotice = usedPoints > 0 ? ('\n(사용하셨던 ' + usedPoints.toLocaleString() + ' 포인트가 정상 환불되었습니다.)') : '';
+                alert('주문(#' + orderId + ')이 성공적으로 취소되었습니다.' + refundNotice);
+
+                // 5. 주문 배송 목록 즉시 새로고침
+                if (lastTrackingName && lastTrackingPhone) {
+                    fetchAndRenderOrders(lastTrackingName, lastTrackingPhone);
+                } else {
+                    renderTrackingContent();
+                }
+            } catch (err) {
+                console.error('주문 취소 처리 실패:', err);
+                alert('주문 취소 중 오류가 발생했습니다: ' + (err.message || '다시 시도해 주세요.'));
+            }
+        };
 
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('a.banner-btn[title="주문배송"], a.banner-btn[title*="주문"]');
