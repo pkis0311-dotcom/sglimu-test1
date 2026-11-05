@@ -372,8 +372,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }
 
                         const updateObj = { status: '준비중' };
-                        if (tid && !currentName.includes('||TID:')) {
-                            currentName += `||TID:${tid}`;
+                        if (tid) {
+                            updateObj.tid = tid;
+                            if (!currentName.includes('||TID:')) {
+                                currentName += `||TID:${tid}`;
+                            }
                         }
                         updateObj.customer_name = currentName;
 
@@ -967,8 +970,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const NICEPAY_MID = 'SG1142086m';
                 const NICEPAY_KEY = 'AaJF/v+0i2QFScNpEl2pNs/5VqTk6rRyh2iwP1RlQ7Oxhta5jNNAitKJpY0Q15Lcm4p8jOD0UZ40ob9XgkJyoA==';
                 
-                // Return URL: 결제 결과를 수신할 Supabase Edge Function 주소 (현재 페이지 도메인 및 쿼리 스트링까지 온전히 redirect_url로 전달)
-                const NICEPAY_RETURN_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback?redirect_url=' + encodeURIComponent(window.location.origin + window.location.pathname + window.location.search);
+                // Return URL: Vercel 서버리스 콜백(/api/nicepay-callback) 우선 지정 (로컬/비HTTPS 환경만 Supabase Edge Function 폴백)
+                const redirectTarget = window.location.origin + window.location.pathname + window.location.search;
+                let NICEPAY_RETURN_URL = `${window.location.origin}/api/nicepay-callback?redirect_url=${encodeURIComponent(redirectTarget)}`;
+                if (window.location.protocol !== 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    NICEPAY_RETURN_URL = 'https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback?redirect_url=' + encodeURIComponent(redirectTarget);
+                }
 
                 const ediDate = getEdiDate();
                 

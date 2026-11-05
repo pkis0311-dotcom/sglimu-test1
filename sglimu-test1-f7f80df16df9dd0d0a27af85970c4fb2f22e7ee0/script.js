@@ -900,6 +900,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         alert('결제대행사(나이스페이)와의 통신에 실패하여 취소를 진행할 수 없습니다.\n사유: ' + (cancelError ? cancelError.message : '네트워크 통신 오류') + '\n고객센터로 문의해 주세요.');
                         return;
                     }
+                } else if (!orderTid && order.total_price > 0) {
+                    const isOnlinePay = order.customer_name && (order.customer_name.includes('||CARD||') || order.customer_name.includes('||BANK||') || order.customer_name.includes('||CELLPHONE||'));
+                    if (isOnlinePay) {
+                        const cont = confirm('해당 주문은 온라인 결제 건이지만, 거래식별번호(TID)가 누락되어 PG사 자동 취소를 진행할 수 없습니다.\n\n쇼핑몰 주문 취소 및 포인트 환불만 먼저 진행하시겠습니까?\n(실제 카드 승인 취소는 나이스페이 관리자 페이지에서 수동 취소해 주셔야 합니다.)');
+                        if (!cont) return;
+                        pgNoticeMsg = '\n(주의: 나이스페이 PG 결제는 수동 취소가 필요합니다.)';
+                    }
                 }
 
                 // 2. 주문 상태를 '취소'로 변경
