@@ -6422,13 +6422,66 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. 기존 주문 정보(기존 상태 및 품목 정보) 조회
             const { data: order, error: fetchErr } = await db
                 .from('orders')
-                .select('status, customer_name, product_name')
+                .select('id, status, customer_name, product_name, total_price, tid')
                 .eq('id', orderId)
                 .single();
 
             if (fetchErr) throw fetchErr;
 
             const oldStatus = order.status || 'pending';
+
+            // PG 결제 자동 취소 처리 (상태를 '취소'로 변경하는 경우)
+            let pgCancelledNotice = '';
+            let orderTid = order.tid || null;
+            if (!orderTid && order.customer_name && order.customer_name.includes('||TID:')) {
+                const m = order.customer_name.match(/\|\|TID:([^|]+)/);
+                if (m) orderTid = m[1];
+            }
+
+            if (newStatus === '취소' && orderTid && (order.total_price > 0)) {
+                if (confirm('해당 주문은 나이스페이 온라인 결제 건(TID: ' + orderTid + ')입니다.\n나이스페이 PG사 결제 승인도 함께 자동으로 취소하시겠습니까?')) {
+                    try {
+                        let cancelResult = null;
+                        try {
+                            const cRes = await fetch('/api/nicepay-cancel', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    tid: orderTid,
+                                    orderId: order.id,
+                                    cancelAmt: order.total_price,
+                                    cancelMsg: '관리자 주문 상태 취소 승인'
+                                })
+                            });
+                            if (cRes.ok) cancelResult = await cRes.json();
+                        } catch (e1) {}
+
+                        if (!cancelResult) {
+                            try {
+                                const edgeRes = await fetch('https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback?action=cancel', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        tid: orderTid,
+                                        orderId: order.id,
+                                        cancelAmt: order.total_price,
+                                        cancelMsg: '관리자 주문 상태 취소 승인'
+                                    })
+                                });
+                                if (edgeRes.ok) cancelResult = await edgeRes.json();
+                            } catch (e2) {}
+                        }
+
+                        if (cancelResult && (cancelResult.success || cancelResult.resultCode === '2001' || cancelResult.resultCode === '2211' || cancelResult.resultCode === '0000' || cancelResult.isAlreadyCancelled || (cancelResult.resultMsg && cancelResult.resultMsg.includes('이미 취소')))) {
+                            pgCancelledNotice = '\n(나이스페이 결제 승인이 PG사에서 정상 취소되었습니다.)';
+                        } else {
+                            alert('나이스페이 결제 취소 요청 결과: ' + (cancelResult ? (cancelResult.resultMsg || cancelResult.resultCode) : '통신 실패') + '\n주문 상태 변경은 계속 진행되나, 나이스페이 관리자 페이지에서 승인 취소 여부를 확인해 주세요.');
+                        }
+                    } catch (pgErr) {
+                        console.error('관리자 PG 취소 통신 오류:', pgErr);
+                    }
+                }
+            }
 
             // 2. 주문 상태 업데이트 진행
             const { error: updateErr } = await db
@@ -6481,7 +6534,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            alert('배송 상태가 성공적으로 변경되었습니다.');
+            // 취소 시 포인트 환불 및 재고 복구 처리
+            if (newStatus === '취소') {
+                // 재고 복구
+                if (isAlreadyDeducted) {
+                    try {
+                        const { data: logsToRestore } = await db
+                            .from('inventory_logs')
+                            .select('*')
+                            .like('reason', `%${searchReason}%`);
+                        if (logsToRestore && logsToRestore.length > 0) {
+                            const alreadyRestored = logsToRestore.some(l => l.change_amount > 0 && (l.reason || '').includes('주문취소'));
+                            if (!alreadyRestored) {
+                                for (const dLog of logsToRestore) {
+                                    if (dLog.change_amount < 0) {
+                                        await db.from('inventory_logs').insert([{
+                                            product_id: dLog.product_id,
+                                            change_amount: Math.abs(dLog.change_amount),
+                                            reason: `[주문취소] 관리자 주문 취소로 인한 재고 복구 (주문번호: #${orderId})`,
+                                            manager_name: (loggedInUser && loggedInUser.full_name) ? loggedInUser.full_name : '관리자'
+                                        }]);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (invErr) {
+                        console.error('관리자 주문 취소 재고 복구 오류:', invErr);
+                    }
+                }
+
+                // 포인트 환불
+                if (order.customer_name && order.customer_name.includes('||USED_POINTS:')) {
+                    try {
+                        const mPts = order.customer_name.match(/\|\|USED_POINTS:(\d+)/);
+                        const mUid = order.customer_name.match(/\|\|USER_ID:([^|]+)/);
+                        const usedPts = mPts ? parseInt(mPts[1], 10) : 0;
+                        const uid = mUid ? mUid[1] : '';
+                        if (usedPts > 0 && uid) {
+                            const currPts = (typeof window.getUserPoints === 'function') ? await window.getUserPoints(uid) : 0;
+                            const refundedPts = currPts + usedPts;
+                            if (typeof window.setUserPoints === 'function') {
+                                await window.setUserPoints(uid, refundedPts);
+                            }
+                            const { data: logCfg } = await db.from('site_configs').select('value').eq('key', 'point_logs').single();
+                            const logs = logCfg && Array.isArray(logCfg.value) ? logCfg.value : [];
+                            logs.unshift({
+                                id: 'LOG_' + Date.now(),
+                                timestamp: new Date().toLocaleString('ko-KR'),
+                                type: '환불 지급 (+)',
+                                target: order.customer_name.split('||')[0],
+                                details: `+${usedPts.toLocaleString()} P (최종 보유: ${refundedPts.toLocaleString()} P)`,
+                                reason: `관리자 주문 취소 포인트 환불 (주문번호: #${orderId})`,
+                                manager: (loggedInUser && loggedInUser.full_name) ? loggedInUser.full_name : '관리자'
+                            });
+                            await db.from('site_configs').upsert({ key: 'point_logs', value: logs });
+                        }
+                    } catch (pe) {
+                        console.error('관리자 주문 취소 포인트 환불 오류:', pe);
+                    }
+                }
+            }
+
+            alert('배송 상태가 성공적으로 변경되었습니다.' + pgCancelledNotice);
 
             await fetchHomepageOrders(true);
 

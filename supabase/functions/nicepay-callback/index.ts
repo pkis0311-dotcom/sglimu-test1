@@ -11,12 +11,107 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405, headers: corsHeaders })
+  // 결제 취소 요청 분기 처리
+  const reqUrl = new URL(req.url)
+  const isCancelAction = reqUrl.searchParams.get('action') === 'cancel'
+
+  if (isCancelAction) {
+    if (req.method !== 'POST') {
+      return new Response(JSON.stringify({ success: false, message: 'Method Not Allowed' }), {
+        status: 405,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    try {
+      const body = await req.json()
+      const { tid, orderId, cancelAmt, cancelMsg } = body
+      if (!tid) {
+        return new Response(JSON.stringify({ success: false, message: 'TID가 누락되었습니다.' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const mid = Deno.env.get('NICEPAY_MID') || 'SG1142086m'
+      const merchantKey = Deno.env.get('NICEPAY_KEY') || 'AaJF/v+0i2QFScNpEl2pNs/5VqTk6rRyh2iwP1RlQ7Oxhta5jNNAitKJpY0Q15Lcm4p8jOD0UZ40ob9XgkJyoA=='
+      const amtStr = String(cancelAmt != null ? cancelAmt : '0')
+      const msg = cancelMsg || '고객 주문 취소'
+
+      const now = new Date()
+      const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000))
+      const yyyy = kst.getUTCFullYear()
+      const mm = String(kst.getUTCMonth() + 1).padStart(2, '0')
+      const dd = String(kst.getUTCDate()).padStart(2, '0')
+      const hh = String(kst.getUTCHours()).padStart(2, '0')
+      const min = String(kst.getUTCMinutes()).padStart(2, '0')
+      const ss = String(kst.getUTCSeconds()).padStart(2, '0')
+      const ediDate = `${yyyy}${mm}${dd}${hh}${min}${ss}`
+
+      const rawSignature = mid + amtStr + ediDate + merchantKey
+      const msgBuffer = new TextEncoder().encode(rawSignature)
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer)
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const signData = hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
+
+      const form = new URLSearchParams()
+      form.append('TID', String(tid).trim())
+      form.append('MID', mid)
+      form.append('Moid', String(orderId || ''))
+      form.append('CancelAmt', amtStr)
+      form.append('CancelMsg', msg)
+      form.append('PartialCancelCode', '0')
+      form.append('EdiDate', ediDate)
+      form.append('SignData', signData)
+      form.append('CharSet', 'utf-8')
+      form.append('EdiType', 'JSON')
+
+      const response = await fetch('https://pg-api.nicepay.co.kr/webapi/cancel_process.jsp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: form.toString()
+      })
+
+      const resText = await response.text()
+      let resData: any = {}
+      try {
+        resData = JSON.parse(resText)
+      } catch {
+        const params = new URLSearchParams(resText)
+        for (const [k, v] of params.entries()) {
+          resData[k] = v
+        }
+      }
+
+      const resultCode = String(resData.ResultCode || '')
+      const resultMsg = String(resData.ResultMsg || '')
+      const isSuccess = (resultCode === '2001' || resultCode === '2211' || resultCode === '0000')
+      const isAlreadyCancelled = resultMsg.includes('이미 취소') || resultCode === '2012'
+
+      return new Response(JSON.stringify({
+        success: isSuccess || isAlreadyCancelled,
+        resultCode: resultCode,
+        resultMsg: resultMsg || (isSuccess ? '취소 성공' : '취소 응답'),
+        isAlreadyCancelled: isAlreadyCancelled,
+        data: resData
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    } catch (cancelErr: any) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: cancelErr.message || '취소 요청 중 오류 발생'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
   }
 
   // 쿼리 매개변수에서 원래 주소(redirect_url) 파싱
-  const reqUrl = new URL(req.url)
   const redirectUrlStr = reqUrl.searchParams.get('redirect_url')
   
   if (!redirectUrlStr) {

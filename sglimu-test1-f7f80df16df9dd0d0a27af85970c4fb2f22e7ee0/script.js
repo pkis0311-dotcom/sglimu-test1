@@ -832,6 +832,76 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
+                // PG(나이스페이) 결제 건 확인 및 자동 결제 취소 연동
+                let orderTid = order.tid || null;
+                if (!orderTid && order.customer_name && order.customer_name.includes('||TID:')) {
+                    const m = order.customer_name.match(/\|\|TID:([^|]+)/);
+                    if (m) orderTid = m[1];
+                }
+
+                let pgNoticeMsg = '';
+                if (orderTid && order.total_price > 0) {
+                    let cancelResult = null;
+                    let cancelError = null;
+
+                    // 1) Vercel Serverless API 호출 시도 (/api/nicepay-cancel)
+                    try {
+                        const cancelRes = await fetch('/api/nicepay-cancel', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                tid: orderTid,
+                                orderId: order.id,
+                                cancelAmt: order.total_price,
+                                cancelMsg: '고객 주문배송창 직접 취소'
+                            })
+                        });
+                        if (cancelRes.ok) {
+                            cancelResult = await cancelRes.json();
+                        } else {
+                            throw new Error('Vercel API HTTP ' + cancelRes.status);
+                        }
+                    } catch (e1) {
+                        console.warn('Vercel 취소 API 실패 또는 미지원 환경, Supabase Edge Function 폴백:', e1);
+                        // 2) Supabase Edge Function 폴백 시도
+                        try {
+                            const edgeRes = await fetch('https://xxvfgnoffomrhtxitqkj.supabase.co/functions/v1/nicepay-callback?action=cancel', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    tid: orderTid,
+                                    orderId: order.id,
+                                    cancelAmt: order.total_price,
+                                    cancelMsg: '고객 주문배송창 직접 취소'
+                                })
+                            });
+                            if (edgeRes.ok) {
+                                cancelResult = await edgeRes.json();
+                            } else {
+                                throw new Error('Edge function HTTP ' + edgeRes.status);
+                            }
+                        } catch (e2) {
+                            cancelError = e2;
+                        }
+                    }
+
+                    if (cancelResult) {
+                        const code = String(cancelResult.resultCode || '');
+                        const msg = String(cancelResult.resultMsg || '');
+                        const isSuccess = cancelResult.success || code === '2001' || code === '2211' || code === '0000' || cancelResult.isAlreadyCancelled || msg.includes('이미 취소');
+
+                        if (isSuccess) {
+                            pgNoticeMsg = '\n(나이스페이 카드/계좌 결제가 PG사에서 정상 취소되었습니다.)';
+                        } else {
+                            alert('나이스페이 결제 취소 처리에 실패하여 주문을 취소할 수 없습니다.\n사유: ' + (msg || code || 'PG사 응답 오류') + '\n고객센터로 문의해 주세요.');
+                            return;
+                        }
+                    } else {
+                        alert('결제대행사(나이스페이)와의 통신에 실패하여 취소를 진행할 수 없습니다.\n사유: ' + (cancelError ? cancelError.message : '네트워크 통신 오류') + '\n고객센터로 문의해 주세요.');
+                        return;
+                    }
+                }
+
                 // 2. 주문 상태를 '취소'로 변경
                 let newCustomerName = order.customer_name || '';
                 if (!newCustomerName.includes('||CANCELED_BY_USER:')) {
@@ -926,7 +996,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 let refundNotice = usedPoints > 0 ? ('\n(사용하셨던 ' + usedPoints.toLocaleString() + ' 포인트가 정상 환불되었습니다.)') : '';
-                alert('주문(#' + orderId + ')이 성공적으로 취소되었습니다.' + refundNotice);
+                alert('주문(#' + orderId + ')이 성공적으로 취소되었습니다.' + pgNoticeMsg + refundNotice);
 
                 // 5. 주문 배송 목록 즉시 새로고침
                 if (lastTrackingName && lastTrackingPhone) {
